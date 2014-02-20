@@ -1,4 +1,6 @@
 import numpy as np
+from pyhrv import *
+from utility import *
 
 np.random.seed()
 
@@ -9,8 +11,8 @@ RRseries=DataSeries(RRraw)
 
 TD_ind, TD_lab = RRAnalysis.TD_indexes(RRseries)
 POIN_ind, POIN_lab = RRAnalysis.POIN_indexes(RRseries)
-
-freq,spec=FFTCalc._calculate_data(RRseries,0.001)
+FD_ind, FD_lab = RRAnalysis.FD_indexes(RRseries, 1)
 
 print(TD_lab)
+print(FD_lab)
 print(POIN_lab)
