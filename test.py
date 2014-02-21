@@ -1,7 +1,6 @@
 import numpy as np
 import time
 from pyhrv import *
-from utility import *
 
 _debug_time = 0
 
@@ -12,7 +11,6 @@ def delay(v=True):
     _debug_time = time.time()
     if v:
         print 'Delay: ', int(d * 100000) / 100.0, 'ms'
-
 
 def test():
     print '1. TD'
@@ -31,16 +29,17 @@ def test():
     print FD_ind
     delay()
 
-delay(False)
+if __name__ == '__main__':
+    delay(False)
 
-np.random.seed()
-t = np.arange(0, 10*np.pi, 0.01*np.pi)
-RRraw = np.random.uniform(500, 1500, 1000)+100*np.sin(t)
+    np.random.seed()
+    t = np.arange(0, 10*np.pi, 0.01*np.pi)
+    RRraw = np.random.uniform(500, 1500, 1000)+100*np.sin(t)
 
-RRseries = DataSeries(RRraw)
+    RRseries = DataSeries(RRraw)
 
-print 'Starting analysis'
-test()
+    print 'Starting analysis'
+    test()
 
-print 'Ok, lez test the cache'
-test()
+    print 'Ok, lez test the cache'
+    test()
