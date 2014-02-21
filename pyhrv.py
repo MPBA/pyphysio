@@ -168,7 +168,7 @@ class FFTCalc(CacheableDataCalc):
 class RRAnalysis(object):
     """ Static class containing methods for analyzing RR intervals data. """
 
-    def __int__(self):
+    def __init__(self):
         raise NotImplementedError("RRAnalysis is a static class")
 
     @staticmethod
@@ -268,7 +268,7 @@ class RRAnalysis(object):
 class RRFilters(object):
     """ Static class containing methods for filtering RR intervals data. """
 
-    def __int__(self):
+    def __init__(self):
         raise NotImplementedError("RRFilters is a static class")
 
     @staticmethod
