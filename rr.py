@@ -2,16 +2,70 @@
 from pyhrv import *
 import numpy as np
 
+class Index(object):
+    # la classe indice contiene un riferimento alla DataSeries
+    def __init__(self, data=None):
+        self._value = None
+        self._data = data
+
+    @property
+    def calculated(self):
+        return not (self._value is None)
+
+    @property
+    def value(self):
+        return self._value
+
+    # TODO: support_value ?? nsamples ??
+
+    def update(self):
+        raise NotImplementedError("Virtual")
+
+
+class TDIndex(Index):
+    def __init__(self, data=None):
+        super(TDIndex, self).__init__(data)
+
+    def update(self):
+        raise NotImplementedError("Virtual")
+
+
+class FDIndex(Index):
+    def __init__(self, data=None):
+        super(FDIndex, self).__init__(data)
+
+    def _interpolate(self, fsamp):
+        # TODO: interpolate
+        pass
+
+    def _estimatePSD(self, fsamp, method):
+        # TODO: estimate PSD
+        pass
+
+    def update(self):
+        raise NotImplementedError("Virtual")
+
 
 # TODO: classes: example
 class RRmean(TDIndex):
     def __init__(self, data=None):
         super(TDIndex, self).__init__(data)
 
+    def calculate(self, RRdata=None):
+        # check if RRdata is instance of RRdata class
+
+        if RRdata==None:
+            raise Exception('Cannot calculate RRmean without data')
+
+        RR=np.array(RRdata.data)
+        self._value=np.mean(RR)
+        return self._value
+
     # sovrascrivere il metodo update
     # il valore dell'indice se calcolato è in self._value
     def update(self):
-        self._value = np.mean(self._data)
+        self._value = np.mean(RR)
+        return self._value
 
 
 # TODO: classes: this is the next

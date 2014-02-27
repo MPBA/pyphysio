@@ -9,7 +9,7 @@ from utility import *
 
 class DataSeries(pd.Series):
     """Pandas' DataFrame class. Gives a cache support through CacheableDataCalc subclasses."""
-
+    data=None
     def __init__(self, data=None, index=None, columns=None, dtype=None, copy=False, metatag=None):
         """ Default constructor.
         @param data: Data to insert in the DataFrame
@@ -64,16 +64,16 @@ class DataSeries(pd.Series):
         else:
             return None
 
-    @staticmethod
-    def from_csv_ibi_or_rr(path, sep=Sett.csv_separator, encoding=None):
+    @staticmethod # it should not be a static method
+    def load_from_csv(path, sep=Sett.csv_separator, encoding=None):
         d = pd.read_csv(path, sep, encoding)
+        # USE columnID as parameter: what with new data with different name?
         if 'IBI' in d.columns:
-            return d['IBI']
+            self.data= d['IBI']
         elif 'RR' in d.columns:
-            return d['RR']
+            self.data= d['RR']
         else:
-            return None
-
+            self.data= None
 
 class CacheableDataCalc(object):
     """ Static class that calculates cacheable data (like FFT etc.) """
@@ -147,47 +147,3 @@ class RRDiff(CacheableDataCalc):
 
 class DataAnalysis(object):
     pass
-
-
-class Index(object):
-    # la classe indice contiene un riferimento alla DataSeries
-    def __init__(self, data=None):
-        self._value = None
-        self._data = data
-
-    @property
-    def calculated(self):
-        return not (self._value is None)
-
-    @property
-    def value(self):
-        return self._value
-
-    # TODO: support_value ?? nsamples ??
-
-    def update(self):
-        raise NotImplementedError("Virtual")
-
-
-class TDIndex(Index):
-    def __init__(self, data=None):
-        super(TDIndex, self).__init__(data)
-
-    def update(self):
-        raise NotImplementedError("Virtual")
-
-
-class FDIndex(Index):
-    def __init__(self, data=None):
-        super(FDIndex, self).__init__(data)
-
-    def _interpolate(self, fsamp):
-        # TODO: interpolate
-        pass
-
-    def _estimatePSD(self, fsamp, method):
-        # TODO: estimate PSD
-        pass
-
-    def update(self):
-        raise NotImplementedError("Virtual")
