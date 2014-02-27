@@ -1,6 +1,6 @@
-import numpy as np
 import time
-from pyhrv import *
+import pyhrv
+import rr
 
 _debug_time = 0
 
@@ -12,34 +12,31 @@ def delay(v=True):
     if v:
         print 'Delay: ', int(d * 100000) / 100.0, 'ms'
 
-def test():
+
+def test(RRseries):
     print '1. TD'
-    TD_ind, TD_lab = RRAnalysis.TD_indexes(RRseries)
+    TD_ind, TD_lab = rr.RRAnalysis.TD_indexes(RRseries)
     print TD_lab
     print TD_ind
     delay()
     print '2. POIN'
-    POIN_ind, POIN_lab = RRAnalysis.POIN_indexes(RRseries)
+    POIN_ind, POIN_lab = rr.RRAnalysis.poin_indexes(RRseries)
     print POIN_lab
     print POIN_ind
     delay()
     print '3. FD'
-    FD_ind, FD_lab = RRAnalysis.FD_indexes(RRseries, 1)
+    FD_ind, FD_lab = rr.RRAnalysis.FD_indexes(RRseries, 1)
     print FD_lab
     print FD_ind
     delay()
 
-if __name__ == '__main__':
+if __name__ == '__mainz__':
     delay(False)
 
-    np.random.seed()
-    t = np.arange(0, 10*np.pi, 0.01*np.pi)
-    RRraw = np.random.uniform(500, 1500, 1000)+100*np.sin(t)
-
-    RRseries = DataSeries(RRraw)
+    RRseries = pyhrv.DataSeries.from_csv_ibi_or_rr("/media/ale/44A0-BCA5/gx/Subject_data/B01.txt")
 
     print 'Starting analysis'
-    test()
+    test(RRseries)
 
-    print 'Ok, lez test the cache'
-    test()
+    print 'Cache test'
+    test(RRseries)

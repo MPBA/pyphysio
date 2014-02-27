@@ -1,43 +1,25 @@
-from __future__ import division
-from __builtin__ import staticmethod
+# Classes for cached data (RR) elaborations
+#
+#
+import pandas as pd
 
-from numpy import *
+from PyHRVSettings import PyHRVDefaultSettings as Sett
 from utility import *
-from scipy import interpolate
-import spectrum as spct
 
 
-# La struttura dati interna puo' essere di tipo arbitrario, lascio stare gli RR intanto
-class DataSeries(object):
-    """Data series class. Wraps a data structure and gives a cache support through CacheableDataCalc subclasses."""
+class DataSeries(pd.Series):
+    """Pandas' DataFrame class. Gives a cache support through CacheableDataCalc subclasses."""
 
-    def __init__(self, data=None):
+    def __init__(self, data=None, index=None, columns=None, dtype=None, copy=False, metatag=None):
         """ Default constructor.
-        :param data: Data to carry or None
-        :return:
+        @param data: Data to insert in the DataFrame
+        @param columns: see Pandas doc
+        @param dtype: see Pandas doc
+        @param copy: see Pandas doc
         """
-        # lista dei dati originali
-        if data is None:
-            self._data = {}
-        else:
-            self._data = data
-        # dizionario per i dati in cache
         self._cache = {}
-
-    # proprieta' per i dati orig.
-    @property
-    def series(self):
-        """ Internal data object
-        """
-        return self._data
-
-    @series.setter
-    def series(self, data):
-        """ Flushes the cache and overwrites the internal list
-        :param data: Data to set
-        """
-        self._data = data
-        self.cache_clear()
+        self.metatag = metatag
+        super(DataSeries, self).__init__(data, index, columns, dtype, copy)
 
     # libera la cache
     def cache_clear(self):
@@ -82,18 +64,17 @@ class DataSeries(object):
         else:
             return None
 
-    # da file
-    def load(self, input_file):
-        # TODO: implement loading from file (depends on _data type and cache)
-        raise NotImplementedError("TODO")
+    @staticmethod
+    def from_csv_ibi_or_rr(path, sep=Sett.csv_separator, encoding=None):
+        d = pd.read_csv(path, sep, encoding)
+        if 'IBI' in d.columns:
+            return d['IBI']
+        elif 'RR' in d.columns:
+            return d['RR']
+        else:
+            return None
 
-    # su file
-    def save(self, output_file):
-        # TODO: implement saving to file (depends on _data type and cache)
-        raise NotImplementedError("TODO")
 
-
-# See README.md
 class CacheableDataCalc(object):
     """ Static class that calculates cacheable data (like FFT etc.) """
 
@@ -102,7 +83,7 @@ class CacheableDataCalc(object):
 
     # metodo pubblico per ricavare i dati dalla cache o da _calculate_data(..)
     @classmethod
-    def get(cls, data, params, use_cache=True):
+    def get(cls, data, params=None, use_cache=True):
         assert isinstance(data, DataSeries)
         if use_cache:
             if not data.cache_check(cls):
@@ -125,12 +106,9 @@ class CacheableDataCalc(object):
         return cls.__name__ + "_cn"
 
 
-# classe esempio per il calcolo dei dati intermedi
-# TODO: copy-paste and/or edit this sample class
 class FFTCalc(CacheableDataCalc):
-    # basta sovrascrivere questo metodo
     @classmethod
-    def _calculate_data(cls, data, params):
+    def _calculate_data(cls, data, params=None):
         """ Calculates the intermediate data
         :type data: DataSeries
         :param data: RRSeries object
@@ -150,122 +128,66 @@ class FFTCalc(CacheableDataCalc):
         spec = spec_tmp[0:(np.ceil(len(spec_tmp) / 2))]  # Only positive half of spectrum
         freqs = np.linspace(start=0, stop=Finterp / 2, num=len(spec), endpoint=True)  # creo vettore delle frequenze
         # ##
+        # TODO: controllare se la tupla viene interamente inserita in cache
         return freqs, spec
 
 
-class RRAnalysis(object):
-    """ Static class containing methods for analyzing RR intervals data. """
-
-    def __init__(self):
-        raise NotImplementedError("RRAnalysis is a static class")
-
-    @staticmethod
-    def get_example_index(series):
-        """ Example index method, returns the length
-        :param series: DataSeries object to filter
-        :return: DataSeries object filtered
+class RRDiff(CacheableDataCalc):
+    @classmethod
+    def _calculate_data(cls, data, params=None):
+        """ Calculates the intermediate data
+        :type data: DataSeries
+        :param data: RRSeries object
+        :param params: Params object
+        :return: Data to cache
         """
-        assert type(series) is DataSeries
-        return len(series.get_series)
-
-    # TODO: add analysis scripts like in the example
-    @staticmethod
-    def TD_indexes(series):
-        """ Returns TD indexes
-        """
-        assert type(series) is DataSeries
-        RR = series.series
-        RRmean = np.mean(RR)
-        RRSTD = np.std(RR)
-
-        RRDiffs = np.diff(RR)
-
-        RRDiffs50 = [x for x in np.abs(RRDiffs) if x > 50]
-        pNN50 = 100.0 * len(RRDiffs50) / len(RRDiffs)
-        RRDiffs25 = [x for x in np.abs(RRDiffs) if x > 25]
-        pNN25 = 100.0 * len(RRDiffs25) / len(RRDiffs)
-        RRDiffs10 = [x for x in np.abs(RRDiffs) if x > 10]
-        pNN10 = 100.0 * len(RRDiffs10) / len(RRDiffs)
-
-        RMSSD = np.sqrt(sum(RRDiffs ** 2) / (len(RRDiffs) - 1))
-        SDSD = np.std(RRDiffs)
-
-        labels = np.array(['RRmean', 'RRSTD', 'pNN50', 'pNN25', 'pNN10', 'RMSSD', 'SDSD'], dtype='S10')
-
-        return [RRmean, RRSTD, pNN50, pNN25, pNN10, RMSSD, SDSD], labels
-
-    @staticmethod
-    def POIN_indexes(series):
-        """ Returns Poincare' indexes
-        """
-        assert type(series) is DataSeries
-        RR = series.series
-        # calculates Poincare' indexes
-        xdata, ydata = RR[:-1], RR[1:]
-        sd1 = np.std((xdata - ydata) / np.sqrt(2.0), ddof=1)
-        sd2 = np.std((xdata + ydata) / np.sqrt(2.0), ddof=1)
-        sd12 = sd1 / sd2
-        sEll = sd1 * sd2 * np.pi
-        labels = ['sd1', 'sd2', 'sd12', 'sEll']
-
-        return [sd1, sd2, sd12, sEll], labels
-
-    @staticmethod
-    def FD_indexes(series, Finterp):
+        assert isinstance(data, DataSeries)
+        return np.diff(data)
 
 
-        # freqs=np.arange(0, 2, 0.0001)
-        #
-        # # calculates AR coefficients
-        # AR, P, k = spct.arburg(RR_interp*1000, 16) #burg
-        #
-        # # estimates PSD from AR coefficients
-        # spec = spct.arma2psd(AR,  T=0.25, NFFT=2*len(freqs))
-        freqs, spec = FFTCalc.get(series, Finterp, use_cache=True)
-
-        # calculates power in different bands
-        VLF = power(spec, freqs, 0, 0.04)
-        LF = power(spec, freqs, 0.04, 0.15)
-        HF = power(spec, freqs, 0.15, 0.4)
-        Total = power(spec, freqs, 0, 2)
-        LFHF = LF / HF
-        nVLF = VLF / Total
-        nLF = LF / Total
-        nHF = HF / Total
-
-        LFn = LF / (HF + LF)
-        HFn = HF / (HF + LF)
-        Power = [VLF, HF, LF]
-
-        Power_Ratio = Power / sum(Power)
-        #    Power_Ratio=spec/sum(spec) # uncomment to calculate Spectral Entropy using all frequencies
-        Spectral_Entropy = 0
-        lenPower = 0 # tengo conto delle bande che ho utilizzato
-        for i in xrange(0, len(Power_Ratio)):
-            if Power_Ratio[i] > 0: # potrei avere VLF=0
-                Spectral_Entropy += Power_Ratio[i] * np.log(Power_Ratio[i])
-                lenPower += 1
-        Spectral_Entropy /= np.log(lenPower) #al posto di len(Power_Ratio) perche' magari non ho usato VLF
-
-        labels = np.array(['VLF', 'LF', 'HF', 'Total', 'nVLF', 'nLF', 'nHF', 'LFn', 'HFn', 'LFHF', 'SpecEn'],
-                          dtype='S10')
-
-        return [VLF, LF, HF, Total, nVLF, nLF, nHF, LFn, HFn, LFHF, Spectral_Entropy], labels
+class DataAnalysis(object):
+    pass
 
 
-class RRFilters(object):
-    """ Static class containing methods for filtering RR intervals data. """
+class Index(object):
+    # la classe indice contiene un riferimento alla DataSeries
+    def __init__(self, data=None):
+        self._value = None
+        self._data = data
 
-    def __init__(self):
-        raise NotImplementedError("RRFilters is a static class")
+    @property
+    def calculated(self):
+        return not (self._value is None)
 
-    @staticmethod
-    def example_filter(series):
-        """ Example filter method, does nothing
-        :param series: DataSeries object to filter
-        :return: DataSeries object filtered
-        """
-        assert type(series) is DataSeries
-        return series
+    @property
+    def value(self):
+        return self._value
 
-        # TODO: add analysis scripts like in the example
+    # TODO: support_value ?? nsamples ??
+
+    def update(self):
+        raise NotImplementedError("Virtual")
+
+
+class TDIndex(Index):
+    def __init__(self, data=None):
+        super(TDIndex, self).__init__(data)
+
+    def update(self):
+        raise NotImplementedError("Virtual")
+
+
+class FDIndex(Index):
+    def __init__(self, data=None):
+        super(FDIndex, self).__init__(data)
+
+    def _interpolate(self, fsamp):
+        # TODO: interpolate
+        pass
+
+    def _estimatePSD(self, fsamp, method):
+        # TODO: estimate PSD
+        pass
+
+    def update(self):
+        raise NotImplementedError("Virtual")
