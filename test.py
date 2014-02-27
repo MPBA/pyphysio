@@ -30,10 +30,10 @@ def test(RRseries):
     print FD_ind
     delay()
 
-if __name__ == '__mainz__':
+if __name__ == '__main__':
     delay(False)
 
-    RRseries = pyhrv.DataSeries.from_csv_ibi_or_rr("/media/ale/44A0-BCA5/gx/Subject_data/B01.txt")
+    RRseries = pyhrv.DataSeries.from_csv_ibi_or_rr("Subject_data/B01.txt")
 
     print 'Starting analysis'
     test(RRseries)
