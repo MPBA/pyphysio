@@ -1,6 +1,7 @@
 import time
-import DataSeries
+from DataSeries import *
 import rr
+import Files
 
 _debug_time = 0
 
@@ -33,10 +34,14 @@ def test(RRseries):
 if __name__ == '__main__':
     delay(False)
 
-    RRseries = DataSeries.DataSeries.from_csv_ibi_or_rr("/media/ale/44A0-BCA5/gx/Subject_data/B01.txt")
+    RRseries = Files.load_rr_data_series("/media/ale/44A0-BCA5/gx/Subject_data/B01.txt")
 
     print 'Starting analysis'
     test(RRseries)
 
     print 'Cache test'
     test(RRseries)
+
+    ###
+    # add import Indexes to rr
+    #

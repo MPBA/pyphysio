@@ -1,6 +1,8 @@
 # coding=utf-8
 from DataSeries import *
 import numpy as np
+from utility import power
+from Indexes import *
 
 
 # TODO: classes: example
@@ -167,8 +169,7 @@ class RRAnalysis(DataAnalysis):
     @staticmethod
     def TD_indexes(series):
         """ Returns TD indexes """
-        assert type(series) is DataSeries
-        RR = series.series
+        RR = series
         RRmean = np.mean(RR)
         RRSTD = np.std(RR)
 
@@ -189,10 +190,9 @@ class RRAnalysis(DataAnalysis):
         return [RRmean, RRSTD, pNN50, pNN25, pNN10, RMSSD, SDSD], labels
 
     @staticmethod
-    def POIN_indexes(series):
+    def poin_indexes(series):
         """ Returns Poincare' indexes """
-        assert type(series) is DataSeries
-        RR = series.series
+        RR = series
         # calculates Poincare' indexes
         xdata, ydata = RR[:-1], RR[1:]
         sd1 = np.std((xdata - ydata) / np.sqrt(2.0), ddof=1)

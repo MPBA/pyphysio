@@ -71,8 +71,7 @@ class CacheableDataCalc(object):
     # metodo pubblico per ricavare i dati dalla cache o da _calculate_data(..)
     @classmethod
     def get(cls, data, params=None, use_cache=True):
-        assert isinstance(data, DataSeries)
-        if use_cache:
+        if use_cache and isinstance(data, DataSeries):
             if not data.cache_check(cls):
                 data.cache_pre_calc_data(cls, params)
         else:
@@ -102,18 +101,17 @@ class FFTCalc(CacheableDataCalc):
         :param params: Params object
         :return: Data to cache
         """
-        assert isinstance(data, DataSeries)
         # calcolo FFT
-        RR_interp, BT_interp = interpolate_rr(data.series, params)
-        Finterp = params
-        hw = np.hamming(len(RR_interp))
+        rr_interp, bt_interp = interpolate_rr(data.series, params)
+        interp_freq = params
+        hw = np.hamming(len(rr_interp))
 
-        frame = RR_interp * hw
+        frame = rr_interp * hw
         frame = frame - np.mean(frame)
 
         spec_tmp = np.absolute(np.fft.fft(frame)) ** 2  # calcolo FFT
         spec = spec_tmp[0:(np.ceil(len(spec_tmp) / 2))]  # Only positive half of spectrum
-        freqs = np.linspace(start=0, stop=Finterp / 2, num=len(spec), endpoint=True)  # creo vettore delle frequenze
+        freqs = np.linspace(start=0, stop=interp_freq / 2, num=len(spec), endpoint=True)  # creo vettore delle frequenze
         return ((freqs, spec))
 
 
@@ -126,6 +124,5 @@ class RRDiff(CacheableDataCalc):
         :param params: Params object
         :return: Data to cache
         """
-        assert isinstance(data, DataSeries)
         return np.diff(data)
 

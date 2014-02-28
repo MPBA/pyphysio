@@ -40,7 +40,8 @@ class FDIndex(Index):
     def __init__(self, data=None):
         super(FDIndex, self).__init__(data)
 
-    # TODO: mi sembra si possa migliorare dato che c'è una possibile perdita di informazioni (conversione) DataSeries ->-> np
+    # TODO: mi sembra si possa migliorare dato che c'è una possibile perdita
+    # TODO: di informazioni (conversione) DataSeries ->-> np
     def _interpolate(self, to_freq):
         """
         Privata. Interpola quando chiamata dalle sottoclassi
@@ -53,3 +54,4 @@ class FDIndex(Index):
     def _estimate_psd(self, fsamp, method):
         # TODO: estimate PSD (non trovo il codice)
         pass
+

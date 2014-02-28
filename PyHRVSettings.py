@@ -3,4 +3,4 @@ class PyHRVDefaultSettings:
         pass
 
     csv_separator = '\t'
-    rr_column_names = ['IBI', 'RR']
+    load_rr_column_names = 'IBI'
