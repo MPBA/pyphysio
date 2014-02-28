@@ -65,7 +65,7 @@ class RRmean(TDIndex):
     # sovrascrivere il metodo update
     # il valore dell'indice se calcolato è in self._value
     def update(self):
-        self._value = np.mean(RR)
+        self._value = None
         return self._value
 
 
@@ -133,7 +133,7 @@ class pNNx(TDIndex): # provo ad usare la cache, controllare che sia corretto
 
 
 class NNx(TDIndex):
-    def __init__(self, data=None):
+    def __init__(self, data=None, X=0):
         super(TDIndex, self).__init__(data)
         self.X=X
 
