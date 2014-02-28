@@ -1,5 +1,6 @@
 import numpy as np
 from scipy import interpolate, signal
+import sys
 
 
 # supplementary methods
@@ -10,21 +11,21 @@ def power(spec, freq, fmin, fmax):
     return powerinband
 
 
-def InterpolateRR(RR, Finterp):
-    # returns cubic spline interpolated array with sample rate = Finterp
-    step = 1 / Finterp
-    BT = np.cumsum(RR)
-    xmin = BT[0]
-    xmax = BT[-1]
-    BT = np.insert(BT, 0, 0)
-    BT = np.append(BT, BT[-1] + 1)
-    RR = np.insert(RR, 0, 0)
-    RR = np.append(RR, RR[-1])
+def interpolate_rr(rr, interp_freq):
+    # returns cubic spline interpolated array with sample rate = interp_freq
+    step = 1 / interp_freq
+    bt = np.cumsum(rr)
+    xmin = bt[0]
+    xmax = bt[-1]
+    bt = np.insert(bt, 0, 0)
+    bt = np.append(bt, bt[-1] + 1)
+    rr = np.insert(rr, 0, 0)
+    rr = np.append(rr, rr[-1])
 
-    tck = interpolate.splrep(BT, RR)
-    BT_interp = np.arange(xmin, xmax, step)
-    RR_interp = interpolate.splev(BT_interp, tck)
-    return RR_interp, BT_interp
+    tck = interpolate.splrep(bt, rr)
+    bt_interp = np.arange(xmin, xmax, step)
+    rr_interp = interpolate.splev(bt_interp, tck)
+    return rr_interp, bt_interp
 
 
 def BuildTakensVector(RR, m):
@@ -100,9 +101,9 @@ def lowpass_filter(X, fs, Wp):
     nyq = 0.5 * fs
     wp = Wp / nyq  # pass band Hz
     ws = wp + 0.5
-    N, wn = buttord(wp, ws, 5, 30)  # calcola ordine per il filtro e la finestra delle bande
-    [bFilt, aFilt] = butter(N, wn, btype='lowpass')  # calcola coefficienti filtro
-    sig = filtfilt(bFilt, aFilt, X)  # filtro il segnale BVP
+    N, wn = signal.buttord(wp, ws, 5, 30)  # calcola ordine per il filtro e la finestra delle bande
+    [bFilt, aFilt] = signal.butter(N, wn, btype='lowpass')  # calcola coefficienti filtro
+    sig = signal.filtfilt(bFilt, aFilt, X)  # filtro il segnale BVP
     return sig
 
 
@@ -110,7 +111,7 @@ def highpass_filter(X, fs, Wp):
     nyq = 0.5 * fs
     wp = Wp / nyq # pass band Hz
     ws = wp - 0.01
-    N, wn = buttord(wp, ws, 5, 30)  # calcola ordine per il filtro e la finestra delle bande
-    [bFilt, aFilt] = butter(N, wn, btype='highpass')  # calcola coefficienti filtro
-    sig = filtfilt(bFilt, aFilt, X)  # filtro il segnale BVP
+    N, wn = signal.buttord(wp, ws, 5, 30)  # calcola ordine per il filtro e la finestra delle bande
+    [bFilt, aFilt] = signal.butter(N, wn, btype='highpass')  # calcola coefficienti filtro
+    sig = signal.filtfilt(bFilt, aFilt, X)  # filtro il segnale BVP
     return sig

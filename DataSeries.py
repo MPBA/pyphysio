@@ -1,16 +1,15 @@
 # Classes for cached data (RR) elaborations
 #
-#
+
 import pandas as pd
+import numpy as np
+from utility import interpolate_rr
 
-from PyHRVSettings import PyHRVDefaultSettings as Sett
-from utility import *
 
+class DataSeries(pd.TimeSeries):
+    """ Pandas' DataFrame class. Gives a cache support through CacheableDataCalc subclasses. """
 
-class DataSeries(pd.Series):
-    """Pandas' DataFrame class. Gives a cache support through CacheableDataCalc subclasses."""
-
-    def __init__(self, data=None, index=None, columns=None, dtype=None, copy=False, metatag=None):
+    def __init__(self, data=None, index=None, columns=None, dtype=None, copy=False, metatag={}):
         """ Default constructor.
         @param data: Data to insert in the DataFrame
         @param columns: see Pandas doc
@@ -21,13 +20,11 @@ class DataSeries(pd.Series):
         self.metatag = metatag
         super(DataSeries, self).__init__(data, index, columns, dtype, copy)
 
-    # libera la cache
     def cache_clear(self):
         """ Clears the cache and frees memory (GC?)
         """
         self._cache = {}
 
-    # see class CacheableDataCalc
     def cache_check(self, calculator):
         """ Check if the cache contains valid calculator's data
         :type calculator: CacheableDataCalc
@@ -61,16 +58,6 @@ class DataSeries(pd.Series):
         """
         if self.cache_check(calculator):
             return self._cache[calculator.cid()]
-        else:
-            return None
-
-    @staticmethod
-    def from_csv_ibi_or_rr(path, sep=Sett.csv_separator, encoding=None):
-        d = pd.read_csv(path, sep, encoding)
-        if 'IBI' in d.columns:
-            return d['IBI']
-        elif 'RR' in d.columns:
-            return d['RR']
         else:
             return None
 
@@ -117,7 +104,7 @@ class FFTCalc(CacheableDataCalc):
         """
         assert isinstance(data, DataSeries)
         # calcolo FFT
-        RR_interp, BT_interp = InterpolateRR(data.series, params)
+        RR_interp, BT_interp = interpolate_rr(data.series, params)
         Finterp = params
         hw = np.hamming(len(RR_interp))
 
@@ -127,9 +114,7 @@ class FFTCalc(CacheableDataCalc):
         spec_tmp = np.absolute(np.fft.fft(frame)) ** 2  # calcolo FFT
         spec = spec_tmp[0:(np.ceil(len(spec_tmp) / 2))]  # Only positive half of spectrum
         freqs = np.linspace(start=0, stop=Finterp / 2, num=len(spec), endpoint=True)  # creo vettore delle frequenze
-        # ##
-        # TODO: controllare se la tupla viene interamente inserita in cache
-        return freqs, spec
+        return ((freqs, spec))
 
 
 class RRDiff(CacheableDataCalc):
@@ -144,50 +129,3 @@ class RRDiff(CacheableDataCalc):
         assert isinstance(data, DataSeries)
         return np.diff(data)
 
-
-class DataAnalysis(object):
-    pass
-
-
-class Index(object):
-    # la classe indice contiene un riferimento alla DataSeries
-    def __init__(self, data=None):
-        self._value = None
-        self._data = data
-
-    @property
-    def calculated(self):
-        return not (self._value is None)
-
-    @property
-    def value(self):
-        return self._value
-
-    # TODO: support_value ?? nsamples ??
-
-    def update(self):
-        raise NotImplementedError("Virtual")
-
-
-class TDIndex(Index):
-    def __init__(self, data=None):
-        super(TDIndex, self).__init__(data)
-
-    def update(self):
-        raise NotImplementedError("Virtual")
-
-
-class FDIndex(Index):
-    def __init__(self, data=None):
-        super(FDIndex, self).__init__(data)
-
-    def _interpolate(self, fsamp):
-        # TODO: interpolate
-        pass
-
-    def _estimatePSD(self, fsamp, method):
-        # TODO: estimate PSD
-        pass
-
-    def update(self):
-        raise NotImplementedError("Virtual")

@@ -1,5 +1,5 @@
 # coding=utf-8
-from pyhrv import *
+from DataSeries import *
 import numpy as np
 
 
@@ -8,9 +8,9 @@ class RRmean(TDIndex):
     def __init__(self, data=None):
         super(TDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo update
+    # sovrascrivere il metodo calculate
     # il valore dell'indice se calcolato è in self._value
-    def update(self):
+    def calculate(self):
         self._value = np.mean(self._data)
 
 
@@ -19,8 +19,8 @@ class HRmean(TDIndex):
     def __init__(self, data=None):
         super(TDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo update
-    def update(self):
+    # sovrascrivere il metodo calculate
+    def calculate(self):
         pass
 
 
@@ -28,8 +28,8 @@ class RRSTD(TDIndex):
     def __init__(self, data=None):
         super(TDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo update
-    def update(self):
+    # sovrascrivere il metodo calculate
+    def calculate(self):
         pass
 
 
@@ -37,8 +37,8 @@ class HRSTD(TDIndex):
     def __init__(self, data=None):
         super(TDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo update
-    def update(self):
+    # sovrascrivere il metodo calculate
+    def calculate(self):
         pass
 
 
@@ -46,8 +46,8 @@ class pNNx(TDIndex):
     def __init__(self, data=None):
         super(TDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo update
-    def update(self):
+    # sovrascrivere il metodo calculate
+    def calculate(self):
         pass
 
 
@@ -55,8 +55,8 @@ class NNx(TDIndex):
     def __init__(self, data=None):
         super(TDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo update
-    def update(self):
+    # sovrascrivere il metodo calculate
+    def calculate(self):
         pass
 
 
@@ -64,8 +64,8 @@ class RMSSD(TDIndex):
     def __init__(self, data=None):
         super(TDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo update
-    def update(self):
+    # sovrascrivere il metodo calculate
+    def calculate(self):
         pass
 
 
@@ -73,8 +73,8 @@ class SDSD(TDIndex):
     def __init__(self, data=None):
         super(TDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo update
-    def update(self):
+    # sovrascrivere il metodo calculate
+    def calculate(self):
         pass
 
 
@@ -82,8 +82,8 @@ class VLF(FDIndex):
     def __init__(self, data=None):
         super(FDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo update
-    def update(self):
+    # sovrascrivere il metodo calculate
+    def calculate(self):
         pass
 
 
@@ -91,8 +91,8 @@ class LF(FDIndex):
     def __init__(self, data=None):
         super(FDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo update
-    def update(self):
+    # sovrascrivere il metodo calculate
+    def calculate(self):
         pass
 
 
@@ -103,8 +103,8 @@ class HF(FDIndex):
     def __init__(self, data=None):
         super(FDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo update
-    def update(self):
+    # sovrascrivere il metodo calculate
+    def calculate(self):
         pass
 
 
@@ -114,8 +114,8 @@ class Total(FDIndex):
     def __init__(self, data=None):
         super(FDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo update
-    def update(self):
+    # sovrascrivere il metodo calculate
+    def calculate(self):
         pass
 
 
@@ -125,8 +125,8 @@ class LFHF(FDIndex):
     def __init__(self, data=None):
         super(FDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo update
-    def update(self):
+    # sovrascrivere il metodo calculate
+    def calculate(self):
         pass
 
 
@@ -135,8 +135,8 @@ class PoinIndex(Index):
     def __init__(self, data=None):
         super(PoinIndex, self).__init__(data)
 
-    # sovrascrivere il metodo update
-    def update(self):
+    # sovrascrivere il metodo calculate
+    def calculate(self):
         pass
 
 
@@ -144,8 +144,8 @@ class NLIndex(Index):
     def __init__(self, data=None):
         super(NLIndex, self).__init__(data)
 
-    # sovrascrivere il metodo update
-    def update(self):
+    # sovrascrivere il metodo calculate
+    def calculate(self):
         pass
 
 
