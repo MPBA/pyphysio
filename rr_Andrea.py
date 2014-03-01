@@ -1,15 +1,12 @@
 # coding=utf-8
-from DataSeries import *
+from pyhrv import *
 import numpy as np
-from utility import power
-from Indexes import *
-
 
 class Index(object):
     # la classe indice contiene un riferimento alla DataSeries
     def __init__(self, data=None):
-        self._value = None
-        self._data = data
+        self._value = None # e' il valore corrente dell'indice, giusto?
+        self._data = data # funziona se passiamo all'online? ogni volta che faccio l'update ho DataSeries diverse...
 
     @property
     def calculated(self):
@@ -24,24 +21,28 @@ class Index(object):
     def update(self):
         raise NotImplementedError("Virtual")
 
-
 class TDIndex(Index):
     def __init__(self, data=None):
         super(TDIndex, self).__init__(data)
 
+    def update(self):
+        raise NotImplementedError("Virtual")
 
 
 class FDIndex(Index):
     def __init__(self, data=None):
         super(FDIndex, self).__init__(data)
 
-    def _interpolate(self, fsamp):
+    def _interpolate(self, fsamp=4):
         # TODO: interpolate
         pass
 
-    def _estimatePSD(self, fsamp, method):
+    def _estimatePSD(self, fsamp=4, method='ar'):
         # TODO: estimate PSD
         pass
+
+    def update(self):
+        raise NotImplementedError("Virtual")
 
 
 # TODO: classes: example
@@ -49,20 +50,32 @@ class RRmean(TDIndex):
     def __init__(self, data=None):
         super(TDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo calculate
+    def calculate(self, RRdata=None): # Va bene RRdata qui?
+
+        # check if RRdata is instance of RRdata class
+        assert isinstance(RRdata, DataSeries) # e' giusto?
+
+        if RRdata==None:
+            raise Exception('Cannot calculate RRmean without data')
+
+        RR=np.array(RRdata) # RRdata e' un'oggetto pd.Series
+        self._value=np.mean(RR)
+        return self._value
+
+    # sovrascrivere il metodo update
     # il valore dell'indice se calcolato è in self._value
-    def calculate(self):
-        self._value = np.mean(self._data)
+    def update(self):
+        self._value = None
         return self._value
 
 
 # TODO: classes: this is the next
-class HRmean(TDIndex):
+class HRmean(TDIndex): # è semplicemente 60/RRmean
     def __init__(self, data=None):
         super(TDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo calculate
-    def calculate(self):
+    # sovrascrivere il metodo update
+    def update(self):
         pass
 
 
@@ -70,8 +83,19 @@ class RRSTD(TDIndex):
     def __init__(self, data=None):
         super(TDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo calculate
-    def calculate(self):
+    def calculate(self, RRdata=None):
+        # check if RRdata is instance of RRdata class
+        assert isinstance(RRdata, DataSeries) # e' giusto?
+
+        if RRdata==None:
+            raise Exception('Cannot calculate RRmean without data')
+
+        RR=np.array(RRdata)
+        self._value=np.std(RR)
+        return self._value
+
+    # sovrascrivere il metodo update
+    def update(self):
         pass
 
 
@@ -79,26 +103,56 @@ class HRSTD(TDIndex):
     def __init__(self, data=None):
         super(TDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo calculate
-    def calculate(self):
+    # sovrascrivere il metodo update
+    def update(self):
         pass
 
 
-class pNNx(TDIndex):
-    def __init__(self, data=None):
+class pNNx(TDIndex): # provo ad usare la cache, controllare che sia corretto
+    def __init__(self, data=None, X=None):
         super(TDIndex, self).__init__(data)
+        self.X=X # parametro dell'indice - per differenziare tra pNN50, pNN25, pNN10 etc
 
-    # sovrascrivere il metodo calculate
-    def calculate(self):
+    def calculate(self, RRdata=None):
+        # check if RRdata is instance of RRdata class
+        assert isinstance(RRdata, DataSeries) # e' giusto?
+
+        if RRdata==None:
+            raise Exception('Cannot calculate RRmean without data')
+
+        RR=np.array(RRdata)
+        RRdiff=RRDiff.get(RRdata)
+        RRDiffX = [x for x in np.abs(RRdiff) if x>self.X]
+        pNNX=100.0*len(RRDiffX)/len(RRdiff)
+        self._value=pNNX
+        return self._value
+
+    # sovrascrivere il metodo update
+    def update(self):
         pass
 
 
 class NNx(TDIndex):
-    def __init__(self, data=None):
+    def __init__(self, data=None, X=0):
         super(TDIndex, self).__init__(data)
+        self.X=X
 
-    # sovrascrivere il metodo calculate
-    def calculate(self):
+    def calculate(self, RRdata=None):
+        # check if RRdata is instance of RRdata class
+        assert isinstance(RRdata, DataSeries) # e' giusto?
+
+        if RRdata==None:
+            raise Exception('Cannot calculate RRmean without data')
+
+        RR=np.array(RRdata)
+        RRdiff=RRDiff.get(RRdata)
+        RRDiffX = [x for x in np.abs(RRdiff) if x>self.X]
+        NNX=len(RRDiffX)
+        self._value=NNX
+        return self._value
+
+    # sovrascrivere il metodo update
+    def update(self):
         pass
 
 
@@ -106,8 +160,8 @@ class RMSSD(TDIndex):
     def __init__(self, data=None):
         super(TDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo calculate
-    def calculate(self):
+    # sovrascrivere il metodo update
+    def update(self):
         pass
 
 
@@ -115,8 +169,8 @@ class SDSD(TDIndex):
     def __init__(self, data=None):
         super(TDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo calculate
-    def calculate(self):
+    # sovrascrivere il metodo update
+    def update(self):
         pass
 
 
@@ -124,8 +178,8 @@ class VLF(FDIndex):
     def __init__(self, data=None):
         super(FDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo calculate
-    def calculate(self):
+    # sovrascrivere il metodo update
+    def update(self):
         pass
 
 
@@ -133,8 +187,8 @@ class LF(FDIndex):
     def __init__(self, data=None):
         super(FDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo calculate
-    def calculate(self):
+    # sovrascrivere il metodo update
+    def update(self):
         pass
 
 
@@ -145,8 +199,8 @@ class HF(FDIndex):
     def __init__(self, data=None):
         super(FDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo calculate
-    def calculate(self):
+    # sovrascrivere il metodo update
+    def update(self):
         pass
 
 
@@ -156,8 +210,8 @@ class Total(FDIndex):
     def __init__(self, data=None):
         super(FDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo calculate
-    def calculate(self):
+    # sovrascrivere il metodo update
+    def update(self):
         pass
 
 
@@ -167,8 +221,8 @@ class LFHF(FDIndex):
     def __init__(self, data=None):
         super(FDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo calculate
-    def calculate(self):
+    # sovrascrivere il metodo update
+    def update(self):
         pass
 
 
@@ -177,8 +231,8 @@ class PoinIndex(Index):
     def __init__(self, data=None):
         super(PoinIndex, self).__init__(data)
 
-    # sovrascrivere il metodo calculate
-    def calculate(self):
+    # sovrascrivere il metodo update
+    def update(self):
         pass
 
 
@@ -186,8 +240,8 @@ class NLIndex(Index):
     def __init__(self, data=None):
         super(NLIndex, self).__init__(data)
 
-    # sovrascrivere il metodo calculate
-    def calculate(self):
+    # sovrascrivere il metodo update
+    def update(self):
         pass
 
 
@@ -209,7 +263,8 @@ class RRAnalysis(DataAnalysis):
     @staticmethod
     def TD_indexes(series):
         """ Returns TD indexes """
-        RR = series
+        assert type(series) is DataSeries
+        RR = series.series
         RRmean = np.mean(RR)
         RRSTD = np.std(RR)
 
@@ -230,9 +285,10 @@ class RRAnalysis(DataAnalysis):
         return [RRmean, RRSTD, pNN50, pNN25, pNN10, RMSSD, SDSD], labels
 
     @staticmethod
-    def poin_indexes(series):
+    def POIN_indexes(series):
         """ Returns Poincare' indexes """
-        RR = series
+        assert type(series) is DataSeries
+        RR = series.series
         # calculates Poincare' indexes
         xdata, ydata = RR[:-1], RR[1:]
         sd1 = np.std((xdata - ydata) / np.sqrt(2.0), ddof=1)
