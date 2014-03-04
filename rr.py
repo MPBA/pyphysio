@@ -7,42 +7,6 @@ from Indexes import *
 #TODO: passando i parametri data: ref o depp-copy?
 
 
-class Index(object):
-    # la classe indice contiene un riferimento alla DataSeries
-    def __init__(self, data=None):
-        self._value = None
-        self._data = data
-
-    @property
-    def calculated(self):
-        return not (self._value is None)
-
-    @property
-    def value(self):
-        return self._value
-
-    def update(self):
-        raise NotImplementedError("Virtual")
-
-
-class TDIndex(Index):
-    def __init__(self, data=None):
-        Index.__init__(data)
-
-
-class FDIndex(Index):
-    def __init__(self, data=None):
-        Index.__init__(data)
-
-    def _interpolate(self, fsamp):
-        # TODO: interpolate
-        pass
-
-    def _estimatePSD(self, fsamp, method):
-        # TODO: estimate PSD
-        pass
-
-
 class RRmean(TDIndex):
     def __init__(self, data=None):
         super(TDIndex, self).__init__(data)
