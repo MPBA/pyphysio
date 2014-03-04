@@ -1,7 +1,6 @@
 import time
-from DataSeries import *
-import rr
-import Files
+import Indexes as In
+from Files import *
 
 _debug_time = 0
 
@@ -16,28 +15,18 @@ def delay(v=True):
 
 def test(RRseries):
     print '1. TD'
-    TD_ind, TD_lab = rr.RRAnalysis.TD_indexes(RRseries)
-    print TD_lab
-    print TD_ind
-    delay()
-    print '2. POIN'
-    POIN_ind, POIN_lab = rr.RRAnalysis.poin_indexes(RRseries)
-    print POIN_lab
-    print POIN_ind
-    delay()
-    print '3. FD'
-    FD_ind, FD_lab = rr.RRAnalysis.FD_indexes(RRseries, 1)
-    print FD_lab
-    print FD_ind
+    rrm, rrs, pnnx, nnx = In.RRMean(RRseries), In.RRSTD(RRseries), In.pNNx(50, RRseries), In.NNx(50, RRseries)
+    print "RRMean: ", rrm.value
+    print "RRSTD: ", rrs.value
+    print "pNNx: ", pnnx.value
+    print "NNx: ", nnx.value
     delay()
 
 if __name__ == '__main__':
     delay(False)
 
-    RRseries = Files.load_rr_data_series("/media/ale/44A0-BCA5/gx/Subject_data/B01.txt")
+    RRseries = load_rr_data_series("/media/ale/44A0-BCA5/gx/Subject_data/B01.txt")
 
     print 'Starting analysis'
     test(RRseries)
 
-    print 'Cache test'
-    test(RRseries)
