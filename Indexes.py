@@ -10,10 +10,9 @@ from PyHRVSettings import PyHRVDefaultSettings as Sett
 # TODO: comments
 # 1. Sarà necessario rendere le classi degli indici da mettere in cache figlie anche di CacheableDataCalc
 #   in modo da poter chiamare ad es. in HRMean.calculate un self._value = 60/RRMean.get(..)
-# 2. Spostare i calcoli nel costruttore es. HRMean
+# 2. Spostare i calcoli nel costruttore es. HRMean !NB: data non dovrebbe essere None
 # 3. Per far funzionare tutti i TD deve andare il punto 1.
 # 4. Implementare gli indici
-
 
 
 class DataAnalysis(object):
@@ -51,8 +50,6 @@ class FDIndex(Index):
     def __init__(self, data=None):
         super(FDIndex, self).__init__(data)
 
-    # TODO: mi sembra si possa migliorare dato che c'è una possibile perdita
-    # TODO: di informazioni (conversione) DataSeries ->-> np
     def _interpolate(self, to_freq):
         """
         Privata. Interpola quando chiamata dalle sottoclassi
