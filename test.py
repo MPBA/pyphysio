@@ -41,7 +41,3 @@ if __name__ == '__main__':
 
     print 'Cache test'
     test(RRseries)
-
-    ###
-    # add import Indexes to rr
-    #
