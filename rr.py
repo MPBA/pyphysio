@@ -4,6 +4,8 @@ import numpy as np
 from utility import power
 from Indexes import *
 
+#TODO: passando i parametri data: ref o depp-copy?
+
 
 class Index(object):
     # la classe indice contiene un riferimento alla DataSeries
@@ -19,21 +21,18 @@ class Index(object):
     def value(self):
         return self._value
 
-    # TODO: support_value ?? nsamples ??
-
     def update(self):
         raise NotImplementedError("Virtual")
 
 
 class TDIndex(Index):
     def __init__(self, data=None):
-        super(TDIndex, self).__init__(data)
-
+        Index.__init__(data)
 
 
 class FDIndex(Index):
     def __init__(self, data=None):
-        super(FDIndex, self).__init__(data)
+        Index.__init__(data)
 
     def _interpolate(self, fsamp):
         # TODO: interpolate
@@ -44,35 +43,32 @@ class FDIndex(Index):
         pass
 
 
-# TODO: classes: example
 class RRmean(TDIndex):
     def __init__(self, data=None):
         super(TDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo calculate
     # il valore dell'indice se calcolato è in self._value
     def calculate(self):
         self._value = np.mean(self._data)
         return self._value
 
 
-# TODO: classes: this is the next
 class HRmean(TDIndex):
     def __init__(self, data=None):
         super(TDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo calculate
     def calculate(self):
-        pass
+        pass    #TODO: see cache w. and implement
+                # è semplicemente 60/RRmean
 
 
 class RRSTD(TDIndex):
     def __init__(self, data=None):
         super(TDIndex, self).__init__(data)
 
-    # sovrascrivere il metodo calculate
     def calculate(self):
-        pass
+        self._value = np.std(self._data)
+        return self._value
 
 
 class HRSTD(TDIndex):
@@ -81,25 +77,30 @@ class HRSTD(TDIndex):
 
     # sovrascrivere il metodo calculate
     def calculate(self):
-        pass
+        pass    #TODO: see cache w. and implement
+                #calcolabile da RRSTD
 
 
 class pNNx(TDIndex):
-    def __init__(self, data=None):
+    def __init__(self, xthreshold, data=None):
         super(TDIndex, self).__init__(data)
+        self._xth = xthreshold
 
-    # sovrascrivere il metodo calculate
     def calculate(self):
-        pass
+        diff = RRDiff.get(self._data)
+        self._value = 100.0 * sum(1 for x in diff if x > self._xth) / len(diff)
+        return self._value
 
 
 class NNx(TDIndex):
-    def __init__(self, data=None):
+    def __init__(self, xthreshold, data=None):
         super(TDIndex, self).__init__(data)
+        self._xth = xthreshold
 
-    # sovrascrivere il metodo calculate
     def calculate(self):
-        pass
+        diff = RRDiff.get(self._data)
+        self._value = 100.0 * sum(1 for x in diff if x > self._xth)
+        return self._value
 
 
 class RMSSD(TDIndex):
