@@ -1,7 +1,9 @@
-import pyhrv as ph
+from DataSeries import DataSeries
+from Indexes import *
+from Files import *
 import optparse
 
-## TODO: load a .RR file
+## TODO: load a .RR file (as functions do in Files)
 ## TODO: add windowing
 ## TODO: if inputfile is a .tar.gz: untar and load more files
 
@@ -30,32 +32,48 @@ parser.add_option("-w", "--windowfile",
 #                   dest="colname", help="Name of RR column")
 
 (options, args) = parser.parse_args()
-INPUTFILE=options.input_file
-OUTDIR=options.output_dir
-WINFILE=options.window_file
+INPUTFILE = options.input_file
+OUTDIR = options.output_dir
+WINFILE = options.window_file
 
 
-HRVlist=[True,True,True,True]
-RRdata=ph.DataSeries()
+HRVlist = [True,True,True,True]
 # inputfile is a csv, but it will be a .RR file, created with RRData.save(...)
-RRdata.load_from_csv(INPUTFILE, sep='\t', colname='IBI')
+RRdata = load_rr_data_series(INPUTFILE)
 
-INDEXES=list()
+INDEXES = list()
 if HRVlist[0]:
-    rrmean=ph.RRmean(RRdata)
-    RRMEAN=rrmean.calculate()
-    INDEXES.append(RRMEAN)
+    INDEXES.append(RRMean(RRdata).value)
 if HRVlist[1]:
-    rrstd=ph.RRSTD(RRdata)
-    RRSTD=rrstd.calculate()
-    INDEXES.append(RRSTD)
+    INDEXES.append(RRSTD(RRdata).value)
 if HRVlist[2]:
-    pnn50=ph.pNNX(RRdata, X=50)
-    PNN50=pnn50.calculate()
-    INDEXES.append(PNN50)
+    INDEXES.append(pNNx(50, RRdata).value)
 if HRVlist[3]:
-    pnn25=ph.pNNX(RRdata, X=25)
-    PNN25=pnn25.calculate()
-    INDEXES.append(PNN25)
+    INDEXES.append(pNNx(25, RRdata).value)
 
 print(INDEXES)
+
+# TODO: if I understood a class with execute;
+
+# TODO: I think it is better to inheritate from a common class with e.g. a def execute(**pars) ovverridable
+
+
+class GalaxyHRVAnalysis(object):
+    def execute(self, **kwargs):
+        INPUTFILE = kwargs['input']
+        OUTDIR = kwargs['output']
+
+        indexes = [True, True, True, True]
+        RRdata = load_rr_data_series(INPUTFILE)
+
+        results = list()
+        if indexes[0]:
+            results.append(("RRMean", RRMean(RRdata).value))
+        if indexes[1]:
+            results.append(("RRSTD", RRSTD(RRdata).value))
+        if indexes[2]:
+            results.append(("pNN50", pNNx(50, RRdata).value))
+        if indexes[3]:
+            results.append(("pNN25", pNNx(25, RRdata).value))
+
+        pd.DataFrame(results).to_csv(OUTDIR, header=True)
