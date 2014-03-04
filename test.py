@@ -26,6 +26,7 @@ if __name__ == '__main__':
     delay(False)
 
     RRseries = load_rr_data_series("/media/ale/44A0-BCA5/gx/Subject_data/B01.txt")
+    save_rr_data_series(RRseries, "/media/ale/44A0-BCA5/B01.txt")
 
     print 'Starting analysis'
     test(RRseries)
