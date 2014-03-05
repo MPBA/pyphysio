@@ -3,7 +3,7 @@ __author__ = 'AleB'
 
 from DataSeries import *
 import numpy as np
-from utility import power, interpolate_rr
+from utility import interpolate_rr
 from PyHRVSettings import PyHRVDefaultSettings as Sett
 
 # TODO: comments
@@ -149,18 +149,18 @@ class HRSTD(TDIndex):
         self._value = 60 / RRSTD.get(self._data)
 
 
-class pNNx(TDIndex):
-    def __init__(self, xthreshold, data=None):
+class PNNx(TDIndex):
+    def __init__(self, threshold, data=None):
         super(TDIndex, self).__init__(data)
-        self._xth = xthreshold
+        self._xth = threshold
         diff = RRDiff.get(self._data)
         self._value = 100.0 * sum(1 for x in diff if x > self._xth) / len(diff)
 
 
 class NNx(TDIndex):
-    def __init__(self, xthreshold, data=None):
+    def __init__(self, threshold, data=None):
         super(TDIndex, self).__init__(data)
-        self._xth = xthreshold
+        self._xth = threshold
         diff = RRDiff.get(self._data)
         self._value = 100.0 * sum(1 for x in diff if x > self._xth)
 
@@ -185,7 +185,7 @@ class SDSD(TDIndex):
 class VLF(PowerInBand):
     def __init__(self, data=None):
         super(VLF, self).__init__(Sett.bands_vlf_lower_bound, Sett.bands_vlf_upper_bound, data)
-        self._value = VLF._calculate_data(self._freq_band)
+        self._value = VLF._calculate_data(self._freq_band, None)
 
 
 class LF(PowerInBand):
@@ -200,7 +200,7 @@ class HF(PowerInBand):
     def __init__(self, data=None):
         super(HF, self).__init__(Sett.bands_lf_upper_bound, Sett.bands_hf_upper_bound, data)
         # Here as in LF
-        self._value = HF.get(self._freq_band)
+        self._value = HF.get(self._freq_band, None)
 
 
 class Total(PowerInBand):
@@ -208,7 +208,7 @@ class Total(PowerInBand):
         super(Total, self).__init__(Sett.bands_vlf_lower_bound, Sett.bands_lf_upper_bound, data)
         # Used _calculate_data(..) (here as in other indexes) as a substitute of the ex 'calculate' to bypass the
         # cache system
-        self._value = Total._calculate_data(self._freq_band)
+        self._value = Total._calculate_data(self._freq_band, None)
 
 
 class VLFPeak(PeakInBand):
@@ -293,16 +293,16 @@ class RRAnalysis(DataAnalysis):
     @staticmethod
     def poin_indexes(series):
         """ Returns Poincare' indexes """
-        RR = series
+        rr = series
         # calculates Poincare' indexes
-        xdata, ydata = RR[:-1], RR[1:]
+        xdata, ydata = rr[:-1], rr[1:]
         sd1 = np.std((xdata - ydata) / np.sqrt(2.0), ddof=1)
         sd2 = np.std((xdata + ydata) / np.sqrt(2.0), ddof=1)
         sd12 = sd1 / sd2
-        sEll = sd1 * sd2 * np.pi
-        labels = ['sd1', 'sd2', 'sd12', 'sEll']
+        sell = sd1 * sd2 * np.pi
+        labels = ['sd1', 'sd2', 'sd12', 'sell']
 
-        return [sd1, sd2, sd12, sEll], labels
+        return [sd1, sd2, sd12, sell], labels
 
 
 class RRFilters(DataAnalysis):
@@ -320,4 +320,4 @@ class RRFilters(DataAnalysis):
         assert type(series) is DataSeries
         return series
 
-        # TODO: add analysis scripts like in the example
+        # xTODO: add analysis scripts like in the example
