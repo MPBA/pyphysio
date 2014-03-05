@@ -133,6 +133,12 @@ class RRMedian(TDIndex, CacheableDataCalc):
         return np.median(data)
 
 
+class HRMedian(TDIndex):
+    def __init__(self, data=None):
+        super(HRMedian, self).__init__(data)
+        self._value = 60 / RRMedian.get(self._data)
+
+
 class RRSTD(TDIndex, CacheableDataCalc):
     def __init__(self, data=None):
         super(RRSTD, self).__init__(data)
