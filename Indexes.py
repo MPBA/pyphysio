@@ -4,25 +4,29 @@ __author__ = 'AleB'
 from DataSeries import *
 import numpy as np
 from utility import power, interpolate_rr
-from scipy import signal
 from PyHRVSettings import PyHRVDefaultSettings as Sett
 
 # TODO: comments
 # 1. Sarà necessario rendere le classi degli indici da mettere in cache figlie anche di CacheableDataCalc
 #    in modo da poter chiamare ad es. in HRMean.calculate un self._value = 60/RRMean.get(..)
+#       FATTO
 # 2. Spostare i calcoli nel costruttore es. HRMean !NB: data non dovrebbe essere None
+#       FATTO: organizzàti con la cache
 # 3. Per far funzionare tutti i TD deve andare il punto 1.
+#       OK
 # 4. Implementare gli indici
+#       NON-LIN
 
-# sostituito nella classe Index il metodo value con calculate
+# sostituito nella classe Index la proprietà calculate con value
+
 
 class DataAnalysis(object):
     pass
 
 
 class Index(object):
-    def __init__(self, data=None):
-        self._value = None
+    def __init__(self, value=None, data=None):
+        self._value = value
         self._data = data
 
     @property
@@ -34,7 +38,7 @@ class Index(object):
         return not (self._value is None)
 
     @property
-    def calculate(self):
+    def value(self):
         return self._value
 
     def update(self, data):
@@ -43,98 +47,106 @@ class Index(object):
 
 
 class TDIndex(Index):
-    def __init__(self, data=None):
-        super(TDIndex, self).__init__(data)
+    def __init__(self, value=None, data=None):
+        super(TDIndex, self).__init__(value, data)
 
 
 class FDIndex(Index):
-    def __init__(self, data=None):
-        super(FDIndex, self).__init__(data)
+    def __init__(self, interp_freq, value=None, data=None):
+        super(FDIndex, self).__init__(value, data)
+        self._interpolate(interp_freq)
+        self._interpolation_freq = None  # dato duplicato (self._data.metatag['interpolation']) in caso di DataSeries
 
     def _interpolate(self, to_freq):
         """
-        Privata. Interpola quando chiamata dalle sottoclassi
         @param to_freq:
         @return:
         """
+        if isinstance(self._data, DataSeries):
+            if 'interpolation' in self._data.metatag and self._data.metatag['interpolation'] == to_freq:
+                return  # è già interpolato alla frequenza giusta
+
         rr_interp, bt_interp = interpolate_rr(self._data, to_freq)
-        self._data = DataSeries(rr_interp)  # TODO: perdita della cache
-
-    def _estimate_psd(self, fsamp):
-        # TODO: estimate PSD with vary methods
-        ### welch
-        freqs, spect = signal.welch(self._data, fsamp)
-        spect = np.sqrt(spect)
-        return freqs, spect/np.max(spect)
+        self._data = DataSeries(rr_interp)  # TODO: perdita della cache alla prima interpolazione
+        self._data.metatag['interpolation'] = self._interpolation_freq = to_freq
 
 
-class PowerInBand(FDIndex):
-    def __init__(self, fmin, fmax, data=None):
-        super(PowerInBand, self).__init__(data)
+class InBand(FDIndex):
+    def __init__(self, fmin, fmax, interp_freq=Sett.interpolation_freq_default, value=None, data=None):
+        super(InBand, self).__init__(interp_freq, value, data)
         self._fmin = fmin
         self._fmax = fmax
 
-        freq, spec, Total=###
+        freq, spec, total = PSDWelchCalc.get(self._data, self._interpolation_freq)
 
-        indexes = np.array([i for i in range(len(spec)) if freq[i] >= fmin and freq[i]<fmax])
-        freq_band = freq[indexes]
-        self._value = np.sum(freq_band)/len(freq_band)
+        indexes = np.array([i for i in range(len(spec)) if fmin <= freq[i] < fmax])
+        self._freq_band = freq[indexes]
 
 
-class PowerInBandNormal(FDIndex):
+class PowerInBand(InBand, CacheableDataCalc):
     def __init__(self, fmin, fmax, data=None):
-        super(PowerInBand, self).__init__(data)
-        self._fmin = fmin
-        self._fmax = fmax
+        super(PowerInBand, self).__init__(fmin, fmax, data=data)
 
-        freq, spec, Total=###
-
-        indexes = np.array([i for i in range(len(spec)) if freq[i] >= fmin and freq[i]<fmax])
-        freq_band = freq[indexes]
-        self._value = (np.sum(freq_band)/len(freq_band))/Total
+    @classmethod
+    def _calculate_data(cls, _freq_band, params):
+        return np.sum(_freq_band)/len(_freq_band)
 
 
-class PeakInBand(FDIndex):
+class PowerInBandNormal(InBand):
     def __init__(self, fmin, fmax, data=None):
-        super(PeakInBand, self).__init__(data)
-        self._fmin = fmin
-        self._fmax = fmax
+        super(PowerInBandNormal, self).__init__(fmin, fmax, data=data)
+        self._value = (np.sum(self._freq_band)/len(self._freq_band))/Total
 
-        freq, spec, Total=###
 
-        indexes = np.array([i for i in range(len(spec)) if freq[i] >= fmin and freq[i]<fmax])
-        freq_band = freq[indexes]
-        spec_band = spec[indexes]
-        self._value = freq_band[np.argmax(freq_band)]
+class PeakInBand(InBand):
+    def __init__(self, fmin, fmax, data=None):
+        super(PeakInBand, self).__init__(fmin, fmax, data=data)
+        self._value = self._freq_band[np.argmax(self._freq_band)]
 
 
 #############
 # TIME DOMAIN
 #############
-class RRMean(TDIndex):
+class RRMean(TDIndex, CacheableDataCalc):
     def __init__(self, data=None):
-        super(TDIndex, self).__init__(data)
-        self._value = np.mean(self._data)
+        super(RRMean, self).__init__(data)
+        self._value = RRMean.get(self._data)
+
+    @classmethod
+    def _calculate_data(cls, data, params):
+        return np.mean(data)
 
 
 class HRMean(TDIndex):
     def __init__(self, data=None):
-        super(TDIndex, self).__init__(data)
+        super(HRMean, self).__init__(data)
+        self._value = 60 / RRMean.get(self._data)
 
-class RRmedian(TDIndex):
-    def __init__(self, data=None):
-        super(TDIndex, self).__init__(data)
-        self._value = np.median(self._data)
 
-class RRSTD(TDIndex):
+class RRMedian(TDIndex, CacheableDataCalc):
     def __init__(self, data=None):
-        super(TDIndex, self).__init__(data)
-        self._value = np.std(self._data)
+        super(RRMedian, self).__init__(data)
+        self._value = RRMedian.get(self._data)
+
+    @classmethod
+    def _calculate_data(cls, data, params):
+        return np.median(data)
+
+
+class RRSTD(TDIndex, CacheableDataCalc):
+    def __init__(self, data=None):
+        super(RRSTD, self).__init__(data)
+        self._value = RRSTD.get(self._data)
+
+    @classmethod
+    def _calculate_data(cls, data, params):
+        return np.std(data)
 
 
 class HRSTD(TDIndex):
     def __init__(self, data=None):
         super(TDIndex, self).__init__(data)
+        self._value = 60 / RRSTD.get(self._data)
 
 
 class pNNx(TDIndex):
@@ -173,21 +185,30 @@ class SDSD(TDIndex):
 class VLF(PowerInBand):
     def __init__(self, data=None):
         super(VLF, self).__init__(Sett.bands_vlf_lower_bound, Sett.bands_vlf_upper_bound, data)
+        self._value = VLF._calculate_data(self._freq_band)
 
 
 class LF(PowerInBand):
     def __init__(self, data=None):
         super(LF, self).__init__(Sett.bands_vlf_upper_bound, Sett.bands_lf_upper_bound, data)
+        # .get(..) called on LF only for the .cid() in the cache. The actually important data is self._freq_band that
+        # has been calculated by PowerInBand.__init__(..)
+        self._value = LF.get(self._freq_band)
 
 
 class HF(PowerInBand):
     def __init__(self, data=None):
         super(HF, self).__init__(Sett.bands_lf_upper_bound, Sett.bands_hf_upper_bound, data)
+        # Here as in LF
+        self._value = HF.get(self._freq_band)
 
 
 class Total(PowerInBand):
     def __init__(self, data=None):
         super(Total, self).__init__(Sett.bands_vlf_lower_bound, Sett.bands_lf_upper_bound, data)
+        # Used _calculate_data(..) (here as in other indexes) as a substitute of the ex 'calculate' to bypass the
+        # cache system
+        self._value = Total._calculate_data(self._freq_band)
 
 
 class VLFPeak(PeakInBand):
@@ -223,24 +244,27 @@ class HFNormal(PowerInBandNormal):
 class LFHF(FDIndex):
     def __init__(self, data=None):
         super(FDIndex, self).__init__(data)
-        #LF/HF
+        self._value = LF.get(self._data) / HF.get(self._data)
 
 
 class NormalLF(FDIndex):
     def __init__(self, data=None):
         super(FDIndex, self).__init__(data)
-        #LF/(LF+HF)
+        self._value = LF.get(self._data) / (HF.get(self._data)+LF.get(self._data))
 
 
 class NormalHF(FDIndex):
     def __init__(self, data=None):
         super(FDIndex, self).__init__(data)
-        # HF/(LF+HF)
+        self._value = HF.get(self._data) / (HF.get(self._data)+LF.get(self._data))
 
 
 #############
 # NLIN DOMAIN
 #############
+# TODO: non-lin indexes
+
+
 class PoinIndex(Index):
     def __init__(self, data=None):
         super(PoinIndex, self).__init__(data)
