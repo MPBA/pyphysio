@@ -47,9 +47,9 @@ if HRVlist[0]:
 if HRVlist[1]:
     INDEXES.append(RRSTD(RRdata).value)
 if HRVlist[2]:
-    INDEXES.append(pNNx(50, RRdata).value)
+    INDEXES.append(PNNx(50, RRdata).value)
 if HRVlist[3]:
-    INDEXES.append(pNNx(25, RRdata).value)
+    INDEXES.append(PNNx(25, RRdata).value)
 
 print(INDEXES)
 
@@ -72,8 +72,8 @@ class GalaxyHRVAnalysis(object):
         if indexes[1]:
             results.append(("RRSTD", RRSTD(RRdata).value))
         if indexes[2]:
-            results.append(("pNN50", pNNx(50, RRdata).value))
+            results.append(("pNN50", PNNx(50, RRdata).value))
         if indexes[3]:
-            results.append(("pNN25", pNNx(25, RRdata).value))
+            results.append(("pNN25", PNNx(25, RRdata).value))
 
         pd.DataFrame(results).to_csv(OUTDIR, header=True)

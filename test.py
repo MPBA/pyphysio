@@ -15,10 +15,10 @@ def delay(v=True):
 
 def test(RRseries):
     print '1. TD'
-    rrm, rrs, pnnx, nnx = In.RRMean(RRseries), In.RRSTD(RRseries), In.pNNx(50, RRseries), In.NNx(50, RRseries)
+    rrm, rrs, pnnx, nnx = In.RRMean(RRseries), In.RRSTD(RRseries), In.PNNx(50, RRseries), In.NNx(50, RRseries)
     print "RRMean: ", rrm.value
     print "RRSTD: ", rrs.value
-    print "pNNx: ", pnnx.value
+    print "PNNx: ", pnnx.value
     print "NNx: ", nnx.value
     delay()
 
