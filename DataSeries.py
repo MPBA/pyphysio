@@ -118,14 +118,15 @@ class FFTCalc(CacheableDataCalc):
 
 class PSDWelchCalc(CacheableDataCalc):
     @classmethod
-    def _calculate_data(cls, data, params=None):
+    def _calculate_data(cls, data, to_freq):
         """ Calculates the intermediate data
         :type data: DataSeries
         :param data: RRSeries object
         :param params: fsamp
         :return: Data to cache
         """
-        freqs, spect = signal.welch(data, params)
+        rr_interp, bt_interp = interpolate_rr(data, to_freq)
+        freqs, spect = signal.welch(rr_interp, to_freq)
         spect = np.sqrt(spect)
         return freqs, spect/np.max(spect), sum(spect)/len(spect)
 
