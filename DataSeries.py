@@ -4,6 +4,7 @@
 import pandas as pd
 import numpy as np
 from utility import interpolate_rr
+from scipy import signal
 
 
 class DataSeries(pd.TimeSeries):
@@ -66,7 +67,7 @@ class CacheableDataCalc(object):
     """ Static class that calculates cacheable data (like FFT etc.) """
 
     def __init__(self):
-        raise TypeError('CacheableDataCalc is a static class')
+        pass
 
     # metodo pubblico per ricavare i dati dalla cache o da _calculate_data(..)
     @classmethod
@@ -113,6 +114,20 @@ class FFTCalc(CacheableDataCalc):
         spec = spec_tmp[0:(np.ceil(len(spec_tmp) / 2))]  # Only positive half of spectrum
         freqs = np.linspace(start=0, stop=interp_freq / 2, num=len(spec), endpoint=True)  # creo vettore delle frequenze
         return ((freqs, spec))
+
+
+class PSDWelchCalc(CacheableDataCalc):
+    @classmethod
+    def _calculate_data(cls, data, params=None):
+        """ Calculates the intermediate data
+        :type data: DataSeries
+        :param data: RRSeries object
+        :param params: fsamp
+        :return: Data to cache
+        """
+        freqs, spect = signal.welch(data, params)
+        spect = np.sqrt(spect)
+        return freqs, spect/np.max(spect), sum(spect)/len(spect)
 
 
 class RRDiff(CacheableDataCalc):
