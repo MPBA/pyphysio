@@ -9,3 +9,4 @@ class PyHRVDefaultSettings:
     bands_vlf_upper_bound = 0.04
     bands_lf_upper_bound = 0.5
     bands_hf_upper_bound = 1
+    interpolation_freq_default = 1
