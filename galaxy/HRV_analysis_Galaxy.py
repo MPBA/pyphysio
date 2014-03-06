@@ -1,4 +1,4 @@
-from DataSeriesC import DataSeriesC
+from DataSeries import DataSeries
 from Indexes import *
 from Files import *
 import optparse

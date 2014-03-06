@@ -1,4 +1,4 @@
-import DataSeriesC as ph
+import DataSeries as ph
 import optparse
 
 
@@ -29,7 +29,7 @@ OUTDIR=options.output_dir
 SEP=options.separator
 RR_NAME=options.colname
 
-RRdata=ph.DataSeriesC()
+RRdata=ph.DataSeries()
 RRdata.load_from_csv(INPUTFILE, sep=SEP, colname=RR_NAME)
 
 
@@ -40,7 +40,7 @@ class GalaxyLoadRR(object):
         SEP=kwargs['sep']
         RR_NAME=kwargs['colname']
 
-        RRdata=ph.DataSeriesC()
+        RRdata=ph.DataSeries()
         RRdata.load_from_csv(INPUTFILE, sep=SEP, colname=RR_NAME)
 
         RRdata.to_csv(OUTFILE, header=True)
