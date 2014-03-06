@@ -15,14 +15,15 @@ def load_rr_data_series(path, column=Sett.load_rr_column_names, sep=Sett.csv_sep
     """
     d = pd.read_csv(path, sep)
     if column in d.columns:
-        return DataSeries(d[column])
+        a = DataSeries(d[column])
+        return a
     else:
         raise KeyError("Colonna %s non presente nel file %s".format(column, path))
 
 
 def save_rr_data_series(data_series, path, sep=Sett.csv_separator):
     """
-    For gaqlaxy use saves the DataSeries (rr) to a csv file.
+    For galaxy use saves the DataSeries (rr) to a csv file.
     @param data_series:
     @param path:
     @param sep:

@@ -6,7 +6,7 @@ import sys
 # supplementary methods
 def power(spec, freq, fmin, fmax):
     #returns power in band
-    band = np.array([spec[i] for i in range(len(spec)) if freq[i] >= fmin and freq[i] < fmax])
+    band = np.array([spec[i] for i in range(len(spec)) if fmin <= freq[i] < fmax])
     powerinband = np.sum(band) / len(spec)
     return powerinband
 
@@ -14,6 +14,7 @@ def power(spec, freq, fmin, fmax):
 def interpolate_rr(rr, interp_freq):
     # returns cubic spline interpolated array with sample rate = interp_freq
     step = 1 / interp_freq
+    rr = np.array(rr)
     bt = np.cumsum(rr)
     xmin = bt[0]
     xmax = bt[-1]

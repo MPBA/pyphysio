@@ -15,19 +15,18 @@ def delay(v=True):
 
 def test(RRseries):
     print '1. TD'
-    rrm, rrs, pnnx, nnx = In.RRMean(RRseries), In.RRSTD(RRseries), In.PNNx(50, RRseries), In.NNx(50, RRseries)
-    #vlf,lf,hf, lfhf, vlf_peak = In.VLF(RRseries), In.LF(RRseries), In.HF(RRseries), In.LFHF(RRseries), In.VLFPeak(RRseries)
-    print "RRMean: ", rrm.value
-    print "RRSTD: ", rrs.value
-    print "PNNx: ", pnnx.value
-    print "NNx: ", nnx.value
-    #print vlf,lf,hf, lfhf, vlf_peak
+    print "RRMean: ", In.RRMean(RRseries).value
+    print "RRSTD: ", In.RRSTD(RRseries).value
+    print "PNNx: ", In.PNNx(50, RRseries).value
+    print "NNx: ", In.NNx(50, RRseries).value
+    vlf,lf,hf, lfhf, vlf_peak = In.VLF(RRseries), In.LF(RRseries), In.HF(RRseries), In.LFHF(RRseries), In.VLFPeak(RRseries)
+    print vlf,lf,hf, lfhf, vlf_peak
     delay()
 
 if __name__ == '__main__':
     delay(False)
 
-    RRseries = load_rr_data_series("A05.txt")
+    RRseries = load_rr_data_series("A05")
 
     print 'Starting analysis'
     test(RRseries)
