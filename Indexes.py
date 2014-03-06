@@ -234,19 +234,19 @@ class HFNormal(PowerInBandNormal):
 class LFHF(FDIndex):
     def __init__(self, data=None):
         super(FDIndex, self).__init__(data)
-        self._value = LF.get(self._data) / HF.get(self._data)
+        self._value = LF(self._data).value / HF(self._data).value
 
 
 class NormalLF(FDIndex):
     def __init__(self, data=None):
         super(FDIndex, self).__init__(data)
-        self._value = LF.get(self._data) / (HF.get(self._data)+LF.get(self._data))
+        self._value = LF(self._data).value / (HF(self._data).value+LF(self._data).value)
 
 
 class NormalHF(FDIndex):
     def __init__(self, data=None):
         super(FDIndex, self).__init__(data)
-        self._value = HF.get(self._data) / (HF.get(self._data)+LF.get(self._data))
+        self._value = HF(self._data).value / (HF(self._data).value+LF(self._data).value)
 
 
 #############

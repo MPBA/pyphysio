@@ -1,3 +1,4 @@
+# coding=utf-8
 # Classes for cached data (RR) elaborations
 #
 
@@ -145,5 +146,5 @@ class RRDiff(CacheableDataCalc):
         :param params: Params object
         :return: Data to cache
         """
-        return np.diff(data)
+        return np.diff(np.array(data))
 
