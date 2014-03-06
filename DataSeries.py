@@ -5,6 +5,9 @@ import pandas as pd
 import numpy as np
 from utility import interpolate_rr
 from scipy import signal
+from PyHRVSettings import PyHRVDefaultSettings as Sett
+
+#TODO: ??? non viene mai eseguito questo init, l'istanza ritornata da DataSeries(..) è di tipo Series o.O
 
 
 class DataSeries(pd.TimeSeries):
@@ -17,9 +20,9 @@ class DataSeries(pd.TimeSeries):
         @param dtype: see Pandas doc
         @param copy: see Pandas doc
         """
+        super(DataSeries, self).__init__(data, index, columns, dtype, copy)
         self._cache = {}
         self.metatag = metatag
-        super(DataSeries, self).__init__(data, index, columns, dtype, copy)
 
     def cache_clear(self):
         """ Clears the cache and frees memory (GC?)
@@ -125,6 +128,8 @@ class PSDWelchCalc(CacheableDataCalc):
         :param params: fsamp
         :return: Data to cache
         """
+        if to_freq is None:
+            to_freq = Sett.interpolation_freq_default
         rr_interp, bt_interp = interpolate_rr(data, to_freq)
         freqs, spect = signal.welch(rr_interp, to_freq)
         spect = np.sqrt(spect)
