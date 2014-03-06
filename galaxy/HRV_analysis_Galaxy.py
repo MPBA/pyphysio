@@ -1,4 +1,4 @@
-from DataSeries import DataSeries
+from DataSeriesC import DataSeriesC
 from Indexes import *
 from Files import *
 import optparse
@@ -56,7 +56,6 @@ if HRVLIST[3]:
 print(INDEXES)
 
 # TODO: if I understood a class with execute;
-
 # TODO: I think it is better to inheritate from a common class with e.g. a def execute(**pars) ovverridable
 
 
