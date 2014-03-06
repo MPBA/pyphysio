@@ -15,7 +15,7 @@ class DataAnalysis(object):
 
 
 class Index(object):
-    def __init__(self, value=None, data=None):
+    def __init__(self, data=None, value=None):
         self._value = value
         self._data = data
 
@@ -37,19 +37,19 @@ class Index(object):
 
 
 class TDIndex(Index):
-    def __init__(self, value=None, data=None):
-        super(TDIndex, self).__init__(value, data)
+    def __init__(self, data=None, value=None):
+        super(TDIndex, self).__init__(data, value)
 
 
 class FDIndex(Index):
-    def __init__(self, interp_freq, value=None, data=None):
-        super(FDIndex, self).__init__(value, data)
+    def __init__(self, interp_freq, data=None, value=None):
+        super(FDIndex, self).__init__(data, value)
         self._interp_freq = interp_freq
 
 
 class InBand(FDIndex):
-    def __init__(self, fmin, fmax, interp_freq=Sett.interpolation_freq_default, value=None, data=None):
-        super(InBand, self).__init__(interp_freq, value, data)
+    def __init__(self, fmin, fmax, interp_freq=Sett.interpolation_freq_default, data=None, value=None):
+        super(InBand, self).__init__(interp_freq, data, value)
         self._fmin = fmin
         self._fmax = fmax
 
@@ -62,28 +62,28 @@ class InBand(FDIndex):
 
 
 class PowerInBand(InBand, CacheableDataCalc):
-    def __init__(self, fmin, fmax, interp_freq=Sett.interpolation_freq_default, data=None):
+    def __init__(self, fmin, fmax, data=None, interp_freq=Sett.interpolation_freq_default):
         super(PowerInBand, self).__init__(fmin, fmax, interp_freq, data=data)
 
     @classmethod
-    def _calculate_data(cls, spect_band, freq_band):
+    def _calculate_data(cls, self, params=None):
         """
         Spec-Freq
         @param spect_band:
         @param freq_band:
         @return:
         """
-        return np.sum(spect_band)/len(freq_band)
+        return np.sum(self._spec_band)/len(self._freq_band)
 
 
 class PowerInBandNormal(InBand):
-    def __init__(self, fmin, fmax, interp_freq=Sett.interpolation_freq_default, data=None):
+    def __init__(self, fmin, fmax, data=None, interp_freq=Sett.interpolation_freq_default):
         super(PowerInBandNormal, self).__init__(fmin, fmax, interp_freq, data=data)
         self._value = (np.sum(self._spec_band)/len(self._freq_band))/self._total_band
 
 
 class PeakInBand(InBand):
-    def __init__(self, fmin, fmax, interp_freq=Sett.interpolation_freq_default, data=None):
+    def __init__(self, fmin, fmax, data=None, interp_freq=Sett.interpolation_freq_default):
         super(PeakInBand, self).__init__(fmin, fmax, interp_freq, data=data)
         self._value = self._freq_band[np.argmax(self._spec_band)]
 
@@ -175,7 +175,7 @@ class SDSD(TDIndex):
 class VLF(PowerInBand):
     def __init__(self, data=None):
         super(VLF, self).__init__(Sett.bands_vlf_lower_bound, Sett.bands_vlf_upper_bound, data)
-        self._value = VLF._calculate_data(self._spec_band, self._freq_band)
+        self._value = VLF._calculate_data(self)
 
 
 class LF(PowerInBand):
@@ -183,14 +183,14 @@ class LF(PowerInBand):
         super(LF, self).__init__(Sett.bands_vlf_upper_bound, Sett.bands_lf_upper_bound, data)
         # .get(..) called on LF only for the .cid() in the cache. The actually important data is self._freq_band that
         # has been calculated by PowerInBand.__init__(..)
-        self._value = LF.get(self._spec_band, self._freq_band)
+        self._value = LF.get(self)
 
 
 class HF(PowerInBand):
     def __init__(self, data=None):
         super(HF, self).__init__(Sett.bands_lf_upper_bound, Sett.bands_hf_upper_bound, data)
         # Here as in LF
-        self._value = HF.get(self._spec_band, self._freq_band)
+        self._value = HF.get(self)
 
 
 class Total(PowerInBand):
@@ -198,7 +198,7 @@ class Total(PowerInBand):
         super(Total, self).__init__(Sett.bands_vlf_lower_bound, Sett.bands_lf_upper_bound, data)
         # Used _calculate_data(..) (here as in other indexes) as a substitute of the ex 'calculate' to bypass the
         # cache system
-        self._value = Total._calculate_data(self._spec_band, self._freq_band)
+        self._value = Total._calculate_data(self)
 
 
 class VLFPeak(PeakInBand):
