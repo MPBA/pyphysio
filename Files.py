@@ -2,6 +2,7 @@ __author__ = 'AleB'
 
 from PyHRVSettings import PyHRVDefaultSettings as Sett
 import pandas as pd
+import numpy as np
 from DataSeries import DataSeries
 
 
@@ -15,8 +16,9 @@ def load_rr_data_series(path, column=Sett.load_rr_column_names, sep=Sett.csv_sep
     """
     d = pd.read_csv(path, sep)
     if column in d.columns:
-        a = DataSeries(d[column])
-        return a
+        inst = DataSeries(np.array(d[column]))
+        assert isinstance(inst, DataSeries)
+        return inst
     else:
         raise KeyError("Colonna %s non presente nel file %s".format(column, path))
 

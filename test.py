@@ -9,8 +9,10 @@ def delay(v=True):
     global _debug_time
     d = time.time() - _debug_time
     _debug_time = time.time()
+    t = int(d * 100000) / 100.0
     if v:
-        print 'Delay: ', int(d * 100000) / 100.0, 'ms'
+        print '\t\tDelay: ', t, 'ms'
+    return t
 
 
 def test(RRseries):
@@ -22,21 +24,30 @@ def test(RRseries):
     print "NNx: ", In.NNx(50, RRseries).value
     print "RMSSD: ", In.RMSSD(RRseries).value
     print "SDSD: ", In.SDSD(RRseries).value
-    delay()
-    print "Cached:"
+    t1=delay()
+    print "*Cached:"
     print "HRMean: ", In.HRMean(RRseries).value
     print "HRSTD: ", In.HRSTD(RRseries).value
     print "HRMedian: ", In.HRMedian(RRseries).value
-    delay()
+    t2=delay()
     print '2. FD'
     print "VLF: ", In.VLF(RRseries).value
     print "LF: ", In.LF(RRseries).value
     print "HF: ", In.HF(RRseries).value
+    print "Total: ", In.Total(RRseries).value
     print "VLFPeak: ", In.VLFPeak(RRseries).value
-    delay()
-    print "Cached:"
+    print "LFPeak: ", In.LFPeak(RRseries).value
+    print "HFPeak: ", In.HFPeak(RRseries).value
+    print "VLFNormal: ", In.VLFNormal(RRseries).value
+    print "LFNormal: ", In.LFNormal(RRseries).value
+    print "HFNormal: ", In.HFNormal(RRseries).value
+    t3 = delay()
+    print "*Cached:"
     print "LFHF: ", In.LFHF(RRseries).value
-    delay()
+    print "NormalLF: ", In.NormalLF(RRseries).value
+    print "NormalHF: ", In.NormalHF(RRseries).value
+    t4 = delay()
+    print "\t\tTotal time: ", t1+t2+t3+t4, "ms"
 
 if __name__ == '__main__':
     delay(False)

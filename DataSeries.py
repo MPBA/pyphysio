@@ -8,22 +8,21 @@ from utility import interpolate_rr
 from scipy import signal
 from PyHRVSettings import PyHRVDefaultSettings as Sett
 
-#TODO: ??? non viene mai eseguito questo init, l'istanza ritornata da DataSeries(..) è di tipo Series o.O
-
 
 class DataSeries(pd.TimeSeries):
     """ Pandas' DataFrame class. Gives a cache support through CacheableDataCalc subclasses. """
 
-    def __init__(self, data=None, index=None, columns=None, dtype=None, copy=False, metatag={}):
+    def __init__(self, data=None, copy=False, metatag=None):
         """ Default constructor.
         @param data: Data to insert in the DataFrame
-        @param columns: see Pandas doc
-        @param dtype: see Pandas doc
         @param copy: see Pandas doc
         """
-        super(DataSeries, self).__init__(data, index, columns, dtype, copy)
+        super(DataSeries, self).__init__(data=data, copy=copy)
         self._cache = {}
-        self.metatag = metatag
+        if metatag is None:
+            self.metatag = {}
+        else:
+            self.metatag = metatag
 
     def cache_clear(self):
         """ Clears the cache and frees memory (GC?)
