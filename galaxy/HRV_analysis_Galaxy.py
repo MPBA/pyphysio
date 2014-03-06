@@ -20,9 +20,9 @@ parser.add_option("-o", "--outputdir",
                   action="store", type="string",
                   dest="output_dir", help="Output Dir")
 
-# parser.add_option("-l", "--list",
-#                   action="store", type="string", default='',
-#                   dest="hrvlist", help="List of HRV indexes to be computed")
+parser.add_option("-l", "--list",
+                  action="store", type="string", default='',
+                  dest="hrvlist", help="List of HRV indexes to be computed")
 
 parser.add_option("-w", "--windowfile",
                   action="store", type="string", default='',
@@ -35,20 +35,22 @@ parser.add_option("-w", "--windowfile",
 INPUTFILE = options.input_file
 OUTDIR = options.output_dir
 WINFILE = options.window_file
+HRVLIST=options.hrvlist.split(',')
 
 
-HRVlist = [True,True,True,True]
+#HRVlist = [True,True,True,True]
 # inputfile is a csv, but it will be a .RR file, created with RRData.save(...)
+
 RRdata = load_rr_data_series(INPUTFILE)
 
 INDEXES = list()
-if HRVlist[0]:
+if HRVLIST[0]:
     INDEXES.append(RRMean(RRdata).value)
-if HRVlist[1]:
+if HRVLIST[1]:
     INDEXES.append(RRSTD(RRdata).value)
-if HRVlist[2]:
+if HRVLIST[2]:
     INDEXES.append(PNNx(50, RRdata).value)
-if HRVlist[3]:
+if HRVLIST[3]:
     INDEXES.append(PNNx(25, RRdata).value)
 
 print(INDEXES)
@@ -62,8 +64,9 @@ class GalaxyHRVAnalysis(object):
     def execute(self, **kwargs):
         INPUTFILE = kwargs['input']
         OUTDIR = kwargs['output']
+        HRVLIST = kwargs['list']
+        indexes = HRVLIST.split(',')
 
-        indexes = [True, True, True, True]
         RRdata = load_rr_data_series(INPUTFILE)
 
         results = list()
