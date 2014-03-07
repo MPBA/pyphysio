@@ -14,6 +14,7 @@ def load_rr_data_series(path, column=Sett.load_rr_column_names, sep=Sett.csv_sep
     @param sep:
     @return:
     """
+
     d = pd.read_csv(path, sep)
     if column in d.columns:
         inst = DataSeries(np.array(d[column]))

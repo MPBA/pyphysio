@@ -5,10 +5,6 @@ from DataSeries import *
 import numpy as np
 from PyHRVSettings import PyHRVDefaultSettings as Sett
 
-# TODO: comments
-# 1. Implementare gli indici
-#       NON-LIN
-
 
 class DataAnalysis(object):
     pass
@@ -101,10 +97,14 @@ class RRMean(TDIndex, CacheableDataCalc):
         return np.mean(data)
 
 
-class HRMean(TDIndex):
+class HRMean(TDIndex, CacheableDataCalc):
     def __init__(self, data=None):
         super(HRMean, self).__init__(data)
-        self._value = 60 / RRMean.get(self._data)
+        self._value = HRMean.get(self._data)
+
+    @classmethod
+    def _calculate_data(cls, data, params):
+        return np.mean(60/data)
 
 
 class RRMedian(TDIndex, CacheableDataCalc):
@@ -133,12 +133,16 @@ class RRSTD(TDIndex, CacheableDataCalc):
         return np.std(data)
 
 
-class HRSTD(TDIndex):
+class HRSTD(TDIndex, CacheableDataCalc):
     def __init__(self, data=None):
         super(TDIndex, self).__init__(data)
-        self._value = 60 / RRSTD.get(self._data)
+        self._value = HRSTD.get(self._data)
 
+    @classmethod
+    def _calculate_data(cls, data, params):
+        return np.std(60/data)
 
+## TODO: self._value= NNx/len(diff)
 class PNNx(TDIndex):
     def __init__(self, threshold, data=None):
         super(TDIndex, self).__init__(data)

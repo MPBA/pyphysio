@@ -17,6 +17,7 @@ class DataSeries(pd.TimeSeries):
         @param data: Data to insert in the DataFrame
         @param copy: see Pandas doc
         """
+        ## TODO: check if data are in ms
         super(DataSeries, self).__init__(data=data, copy=copy)
         self._cache = {}
         if metatag is None:
