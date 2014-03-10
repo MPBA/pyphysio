@@ -51,7 +51,6 @@ class DataSeries(pd.TimeSeries):
         :type calculator: CacheableDataCalc
         :param calculator: CacheableDataCalc
         """
-        # aggiungo alla cache
         self._cache[calculator.cid()] = calculator.get(self, params, use_cache=False)
         return self._cache[calculator.cid()]
 
@@ -73,7 +72,6 @@ class CacheableDataCalc(object):
     def __init__(self):
         pass
 
-    # metodo pubblico per ricavare i dati dalla cache o da _calculate_data(..)
     @classmethod
     def get(cls, data, params=None, use_cache=True):
         if use_cache and isinstance(data, DataSeries):
@@ -83,12 +81,10 @@ class CacheableDataCalc(object):
             return cls._calculate_data(data, params)
         return data.cache_get_data(cls)
 
-    # metodo da sovrascrivere nelle sottoclassi
     @classmethod
     def _calculate_data(cls, data, params):
         raise NotImplementedError("Only on " + cls.__name__ + " sub-classes")
 
-    # stringa usata come chiave nel dizionario cache
     @classmethod
     def cid(cls):
         """ Gets an identifier for the class

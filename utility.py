@@ -116,3 +116,13 @@ def highpass_filter(X, fs, Wp):
     [bFilt, aFilt] = signal.butter(N, wn, btype='highpass')  # calcola coefficienti filtro
     sig = signal.filtfilt(bFilt, aFilt, X)  # filtro il segnale BVP
     return sig
+
+def build_takens_vector(x,m):
+       #creo embedded matrix
+       #righe = Uj
+       N = len(x)
+       numelem=N-m+1
+       emb = np.zeros([numelem,m])
+       for i in range(numelem):
+           emb[i,:]=x[i:i+m]
+       return emb

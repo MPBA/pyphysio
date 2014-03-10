@@ -21,7 +21,7 @@ def load_rr_data_series(path, column=Sett.load_rr_column_names, sep=Sett.csv_sep
         assert isinstance(inst, DataSeries)
         return inst
     else:
-        raise KeyError("Colonna %s non presente nel file %s".format(column, path))
+        raise KeyError("Column %s not found in file %s".format(column, path))
 
 
 def save_rr_data_series(data_series, path, sep=Sett.csv_separator):
