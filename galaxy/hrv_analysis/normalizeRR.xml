@@ -1,0 +1,33 @@
+<tool id="normalize_rr" name="Normalize RR" version="1.0.0">
+  <description>RR normalizing tool</description>
+
+  <command interpreter="python">
+    normalizeRR_w.py -i $input1 -o $out_file1 -m $m -p $p
+  </command>
+
+  <inputs>
+      <param name="input1" type="data" format="tgz"  />
+      <param name="m" label="PSD estimation method" type="select">
+          <option value="1">RR-mean</option>
+          <option value="2">(RR-mean)/stdDev</option>
+          <option value="3">RR - min</option>
+          <option value="4">(RR-min)/(max-min)</option>
+          <option value="5">RRALL*RR/meanCALM</option>
+      </param>
+      <param name="p" label="Parameter for normalization RRALL (used with mode=5)" type="text" value="1.0" />
+  </inputs>
+
+  <outputs>
+    <data format="tgz"  name="out_file1" />
+  </outputs>
+
+  <help>
+      Tool for normalizing RR data.
+      PSD estimation method:
+       1) RR-mean
+       2) (RR-mean)/stdDev
+       3) RR - min
+       4) (RR-min)/(max-min)
+       5) RRALL*RR/meanCALM
+  </help>
+</tool>

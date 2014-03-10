@@ -1,0 +1,66 @@
+import tarfile
+import os
+import shutil
+import sys
+import optparse
+
+
+def enter_wrapping_tgz():
+    """
+    Converts -i input and -o ouptput tgz files into directories using the same names
+    """
+    parser_w = optparse.OptionParser(usage="Wrapper: see the wrapped script (-'_w')")
+
+    parser_w.add_option("-i", "--inputfile",
+                        action="store", type="string",
+                        dest="input_file", help="Input File")
+
+    parser_w.add_option("-o", "--outputfile",
+                        action="store", type="string",
+
+                        dest="output_file", help="Output File")
+
+    (o_w, args) = parser_w.parse_args()
+    sys.argv[sys.argv.index(o_w.input_file)] += "_"
+    ff = tarfile.open(name=o_w.input_file)
+    os.mkdir(o_w.input_file+"_")
+    ff.extractall(o_w.input_file+"_")
+    ff.close()
+
+
+def exit_wrapping_tgz():
+    """
+    Converts -i input and -o ouptput directories into tgz files using the same names
+    """
+    parser_w = optparse.OptionParser(usage="Wrapper: see the wrapped script (-'_w')")
+
+    parser_w.add_option("-i", "--inputfile",
+                        action="store", type="string",
+                        dest="input_file", help="Input File")
+
+    parser_w.add_option("-o", "--outputfile",
+                        action="store", type="string",
+                        dest="output_file", help="Output File")
+
+    (o_w, args) = parser_w.parse_args()
+
+    os.rename(o_w.output_file, o_w.output_file + "_")
+    shutil.rmtree(o_w.input_file)
+    ff = tarfile.open(o_w.output_file, "w")
+    ff.add(o_w.output_file + "_")
+    ff.close()
+
+
+def wrap_tgz(script):
+    """
+    This wrapper only converts -i input and -o ouptput tgz files into and from normal directories using the same names
+
+    @param script: Name of the file containing the scrpt to be called.
+    """
+    if os.path.exists(script) and os.path.isfile(script):
+        enter_wrapping_tgz()
+        execfile(script)
+        exit_wrapping_tgz()
+    else:
+        sys.stderr.write('Wrapper error: wrapped script file {0} does not exist or is not a file.'.format(script))
+
