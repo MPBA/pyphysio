@@ -75,89 +75,89 @@ class GalaxyHRVAnalysis(object):
         #------------
         # TIME DOMAIN
         #------------
-        if indexes[i]==1: hrv_values["RRMean"] =  RRMean(RRdata).value
+        if indexes[i]==1: hrv_values["RRMean"] = RRMean(RRdata).value
         i = i + 1
 
-        if indexes[i]==1: hrv_values["HRMean"] =  HRMean(RRdata).value
+        if indexes[i]==1: hrv_values["HRMean"] = HRMean(RRdata).value
         i = i + 1
 
-        if indexes[i]==1: hrv_values["RRMedian"] =  RRMedian(RRdata).value
+        if indexes[i]==1: hrv_values["RRMedian"] = RRMedian(RRdata).value
         i = i + 1
 
-        if indexes[i]==1: hrv_values["HRMedian"] =  HRMedian(RRdata).value
+        if indexes[i]==1: hrv_values["HRMedian"] = HRMedian(RRdata).value
         i = i + 1
 
-        if indexes[i]==1: hrv_values["RRSTD"] =  RRSTD(RRdata).value
+        if indexes[i]==1: hrv_values["RRSTD"] = RRSTD(RRdata).value
         i = i + 1
 
-        if indexes[i]==1: hrv_values["HRSTD"] =  HRSTD(RRdata).value
+        if indexes[i]==1: hrv_values["HRSTD"] = HRSTD(RRdata).value
         i = i + 1
 
-        if indexes[i]==1: hrv_values["PNN10"] =  PNNx(10, RRdata).value
+        if indexes[i]==1: hrv_values["PNN10"] = PNNx(10, RRdata).value
         i = i + 1
 
-        if indexes[i]==1: hrv_values["PNN25"] =  PNNx(25, RRdata).value
+        if indexes[i]==1: hrv_values["PNN25"] = PNNx(25, RRdata).value
         i = i + 1
 
-        if indexes[i]==1: hrv_values["PNN50"] =  PNNx(50, RRdata).value
+        if indexes[i]==1: hrv_values["PNN50"] = PNNx(50, RRdata).value
         i = i + 1
 
-        if indexes[i]==1: hrv_values["NN10"] =  NNx(10, RRdata).value
+        if indexes[i]==1: hrv_values["NN10"] = NNx(10, RRdata).value
         i = i + 1
 
-        if indexes[i]==1: hrv_values["NN25"] =  NNx(25, RRdata).value
+        if indexes[i]==1: hrv_values["NN25"] = NNx(25, RRdata).value
         i = i + 1
 
-        if indexes[i]==1: hrv_values["NN50"] =  NNx(50, RRdata).value
+        if indexes[i]==1: hrv_values["NN50"] = NNx(50, RRdata).value
         i = i + 1
 
-        if indexes[i]==1: hrv_values["RRSSD"] =  RMSSD(RRdata).value
+        if indexes[i]==1: hrv_values["RRSSD"] = RMSSD(RRdata).value
         i = i + 1
 
-        if indexes[i]==1: hrv_values["SDSD"] =  SDSD(RRdata).value
+        if indexes[i]==1: hrv_values["SDSD"] = SDSD(RRdata).value
         i = i + 1
 
         #------------
         # FREQ DOMAIN
         #------------
 
-        if indexes[i]==1: hrv_values["VLF"] =  VLF(RRdata).value
+        if indexes[i]==1: hrv_values["VLF"] = VLF(RRdata).value
         i = i + 1
 
-        if indexes[i]==1: hrv_values["LF"] =  LF(RRdata).value
+        if indexes[i]==1: hrv_values["LF"] = LF(RRdata).value
         i = i + 1
 
-        if indexes[i]==1: hrv_values["HF"] =  HF(RRdata).value
+        if indexes[i]==1: hrv_values["HF"] = HF(RRdata).value
         i = i + 1
 
-        if indexes[i]==1: hrv_values["VLFpeak"] =  VLFPeak(RRdata).value
+        if indexes[i]==1: hrv_values["VLFpeak"] = VLFPeak(RRdata).value
         i = i + 1
 
-        if indexes[i]==1: hrv_values["LFpeak"] =  LFPeak(RRdata).value
+        if indexes[i]==1: hrv_values["LFpeak"] = LFPeak(RRdata).value
         i = i + 1
 
-        if indexes[i]==1: hrv_values["HFpeak"] =  HFPeak(RRdata).value
+        if indexes[i]==1: hrv_values["HFpeak"] = HFPeak(RRdata).value
         i = i + 1
 
-        if indexes[i]==1: hrv_values["VLF_N"] =  VLFNormal(RRdata).value
+        if indexes[i]==1: hrv_values["VLF_N"] = VLFNormal(RRdata).value
         i = i + 1
 
-        if indexes[i]==1: hrv_values["LF_N"] =  LFNormal(RRdata).value
+        if indexes[i]==1: hrv_values["LF_N"] = LFNormal(RRdata).value
         i = i + 1
 
-        if indexes[i]==1: hrv_values["HF_N"] =  HFNormal(RRdata).value
+        if indexes[i]==1: hrv_values["HF_N"] = HFNormal(RRdata).value
         i = i + 1
 
-        if indexes[i]==1: hrv_values["Total"] =  Total(RRdata).value
+        if indexes[i]==1: hrv_values["Total"] = Total(RRdata).value
         i = i + 1
 
-        if indexes[i]==1: hrv_values["LFHF"] =  LFHF(RRdata).value
+        if indexes[i]==1: hrv_values["LFHF"] = LFHF(RRdata).value
         i = i + 1
 
-        if indexes[i]==1: hrv_values["nLF"] =  NormalLF(RRdata).value
+        if indexes[i]==1: hrv_values["nLF"] = NormalLF(RRdata).value
         i = i + 1
 
-        if indexes[i]==1: hrv_values["nHF"] =  NormalHF(RRdata).value
+        if indexes[i]==1: hrv_values["nHF"] = NormalHF(RRdata).value
         i = i + 1
 
         #-----------
