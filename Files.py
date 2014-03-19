@@ -1,5 +1,3 @@
-__author__ = 'AleB'
-
 from PyHRVSettings import PyHRVDefaultSettings as Sett
 import pandas as pd
 import numpy as np
