@@ -1,0 +1,26 @@
+<tool id="hrv_indexes_mul" name="HRV Indexes Multiple Windows" version="1.0.0">
+  <description></description>
+
+  <command interpreter="python">
+      calculateHRVmulti_w.py -i $input1 -o $out_file1 -w $win,$wmax,$wstep -j $j -f $f -p $p
+  </command>
+
+  <inputs>
+      <param name="input1" type="data" format="tgz"  />
+      <param name="wmin" label="Window Min Length" type="text" value="40" />
+      <param name="wmax" label="Window Max Length" type="text" value="40" />
+      <param name="wstep" label="Window Step Length" type="text" value="40" />
+      <param name="j" label="Moving interval in seconds for centering new windows set (0=each beat)" type="text" value="20" />
+      <param name="f" label="Sampling frequency" type="text" value="4" />
+      <param name="p" label="PSD estimation method" type="text" value="ar" />
+  </inputs>
+
+  <outputs>
+    <data name="out_file1" format="tgz"  />
+  </outputs>
+
+  <help>
+      Calculate HRV indexes using windows of WINMIN:WINSTEP:WINMAX length (or WINSIZEs length) and jumping by JUMP
+	  Columns of indexes calculated with new winsize are added to older column. Adds suffix '_winsize' to label names.
+  </help>
+</tool>
