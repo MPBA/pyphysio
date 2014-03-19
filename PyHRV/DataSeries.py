@@ -147,4 +147,3 @@ class RRDiff(CacheableDataCalc):
         :return: Data to cache
         """
         return np.diff(np.array(data))
-
