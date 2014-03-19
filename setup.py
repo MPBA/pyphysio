@@ -42,7 +42,6 @@ setup(
         'scipy'
     ],
 
-    #?# package_dir={'fastSemSim': 'fastSemSim'},
-    #?# package_data={'fastSemSim.data': ['*']},
-    #?# packages=['*']
+    package_dir={'pyHRV': 'PyHRV'},
+    packages=['*']
 )
