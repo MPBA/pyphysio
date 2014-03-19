@@ -25,12 +25,12 @@ def test(RRseries):
     print "NNx: ", TDIn.NNx(50, RRseries).value
     print "RMSSD: ", TDIn.RMSSD(RRseries).value
     print "SDSD: ", TDIn.SDSD(RRseries).value
-    t1=delay()
+    t1 = delay()
     print "*Cached:"
     print "HRMean: ", TDIn.HRMean(RRseries).value
     print "HRSTD: ", TDIn.HRSTD(RRseries).value
     print "HRMedian: ", TDIn.HRMedian(RRseries).value
-    t2=delay()
+    t2 = delay()
     print '2. FD'
     print "VLF: ", FDIn.VLF(RRseries).value
     print "LF: ", FDIn.LF(RRseries).value
@@ -48,7 +48,7 @@ def test(RRseries):
     print "NormalLF: ", FDIn.NormalLF(RRseries).value
     print "NormalHF: ", FDIn.NormalHF(RRseries).value
     t4 = delay()
-    print "\t\tTotal time: ", t1+t2+t3+t4, "ms"
+    print "\t\tTotal time: ", t1 + t2 + t3 + t4, "ms"
 
 if __name__ == '__main__':
     delay(False)
