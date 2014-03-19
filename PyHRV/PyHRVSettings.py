@@ -9,3 +9,10 @@ class PyHRVDefaultSettings:
     bands_lf_upper_bound = 0.15
     bands_hf_upper_bound = 0.4
     interpolation_freq_default = 4
+
+    class TimeUnitCheck(object):
+        time_unit_check_ibi = True
+        time_unit_check_ibi_warn =\
+            "Warning: the inter-beat-time (IBI) should be loaded in ms (milli-seconds). The mean is %d!"
+        time_unit_check_ibi_mean_min = 80
+        time_unit_check_ibi_mean_max = 1200
