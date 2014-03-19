@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from PyHRV import DataSeries
+from PyHRV.DataSeries import DataSeries
 
 from PyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
@@ -33,4 +33,3 @@ def save_rr_data_series(data_series, path, sep=Sett.csv_separator):
     """
     assert isinstance(data_series, pd.Series)
     data_series.to_csv(path, sep=sep, header=True)
-
