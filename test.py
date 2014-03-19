@@ -1,5 +1,6 @@
 import time
-import Indexes as In
+import TDIndexes as TDIn
+import FDIndexes as FDIn
 from Files import *
 
 _debug_time = 0
@@ -17,35 +18,35 @@ def delay(v=True):
 
 def test(RRseries):
     print '1. TD'
-    print "RRMean: ", In.RRMean(RRseries).value
-    print "RRSTD: ", In.RRSTD(RRseries).value
-    print "RRMedian: ", In.RRMedian(RRseries).value
-    print "PNNx: ", In.PNNx(50, RRseries).value
-    print "NNx: ", In.NNx(50, RRseries).value
-    print "RMSSD: ", In.RMSSD(RRseries).value
-    print "SDSD: ", In.SDSD(RRseries).value
+    print "RRMean: ", TDIn.RRMean(RRseries).value
+    print "RRSTD: ", TDIn.RRSTD(RRseries).value
+    print "RRMedian: ", TDIn.RRMedian(RRseries).value
+    print "PNNx: ", TDIn.PNNx(50, RRseries).value
+    print "NNx: ", TDIn.NNx(50, RRseries).value
+    print "RMSSD: ", TDIn.RMSSD(RRseries).value
+    print "SDSD: ", TDIn.SDSD(RRseries).value
     t1=delay()
     print "*Cached:"
-    print "HRMean: ", In.HRMean(RRseries).value
-    print "HRSTD: ", In.HRSTD(RRseries).value
-    print "HRMedian: ", In.HRMedian(RRseries).value
+    print "HRMean: ", TDIn.HRMean(RRseries).value
+    print "HRSTD: ", TDIn.HRSTD(RRseries).value
+    print "HRMedian: ", TDIn.HRMedian(RRseries).value
     t2=delay()
     print '2. FD'
-    print "VLF: ", In.VLF(RRseries).value
-    print "LF: ", In.LF(RRseries).value
-    print "HF: ", In.HF(RRseries).value
-    print "Total: ", In.Total(RRseries).value
-    print "VLFPeak: ", In.VLFPeak(RRseries).value
-    print "LFPeak: ", In.LFPeak(RRseries).value
-    print "HFPeak: ", In.HFPeak(RRseries).value
-    print "VLFNormal: ", In.VLFNormal(RRseries).value
-    print "LFNormal: ", In.LFNormal(RRseries).value
-    print "HFNormal: ", In.HFNormal(RRseries).value
+    print "VLF: ", FDIn.VLF(RRseries).value
+    print "LF: ", FDIn.LF(RRseries).value
+    print "HF: ", FDIn.HF(RRseries).value
+    print "Total: ", FDIn.Total(RRseries).value
+    print "VLFPeak: ", FDIn.VLFPeak(RRseries).value
+    print "LFPeak: ", FDIn.LFPeak(RRseries).value
+    print "HFPeak: ", FDIn.HFPeak(RRseries).value
+    print "VLFNormal: ", FDIn.VLFNormal(RRseries).value
+    print "LFNormal: ", FDIn.LFNormal(RRseries).value
+    print "HFNormal: ", FDIn.HFNormal(RRseries).value
     t3 = delay()
     print "*Cached:"
-    print "LFHF: ", In.LFHF(RRseries).value
-    print "NormalLF: ", In.NormalLF(RRseries).value
-    print "NormalHF: ", In.NormalHF(RRseries).value
+    print "LFHF: ", FDIn.LFHF(RRseries).value
+    print "NormalLF: ", FDIn.NormalLF(RRseries).value
+    print "NormalHF: ", FDIn.NormalHF(RRseries).value
     t4 = delay()
     print "\t\tTotal time: ", t1+t2+t3+t4, "ms"
 
