@@ -38,7 +38,8 @@ setup(
     ],
     requires=[
         'pandas',
-        'numpy'
+        'numpy',
+        'scipy'
     ],
 
     #?# package_dir={'fastSemSim': 'fastSemSim'},
