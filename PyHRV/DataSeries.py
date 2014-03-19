@@ -1,12 +1,11 @@
 # coding=utf-8
-# Classes for cached data (RR) elaborations
+# Classes for cached data elaborations
 #
 
 import numpy as np
 from scipy import signal
-
 import pandas as pd
-
+from PyHRV.Indexes.TDIndexes import RRMean
 from utility import interpolate_rr
 from PyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
@@ -19,13 +18,16 @@ class DataSeries(pd.TimeSeries):
         @param data: Data to insert in the DataFrame
         @param copy: see Pandas doc
         """
-        ## TODO: check if data are in ms
         super(DataSeries, self).__init__(data=data, copy=copy)
         self._cache = {}
         if metatag is None:
             self.metatag = {}
         else:
             self.metatag = metatag
+        mean = RRMean(self).value
+        assert (not Sett.TimeUnitCheck.time_unit_check_ibi_mean_max < Sett.TimeUnitCheck.time_unit_check_ibi
+                | mean < Sett.TimeUnitCheck.time_unit_check_ibi_mean_min),\
+            Sett.TimeUnitCheck.time_unit_check_ibi_warn % mean
 
     def cache_clear(self):
         """ Clears the cache and frees memory (GC?)
@@ -113,9 +115,9 @@ class FFTCalc(CacheableDataCalc):
         frame = frame - np.mean(frame)
 
         spec_tmp = np.absolute(np.fft.fft(frame)) ** 2  # calcolo FFT
-        spec = spec_tmp[0:(np.ceil(len(spec_tmp) / 2))]  # Only positive half of spectrum
-        freqs = np.linspace(start=0, stop=interp_freq / 2, num=len(spec), endpoint=True)  # creo vettore delle frequenze
-        return ((freqs, spec))
+        powers = spec_tmp[0:(np.ceil(len(spec_tmp) / 2))]  # Only positive half of spectrum
+        bands = np.linspace(start=0, stop=interp_freq / 2, num=len(powers), endpoint=True)  # vettore delle frequenze
+        return bands, powers
 
 
 class PSDWelchCalc(CacheableDataCalc):
@@ -124,7 +126,7 @@ class PSDWelchCalc(CacheableDataCalc):
         """ Calculates the intermediate data
         :type data: DataSeries
         :param data: RRSeries object
-        :param params: fsamp
+        :param to_freq: Sampling frequency
         :return: Data to cache
         """
         if to_freq is None:
@@ -132,7 +134,7 @@ class PSDWelchCalc(CacheableDataCalc):
         rr_interp, bt_interp = interpolate_rr(data, to_freq)
         freqs, spect = signal.welch(rr_interp, to_freq)
         spect = np.sqrt(spect)
-        return freqs, spect/np.max(spect), sum(spect)/len(spect)
+        return freqs, spect / np.max(spect), sum(spect) / len(spect)
 
 
 class RRDiff(CacheableDataCalc):
