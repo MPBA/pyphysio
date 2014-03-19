@@ -36,6 +36,10 @@ setup(
         'Operating System :: Microsoft :: Windows',
         'Programming Language :: Python',
     ],
+    requires=[
+        'pandas',
+        'numpy'
+    ],
 
     #?# package_dir={'fastSemSim': 'fastSemSim'},
     #?# package_data={'fastSemSim.data': ['*']},
