@@ -71,9 +71,9 @@ class PSDWelchCalc(CacheableDataCalc):
         if to_freq is None:
             to_freq = Sett.interpolation_freq_default
         rr_interp, bt_interp = interpolate_rr(data, to_freq)
-        freqs, spect = signal.welch(rr_interp, to_freq)
-        spect = np.sqrt(spect)
-        return freqs, spect / np.max(spect), sum(spect) / len(spect)
+        bands, powers = signal.welch(rr_interp, to_freq)
+        powers = np.sqrt(powers)
+        return bands, powers / np.max(powers), sum(powers) / len(powers)
 
 
 class RRDiff(CacheableDataCalc):
