@@ -81,4 +81,3 @@ def wrap_tgz(script):
             exit_wrapping_tgz()
     else:
         sys.stderr.write('Wrapper error: wrapped script file {0} does not exist or is not a file.'.format(script))
-

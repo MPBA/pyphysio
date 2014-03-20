@@ -11,7 +11,6 @@ class GalaxyHRVAnalysis(object):
     @staticmethod
     def execute(input_file, indexes_list):
         data = load_rr_data_series(input_file)
-
         hrv_values = dict()
 
         i = 0
