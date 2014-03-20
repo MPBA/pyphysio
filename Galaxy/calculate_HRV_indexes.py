@@ -10,11 +10,9 @@ from PyHRV.Indexes import TDIndexes as tdi
 class GalaxyHRVAnalysis(object):
     @staticmethod
     def execute(input_file, indexes_list):
-        indexes_list = indexes_list.split(',')
-
         data = load_rr_data_series(input_file)
 
-        hrv_values = list()
+        hrv_values = dict()
 
         i = 0
 
