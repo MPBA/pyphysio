@@ -13,8 +13,8 @@ class ApEn(NonLinearIndex):
     def __init__(self, data=None):
         super(ApEn, self).__init__(data)
         R = 0.2  # settings
-        Uj_m = BuildTakensVector2(self._data).value  # cacheable
-        Uj_m1 = BuildTakensVector3(self._data).value # cacheable
+        Uj_m = BuildTakensVector2(self._data).value  # cacheable TODO: copy this
+        Uj_m1 = BuildTakensVector3(self._data).value  # cacheable TODO: copy this
 
         numelem_m = Uj_m.shape[0]
         numelem_m1 = Uj_m1.shape[0]
