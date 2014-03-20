@@ -13,7 +13,8 @@ def power(spec, freq, fmin, fmax):
 
 def interpolate_rr(rr, interp_freq):
     # returns cubic spline interpolated array with sample rate = interp_freq
-    step = 1 / interp_freq
+    step = 1.0 / interp_freq
+    rr /= 1000
     rr = np.array(rr)
     bt = np.cumsum(rr)
     xmin = bt[0]
