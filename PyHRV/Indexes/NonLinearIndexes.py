@@ -4,7 +4,7 @@ import numpy as np
 from scipy.spatial.distance import cdist, pdist
 from scipy.stats.mstats import mquantiles
 
-from DataSeries import RRDiff
+from PyHRV.Cache import RRDiff, BuildTakensVector2, BuildTakensVector3
 from PyHRV.Indexes.Indexes import NonLinearIndex
 from utility import build_takens_vector
 
@@ -13,8 +13,8 @@ class ApEn(NonLinearIndex):
     def __init__(self, data=None):
         super(ApEn, self).__init__(data)
         R = 0.2  # settings
-        Uj_m = build_takens_vector(self._data, 2)  # cacheable
-        Uj_m1 = build_takens_vector(self._data, 3)  # cacheable
+        Uj_m = BuildTakensVector2(self._data).value  # cacheable
+        Uj_m1 = BuildTakensVector3(self._data).value # cacheable
 
         numelem_m = Uj_m.shape[0]
         numelem_m1 = Uj_m1.shape[0]
