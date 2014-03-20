@@ -1,5 +1,5 @@
-from PyHRV.Galaxy.HRV_analysis_Galaxy import *
+from Galaxy.calculate_HRV_indexes import *
 
 hrv_list = np.ones(27)
 HRVAnalysis = GalaxyHRVAnalysis()
-hrv_data = HRVAnalysis.execute(input='A05', indexes=hrv_list)
+hrv_data = HRVAnalysis.execute('A05', hrv_list)
