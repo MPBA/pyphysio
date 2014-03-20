@@ -6,6 +6,7 @@ import optparse
 
 DIR_SUFFIX = "_dir"
 
+
 def reset_dir(d):
     if os.path.exists(d):
         shutil.rmtree(d)
