@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from DataSeries import CacheableDataCalc, RRDiff
+from PyHRV.Cache import CacheableDataCalc, RRDiff
 from PyHRV.Indexes.Indexes import TDIndex
 
 
