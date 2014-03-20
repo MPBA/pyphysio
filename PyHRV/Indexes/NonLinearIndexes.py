@@ -6,15 +6,16 @@ from scipy.stats.mstats import mquantiles
 
 from PyHRV.Cache import RRDiff, BuildTakensVector2, BuildTakensVector3
 from PyHRV.Indexes.Indexes import NonLinearIndex
-from utility import build_takens_vector
+from PyHRV.Indexes.TDIndexes import RRMean
+from PyHRV.utility import build_takens_vector
 
 
 class ApEn(NonLinearIndex):
     def __init__(self, data=None):
         super(ApEn, self).__init__(data)
         R = 0.2  # settings
-        Uj_m = BuildTakensVector2(self._data).value  # cacheable TODO: copy this
-        Uj_m1 = BuildTakensVector3(self._data).value  # cacheable TODO: copy this
+        Uj_m = BuildTakensVector2.get(self._data)  # cacheable TODO: copy this
+        Uj_m1 = BuildTakensVector3.get(self._data)  # cacheable TODO: copy this
 
         numelem_m = Uj_m.shape[0]
         numelem_m1 = Uj_m1.shape[0]
@@ -89,7 +90,7 @@ class FracDim(NonLinearIndex):
 
 class SVDEn(NonLinearIndex):
     def __init__(self, data=None):
-        Uj_m = build_takens_vector(self._data, 2) #cacheable
+        Uj_m = build_takens_vector(self._data, 2)  # cacheable
         W = np.linalg.svd(Uj_m, compute_uv=0)
         W /= sum(W)
         self._value = -1 * sum(W * np.log(W))
@@ -97,7 +98,7 @@ class SVDEn(NonLinearIndex):
 
 class Fisher(NonLinearIndex):
     def __init__(self, data=None):
-        Uj_m = build_takens_vector(self._data, 2) #cacheable
+        Uj_m = build_takens_vector(self._data, 2)  # cacheable
         W = np.linalg.svd(Uj_m, compute_uv=0)
         W /= sum(W)
         FI = 0
@@ -109,11 +110,11 @@ class Fisher(NonLinearIndex):
 
 class CorrDim(NonLinearIndex):
     def __init__(self, data=None):
-        LEN = 10 #settings
-        rr = self._data / 1000 # rr in seconds
+        LEN = 10  # settings
+        rr = self._data / 1000  # rr in seconds
         Uj = build_takens_vector(rr, LEN)
         numelem = Uj.shape[0]
-        r_vect = np.arange(0.3, 0.46, 0.02) #settings
+        r_vect = np.arange(0.3, 0.46, 0.02)  # settings
         C = np.zeros(len(r_vect))
         jj = 0
         N = np.zeros(numelem)
@@ -186,7 +187,7 @@ class Pfd(NonLinearIndex):
     #calculates petrosian fractal dimension
     def __init__(self, data=None):
         D = RRDiff.get(self._data)
-        N_delta = 0; #number of sign changes in derivative of the signal
+        N_delta = 0  # number of sign changes in derivative of the signal
         for i in xrange(1, len(D)):
             if D[i] * D[i - 1] < 0:
                 N_delta += 1
@@ -198,7 +199,7 @@ class Dfa_a1(NonLinearIndex):
     def __init__(self, data=None):
         #calculates Detrended Fluctuation Analysis: alpha1 (short term) component
         X = self._data
-        Ave = np.mean(X) #cacheable
+        Ave = RRMean.get(X)
         Y = np.cumsum(X)
         Y -= Ave
 
@@ -226,14 +227,14 @@ class Dfa_a2(NonLinearIndex):
     def __init__(self, data=None):
         #calculates Detrended Fluctuation Analysis: alpha2 (long term) component
         X = self._data
-        Ave = np.mean(X) #cacheable
+        Ave = RRMean.get(X)
         Y = np.cumsum(X)
         Y -= Ave
         lMax = np.min([64, len(X)])
         L = np.arange(4, lMax + 1, 4) ##TODO: check if start from 4 or 16 (Andrea)
-        F = np.zeros(len(L)) # F(n) of different given box length n
+        F = np.zeros(len(L))  # F(n) of different given box length n
         for i in xrange(0, len(L)):
-            n = int(L[i]) # for each box length L[i]
+            n = int(L[i])  # for each box length L[i]
             for j in xrange(0, len(X), n): # for each box
                 if j + n < len(X):
                     c = range(j, j + n)
