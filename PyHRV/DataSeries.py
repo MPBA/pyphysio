@@ -1,7 +1,7 @@
 # coding=utf-8
 
 import pandas as pd
-from PyHRV.Indexes.TDIndexes import RRMean
+from numpy import mean as npmean
 from PyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
 
@@ -19,9 +19,9 @@ class DataSeries(pd.TimeSeries):
             self.meta_tag = {}
         else:
             self.meta_tag = meta_tag
-        mean = RRMean(self).value
+        mean = npmean(data)
         assert (not Sett.TimeUnitCheck.time_unit_check_ibi_mean_max < Sett.TimeUnitCheck.time_unit_check_ibi
-                | mean < Sett.TimeUnitCheck.time_unit_check_ibi_mean_min),\
+                | (mean < Sett.TimeUnitCheck.time_unit_check_ibi_mean_min)),\
             Sett.TimeUnitCheck.time_unit_check_ibi_warn % mean
 
     def cache_clear(self):
