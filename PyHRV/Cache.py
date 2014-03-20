@@ -5,6 +5,7 @@
 import numpy as np
 from scipy import signal
 from utility import interpolate_rr
+from PyHRV.utility import build_takens_vector
 from PyHRV.DataSeries import DataSeries
 from PyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
@@ -85,3 +86,15 @@ class RRDiff(CacheableDataCalc):
         :return: Data to cache
         """
         return np.diff(np.array(data))
+
+
+class BuildTakensVector2(CacheableDataCalc):
+    @classmethod
+    def _calculate_data(cls, data, params=None):
+        return build_takens_vector(data, 2)
+
+
+class BuildTakensVector3(CacheableDataCalc):
+    @classmethod
+    def _calculate_data(cls, data, params=None):
+        return build_takens_vector(data, 3)
