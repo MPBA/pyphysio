@@ -1,9 +1,5 @@
-
-
 class ParamExecClass:
-    def __init__(self, input_path, output_path, **kwargs):
-        self._input_path = input_path
-        self._output_path = output_path
+    def __init__(self, **kwargs):
         self._kwargs = kwargs
 
     def execute(self):
