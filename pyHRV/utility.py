@@ -3,10 +3,9 @@ from scipy import interpolate, signal
 import sys
 
 
-# supplementary methods
-def power(spec, freq, fmin, fmax):
+def power(spec, freq, min_freq, max_freq):
     #returns power in band
-    band = np.array([spec[i] for i in range(len(spec)) if fmin <= freq[i] < fmax])
+    band = np.array([spec[i] for i in range(len(spec)) if min_freq <= freq[i] < max_freq])
     powerinband = np.sum(band) / len(spec)
     return powerinband
 
@@ -30,18 +29,7 @@ def interpolate_rr(rr, interp_freq):
     return rr_interp, bt_interp
 
 
-def BuildTakensVector(RR, m):
-    #creo embedded matrix
-    #righe = Uj
-    N = len(RR)
-    numelem = N - m + 1
-    RRExp = np.zeros([numelem, m])
-    for i in range(numelem):
-        RRExp[i, :] = RR[i:i + m]
-    return RRExp
-
-
-def smoothTriangle(data, degree):
+def smooth_triangle(data, degree):
     triangle = np.array(range(degree) + [degree] + range(degree)[::-1]) + 1
     smoothed = data[0:degree]
     for i in range(degree, np.size(data) - degree * 2):
@@ -51,7 +39,7 @@ def smoothTriangle(data, degree):
     return smoothed
 
 
-def peakdet(v, delta, x=None):
+def peak_detection(v, delta, x=None):
     maxtab = []
     mintab = []
 
@@ -118,12 +106,13 @@ def highpass_filter(X, fs, Wp):
     sig = signal.filtfilt(bFilt, aFilt, X)  # filtro il segnale BVP
     return sig
 
-def build_takens_vector(x,m):
-       #creo embedded matrix
-       #righe = Uj
-       N = len(x)
-       numelem=N-m+1
-       emb = np.zeros([numelem,m])
-       for i in range(numelem):
-           emb[i,:]=x[i:i+m]
-       return emb
+
+def build_takens_vector(x, m):
+        #creo embedded matrix
+        #righe = Uj
+        N = len(x)
+        num = N - m + 1
+        emb = np.zeros([num, m])
+        for i in xrange(num):
+            emb[i, :] = x[i:i + m]
+        return emb
