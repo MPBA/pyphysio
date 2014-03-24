@@ -1,9 +1,9 @@
 __author__ = 'ale'
 
 import numpy as np
-from PyHRV.Indexes.Indexes import FDIndex
-from PyHRV.Cache import CacheableDataCalc, PSDWelchCalc
-from PyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
+from pyHRV.Indexes.Indexes import FDIndex
+from pyHRV.Cache import CacheableDataCalc, PSDWelchCalc
+from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
 
 class InBand(FDIndex):

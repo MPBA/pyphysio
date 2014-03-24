@@ -1,4 +1,4 @@
-from PyHRV.DataSeries import DataSeries
+from pyHRV.DataSeries import DataSeries
 from ParamExecClass import ParamExecClass
 
 ## DONE: (by the wrapper) if inputfile is a .tar.gz: untar and load more files

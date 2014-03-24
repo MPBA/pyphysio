@@ -1,7 +1,7 @@
 from __future__ import division
 __author__ = 'andrea'
 import cmath
-from PyHRV.utility import *
+from pyHRV.utility import *
 
 np.random.seed()
 RR=np.random.uniform(500,1000,100)

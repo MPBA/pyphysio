@@ -2,8 +2,8 @@
 
 import numpy as np
 
-from PyHRV.Cache import CacheableDataCalc, RRDiff
-from PyHRV.Indexes.Indexes import TDIndex
+from pyHRV.Cache import CacheableDataCalc, RRDiff
+from pyHRV.Indexes.Indexes import TDIndex
 
 
 class RRMean(TDIndex, CacheableDataCalc):

@@ -1,6 +1,6 @@
-from PyHRV.Files import *
-from PyHRV.Indexes import FDIndexes as FDI
-from PyHRV.Indexes import TDIndexes as TDI
+from pyHRV.Files import *
+from pyHRV.Indexes import FDIndexes as FDI
+from pyHRV.Indexes import TDIndexes as TDI
 from ParamExecClass import ParamExecClass
 
 ## DONE: load a .RR file (as functions do in Files)

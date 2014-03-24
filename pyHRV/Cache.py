@@ -5,9 +5,9 @@
 import numpy as np
 from scipy import signal
 from utility import interpolate_rr
-from PyHRV.utility import build_takens_vector
-from PyHRV.DataSeries import DataSeries
-from PyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
+from pyHRV.utility import build_takens_vector
+from pyHRV.DataSeries import DataSeries
+from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
 
 class CacheableDataCalc(object):

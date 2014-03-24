@@ -2,7 +2,7 @@
 
 import pandas as pd
 from numpy import mean as npmean
-from PyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
+from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
 
 class DataSeries(pd.TimeSeries):

@@ -4,10 +4,10 @@ import numpy as np
 from scipy.spatial.distance import cdist, pdist
 from scipy.stats.mstats import mquantiles
 
-from PyHRV.Cache import RRDiff, BuildTakensVector2, BuildTakensVector3
-from PyHRV.Indexes.Indexes import NonLinearIndex
-from PyHRV.Indexes.TDIndexes import RRMean
-from PyHRV.utility import build_takens_vector
+from pyHRV.Cache import RRDiff, BuildTakensVector2, BuildTakensVector3
+from pyHRV.Indexes.Indexes import NonLinearIndex
+from pyHRV.Indexes.TDIndexes import RRMean
+from pyHRV.utility import build_takens_vector
 
 
 class ApEn(NonLinearIndex):

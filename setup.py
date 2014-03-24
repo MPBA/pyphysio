@@ -43,5 +43,5 @@ setup(
     ],
 
     package_dir={'pyHRV': 'PyHRV'},
-    packages=['*']
+    packages=['pyHRV']
 )

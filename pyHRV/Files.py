@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
-from PyHRV.DataSeries import DataSeries
+from pyHRV.DataSeries import DataSeries
 
-from PyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
+from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
 
 def load_rr_data_series(path, column=Sett.load_rr_column_names, sep=Sett.csv_separator):
