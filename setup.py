@@ -42,6 +42,6 @@ setup(
         'scipy'
     ],
 
-    package_dir={'pyHRV': 'PyHRV'},
+    package_dir={'pyHRV': 'pyHRV'},
     packages=['pyHRV']
 )
