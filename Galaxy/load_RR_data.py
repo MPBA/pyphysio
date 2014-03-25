@@ -1,4 +1,3 @@
-from pyHRV.DataSeries import DataSeries
 from ParamExecClass import ParamExecClass
 from pyHRV.Files import load_rr_data_series, save_rr_data_series
 
