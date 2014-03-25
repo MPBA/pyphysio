@@ -5,7 +5,7 @@ from pyHRV.DataSeries import DataSeries
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
 
-def load_rr_data_series(path, column=Sett.load_rr_column_names, sep=Sett.csv_separator):
+def load_rr_data_series(path, column=Sett.load_rr_column_name, sep=Sett.csv_separator):
     """
     For galaxy use loads an rrs. column from a csv file
     @param path:
