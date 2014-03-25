@@ -8,50 +8,52 @@ from pyHRV.Cache import RRDiff, BuildTakensVector2, BuildTakensVector3
 from pyHRV.Indexes.Indexes import NonLinearIndex
 from pyHRV.Indexes.TDIndexes import RRMean
 from pyHRV.utility import build_takens_vector
+from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
 
-class ApEn(NonLinearIndex):
+class ApproxEntropy(NonLinearIndex):
     def __init__(self, data=None):
-        super(ApEn, self).__init__(data)
+        super(ApproxEntropy, self).__init__(data)
         R = 0.2  # settings
-        Uj_m = BuildTakensVector2.get(self._data)  # cacheable TODO: copy this
-        Uj_m1 = BuildTakensVector3.get(self._data)  # cacheable TODO: copy this
+        uj_m = BuildTakensVector2.get(self._data)
+        uj_m1 = BuildTakensVector3.get(self._data)
 
-        numelem_m = Uj_m.shape[0]
-        numelem_m1 = Uj_m1.shape[0]
+        card_elem_m = uj_m.shape[0]
+        card_elem_m1 = uj_m1.shape[0]
 
-        r = R * np.std(self._data)  # cacheable
-        d_m = cdist(Uj_m, Uj_m, 'chebyshev')
-        d_m1 = cdist(Uj_m1, Uj_m1, 'chebyshev')
+        r = R * np.std(self._data)
+        d_m = cdist(uj_m, uj_m, 'chebyshev')
+        d_m1 = cdist(uj_m1, uj_m1, 'chebyshev')
 
-        Cmr_m_ApEn = np.zeros(numelem_m)
-        for i in range(numelem_m):
+        cmr_m_apen = np.zeros(card_elem_m)
+        for i in range(card_elem_m):
             vector = d_m[i]
-            Cmr_m_ApEn[i] = float((vector <= r).sum()) / numelem_m
+            cmr_m_apen[i] = float((vector <= r).sum()) / card_elem_m
 
-        Cmr_m1_ApEn = np.zeros(numelem_m1)
-        for i in range(numelem_m1):
+        cmr_m1_apen = np.zeros(card_elem_m1)
+        for i in range(card_elem_m1):
             vector = d_m1[i]
-            Cmr_m1_ApEn[i] = float((vector <= r).sum()) / numelem_m1
+            cmr_m1_apen[i] = float((vector <= r).sum()) / card_elem_m1
 
-        Phi_m = np.sum(np.log(Cmr_m_ApEn)) / numelem_m
-        Phi_m1 = np.sum(np.log(Cmr_m1_ApEn)) / numelem_m1
+        Phi_m = np.sum(np.log(cmr_m_apen)) / card_elem_m
+        Phi_m1 = np.sum(np.log(cmr_m1_apen)) / card_elem_m1
 
         self._value = Phi_m - Phi_m1
 
 
-class SampEn(NonLinearIndex):
+class SampleEntropy(NonLinearIndex):
     def __init__(self, data=None):
-        R = 0.2 #settings
-        Uj_m = build_takens_vector(self._data, 2) #cacheable
-        Uj_m1 = build_takens_vector(self._data, 3) #cacheable
+        super(SampleEntropy, self).__init__(data)
+        R = Sett.NonLinearIndexes.sample_entropy_r
+        uj_m = BuildTakensVector2.get(self._data)
+        uj_m1 = BuildTakensVector3.get(self._data)
 
-        numelem_m = Uj_m.shape[0]
-        numelem_m1 = Uj_m1.shape[0]
+        numelem_m = uj_m.shape[0]
+        numelem_m1 = uj_m1.shape[0]
 
         r = R * np.std(self._data) #cacheable
-        d_m = cdist(Uj_m, Uj_m, 'chebyshev')
-        d_m1 = cdist(Uj_m1, Uj_m1, 'chebyshev')
+        d_m = cdist(uj_m, uj_m, 'chebyshev')
+        d_m1 = cdist(uj_m1, uj_m1, 'chebyshev')
 
         Cmr_m_SampEn = np.zeros(numelem_m)
         for i in range(numelem_m):
@@ -69,37 +71,40 @@ class SampEn(NonLinearIndex):
         self._value = np.log(Cm / Cm1)
 
 
-class FracDim(NonLinearIndex):
+class FractalDimension(NonLinearIndex):
     def __init__(self, data=None):
-        Uj_m = build_takens_vector(self._data, 2) #cacheable
+        super(FractalDimension, self).__init__(data)
+        uj_m = BuildTakensVector2.get(self._data)
         Cra = 0.005 #settings
         Crb = 0.75 #settings
-        mutualDistance = pdist(Uj_m, 'chebyshev')
+        mutual_distance = pdist(uj_m, 'chebyshev')
 
-        numelem = len(mutualDistance)
+        num_elem = len(mutual_distance)
 
-        rr = mquantiles(mutualDistance, prob=[Cra, Crb])
+        rr = mquantiles(mutual_distance, prob=[Cra, Crb])
         ra = rr[0]
         rb = rr[1]
 
-        Cmra = float(((mutualDistance <= ra).sum())) / numelem
-        Cmrb = float(((mutualDistance <= rb).sum())) / numelem
+        Cmra = float(((mutual_distance <= ra).sum())) / num_elem
+        Cmrb = float(((mutual_distance <= rb).sum())) / num_elem
 
         self._value = (np.log(Cmrb) - np.log(Cmra)) / (np.log(rb) - np.log(ra))
 
 
-class SVDEn(NonLinearIndex):
+class SVDEntropy(NonLinearIndex):
     def __init__(self, data=None):
-        Uj_m = build_takens_vector(self._data, 2)  # cacheable
-        W = np.linalg.svd(Uj_m, compute_uv=0)
+        super(SVDEntropy, self).__init__(data)
+        uj_m = BuildTakensVector2.get(self._data)
+        W = np.linalg.svd(uj_m, compute_uv=False)
         W /= sum(W)
         self._value = -1 * sum(W * np.log(W))
 
 
 class Fisher(NonLinearIndex):
     def __init__(self, data=None):
-        Uj_m = build_takens_vector(self._data, 2)  # cacheable
-        W = np.linalg.svd(Uj_m, compute_uv=0)
+        super(Fisher, self).__init__(data)
+        uj_m = BuildTakensVector2.get(self._data)
+        W = np.linalg.svd(uj_m, compute_uv=False)
         W /= sum(W)
         FI = 0
         for i in xrange(0, len(W) - 1):    # from 1 to M
@@ -108,17 +113,17 @@ class Fisher(NonLinearIndex):
         self._value = FI
 
 
-class CorrDim(NonLinearIndex):
+class CorrDimension(NonLinearIndex):
     def __init__(self, data=None):
-        LEN = 10  # settings
+        super(CorrDimension, self).__init__(data)
         rr = self._data / 1000  # rr in seconds
-        Uj = build_takens_vector(rr, LEN)
-        numelem = Uj.shape[0]
+        uj = build_takens_vector(rr, Sett.NonLinearIndexes.correlation_dimension_len)
+        numelem = uj.shape[0]
         r_vect = np.arange(0.3, 0.46, 0.02)  # settings
         C = np.zeros(len(r_vect))
         jj = 0
         N = np.zeros(numelem)
-        dj = cdist(Uj, Uj, 'euclidean')
+        dj = cdist(uj, uj, 'euclidean')
         for r in r_vect:
             for i in range(numelem):
                 vector = dj[i]
@@ -134,18 +139,21 @@ class CorrDim(NonLinearIndex):
 
 class PoinSD1(NonLinearIndex):
     def __init__(self, data=None):
+        super(PoinSD1, self).__init__(data)
         xdata, ydata = self._data[:-1], self._data[1:]
         self._value = np.std((xdata - ydata) / np.sqrt(2.0), ddof=1)
 
 
 class PoinSD2(NonLinearIndex):
     def __init__(self, data=None):
+        super(PoinSD2, self).__init__(data)
         xdata, ydata = self._data[:-1], self._data[1:]
         sd2 = np.std((xdata + ydata) / np.sqrt(2.0), ddof=1)
 
 
 class PoinSD12(NonLinearIndex):
     def __init__(self, data=None):
+        super(PoinSD12, self).__init__(data)
         xdata, ydata = self._data[:-1], self._data[1:]
         sd1 = np.std((xdata - ydata) / np.sqrt(2.0), ddof=1) #cacheable
         sd2 = np.std((xdata + ydata) / np.sqrt(2.0), ddof=1) #cacheable
@@ -154,6 +162,7 @@ class PoinSD12(NonLinearIndex):
 
 class PoinEll(NonLinearIndex):
     def __init__(self, data=None):
+        super(PoinEll, self).__init__(data)
         xdata, ydata = self._data[:-1], self._data[1:]
         sd1 = np.std((xdata - ydata) / np.sqrt(2.0), ddof=1) #cacheable
         sd2 = np.std((xdata + ydata) / np.sqrt(2.0), ddof=1) #cacheable
@@ -162,6 +171,7 @@ class PoinEll(NonLinearIndex):
 
 class Hurst(NonLinearIndex):
     def __init__(self, data=None):
+        super(Hurst, self).__init__(data)
         X = self._data
         #calculates hurst exponent
         N = len(X)
@@ -186,6 +196,7 @@ class Hurst(NonLinearIndex):
 class Pfd(NonLinearIndex):
     #calculates petrosian fractal dimension
     def __init__(self, data=None):
+        super(Pfd, self).__init__(data)
         D = RRDiff.get(self._data)
         N_delta = 0  # number of sign changes in derivative of the signal
         for i in xrange(1, len(D)):
@@ -195,8 +206,9 @@ class Pfd(NonLinearIndex):
         self._value = np.float(np.log10(n) / (np.log10(n) + np.log10(n / n + 0.4 * N_delta)))
 
 
-class Dfa_a1(NonLinearIndex):
+class DFAShortTerm(NonLinearIndex):
     def __init__(self, data=None):
+        super(DFAShortTerm, self).__init__(data)
         #calculates Detrended Fluctuation Analysis: alpha1 (short term) component
         X = self._data
         Ave = RRMean.get(X)
@@ -223,8 +235,9 @@ class Dfa_a1(NonLinearIndex):
         self._value = Alpha1
 
 
-class Dfa_a2(NonLinearIndex):
+class DFALongTerm(NonLinearIndex):
     def __init__(self, data=None):
+        super(DFALongTerm, self).__init__(data)
         #calculates Detrended Fluctuation Analysis: alpha2 (long term) component
         X = self._data
         Ave = RRMean.get(X)

@@ -243,7 +243,7 @@ def calculate_non_lin_indexes(rr):
     for i in xrange(0, len(W) - 1):	 # from 1 to M
         FI += ((W[i + 1] - W[i]) ** 2) / (W[i])
     
-    labels = ['ApEn', 'SampEn', 'FracDim', 'SVDEn', 'FI']
+    labels = ['ApproxEntropy', 'SampleEntropy', 'FractalDimension', 'SVDEntropy', 'FI']
     
     return [ApEn, SampEn, FracDim, SVDEn, FI], labels
 
