@@ -4,9 +4,11 @@ import os
 pkg_path = os.path.dirname(__file__)
 
 README = os.path.join(pkg_path, 'README.md')
-lines = open(README).readlines()
+rm = open(README)
+lines = rm.readlines()
 description = ''.join(lines[:3])
 long_description = ''.join(lines[:4])
+rm.close()
 
 vh = open('version', 'r')
 lines = vh.readlines()
