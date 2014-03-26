@@ -5,7 +5,7 @@ from pyHRV.DataSeries import DataSeries
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
 
-def load_rr_data_series(path, column=Sett.load_rr_column_name, sep=Sett.csv_separator):
+def load_rr_data_series(path, column=Sett.Files.load_rr_column_name, sep=Sett.Files.csv_separator):
     """
     For galaxy use loads an rrs. column from a csv file
     @param path:
@@ -23,7 +23,7 @@ def load_rr_data_series(path, column=Sett.load_rr_column_name, sep=Sett.csv_sepa
         raise KeyError("Column %s not found in file %s".format(column, path))
 
 
-def save_rr_data_series(data_series, path, sep=Sett.csv_separator):
+def save_rr_data_series(data_series, path, sep=Sett.Files.csv_separator):
     """
     For galaxy use saves the DataSeries (rr) to a csv file.
     @param data_series:
