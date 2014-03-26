@@ -2,6 +2,8 @@ class PyHRVDefaultSettings:
     def __init__(self):
         pass
 
+    default_interpolation_freq = 4
+
     class Files:
         def __init__(self):
             pass
@@ -17,7 +19,6 @@ class PyHRVDefaultSettings:
         vlf_upper_bound = 0.04
         lf_upper_bound = 0.15
         hf_upper_bound = 0.4
-        default_interpolation_freq = 4
 
     class TimeUnitCheck:
         def __init__(self):

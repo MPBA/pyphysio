@@ -69,7 +69,7 @@ class PSDWelchCalc(CacheableDataCalc):
         :return: Data to cache
         """
         if to_freq is None:
-            to_freq = Sett.interpolation_freq_default
+            to_freq = Sett.default_interpolation_freq
         rr_interp, bt_interp = interpolate_rr(data, to_freq)
         bands, powers = signal.welch(rr_interp, to_freq)
         powers = np.sqrt(powers)
