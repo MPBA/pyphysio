@@ -106,35 +106,35 @@ class Fisher(NonLinearIndex):
         uj_m = BuildTakensVector2.get(self._data)
         W = np.linalg.svd(uj_m, compute_uv=False)
         W /= sum(W)
-        FI = 0
+        fi = 0
         for i in xrange(0, len(W) - 1):    # from 1 to M
-            FI += ((W[i + 1] - W[i]) ** 2) / (W[i])
+            fi += ((W[i + 1] - W[i]) ** 2) / (W[i])
 
-        self._value = FI
+        self._value = fi
 
 
-class CorrDimension(NonLinearIndex):
+class CorrelationDim(NonLinearIndex):
     def __init__(self, data=None):
-        super(CorrDimension, self).__init__(data)
+        super(CorrelationDim, self).__init__(data)
         rr = self._data / 1000  # rr in seconds
         uj = build_takens_vector(rr, Sett.NonLinearIndexes.correlation_dimension_len)
-        numelem = uj.shape[0]
-        r_vect = np.arange(0.3, 0.46, 0.02)  # settings
-        C = np.zeros(len(r_vect))
+        num_elem = uj.shape[0]
+        r_vector = np.arange(0.3, 0.46, 0.02)  # settings TODO: arange in settings?
+        C = np.zeros(len(r_vector))
         jj = 0
-        N = np.zeros(numelem)
+        N = np.zeros(num_elem)
         dj = cdist(uj, uj, 'euclidean')
-        for r in r_vect:
-            for i in range(numelem):
+        for r in r_vector:
+            for i in range(num_elem):
                 vector = dj[i]
-                N[i] = float((vector <= r).sum()) / numelem
-            C[jj] = np.sum(N) / numelem
+                N[i] = float((vector <= r).sum()) / num_elem
+            C[jj] = np.sum(N) / num_elem
             jj += 1
 
-        logC = np.log(C)
-        logr = np.log(r_vect)
+        log_c = np.log(C)
+        log_r = np.log(r_vector)
 
-        self._value = (logC[-1] - logC[0]) / (logr[-1] - logr[0])
+        self._value = (log_c[-1] - log_c[0]) / (log_r[-1] - log_r[0])
 
 
 class PoinSD1(NonLinearIndex):
@@ -197,69 +197,67 @@ class Pfd(NonLinearIndex):
     #calculates petrosian fractal dimension
     def __init__(self, data=None):
         super(Pfd, self).__init__(data)
-        D = RRDiff.get(self._data)
-        N_delta = 0  # number of sign changes in derivative of the signal
-        for i in xrange(1, len(D)):
-            if D[i] * D[i - 1] < 0:
-                N_delta += 1
+        d = RRDiff.get(self._data)
+        n_delta = 0  # number of sign changes in derivative of the signal
+        for i in xrange(1, len(d)):
+            if d[i] * d[i - 1] < 0:
+                n_delta += 1
         n = len(self._data)
-        self._value = np.float(np.log10(n) / (np.log10(n) + np.log10(n / n + 0.4 * N_delta)))
+        self._value = np.float(np.log10(n) / (np.log10(n) + np.log10(n / n + 0.4 * n_delta)))
 
 
 class DFAShortTerm(NonLinearIndex):
     def __init__(self, data=None):
         super(DFAShortTerm, self).__init__(data)
-        #calculates Detrended Fluctuation Analysis: alpha1 (short term) component
-        X = self._data
-        Ave = RRMean.get(X)
-        Y = np.cumsum(X)
-        Y -= Ave
+        #calculates De-trended Fluctuation Analysis: alpha1 (short term) component
+        x = self._data
+        ave = RRMean.get(x)
+        y = np.cumsum(x)
+        y -= ave
 
-        lunghezza = len(X)
-        L = np.arange(4, 17, 4)
-        F = np.zeros(len(L)) # F(n) of different given box length n
-        for i in xrange(0, len(L)):
-            n = int(L[i]) # for each box length L[i]
-            for j in xrange(0, len(X), n): # for each box
-                if j + n < len(X):
+        l = np.arange(4, 17, 4)
+        f = np.zeros(len(l)) # f(n) of different given box length n
+        for i in xrange(0, len(l)):
+            n = int(l[i]) # for each box length l[i]
+            for j in xrange(0, len(x), n): # for each box
+                if j + n < len(x):
                     c = range(j, j + n)
                     c = np.vstack([c, np.ones(n)]).T      # coordinates of time in the box
-                    y = Y[j:j + n]                    # the value of data in the box
-                    F[i] += np.linalg.lstsq(c, y)[1]    # add residue in this box
-            F[i] /= ((len(X) / n) * n)
-        F = np.sqrt(F)
+                    y = y[j:j + n]                    # the value of data in the box
+                    f[i] += np.linalg.lstsq(c, y)[1]    # add residue in this box
+            f[i] /= ((len(x) / n) * n)
+        f = np.sqrt(f)
         try:
-            Alpha1 = np.linalg.lstsq(np.vstack([np.log(L), np.ones(len(L))]).T, np.log(F))[0][0]
+            alpha1 = np.linalg.lstsq(np.vstack([np.log(l), np.ones(len(l))]).T, np.log(f))[0][0]
         except ValueError:
-            Alpha1 = np.nan
-        self._value = Alpha1
+            alpha1 = np.nan
+        self._value = alpha1
 
 
 class DFALongTerm(NonLinearIndex):
     def __init__(self, data=None):
         super(DFALongTerm, self).__init__(data)
-        #calculates Detrended Fluctuation Analysis: alpha2 (long term) component
-        X = self._data
-        Ave = RRMean.get(X)
-        Y = np.cumsum(X)
-        Y -= Ave
-        lMax = np.min([64, len(X)])
-        L = np.arange(4, lMax + 1, 4) ##TODO: check if start from 4 or 16 (Andrea)
-        F = np.zeros(len(L))  # F(n) of different given box length n
-        for i in xrange(0, len(L)):
-            n = int(L[i])  # for each box length L[i]
-            for j in xrange(0, len(X), n): # for each box
-                if j + n < len(X):
+        #calculates De-trended Fluctuation Analysis: alpha2 (long term) component
+        x = self._data
+        ave = RRMean.get(x)
+        y = np.cumsum(x)
+        y -= ave
+        l_max = np.min([64, len(x)])
+        l = np.arange(4, l_max + 1, 4) ##TODO: check if start from 4 or 16 (Andrea)
+        f = np.zeros(len(l))  # f(n) of different given box length n
+        for i in xrange(0, len(l)):
+            n = int(l[i])  # for each box length l[i]
+            for j in xrange(0, len(x), n): # for each box
+                if j + n < len(x):
                     c = range(j, j + n)
                     c = np.vstack([c, np.ones(n)]).T      # coordinates of time in the box
-                    y = Y[j:j + n]                    # the value of data in the box
-                    F[i] += np.linalg.lstsq(c, y)[1]    # add residue in this box
-            F[i] /= ((len(X) / n) * n)
-        F = np.sqrt(F)
+                    y = y[j:j + n]                    # the value of data in the box
+                    f[i] += np.linalg.lstsq(c, y)[1]    # add residue in this box
+            f[i] /= ((len(x) / n) * n)
+        f = np.sqrt(f)
         try:
-            Alpha2 = np.linalg.lstsq(np.vstack([np.log(L), np.ones(len(L))]).T, np.log(F))[0][0]
+            alpha2 = np.linalg.lstsq(np.vstack([np.log(l), np.ones(len(l))]).T, np.log(f))[0][0]
         except ValueError:
-            Alpha2 = np.nan
+            alpha2 = np.nan
 
-        self._value = Alpha2
-
+        self._value = alpha2
