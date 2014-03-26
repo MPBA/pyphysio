@@ -34,4 +34,5 @@ class PyHRVDefaultSettings:
             pass
 
         sample_entropy_r = 0.2
+        approx_entropy_r = sample_entropy_r
         correlation_dimension_len = 10
