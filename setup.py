@@ -1,5 +1,3 @@
-# -*- coding: iso-8859-1 -*-
-
 from distutils.core import setup
 import os
 
@@ -37,9 +35,9 @@ setup(
         'Programming Language :: Python',
     ],
     requires=[
-        'pandas',
-        'numpy',
-        'scipy'
+        'pandas >= 0.13.1',
+        'numpy >= 1.7.1',
+        'scipy >= 0.12.0'
     ],
 
     package_dir={'pyHRV': 'pyHRV'},

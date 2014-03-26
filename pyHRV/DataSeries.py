@@ -1,4 +1,7 @@
 # coding=utf-8
+__author__ = "AleB"
+
+__all__ = ['DataSeries']
 
 import pandas as pd
 from numpy import mean as npmean

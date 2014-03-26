@@ -1,7 +1,9 @@
-__author__ = 'ale'
+__author__ = 'AleB'
+
+__all__ = ['HF', 'HFNormal', 'HFPeak', 'LF', 'LFHF', 'LFNormal', 'LFPeak', 'NormalHF', 'NormalLF', 'Total', 'VLF', 'VLFNormal', 'VLFPeak']
 
 import numpy as np
-from pyHRV.Indexes.Indexes import FDIndex
+from pyHRV.Indexes.BaseIndexes import FDIndex
 from pyHRV.Cache import CacheableDataCalc, PSDWelchCalc
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 

@@ -1,3 +1,5 @@
+__all__ = ['PyHRVDefaultSettings']
+
 class PyHRVDefaultSettings:
     def __init__(self):
         pass
