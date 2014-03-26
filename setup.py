@@ -35,9 +35,9 @@ setup(
         'Programming Language :: Python',
     ],
     requires=[
-        'pandas >= 0.13.1',
-        'numpy >= 1.7.1',
-        'scipy >= 0.12.0'
+        'pandas (>= 0.13.1)',
+        'numpy (>= 1.7.1)',
+        'scipy (>= 0.12.0)'
     ],
 
     package_dir={'pyHRV': 'pyHRV'},
