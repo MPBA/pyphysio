@@ -17,7 +17,7 @@ def load_rr_data_series(path, column=Sett.Files.load_rr_column_name, sep=Sett.Fi
     d = pd.read_csv(path, sep)
     if column in d.columns:
         inst = DataSeries(np.array(d[column]))
-        assert isinstance(inst, DataSeries)
+        assert isinstance(inst, pd.Series)
         return inst
     else:
         raise KeyError("Column %s not found in file %s".format(column, path))
