@@ -14,7 +14,7 @@ from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 class ApproxEntropy(NonLinearIndex):
     def __init__(self, data=None):
         super(ApproxEntropy, self).__init__(data)
-        R = 0.2  # settings
+        R = Sett.NonLinearIndexes.approx_entropy_r
         uj_m = BuildTakensVector2.get(self._data)
         uj_m1 = BuildTakensVector3.get(self._data)
 
