@@ -41,5 +41,5 @@ setup(
     ],
 
     package_dir={'pyHRV': 'pyHRV'},
-    packages=['pyHRV']
+    packages=['pyHRV', 'pyHRV.Indexes']
 )
