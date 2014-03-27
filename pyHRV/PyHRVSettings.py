@@ -1,5 +1,6 @@
 __all__ = ['PyHRVDefaultSettings']
 
+
 class PyHRVDefaultSettings:
     def __init__(self):
         pass
@@ -27,7 +28,7 @@ class PyHRVDefaultSettings:
             pass
 
         time_unit_check_ibi = True
-        time_unit_check_ibi_warn =\
+        time_unit_check_ibi_warn = \
             "Warning: the inter-beat-time (IBI) should be loaded in ms (milli-seconds). The mean is %d!"
         time_unit_check_ibi_mean_min = 80
         time_unit_check_ibi_mean_max = 1200
@@ -41,3 +42,22 @@ class PyHRVDefaultSettings:
         correlation_dimension_len = 10
         fractal_dimension_cra = 0.005
         fractal_dimension_crb = 0.75
+
+    class TDIndexes:
+        def __init__(self):
+            pass
+
+        nnx_default_threshold = 50
+
+    class Local:
+        def __init__(self):
+            pass
+
+        indexes_not_found =\
+            "Some of the indexes requested are not implemented:" \
+            "maybe the name is incorrect or pyHRV version is old.\n" \
+            "Indexes names: %s"
+
+        @staticmethod
+        def names(phrase, names):
+            return phrase.format(", ".join(names))
