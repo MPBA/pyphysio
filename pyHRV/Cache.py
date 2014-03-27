@@ -98,3 +98,12 @@ class BuildTakensVector3(CacheableDataCalc):
     @classmethod
     def _calculate_data(cls, data, params=None):
         return build_takens_vector(data, 3)
+
+
+class PoinSD(CacheableDataCalc):
+    @classmethod
+    def _calculate_data(cls, data, params=None):
+        xd, yd = data[:-1], data[1:]
+        sd1 = np.std((xd - yd) / np.sqrt(2.0), ddof=1)
+        sd2 = np.std((xd + yd) / np.sqrt(2.0), ddof=1)
+        return sd1, sd2
