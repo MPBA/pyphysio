@@ -12,7 +12,7 @@ rm.close()
 
 vh = open('version', 'r')
 lines = vh.readlines()
-version = lines[0].rstrip('\n').rstrip('\r')
+version = lines[-1].rstrip('\n').rstrip('\r')
 vh.close()
 
 setup(
