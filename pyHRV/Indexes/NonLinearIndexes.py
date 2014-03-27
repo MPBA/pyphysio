@@ -1,13 +1,13 @@
 # coding=utf-8
 
 __all__ = ['ApproxEntropy', 'CorrelationDim', 'DFALongTerm', 'DFAShortTerm', 'Fisher', 'FractalDimension', 'Hurst',
-           'Pfd', 'PoinEll', 'PoinSD1', 'PoinSD12', 'PoinSD2', 'SVDEntropy', 'SampleEntropy']
+           'PetrosianFracDim', 'PoinEll', 'PoinSD1', 'PoinSD12', 'PoinSD2', 'SVDEntropy', 'SampleEntropy']
 
 import numpy as np
 from scipy.spatial.distance import cdist, pdist
 from scipy.stats.mstats import mquantiles
 
-from pyHRV.Cache import RRDiff, BuildTakensVector2, BuildTakensVector3
+from pyHRV.Cache import RRDiff, BuildTakensVector2, BuildTakensVector3, PoincaréSD
 from pyHRV.Indexes.BaseIndexes import NonLinearIndex
 from pyHRV.Indexes.TDIndexes import RRMean
 from pyHRV.utility import build_takens_vector
@@ -107,11 +107,11 @@ class Fisher(NonLinearIndex):
     def __init__(self, data=None):
         super(Fisher, self).__init__(data)
         uj_m = BuildTakensVector2.get(self._data)
-        W = np.linalg.svd(uj_m, compute_uv=False)
-        W /= sum(W)
+        w = np.linalg.svd(uj_m, compute_uv=False)
+        w /= sum(w)
         fi = 0
-        for i in xrange(0, len(W) - 1):    # from 1 to M
-            fi += ((W[i + 1] - W[i]) ** 2) / (W[i])
+        for i in xrange(0, len(w) - 1):    # from 1 to M
+            fi += ((w[i + 1] - w[i]) ** 2) / (w[i])
 
         self._value = fi
 
@@ -122,7 +122,7 @@ class CorrelationDim(NonLinearIndex):
         rr = self._data / 1000  # rr in seconds
         uj = build_takens_vector(rr, Sett.NonLinearIndexes.correlation_dimension_len)
         num_elem = uj.shape[0]
-        r_vector = np.arange(0.3, 0.46, 0.02)  # settings TODO: arange in settings?
+        r_vector = np.arange(0.3, 0.46, 0.02)  # settings TODO: arange in settings? (Andrea)
         c = np.zeros(len(r_vector))
         jj = 0
         n = np.zeros(num_elem)
@@ -143,64 +143,59 @@ class CorrelationDim(NonLinearIndex):
 class PoinSD1(NonLinearIndex):
     def __init__(self, data=None):
         super(PoinSD1, self).__init__(data)
-        xd, yd = self._data[:-1], self._data[1:]
-        self._value = np.std((xd - yd) / np.sqrt(2.0), ddof=1)
+        sd1, sd2 = PoincaréSD.get(self._data)
+        # TODO: Is this return right? (Andrea)
+        self._value = sd1
 
 
 class PoinSD2(NonLinearIndex):
     def __init__(self, data=None):
         super(PoinSD2, self).__init__(data)
-        xd, yd = self._data[:-1], self._data[1:]
-        sd2 = np.std((xd + yd) / np.sqrt(2.0), ddof=1)
-        # TODO: Return something (Andrea)
+        sd1, sd2 = PoincaréSD.get(self._data)
+        # TODO: Is this return right? (Andrea)
+        self._value = sd2
 
 
 class PoinSD12(NonLinearIndex):
     def __init__(self, data=None):
         super(PoinSD12, self).__init__(data)
-        xd, yd = self._data[:-1], self._data[1:]
-        sd1 = np.std((xd - yd) / np.sqrt(2.0), ddof=1) #cacheable
-        sd2 = np.std((xd + yd) / np.sqrt(2.0), ddof=1) #cacheable
+        sd1, sd2 = PoincaréSD.get(self._data)
         self._value = sd1 / sd2
 
 
 class PoinEll(NonLinearIndex):
     def __init__(self, data=None):
         super(PoinEll, self).__init__(data)
-        xd, yd = self._data[:-1], self._data[1:]
-        sd1 = np.std((xd - yd) / np.sqrt(2.0), ddof=1) #cacheable
-        sd2 = np.std((xd + yd) / np.sqrt(2.0), ddof=1) #cacheable
+        sd1, sd2 = PoincaréSD.get(self._data)
         self._value = sd1 * sd2 * np.pi
 
 
 class Hurst(NonLinearIndex):
     def __init__(self, data=None):
         super(Hurst, self).__init__(data)
-        X = self._data
-        #calculates hurst exponent
-        N = len(X)
-        T = np.array([float(i) for i in xrange(1, N + 1)])
-        Y = np.cumsum(X)
-        Ave_T = Y / T
+        n = len(self._data)
+        t = np.array([float(i) for i in xrange(1, n + 1)])
+        y = np.cumsum(self._data)
+        ave_t = y / t
 
-        S_T = np.zeros((N))
-        R_T = np.zeros((N))
-        for i in xrange(N):
-            S_T[i] = np.std(X[:i + 1])
-            X_T = Y - T * Ave_T[i]
-            R_T[i] = np.max(X_T[:i + 1]) - np.min(X_T[:i + 1])
+        s_t = np.zeros(n)
+        r_t = np.zeros(n)
+        for i in xrange(n):
+            s_t[i] = np.std(self._data[:i + 1])
+            x_t = y - t * ave_t[i]
+            r_t[i] = np.max(x_t[:i + 1]) - np.min(x_t[:i + 1])
 
-        R_S = R_T / S_T
-        R_S = np.log(R_S)
-        n = np.log(T).reshape(N, 1)
-        H = np.linalg.lstsq(n[1:], R_S[1:])[0]
-        self._value = H[0]
+        r_s = r_t / s_t
+        r_s = np.log(r_s)
+        n = np.log(t).reshape(n, 1)
+        h = np.linalg.lstsq(n[1:], r_s[1:])[0]
+        self._value = h[0]
 
 
-class Pfd(NonLinearIndex):
-    #calculates petrosian fractal dimension
+class PetrosianFracDim(NonLinearIndex):
+    # calculates petrosian fractal dimension
     def __init__(self, data=None):
-        super(Pfd, self).__init__(data)
+        super(PetrosianFracDim, self).__init__(data)
         d = RRDiff.get(self._data)
         n_delta = 0  # number of sign changes in derivative of the signal
         for i in xrange(1, len(d)):
@@ -220,10 +215,10 @@ class DFAShortTerm(NonLinearIndex):
         y -= ave
 
         l = np.arange(4, 17, 4)
-        f = np.zeros(len(l)) # f(n) of different given box length n
+        f = np.zeros(len(l))  # f(n) of different given box length n
         for i in xrange(0, len(l)):
-            n = int(l[i]) # for each box length l[i]
-            for j in xrange(0, len(x), n): # for each box
+            n = int(l[i])  # for each box length l[i]
+            for j in xrange(0, len(x), n):  # for each box
                 if j + n < len(x):
                     c = range(j, j + n)
                     c = np.vstack([c, np.ones(n)]).T      # coordinates of time in the box
@@ -247,11 +242,11 @@ class DFALongTerm(NonLinearIndex):
         y = np.cumsum(x)
         y -= ave
         l_max = np.min([64, len(x)])
-        l = np.arange(4, l_max + 1, 4) ##TODO: check if start from 4 or 16 (Andrea)
+        l = np.arange(4, l_max + 1, 4)  # TODO: check if start from 4 or 16 (Andrea)
         f = np.zeros(len(l))  # f(n) of different given box length n
         for i in xrange(0, len(l)):
             n = int(l[i])  # for each box length l[i]
-            for j in xrange(0, len(x), n): # for each box
+            for j in xrange(0, len(x), n):  # for each box
                 if j + n < len(x):
                     c = range(j, j + n)
                     c = np.vstack([c, np.ones(n)]).T      # coordinates of time in the box
