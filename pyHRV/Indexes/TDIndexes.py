@@ -1,4 +1,5 @@
 # coding=utf-8
+from pyHRV.PyHRVSettings import PyHRVDefaultSettings
 
 __all__ = ['HRMean', 'HRMedian', 'HRSTD', 'NNx', 'PNNx', 'RMSSD', 'RRMean', 'RRMedian', 'RRSTD', 'SDSD']
 
@@ -56,7 +57,7 @@ class RRSTD(TDIndex, CacheableDataCalc):
 
 class HRSTD(TDIndex, CacheableDataCalc):
     def __init__(self, data=None):
-        super(TDIndex, self).__init__(data)
+        super(HRSTD, self).__init__(data)
         self._value = HRSTD.get(self._data)
 
     @classmethod
@@ -66,15 +67,15 @@ class HRSTD(TDIndex, CacheableDataCalc):
 
 ## self._value= NNx/len(diff) >> not convenient for a parameter problem
 class PNNx(TDIndex):
-    def __init__(self, threshold, data=None):
-        super(TDIndex, self).__init__(data)
+    def __init__(self, data=None, threshold=PyHRVDefaultSettings.TDIndexes.nnx_default_threshold):
+        super(PNNx, self).__init__(data)
         self._xth = threshold
-        self._value = NNx(threshold, data).value / len(data)
+        self._value = NNx(data, threshold).value / len(data)
 
 
 class NNx(TDIndex):
-    def __init__(self, threshold, data=None):
-        super(TDIndex, self).__init__(data)
+    def __init__(self, data=None, threshold=PyHRVDefaultSettings.TDIndexes.nnx_default_threshold):
+        super(NNx, self).__init__(data)
         self._xth = threshold
         diff = RRDiff.get(self._data)
         self._value = 100.0 * sum(1 for x in diff if x > self._xth)
@@ -82,13 +83,13 @@ class NNx(TDIndex):
 
 class RMSSD(TDIndex):
     def __init__(self, data=None):
-        super(TDIndex, self).__init__(data)
+        super(RMSSD, self).__init__(data)
         diff = RRDiff.get(self._data)
         self._value = np.sqrt(sum(diff ** 2) / (len(diff) - 1))
 
 
 class SDSD(TDIndex):
     def __init__(self, data=None):
-        super(TDIndex, self).__init__(data)
+        super(SDSD, self).__init__(data)
         diff = RRDiff.get(self._data)
         self._value = np.std(diff)
