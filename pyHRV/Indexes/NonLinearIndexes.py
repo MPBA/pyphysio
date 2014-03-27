@@ -7,7 +7,7 @@ import numpy as np
 from scipy.spatial.distance import cdist, pdist
 from scipy.stats.mstats import mquantiles
 
-from pyHRV.Cache import RRDiff, BuildTakensVector2, BuildTakensVector3, PoincaréSD
+from pyHRV.Cache import RRDiff, BuildTakensVector2, BuildTakensVector3, PoinSD
 from pyHRV.Indexes.BaseIndexes import NonLinearIndex
 from pyHRV.Indexes.TDIndexes import RRMean
 from pyHRV.utility import build_takens_vector
@@ -143,7 +143,7 @@ class CorrelationDim(NonLinearIndex):
 class PoinSD1(NonLinearIndex):
     def __init__(self, data=None):
         super(PoinSD1, self).__init__(data)
-        sd1, sd2 = PoincaréSD.get(self._data)
+        sd1, sd2 = PoinSD.get(self._data)
         # TODO: Is this return right? (Andrea)
         self._value = sd1
 
@@ -151,7 +151,7 @@ class PoinSD1(NonLinearIndex):
 class PoinSD2(NonLinearIndex):
     def __init__(self, data=None):
         super(PoinSD2, self).__init__(data)
-        sd1, sd2 = PoincaréSD.get(self._data)
+        sd1, sd2 = PoinSD.get(self._data)
         # TODO: Is this return right? (Andrea)
         self._value = sd2
 
@@ -159,14 +159,14 @@ class PoinSD2(NonLinearIndex):
 class PoinSD12(NonLinearIndex):
     def __init__(self, data=None):
         super(PoinSD12, self).__init__(data)
-        sd1, sd2 = PoincaréSD.get(self._data)
+        sd1, sd2 = PoinSD.get(self._data)
         self._value = sd1 / sd2
 
 
 class PoinEll(NonLinearIndex):
     def __init__(self, data=None):
         super(PoinEll, self).__init__(data)
-        sd1, sd2 = PoincaréSD.get(self._data)
+        sd1, sd2 = PoinSD.get(self._data)
         self._value = sd1 * sd2 * np.pi
 
 
