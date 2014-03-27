@@ -39,3 +39,5 @@ class PyHRVDefaultSettings:
         sample_entropy_r = 0.2
         approx_entropy_r = sample_entropy_r
         correlation_dimension_len = 10
+        fractal_dimension_cra = 0.005
+        fractal_dimension_crb = 0.75

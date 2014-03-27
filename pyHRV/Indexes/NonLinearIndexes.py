@@ -1,6 +1,7 @@
 # coding=utf-8
 
-__all__ = ['ApproxEntropy', 'CorrelationDim', 'DFALongTerm', 'DFAShortTerm', 'Fisher', 'FractalDimension', 'Hurst', 'Pfd', 'PoinEll', 'PoinSD1', 'PoinSD12', 'PoinSD2', 'SVDEntropy', 'SampleEntropy']
+__all__ = ['ApproxEntropy', 'CorrelationDim', 'DFALongTerm', 'DFAShortTerm', 'Fisher', 'FractalDimension', 'Hurst',
+           'Pfd', 'PoinEll', 'PoinSD1', 'PoinSD12', 'PoinSD2', 'SVDEntropy', 'SampleEntropy']
 
 import numpy as np
 from scipy.spatial.distance import cdist, pdist
@@ -16,14 +17,14 @@ from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 class ApproxEntropy(NonLinearIndex):
     def __init__(self, data=None):
         super(ApproxEntropy, self).__init__(data)
-        R = Sett.NonLinearIndexes.approx_entropy_r
+        r = Sett.NonLinearIndexes.approx_entropy_r
         uj_m = BuildTakensVector2.get(self._data)
         uj_m1 = BuildTakensVector3.get(self._data)
 
         card_elem_m = uj_m.shape[0]
         card_elem_m1 = uj_m1.shape[0]
 
-        r = R * np.std(self._data)
+        r = r * np.std(self._data)
         d_m = cdist(uj_m, uj_m, 'chebyshev')
         d_m1 = cdist(uj_m1, uj_m1, 'chebyshev')
 
@@ -37,69 +38,69 @@ class ApproxEntropy(NonLinearIndex):
             vector = d_m1[i]
             cmr_m1_apen[i] = float((vector <= r).sum()) / card_elem_m1
 
-        Phi_m = np.sum(np.log(cmr_m_apen)) / card_elem_m
-        Phi_m1 = np.sum(np.log(cmr_m1_apen)) / card_elem_m1
+        phi_m = np.sum(np.log(cmr_m_apen)) / card_elem_m
+        phi_m1 = np.sum(np.log(cmr_m1_apen)) / card_elem_m1
 
-        self._value = Phi_m - Phi_m1
+        self._value = phi_m - phi_m1
 
 
 class SampleEntropy(NonLinearIndex):
     def __init__(self, data=None):
         super(SampleEntropy, self).__init__(data)
-        R = Sett.NonLinearIndexes.sample_entropy_r
+        r = Sett.NonLinearIndexes.sample_entropy_r
         uj_m = BuildTakensVector2.get(self._data)
         uj_m1 = BuildTakensVector3.get(self._data)
 
-        numelem_m = uj_m.shape[0]
-        numelem_m1 = uj_m1.shape[0]
+        num_elem_m = uj_m.shape[0]
+        num_elem_m1 = uj_m1.shape[0]
 
-        r = R * np.std(self._data) #cacheable
+        r = r * np.std(self._data) #cacheable
         d_m = cdist(uj_m, uj_m, 'chebyshev')
         d_m1 = cdist(uj_m1, uj_m1, 'chebyshev')
 
-        Cmr_m_SampEn = np.zeros(numelem_m)
-        for i in range(numelem_m):
+        cmr_m_samp_en = np.zeros(num_elem_m)
+        for i in range(num_elem_m):
             vector = d_m[i]
-            Cmr_m_SampEn[i] = float((vector <= r).sum() - 1) / (numelem_m - 1)
+            cmr_m_samp_en[i] = float((vector <= r).sum() - 1) / (num_elem_m - 1)
 
-        Cmr_m1_SampEn = np.zeros(numelem_m1)
-        for i in range(numelem_m1):
+        cmr_m1_samp_en = np.zeros(num_elem_m1)
+        for i in range(num_elem_m1):
             vector = d_m1[i]
-            Cmr_m1_SampEn[i] = float((vector <= r).sum() - 1) / (numelem_m1 - 1)
+            cmr_m1_samp_en[i] = float((vector <= r).sum() - 1) / (num_elem_m1 - 1)
 
-        Cm = np.sum(Cmr_m_SampEn) / numelem_m
-        Cm1 = np.sum(Cmr_m1_SampEn) / numelem_m1
+        cm = np.sum(cmr_m_samp_en) / num_elem_m
+        cm1 = np.sum(cmr_m1_samp_en) / num_elem_m1
 
-        self._value = np.log(Cm / Cm1)
+        self._value = np.log(cm / cm1)
 
 
 class FractalDimension(NonLinearIndex):
     def __init__(self, data=None):
         super(FractalDimension, self).__init__(data)
         uj_m = BuildTakensVector2.get(self._data)
-        Cra = 0.005 #settings
-        Crb = 0.75 #settings
+        cra = Sett.NonLinearIndexes.fractal_dimension_cra
+        crb = Sett.NonLinearIndexes.fractal_dimension_crb
         mutual_distance = pdist(uj_m, 'chebyshev')
 
         num_elem = len(mutual_distance)
 
-        rr = mquantiles(mutual_distance, prob=[Cra, Crb])
+        rr = mquantiles(mutual_distance, prob=[cra, crb])
         ra = rr[0]
         rb = rr[1]
 
-        Cmra = float(((mutual_distance <= ra).sum())) / num_elem
-        Cmrb = float(((mutual_distance <= rb).sum())) / num_elem
+        cmr_a = float(((mutual_distance <= ra).sum())) / num_elem
+        cmr_b = float(((mutual_distance <= rb).sum())) / num_elem
 
-        self._value = (np.log(Cmrb) - np.log(Cmra)) / (np.log(rb) - np.log(ra))
+        self._value = (np.log(cmr_b) - np.log(cmr_a)) / (np.log(rb) - np.log(ra))
 
 
 class SVDEntropy(NonLinearIndex):
     def __init__(self, data=None):
         super(SVDEntropy, self).__init__(data)
         uj_m = BuildTakensVector2.get(self._data)
-        W = np.linalg.svd(uj_m, compute_uv=False)
-        W /= sum(W)
-        self._value = -1 * sum(W * np.log(W))
+        w = np.linalg.svd(uj_m, compute_uv=False)
+        w /= sum(w)
+        self._value = -1 * sum(w * np.log(w))
 
 
 class Fisher(NonLinearIndex):
@@ -122,18 +123,18 @@ class CorrelationDim(NonLinearIndex):
         uj = build_takens_vector(rr, Sett.NonLinearIndexes.correlation_dimension_len)
         num_elem = uj.shape[0]
         r_vector = np.arange(0.3, 0.46, 0.02)  # settings TODO: arange in settings?
-        C = np.zeros(len(r_vector))
+        c = np.zeros(len(r_vector))
         jj = 0
-        N = np.zeros(num_elem)
+        n = np.zeros(num_elem)
         dj = cdist(uj, uj, 'euclidean')
         for r in r_vector:
             for i in range(num_elem):
                 vector = dj[i]
-                N[i] = float((vector <= r).sum()) / num_elem
-            C[jj] = np.sum(N) / num_elem
+                n[i] = float((vector <= r).sum()) / num_elem
+            c[jj] = np.sum(n) / num_elem
             jj += 1
 
-        log_c = np.log(C)
+        log_c = np.log(c)
         log_r = np.log(r_vector)
 
         self._value = (log_c[-1] - log_c[0]) / (log_r[-1] - log_r[0])
@@ -142,32 +143,33 @@ class CorrelationDim(NonLinearIndex):
 class PoinSD1(NonLinearIndex):
     def __init__(self, data=None):
         super(PoinSD1, self).__init__(data)
-        xdata, ydata = self._data[:-1], self._data[1:]
-        self._value = np.std((xdata - ydata) / np.sqrt(2.0), ddof=1)
+        xd, yd = self._data[:-1], self._data[1:]
+        self._value = np.std((xd - yd) / np.sqrt(2.0), ddof=1)
 
 
 class PoinSD2(NonLinearIndex):
     def __init__(self, data=None):
         super(PoinSD2, self).__init__(data)
-        xdata, ydata = self._data[:-1], self._data[1:]
-        sd2 = np.std((xdata + ydata) / np.sqrt(2.0), ddof=1)
+        xd, yd = self._data[:-1], self._data[1:]
+        sd2 = np.std((xd + yd) / np.sqrt(2.0), ddof=1)
+        # TODO: Return something (Andrea)
 
 
 class PoinSD12(NonLinearIndex):
     def __init__(self, data=None):
         super(PoinSD12, self).__init__(data)
-        xdata, ydata = self._data[:-1], self._data[1:]
-        sd1 = np.std((xdata - ydata) / np.sqrt(2.0), ddof=1) #cacheable
-        sd2 = np.std((xdata + ydata) / np.sqrt(2.0), ddof=1) #cacheable
+        xd, yd = self._data[:-1], self._data[1:]
+        sd1 = np.std((xd - yd) / np.sqrt(2.0), ddof=1) #cacheable
+        sd2 = np.std((xd + yd) / np.sqrt(2.0), ddof=1) #cacheable
         self._value = sd1 / sd2
 
 
 class PoinEll(NonLinearIndex):
     def __init__(self, data=None):
         super(PoinEll, self).__init__(data)
-        xdata, ydata = self._data[:-1], self._data[1:]
-        sd1 = np.std((xdata - ydata) / np.sqrt(2.0), ddof=1) #cacheable
-        sd2 = np.std((xdata + ydata) / np.sqrt(2.0), ddof=1) #cacheable
+        xd, yd = self._data[:-1], self._data[1:]
+        sd1 = np.std((xd - yd) / np.sqrt(2.0), ddof=1) #cacheable
+        sd2 = np.std((xd + yd) / np.sqrt(2.0), ddof=1) #cacheable
         self._value = sd1 * sd2 * np.pi
 
 
