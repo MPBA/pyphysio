@@ -1,7 +1,6 @@
-from pyHRV.Files import *
-from pyHRV.Indexes import FDIndexes as FDI
-from pyHRV.Indexes import TDIndexes as TDI
 from ParamExecClass import ParamExecClass
+import pandas as pd
+import pyHRV
 
 ## DONE: load a .RR file (as functions do in Files)
 ## DONE: (by the wrapper) if the input file is a .tar.gz: un-tar and load more files
@@ -15,130 +14,21 @@ class GalaxyHRVAnalysis(ParamExecClass):
     kwargs['indexes'] --> indexes list [1,0, ... 1,0]
     """
     def execute(self):
-        data = load_rr_data_series(self._kwargs['input'])
-        indexes_list = self._kwargs['indexes']
-        hrv_values = dict()
+        data = pyHRV.Files.load_rr_data_series(self._kwargs['input'])
+        indexes = self._kwargs['indexes']
+        values = dict()
+        errors = list()
 
-        i = 0
+        # Pre-parse the list to save time
+        for index in indexes:
+            if not hasattr(pyHRV, index):
+                errors.append(index)
 
-        #------------
-        # TIME DOMAIN
-        #------------
-        if indexes_list[i] == 1:
-            hrv_values["RRMean"] = TDI.RRMean(data).value
-        i += 1
+        if len(errors) > 0:
+            raise NameError(pyHRV.Sett.Local.names(pyHRV.Sett.Local.indexes_not_found, errors))
+        else:
+            for index in indexes:
+                values[index] = getattr(pyHRV, index)(data).value
 
-        if indexes_list[i] == 1:
-            hrv_values["HRMean"] = TDI.HRMean(data).value
-        i += 1
-
-        if indexes_list[i] == 1:
-            hrv_values["RRMedian"] = TDI.RRMedian(data).value
-        i += 1
-
-        if indexes_list[i] == 1:
-            hrv_values["HRMedian"] = TDI.HRMedian(data).value
-        i += 1
-
-        if indexes_list[i] == 1:
-            hrv_values["RRSTD"] = TDI.RRSTD(data).value
-        i += 1
-
-        if indexes_list[i] == 1:
-            hrv_values["HRSTD"] = TDI.HRSTD(data).value
-        i += 1
-
-        if indexes_list[i] == 1:
-            hrv_values["PNN10"] = TDI.PNNx(10, data).value
-        i += 1
-
-        if indexes_list[i] == 1:
-            hrv_values["PNN25"] = TDI.PNNx(25, data).value
-        i += 1
-
-        if indexes_list[i] == 1:
-            hrv_values["PNN50"] = TDI.PNNx(50, data).value
-        i += 1
-
-        if indexes_list[i] == 1:
-            hrv_values["NN10"] = TDI.NNx(10, data).value
-        i += 1
-
-        if indexes_list[i] == 1:
-            hrv_values["NN25"] = TDI.NNx(25, data).value
-        i += 1
-
-        if indexes_list[i] == 1:
-            hrv_values["NN50"] = TDI.NNx(50, data).value
-        i += 1
-
-        if indexes_list[i] == 1:
-            hrv_values["RRSSD"] = TDI.RMSSD(data).value
-        i += 1
-
-        if indexes_list[i] == 1:
-            hrv_values["SDSD"] = TDI.SDSD(data).value
-        i += 1
-
-        #------------
-        # FREQ DOMAIN
-        #------------
-        if indexes_list[i] == 1:
-            hrv_values["VLF"] = FDI.VLF(data).value
-        i += 1
-
-        if indexes_list[i] == 1:
-            hrv_values["LF"] = FDI.LF(data).value
-        i += 1
-
-        if indexes_list[i] == 1:
-            hrv_values["HF"] = FDI.HF(data).value
-        i += 1
-
-        if indexes_list[i] == 1:
-            hrv_values["VLFpeak"] = FDI.VLFPeak(data).value
-        i += 1
-
-        if indexes_list[i] == 1:
-            hrv_values["LFpeak"] = FDI.LFPeak(data).value
-        i += 1
-
-        if indexes_list[i] == 1:
-            hrv_values["HFpeak"] = FDI.HFPeak(data).value
-        i += 1
-
-        if indexes_list[i] == 1:
-            hrv_values["VLF_N"] = FDI.VLFNormal(data).value
-        i += 1
-
-        if indexes_list[i] == 1:
-            hrv_values["LF_N"] = FDI.LFNormal(data).value
-        i += 1
-
-        if indexes_list[i] == 1:
-            hrv_values["HF_N"] = FDI.HFNormal(data).value
-        i += 1
-
-        if indexes_list[i] == 1:
-            hrv_values["Total"] = FDI.Total(data).value
-        i += 1
-
-        if indexes_list[i] == 1:
-            hrv_values["LFHF"] = FDI.LFHF(data).value
-        i += 1
-
-        if indexes_list[i] == 1:
-            hrv_values["nLF"] = FDI.NormalLF(data).value
-        i += 1
-
-        if indexes_list[i] == 1:
-            hrv_values["nHF"] = FDI.NormalHF(data).value
-
-        #-----------
-        # NON LIN
-        #-----------
-
-        ## TODO: nonlin indexes
-
-        save_rr_data_series(pd.Series(hrv_values), self._kwargs['output'])
-        return hrv_values
+        pyHRV.Files.save_rr_data_series(pd.Series(values), self._kwargs['output'])
+        return values
