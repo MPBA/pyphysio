@@ -1,0 +1,23 @@
+<tool id="hrv_indexes_sin" name="HRV Indexes Single Window" version="1.0.0">
+  <description></description>
+
+  <command interpreter="python">
+    calculateHRVsingle_w.py -i $input1 -o $out_file1 -w $w -j $j -f $f -p $p
+  </command>
+
+  <inputs>
+      <param name="input1" type="data" format="tgz"  />
+      <param name="w" label="Window Length [s]" type="text" value="40" />
+      <param name="j" label="Moving interval in seconds for centering new windows set (0=each beat)" type="text" value="20" />
+      <param name="f" label="Sampling frequency" type="text" value="4" />
+      <param name="p" label="PSD estimation method" type="text" value="ar" />
+  </inputs>
+
+  <outputs>
+    <data name="out_file1" format="tgz"  />
+  </outputs>
+
+  <help>
+      Calculate HRV indexes from R-R interval series using a single moving window of WINSIZE length and jumping by JUMP
+  </help>
+</tool>
