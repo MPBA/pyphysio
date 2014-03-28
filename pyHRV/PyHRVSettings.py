@@ -28,8 +28,6 @@ class PyHRVDefaultSettings:
             pass
 
         time_unit_check_ibi = True
-        time_unit_check_ibi_warn = \
-            "Warning: the inter-beat-time (IBI) should be loaded in ms (milli-seconds). The mean is %d!"
         time_unit_check_ibi_mean_min = 80
         time_unit_check_ibi_mean_max = 1200
 
@@ -57,6 +55,9 @@ class PyHRVDefaultSettings:
             "Some of the indexes requested are not implemented:" \
             "maybe the name is incorrect or pyHRV version is old.\n" \
             "Indexes names: {:s}"
+
+        time_unit_check_ibi_warn = \
+            "Warning: the inter-beat-time (IBI) should be loaded in ms (milli-seconds). The mean is {:d}!"
 
         @staticmethod
         def names(phrase, names):

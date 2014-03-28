@@ -25,7 +25,7 @@ class DataSeries(pd.TimeSeries):
         mean = npmean(data)
         assert (not Sett.TimeUnitCheck.time_unit_check_ibi_mean_max < Sett.TimeUnitCheck.time_unit_check_ibi
                 | (mean < Sett.TimeUnitCheck.time_unit_check_ibi_mean_min)),\
-            Sett.TimeUnitCheck.time_unit_check_ibi_warn % mean
+            Sett.Local.time_unit_check_ibi_warn % mean
 
     def cache_clear(self):
         """ Clears the cache and frees memory (GC?)
