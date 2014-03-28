@@ -6,7 +6,7 @@ __all__ = ['HRMean', 'HRMedian', 'HRSTD', 'NNx', 'PNNx', 'RMSSD', 'RRMean', 'RRM
 import numpy as np
 
 from pyHRV.Cache import CacheableDataCalc, RRDiff
-from pyHRV.Indexes.BaseIndexes import TDIndex
+from pyHRV.indexes.BaseIndexes import TDIndex
 
 
 class RRMean(TDIndex, CacheableDataCalc):

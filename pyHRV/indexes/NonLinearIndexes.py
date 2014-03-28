@@ -8,8 +8,8 @@ from scipy.spatial.distance import cdist, pdist
 from scipy.stats.mstats import mquantiles
 
 from pyHRV.Cache import RRDiff, BuildTakensVector2, BuildTakensVector3, PoinSD
-from pyHRV.Indexes.BaseIndexes import NonLinearIndex
-from pyHRV.Indexes.TDIndexes import RRMean
+from pyHRV.indexes.BaseIndexes import NonLinearIndex
+from pyHRV.indexes.TDIndexes import RRMean
 from pyHRV.utility import build_takens_vector
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
