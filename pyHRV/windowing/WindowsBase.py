@@ -1,12 +1,17 @@
 __author__ = 'AleB'
-__all__ = ['WindowError', 'Window', 'WindowsIterator', 'WindowsGenerator']
+__all__ = ['WindowError', 'Window', 'WindowsGenerator']
 
 
 class WindowError(Exception):
+    """Generic Windowing error.
+    """
     pass
 
 
 class Window(object):
+    """Base Window, a begin-end pair
+    """
+
     def __init__(self, begin, end):
         self._begin = begin
         self._end = end
@@ -21,6 +26,10 @@ class Window(object):
 
 
 class WindowsIterator(object):
+    """A generic iterator that is called from each WindowGenerator from the __iter__ method.
+    Not for the end user.
+    """
+
     def __init__(self, win):
         assert isinstance(win, WindowsGenerator)
         self._win = win
@@ -30,6 +39,9 @@ class WindowsIterator(object):
 
 
 class WindowsGenerator(object):
+    """Base and abstract class for the windows computation.
+    """
+
     def __init__(self, data=None):
         self._data = None
         if data is None:
@@ -45,4 +57,4 @@ class WindowsGenerator(object):
         self._data = data
 
     def step_windowing(self):
-        return Window(0, 0)
+        raise StopIteration

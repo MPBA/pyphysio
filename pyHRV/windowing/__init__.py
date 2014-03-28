@@ -1,4 +1,7 @@
 __author__ = 'AleB'
 
-import WindowsBase
 from WindowsBase import *
+import WindowGenerators
+from WindowGenerators import *
+
+__all__ = WindowGenerators.__all__
