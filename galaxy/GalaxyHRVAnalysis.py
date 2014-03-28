@@ -25,7 +25,8 @@ class GalaxyHRVAnalysis(ParamExecClass):
                 errors.append(index)
 
         if len(errors) > 0:
-            raise NameError(pyHRV.Sett.Local.names(pyHRV.Sett.Local.indexes_not_found, errors))
+            raise NameError(pyHRV.PyHRVDefaultSettings.Local.names(
+                pyHRV.PyHRVDefaultSettings.Local.indexes_not_found, errors))
         else:
             for index in indexes:
                 values[index] = getattr(pyHRV, index)(data).value

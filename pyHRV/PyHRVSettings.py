@@ -56,7 +56,7 @@ class PyHRVDefaultSettings:
         indexes_not_found =\
             "Some of the indexes requested are not implemented:" \
             "maybe the name is incorrect or pyHRV version is old.\n" \
-            "Indexes names: %s"
+            "Indexes names: {:s}"
 
         @staticmethod
         def names(phrase, names):
