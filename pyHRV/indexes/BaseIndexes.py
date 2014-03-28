@@ -7,10 +7,11 @@ class DataAnalysis(object):
 
 
 class Index(object):
-    def __init__(self, data=None, value=None):
+    def __init__(self, data=None, value=None, windows=None):
         self._value = value
         self._data = data
 
+    # Offline part
     @property
     def calculated(self):
         """
@@ -27,21 +28,25 @@ class Index(object):
         self._data = data
         self._value = None
 
+    # Windowing part
+    def compute_on_windows(self):
+        pass
+
 
 class TDIndex(Index):
-    def __init__(self, data=None, value=None):
-        super(TDIndex, self).__init__(data, value)
+    def __init__(self, data=None):
+        super(TDIndex, self).__init__(data)
 
 
 class FDIndex(Index):
-    def __init__(self, interp_freq, data=None, value=None):
-        super(FDIndex, self).__init__(data, value)
+    def __init__(self, interp_freq, data=None):
+        super(FDIndex, self).__init__(data)
         self._interp_freq = interp_freq
 
 
 class NonLinearIndex(Index):
-    def __init__(self, data=None, value=None):
-        super(NonLinearIndex, self).__init__(data, value)
+    def __init__(self, data=None):
+        super(NonLinearIndex, self).__init__(data)
 
 
 class RRFilters(DataAnalysis):
