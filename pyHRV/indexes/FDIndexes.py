@@ -9,8 +9,8 @@ from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
 
 class InBand(FDIndex):
-    def __init__(self, freq_min, freq_max, interp_freq=Sett.default_interpolation_freq, data=None, value=None):
-        super(InBand, self).__init__(interp_freq, data, value)
+    def __init__(self, freq_min, freq_max, interp_freq=Sett.default_interpolation_freq, data=None):
+        super(InBand, self).__init__(interp_freq, data)
         self._freq_min = freq_min
         self._freq_max = freq_max
 
@@ -24,7 +24,7 @@ class InBand(FDIndex):
 
 class PowerInBand(InBand, CacheableDataCalc):
     def __init__(self, freq_min, freq_max, data=None, interp_freq=Sett.default_interpolation_freq):
-        super(PowerInBand, self).__init__(freq_min, freq_max, interp_freq, data=data)
+        super(PowerInBand, self).__init__(freq_min, freq_max, interp_freq, data)
 
     @classmethod
     def _calculate_data(cls, self, params=None):
@@ -33,7 +33,7 @@ class PowerInBand(InBand, CacheableDataCalc):
 
 class PowerInBandNormal(InBand):
     def __init__(self, freq_min, freq_max, data=None, interp_freq=Sett.default_interpolation_freq):
-        super(PowerInBandNormal, self).__init__(freq_min, freq_max, interp_freq, data=data)
+        super(PowerInBandNormal, self).__init__(freq_min, freq_max, interp_freq, data)
         self._value = (np.sum(self._spec_band) / len(self._freq_band)) / self._total_band
 
 

@@ -7,9 +7,12 @@ class DataAnalysis(object):
 
 
 class Index(object):
-    def __init__(self, data=None, value=None, windows=None):
+    def __init__(self, data=None, value=None):
         self._value = value
         self._data = data
+
+    def compute_block(self, data=None):
+        pass
 
     # Offline part
     @property
