@@ -1,4 +1,3 @@
-# coding=utf-8
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings
 
 __all__ = ['HRMean', 'HRMedian', 'HRSTD', 'NNx', 'PNNx', 'RMSSD', 'RRMean', 'RRMedian', 'RRSTD', 'SDSD']
