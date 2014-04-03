@@ -1,22 +1,21 @@
 __author__ = 'AleB'
 
-import pandas as pd
-
 from ParamExecClass import ParamExecClass
 import pyHRV
 
 
 class GalaxyOnLineHRVAnalysis(ParamExecClass):
     """
-    kwargs['input'] ----> input file
-    kwargs['output'] ---> output file
-    kwargs['indexes'] --> indexes list [1,0, ... 1,0]
+    kwargs['value'] ----> new value not None
+    kwargs['state'] ----> last support values class not None
+    return:
+    last_value, updated_state
     """
 
     def execute(self):
-        data = pyHRV.Files.load_rr_data_series(self._kwargs['input'])
-        indexes = self._kwargs['indexes']
-        values = dict()
+        indexes = ['RRMean']
+        state = self._kwargs['state']
+        value = self._kwargs['value']
         errors = list()
 
         # Pre-parse the list to save time
@@ -28,8 +27,9 @@ class GalaxyOnLineHRVAnalysis(ParamExecClass):
             raise NameError(pyHRV.PyHRVDefaultSettings.Local.names(
                 pyHRV.PyHRVDefaultSettings.Local.indexes_not_found, errors))
         else:
-            for index in indexes:
-                values[index] = getattr(pyHRV, index)(data).value
+            state.update(value)
 
-        pyHRV.Files.save_rr_data_series(pd.Series(values), self._kwargs['output'])
-        return values
+            for index in indexes:
+                value = getattr(pyHRV, index).calculate_on(state)
+
+        return value, state

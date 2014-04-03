@@ -24,7 +24,7 @@ class RRMean(TDIndex, CacheableDataCalc):
             val = (state.sum() - state.old() + state.new()) / state.len()
         else:
             val = None
-        return val, state
+        return val
 
 
 class HRMean(TDIndex, CacheableDataCalc):
