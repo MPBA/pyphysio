@@ -27,9 +27,10 @@ class Index(object):
     def value(self):
         return self._value
 
-    def update(self, data):
-        self._data = data
-        self._value = None
+    # on-line part
+    @classmethod
+    def update(cls, data):
+        raise NotImplementedError(cls.__name__ + " is not available as an on-line index.")
 
     # Windowing part
     def compute_on_windows(self):
@@ -55,9 +56,6 @@ class NonLinearIndex(Index):
 class RRFilters(DataAnalysis):
     """ Static class containing methods for filtering RR intervals data. """
 
-    def __init__(self):
-        raise NotImplementedError("RRFilters is a static class")
-
     @staticmethod
     def example_filter(series):
         """ Example filter method, does nothing
@@ -67,4 +65,4 @@ class RRFilters(DataAnalysis):
         ### assert type(series) is DataSeries
         return series
 
-        # xTODO: add analysis scripts like in the example
+        # xTODO: add filtering scripts like in the example

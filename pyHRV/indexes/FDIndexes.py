@@ -1,6 +1,7 @@
 __author__ = 'AleB'
 
-__all__ = ['HF', 'HFNormal', 'HFPeak', 'LF', 'LFHF', 'LFNormal', 'LFPeak', 'NormalHF', 'NormalLF', 'Total', 'VLF', 'VLFNormal', 'VLFPeak']
+__all__ = ['HF', 'HFNormal', 'HFPeak', 'LF', 'LFHF', 'LFNormal', 'LFPeak', 'NormalHF', 'NormalLF', 'Total', 'VLF',
+           'VLFNormal', 'VLFPeak']
 
 import numpy as np
 from pyHRV.indexes.BaseIndexes import FDIndex
