@@ -2,6 +2,55 @@
 __author__ = 'AleB'
 
 
+class SupportValues(object):
+    def __init__(self, window=-1):
+        self._last = []
+        self._win_size = window
+        self._p = {}
+        self._sum = 0
+        self._len = 0
+
+    def get(self, index, default=0):
+        if not index in self._p:
+            self._p[index] = default
+        return self._p[index]
+
+    def set(self, index, value):
+        self._p[index] = value
+
+    def old(self):
+        return self._last[0]
+
+    def new(self):
+        return self._last[-1]
+
+    def update(self, values):
+        for a in values:
+            self._enqueue(a)
+        if self._win_size >= 0:
+            while self.len() > self._win_size:
+                self._dequeue()
+
+    def len(self):
+        return self._len
+
+    def sum(self):
+        return self._sum
+
+    def ready(self):
+        return self.len() == self._win_size
+
+    def _enqueue(self, val):
+        self._last.append(val)
+        self._sum += val
+        self._len += 1
+
+    def _dequeue(self):
+        self._sum -= self._last[0]
+        del self._last[0]
+        self._len -= 1
+
+
 class DataAnalysis(object):
     pass
 
@@ -29,7 +78,7 @@ class Index(object):
 
     # on-line part
     @classmethod
-    def update(cls, data):
+    def update(cls, state):
         raise NotImplementedError(cls.__name__ + " is not available as an on-line index.")
 
     # Windowing part

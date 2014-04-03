@@ -18,6 +18,14 @@ class RRMean(TDIndex, CacheableDataCalc):
     def _calculate_data(cls, data, params):
         return np.mean(data)
 
+    @classmethod
+    def calculate_on(cls, state):
+        if state.ready():
+            val = (state.sum() - state.old() + state.new()) / state.len()
+        else:
+            val = None
+        return val, state
+
 
 class HRMean(TDIndex, CacheableDataCalc):
     def __init__(self, data=None):
