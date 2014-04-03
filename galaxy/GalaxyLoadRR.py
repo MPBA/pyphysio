@@ -11,6 +11,7 @@ class GalaxyLoadRR(ParamExecClass):
     kwargs['column'] ---> column to load
                  default: PyHRVSettings.load_rr_column_name
     """
+
     def execute(self):
         input_file = self._kwargs['input']
         output_file = self._kwargs['output']

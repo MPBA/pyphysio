@@ -1,18 +1,18 @@
+__author__ = 'AleB'
+
 import pandas as pd
 
 from ParamExecClass import ParamExecClass
 import pyHRV
 
 
-## TODO: add windowing
-
-
-class GalaxyHRVAnalysis(ParamExecClass):
+class GalaxyOnLineHRVAnalysis(ParamExecClass):
     """
     kwargs['input'] ----> input file
     kwargs['output'] ---> output file
     kwargs['indexes'] --> indexes list [1,0, ... 1,0]
     """
+
     def execute(self):
         data = pyHRV.Files.load_rr_data_series(self._kwargs['input'])
         indexes = self._kwargs['indexes']

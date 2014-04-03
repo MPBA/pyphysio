@@ -1,5 +1,5 @@
 from galaxy.GalaxyHRVAnalysis import *
-from galaxy.GalaxtLoadRR import *
+from galaxy.GalaxyLoadRR import *
 from pyHRV import get_available_indexes
 
 hrv_list = get_available_indexes()
