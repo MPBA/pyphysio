@@ -1,13 +1,11 @@
 import numpy as np
-from scipy import interpolate, signal
-import sys
+from scipy import interpolate
 
 
 def power(spec, freq, min_freq, max_freq):
     #returns power in band
     band = np.array([spec[i] for i in range(len(spec)) if min_freq <= freq[i] < max_freq])
-    powerinband = np.sum(band) / len(spec)
-    return powerinband
+    return np.sum(band) / len(spec)
 
 
 def interpolate_rr(rr, interp_freq):
@@ -16,15 +14,15 @@ def interpolate_rr(rr, interp_freq):
     rr /= 1000
     rr = np.array(rr)
     bt = np.cumsum(rr)
-    xmin = bt[0]
-    xmax = bt[-1]
+    x_min = bt[0]
+    x_max = bt[-1]
     bt = np.insert(bt, 0, 0)
     bt = np.append(bt, bt[-1] + 1)
     rr = np.insert(rr, 0, 0)
     rr = np.append(rr, rr[-1])
 
     tck = interpolate.splrep(bt, rr)
-    bt_interp = np.arange(xmin, xmax, step)
+    bt_interp = np.arange(x_min, x_max, step)
     rr_interp = interpolate.splev(bt_interp, tck)
     return rr_interp, bt_interp
 
@@ -40,8 +38,8 @@ def smooth_triangle(data, degree):
 
 
 def peak_detection(v, delta, x=None):
-    maxtab = []
-    mintab = []
+    max_tab = []
+    min_tab = []
 
     if x is None:
         x = np.arange(len(v))
@@ -49,70 +47,50 @@ def peak_detection(v, delta, x=None):
     v = np.asarray(v)
 
     if len(v) != len(x):
-        sys.exit('Input vectors v and x must have same length')
+        raise ValueError('Input vectors v and x must have same length')
 
     if not np.isscalar(delta):
-        sys.exit('Input argument delta must be a scalar')
+        raise ValueError('Input argument delta must be a scalar')
 
     if delta <= 0:
-        sys.exit('Input argument delta must be positive')
+        raise ValueError('Input argument delta must be positive')
 
     mn, mx = np.Inf, -np.Inf
-    mnpos, mxpos = np.NaN, np.NaN
+    mn_pos, mx_pos = np.NaN, np.NaN
 
-    lookformax = True
+    look_for_max = True
 
     for i in np.arange(len(v)):
         this = v[i]
         if this > mx:
             mx = this
-            mxpos = x[i]
+            mx_pos = x[i]
         if this < mn:
             mn = this
-            mnpos = x[i]
+            mn_pos = x[i]
 
-        if lookformax:
+        if look_for_max:
             if this < mx - delta:
-                maxtab.append((mxpos, mx))
+                max_tab.append((mx_pos, mx))
                 mn = this
-                mnpos = x[i]
-                lookformax = False
+                mn_pos = x[i]
+                look_for_max = False
         else:
             if this > mn + delta:
-                mintab.append((mnpos, mn))
+                min_tab.append((mn_pos, mn))
                 mx = this
-                mxpos = x[i]
-                lookformax = True
+                mx_pos = x[i]
+                look_for_max = True
 
-    return np.array(maxtab), np.array(mintab)
-
-
-def lowpass_filter(X, fs, Wp):
-    nyq = 0.5 * fs
-    wp = Wp / nyq  # pass band Hz
-    ws = wp + 0.5
-    N, wn = signal.buttord(wp, ws, 5, 30)  # calcola ordine per il filtro e la finestra delle bande
-    [bFilt, aFilt] = signal.butter(N, wn, btype='lowpass')  # calcola coefficienti filtro
-    sig = signal.filtfilt(bFilt, aFilt, X)  # filtro il segnale BVP
-    return sig
-
-
-def highpass_filter(X, fs, Wp):
-    nyq = 0.5 * fs
-    wp = Wp / nyq # pass band Hz
-    ws = wp - 0.01
-    N, wn = signal.buttord(wp, ws, 5, 30)  # calcola ordine per il filtro e la finestra delle bande
-    [bFilt, aFilt] = signal.butter(N, wn, btype='highpass')  # calcola coefficienti filtro
-    sig = signal.filtfilt(bFilt, aFilt, X)  # filtro il segnale BVP
-    return sig
+    return np.array(max_tab), np.array(min_tab)
 
 
 def build_takens_vector(x, m):
-        #creo embedded matrix
-        #righe = Uj
-        N = len(x)
-        num = N - m + 1
-        emb = np.zeros([num, m])
-        for i in xrange(num):
-            emb[i, :] = x[i:i + m]
-        return emb
+    #creo embedded matrix
+    #righe = Uj
+    n = len(x)
+    num = n - m + 1
+    emb = np.zeros([num, m])
+    for i in xrange(num):
+        emb[i, :] = x[i:i + m]
+    return emb
