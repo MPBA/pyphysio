@@ -1,7 +1,9 @@
 import time
+
 from pyHRV.Files import *
 from pyHRV.indexes import TDIndexes as TDIn
 from pyHRV.indexes import FDIndexes as FDIn
+
 
 _debug_time = 0
 
@@ -18,9 +20,9 @@ def delay(v=True):
 
 def test(rr_series):
     print '1. TD'
-    print "RRMean: ", TDIn.RRMean(rr_series).value
-    print "RRSTD: ", TDIn.RRSTD(rr_series).value
-    print "RRMedian: ", TDIn.RRMedian(rr_series).value
+    print "Mean: ", TDIn.Mean(rr_series).value
+    print "STD: ", TDIn.STD(rr_series).value
+    print "Median: ", TDIn.Median(rr_series).value
     print "PNNx: ", TDIn.PNNx(50, rr_series).value
     print "NNx: ", TDIn.NNx(50, rr_series).value
     print "RMSSD: ", TDIn.RMSSD(rr_series).value
@@ -49,6 +51,7 @@ def test(rr_series):
     print "NormalHF: ", FDIn.NormalHF(rr_series).value
     t4 = delay()
     print "\t\tTotal time: ", t1 + t2 + t3 + t4, "ms"
+
 
 if __name__ == '__main__':
     delay(False)

@@ -9,7 +9,7 @@ from scipy.stats.mstats import mquantiles
 
 from pyHRV.Cache import RRDiff, BuildTakensVector2, BuildTakensVector3, PoinSD
 from pyHRV.indexes.BaseIndexes import NonLinearIndex
-from pyHRV.indexes.TDIndexes import RRMean
+from pyHRV.indexes.TDIndexes import Mean
 from pyHRV.utility import build_takens_vector
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
@@ -54,7 +54,7 @@ class SampleEntropy(NonLinearIndex):
         num_elem_m = uj_m.shape[0]
         num_elem_m1 = uj_m1.shape[0]
 
-        r = r * np.std(self._data) #cacheable
+        r = r * np.std(self._data)  #cacheable
         d_m = cdist(uj_m, uj_m, 'chebyshev')
         d_m1 = cdist(uj_m1, uj_m1, 'chebyshev')
 
@@ -110,7 +110,7 @@ class Fisher(NonLinearIndex):
         w = np.linalg.svd(uj_m, compute_uv=False)
         w /= sum(w)
         fi = 0
-        for i in xrange(0, len(w) - 1):    # from 1 to M
+        for i in xrange(0, len(w) - 1):  # from 1 to M
             fi += ((w[i + 1] - w[i]) ** 2) / (w[i])
 
         self._value = fi
@@ -210,7 +210,7 @@ class DFAShortTerm(NonLinearIndex):
         super(DFAShortTerm, self).__init__(data)
         #calculates De-trended Fluctuation Analysis: alpha1 (short term) component
         x = self._data
-        ave = RRMean.get(x)
+        ave = Mean.get(x)
         y = np.cumsum(x)
         y -= ave
 
@@ -221,9 +221,9 @@ class DFAShortTerm(NonLinearIndex):
             for j in xrange(0, len(x), n):  # for each box
                 if j + n < len(x):
                     c = range(j, j + n)
-                    c = np.vstack([c, np.ones(n)]).T      # coordinates of time in the box
-                    y = y[j:j + n]                    # the value of data in the box
-                    f[i] += np.linalg.lstsq(c, y)[1]    # add residue in this box
+                    c = np.vstack([c, np.ones(n)]).T  # coordinates of time in the box
+                    y = y[j:j + n]  # the value of data in the box
+                    f[i] += np.linalg.lstsq(c, y)[1]  # add residue in this box
             f[i] /= ((len(x) / n) * n)
         f = np.sqrt(f)
         try:
@@ -238,7 +238,7 @@ class DFALongTerm(NonLinearIndex):
         super(DFALongTerm, self).__init__(data)
         #calculates De-trended Fluctuation Analysis: alpha2 (long term) component
         x = self._data
-        ave = RRMean.get(x)
+        ave = Mean.get(x)
         y = np.cumsum(x)
         y -= ave
         l_max = np.min([64, len(x)])
@@ -249,9 +249,9 @@ class DFALongTerm(NonLinearIndex):
             for j in xrange(0, len(x), n):  # for each box
                 if j + n < len(x):
                     c = range(j, j + n)
-                    c = np.vstack([c, np.ones(n)]).T      # coordinates of time in the box
-                    y = y[j:j + n]                    # the value of data in the box
-                    f[i] += np.linalg.lstsq(c, y)[1]    # add residue in this box
+                    c = np.vstack([c, np.ones(n)]).T  # coordinates of time in the box
+                    y = y[j:j + n]  # the value of data in the box
+                    f[i] += np.linalg.lstsq(c, y)[1]  # add residue in this box
             f[i] /= ((len(x) / n) * n)
         f = np.sqrt(f)
         try:

@@ -13,7 +13,7 @@ class GalaxyOnLineHRVAnalysis(ParamExecClass):
     """
 
     def execute(self):
-        indexes = ['RRMean']
+        indexes = ['Mean']
         state = self._kwargs['state']
         value = self._kwargs['value']
         errors = list()

@@ -8,6 +8,7 @@ class SupportValues(object):
         self._p = {}
         self._sum = 0
         self._len = 0
+        self._old = None
 
     def get(self, index, default=0):
         if not index in self._p:
@@ -20,8 +21,15 @@ class SupportValues(object):
     def old(self):
         return self._last[0]
 
+    def last(self):
+        return self._last[0]
+
     def new(self):
         return self._last[-1]
+
+    @property
+    def vec(self):
+        return self._last
 
     def update(self, values):
         for a in values:
@@ -46,6 +54,7 @@ class SupportValues(object):
 
     def _dequeue(self):
         self._sum -= self._last[0]
+        self._old = self._last[0]
         del self._last[0]
         self._len -= 1
 

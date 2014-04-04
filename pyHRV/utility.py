@@ -3,13 +3,23 @@ from scipy import interpolate
 
 
 def power(spec, freq, min_freq, max_freq):
-    #returns power in band
+    """Returns the power calculated in the specified band of the spec-freq spectrum
+    @param spec: power values
+    @param freq: frequency values
+    @param min_freq: lower band bound
+    @param max_freq: higher band bound
+    @return: power in band
+    """
     band = np.array([spec[i] for i in range(len(spec)) if min_freq <= freq[i] < max_freq])
     return np.sum(band) / len(spec)
 
 
 def interpolate_rr(rr, interp_freq):
-    # returns cubic spline interpolated array with sample rate = interp_freq
+    """Returns as a tuple the interpolated RR and BT arrays
+    @param rr:
+    @param interp_freq:
+    @return: (RR interpolated, BT interpolated)
+    """
     step = 1.0 / interp_freq
     rr /= 1000
     rr = np.array(rr)
@@ -27,14 +37,45 @@ def interpolate_rr(rr, interp_freq):
     return rr_interp, bt_interp
 
 
-def smooth_triangle(data, degree):
-    triangle = np.array(range(degree) + [degree] + range(degree)[::-1]) + 1
-    smoothed = data[0:degree]
-    for i in range(degree, np.size(data) - degree * 2):
-        point = data[i:i + len(triangle)] * triangle
-        smoothed = np.append(smoothed, sum(point) / sum(triangle))
-    smoothed = np.insert(smoothed, -1, data[-(degree * 2):])
-    return smoothed
+def template_interpolation(x, t, freq, template=None):
+    if template is None:
+        template = 0.5 * np.cos(np.arange(0, 1.01, 0.01) * np.pi) + 0.5
+
+    x_old = x[0]
+    t_old = t[0]
+
+    x_out = np.array([])
+    t_out = np.array([])
+
+    for i in xrange(1, len(x)):
+        x_curr = x[i]
+        t_curr = t[i]
+
+        x_template = template * (x_old - x_curr) + x_curr
+        t_template = np.linspace(t_old, t_curr, 101)
+
+        x_out = np.hstack((x_out, x_template, x_curr))
+        t_out = np.hstack((t_out, t_template, t_curr))
+
+        t_old = t_curr
+        x_old = x_curr
+
+    t_output = np.arange(t[0], t[-1], 1 / freq)
+
+    f = interpolate.interp1d(t_out, x_out, 'linear')
+    x_output = f(t_output)
+    return x_output, t_output
+
+
+def build_takens_vector(x, m):
+    #creo embedded matrix
+    #righe = Uj
+    n = len(x)
+    num = n - m + 1
+    emb = np.zeros([num, m])
+    for i in xrange(num):
+        emb[i, :] = x[i:i + m]
+    return emb
 
 
 def peak_detection(v, delta, x=None):
@@ -83,14 +124,3 @@ def peak_detection(v, delta, x=None):
                 look_for_max = True
 
     return np.array(max_tab), np.array(min_tab)
-
-
-def build_takens_vector(x, m):
-    #creo embedded matrix
-    #righe = Uj
-    n = len(x)
-    num = n - m + 1
-    emb = np.zeros([num, m])
-    for i in xrange(num):
-        emb[i, :] = x[i:i + m]
-    return emb
