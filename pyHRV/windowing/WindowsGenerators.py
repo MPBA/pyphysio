@@ -18,11 +18,13 @@ class LinearWinGen(WindowsGenerator):
             self._end = end
         self._step = step
         self._width = width
-        self._pos = begin
+        self._begin = begin
+        self._pos = self._begin
 
     def step_windowing(self):
         b, e = (self._pos, self._pos + self._width)
         if e > self._end:
+            self._pos = self._begin
             raise StopIteration
         else:
             self._pos += self._step
