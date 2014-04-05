@@ -13,8 +13,9 @@ class GalaxyHRVAnalysis(ParamExecClass):
     kwargs['output'] ---> output file
     kwargs['indexes'] --> indexes list [1,0, ... 1,0]
     """
+
     def execute(self):
-        data = pyHRV.Files.load_rr_data_series(self._kwargs['input'])
+        data = pyHRV.Files.load_rr(self._kwargs['input'])
         indexes = self._kwargs['indexes']
         values = dict()
         errors = list()
@@ -31,5 +32,5 @@ class GalaxyHRVAnalysis(ParamExecClass):
             for index in indexes:
                 values[index] = getattr(pyHRV, index)(data).value
 
-        pyHRV.Files.save_rr_data_series(pd.Series(values), self._kwargs['output'])
+        pyHRV.Files.save_data_series(pd.Series(values), self._kwargs['output'])
         return values

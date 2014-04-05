@@ -7,7 +7,7 @@ from pyHRV.utility import peak_detection
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
 
-__all__ = ['load_rr_data_series', 'save_rr_data_series']
+__all__ = ['load_data_series', 'load_rr', 'save_data_series', 'load_rr_from_bvp', 'load_rr_from_ecg']
 
 
 def load_data_series(path, column, sep=Sett.Files.csv_separator):
@@ -32,7 +32,7 @@ def save_data_series(data_series, path, sep=Sett.Files.csv_separator, header=Tru
     data_series.to_csv(path, sep=sep, header=header)
 
 
-def load_rr_data_series(path, column=Sett.Files.load_rr_column_name, sep=Sett.Files.csv_separator):
+def load_rr(path, column=Sett.Files.load_rr_column_name, sep=Sett.Files.csv_separator):
     """For galaxy use loads an rrs column from a csv file
     """
     return load_data_series(path, column, sep)

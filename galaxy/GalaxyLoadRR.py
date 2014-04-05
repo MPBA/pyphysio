@@ -1,5 +1,5 @@
 from ParamExecClass import ParamExecClass
-from pyHRV.Files import load_rr_data_series, save_rr_data_series
+from pyHRV.Files import load_rr, save_data_series
 
 ## DONE: (by the wrapper) if the input file is a .tar.gz: un-tar and load more files
 
@@ -17,4 +17,4 @@ class GalaxyLoadRR(ParamExecClass):
         output_file = self._kwargs['output']
         column = self._kwargs['column']
 
-        save_rr_data_series(load_rr_data_series(input_file, column=column), output_file)
+        save_data_series(load_rr(input_file, column=column), output_file)

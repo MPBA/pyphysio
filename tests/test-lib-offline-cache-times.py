@@ -56,7 +56,7 @@ def test(rr_series):
 if __name__ == '__main__':
     delay(False)
     print 'Loading file'
-    RRSeries = load_rr_data_series("A05.txt")
+    RRSeries = load_rr("A05.txt")
     delay()
 
     print 'Starting analysis'
