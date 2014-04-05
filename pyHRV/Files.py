@@ -43,8 +43,11 @@ def load_rr_from_ecg(path, delta=Sett.DataImports.ecg_delta, sep=Sett.Files.csv_
     max_tab, min_tab = peak_detection(df[Sett.Files.load_ecg_column_name], delta,
                                       df[Sett.Files.load_ecg_time_column_name])
     s = DataSeries(np.diff(max_tab))
+    for f in Sett.DataImports.import_ecg_filters:
+        s = f(s)
     s.meta_tag['from_type'] = "csv_ecg"
     s.meta_tag['from_delta'] = delta
+    s.meta_tag['from_filters'] = list(Sett.DataImports.import_ecg_filters)
     return s
 
 
@@ -53,6 +56,9 @@ def load_rr_from_bvp(path, delta=Sett.DataImports.bvp_delta, sep=Sett.Files.csv_
     max_tab, min_tab = peak_detection(df[Sett.Files.load_bvp_column_name], delta,
                                       df[Sett.Files.load_bvp_time_column_name])
     s = DataSeries(np.diff(max_tab))
+    for f in Sett.DataImports.import_bvp_filters:
+        s = f(s)
     s.meta_tag['from_type'] = "csv_bvp"
     s.meta_tag['from_delta'] = delta
+    s.meta_tag['from_filters'] = list(Sett.DataImports.import_bvp_filters)
     return s
