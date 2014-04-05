@@ -1,5 +1,3 @@
-# coding=utf-8
-
 __all__ = ['ApproxEntropy', 'CorrelationDim', 'DFALongTerm', 'DFAShortTerm', 'Fisher', 'FractalDimension', 'Hurst',
            'PetrosianFracDim', 'PoinEll', 'PoinSD1', 'PoinSD12', 'PoinSD2', 'SVDEntropy', 'SampleEntropy']
 

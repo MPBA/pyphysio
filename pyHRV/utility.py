@@ -1,3 +1,4 @@
+__author__ = 'Andrea'
 import numpy as np
 from scipy import interpolate
 

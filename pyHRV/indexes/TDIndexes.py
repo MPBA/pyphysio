@@ -1,11 +1,11 @@
-from pyHRV.PyHRVSettings import PyHRVDefaultSettings
-
+__author__ = 'AleB'
 __all__ = ['HRMean', 'HRMedian', 'HRSTD', 'NNx', 'PNNx', 'RMSSD', 'Mean', 'Median', 'STD', 'SDSD']
 
 import numpy as np
 
 from pyHRV.Cache import CacheableDataCalc, RRDiff
 from pyHRV.indexes.BaseIndexes import TDIndex
+from pyHRV.PyHRVSettings import PyHRVDefaultSettings
 
 
 class Mean(TDIndex, CacheableDataCalc):

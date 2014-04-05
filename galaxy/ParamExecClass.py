@@ -1,3 +1,6 @@
+__author__ = 'AleB'
+
+
 class ParamExecClass:
     def __init__(self, **kwargs):
         self._kwargs = kwargs

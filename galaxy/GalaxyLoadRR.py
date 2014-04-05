@@ -1,8 +1,6 @@
 from ParamExecClass import ParamExecClass
 from pyHRV.Files import load_rr, save_data_series
 
-## DONE: (by the wrapper) if the input file is a .tar.gz: un-tar and load more files
-
 
 class GalaxyLoadRR(ParamExecClass):
     """

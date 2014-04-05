@@ -3,8 +3,7 @@ import pandas as pd
 from ParamExecClass import ParamExecClass
 import pyHRV
 
-
-## TODO: add windowing
+# TODO: add windowing
 
 
 class GalaxyHRVAnalysis(ParamExecClass):

@@ -11,6 +11,7 @@ class PyHRVDefaultSettings:
         def __init__(self):
             pass
 
+        # TODO: check this values
         import_bvp_filters = []
         import_ecg_filters = []
         ecg_delta = 1

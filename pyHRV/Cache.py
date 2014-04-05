@@ -1,9 +1,7 @@
-# coding=utf-8
-# Classes for cached data elaboration
-
-
+__author__ = 'AleB'
 import numpy as np
 from scipy import signal
+
 from utility import interpolate_rr
 from pyHRV.utility import build_takens_vector
 from pyHRV.DataSeries import DataSeries

@@ -1,10 +1,11 @@
 # coding=utf-8
 __author__ = "AleB"
-
 __all__ = ['DataSeries']
 
-import pandas as pd
 from numpy import mean as npmean
+
+import pandas as pd
+
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
 
@@ -24,7 +25,7 @@ class DataSeries(pd.TimeSeries):
             self.meta_tag = meta_tag
         mean = npmean(data)
         assert (not Sett.TimeUnitCheck.time_unit_check_ibi_mean_max < Sett.TimeUnitCheck.time_unit_check_ibi
-                | (mean < Sett.TimeUnitCheck.time_unit_check_ibi_mean_min)),\
+                    | (mean < Sett.TimeUnitCheck.time_unit_check_ibi_mean_min)), \
             Sett.Local.time_unit_check_ibi_warn % mean
 
     def cache_clear(self):
