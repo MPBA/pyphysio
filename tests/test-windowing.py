@@ -7,7 +7,7 @@ from pyHRV.indexes import TDIndexes as Td
 
 def main():
     rr = load_rr_data_series("../z_data/A05.txt")
-    wg = LinearWinGen(rr, 0, 20, 40)
+    wg = LinearWinGen(0, 20, 40, rr)
     wm = WindowsMapper(rr, wg, Td.Mean)
     wm.compute()
     print wm.results

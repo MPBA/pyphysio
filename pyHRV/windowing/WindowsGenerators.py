@@ -9,6 +9,8 @@ class LinearWinGen(WindowsGenerator):
 
     def __init__(self, begin, step, width, data=None, end=None):
         super(LinearWinGen, self).__init__(data)
+        if data is None and end is None:
+            raise ValueError("Don't know where to find the length: data or end parameter must be not None.")
         self._begin = begin
         if end is None:
             self._end = len(data)

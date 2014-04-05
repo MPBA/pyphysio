@@ -13,7 +13,7 @@ class WindowsMapper(object):
         self._index = index
 
     def _comp_once(self, win):
-        return self._index(data=self._data[win.begin, win.end]).value
+        return self._index(data=self._data[win.begin: win.end]).value
 
     def compute(self):
         self._map = map(self._comp_once, self._wing)
