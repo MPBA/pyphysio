@@ -7,12 +7,25 @@ class PyHRVDefaultSettings:
 
     default_interpolation_freq = 4
 
+    class DataImports:
+        def __init__(self):
+            pass
+
+        import_bvp_filters = []
+        import_ecg_filters = []
+        ecg_delta = 1
+        bvp_delta = 1
+
     class Files:
         def __init__(self):
             pass
 
         csv_separator = '\t'
         load_rr_column_name = 'IBI'
+        load_ecg_column_name = 'ECG'
+        load_ecg_time_column_name = 'timestamp'
+        load_bvp_column_name = 'BVP'
+        load_bvp_time_column_name = 'timestamp'
 
     class StandardBands:
         def __init__(self):
@@ -51,7 +64,7 @@ class PyHRVDefaultSettings:
         def __init__(self):
             pass
 
-        indexes_not_found =\
+        indexes_not_found = \
             "Some of the indexes requested are not implemented:" \
             "maybe the name is incorrect or pyHRV version is old.\n" \
             "Indexes names: {:s}"
