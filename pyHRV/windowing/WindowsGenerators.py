@@ -7,10 +7,13 @@ class LinearWinGen(WindowsGenerator):
     """Generates a linear set of windows (b+i*s, b+i*s+w)
     """
 
-    def __init__(self, data, begin, step, width, end):
+    def __init__(self, begin, step, width, data=None, end=None):
         super(LinearWinGen, self).__init__(data)
         self._begin = begin
-        self._end = end
+        if end is None:
+            self._end = len(data)
+        else:
+            self._end = end
         self._step = step
         self._width = width
         self._pos = begin
