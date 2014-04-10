@@ -12,9 +12,10 @@ class Window(object):
     """Base Window, a begin-end pair
     """
 
-    def __init__(self, begin, end):
+    def __init__(self, begin, end, name=None):
         self._begin = begin
         self._end = end
+        self._name = name
 
     @property
     def begin(self):
@@ -23,6 +24,17 @@ class Window(object):
     @property
     def end(self):
         return self._end
+
+    @property
+    def len(self):
+        return self._end - self._begin
+
+    @property
+    def name(self):
+        return self._name
+
+    def __repr__(self):
+        return "Win(%d, %d, %s)" % (self.begin, self.end, self.name)
 
 
 class WindowsIterator(object):

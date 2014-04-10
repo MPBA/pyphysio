@@ -7,7 +7,12 @@ from pyHRV.utility import peak_detection
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
 
-__all__ = ['load_data_series', 'load_rr', 'save_data_series', 'load_rr_from_bvp', 'load_rr_from_ecg']
+__all__ = ['load_excel_column', 'load_data_series', 'load_rr', 'save_data_series', 'load_rr_from_bvp',
+           'load_rr_from_ecg']
+
+
+def load_excel_column(path, column, columnb, sheetname=0):
+    return pd.read_excel(path, sheetname)[column], pd.read_excel(path, sheetname)[columnb]
 
 
 def load_data_series(path, column, sep=Sett.Files.csv_separator):

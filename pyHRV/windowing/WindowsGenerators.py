@@ -1,5 +1,5 @@
 __author__ = 'AleB'
-__all__ = ['LinearWinGen']
+__all__ = ['NamedWinGen', 'LinearWinGen']
 from WindowsBase import WindowsGenerator, Window
 
 
@@ -64,6 +64,6 @@ class NamedWinGen(WindowsGenerator):
             raise StopIteration()
         while self._i < len(self._l) and self._l[self._s] == self._l[self._i]:
             self._i += 1
-        w = Window(self._s, self._i - 1)
+        w = Window(self._s, self._i - 1, self._l[self._s])
         self._s = self._i
         return w
