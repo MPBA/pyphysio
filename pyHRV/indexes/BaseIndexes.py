@@ -95,7 +95,7 @@ class SupportValues(object):
         return self._sum
 
     def ready(self):
-        return self.len() == self._win_size
+        return self._win_size < 0 or self.len() == self._win_size
 
     def _enqueue(self, val):
         self._last.append(val)
