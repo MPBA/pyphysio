@@ -52,7 +52,7 @@ class RRFilters(DataAnalysis):
 
 
 class SupportValues(object):
-    def __init__(self, window=-1):
+    def __init__(self, window=50):
         self._last = []
         self._win_size = window
         self._p = {}
