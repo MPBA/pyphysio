@@ -1,5 +1,6 @@
 __author__ = 'AleB'
-__all__ = ['HRMean', 'HRMedian', 'HRSTD', 'NNx', 'PNNx', 'RMSSD', 'Mean', 'Median', 'STD', 'SDSD']
+__all__ = ['Mean', 'Median', 'STD', 'SDSD', 'NNx', 'NN10', 'NN20', 'NN50', 'PNNx', 'RMSSD', 'HRMean', 'HRMedian',
+           'HRSTD']
 
 import numpy as np
 
@@ -108,19 +109,19 @@ class NNx(TDIndex):
         return val
 
 
-class DGT10(NNx):
+class NN10(NNx):
     @staticmethod
     def threshold():
         return 10
 
 
-class DGT20(NNx):
+class NN20(NNx):
     @staticmethod
     def threshold():
         return 20
 
 
-class DGT50(NNx):
+class NN50(NNx):
     @staticmethod
     def threshold():
         return 50

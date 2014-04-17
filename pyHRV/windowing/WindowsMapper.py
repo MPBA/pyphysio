@@ -1,6 +1,12 @@
+from __builtin__ import property
+
+import pyHRV
+from pyHRV.windowing.WindowsBase import WindowsIterator
+from pyHRV import DataSeries
+
+
 __author__ = 'AleB'
 __all__ = ['WindowsMapper']
-from WindowsBase import WindowsIterator
 
 
 class WindowsMapper(object):
@@ -25,15 +31,27 @@ class WindowsMapper(object):
 
     def _comp_one(self, win):
         ret = []
+        win_ds = DataSeries(self._data[win.begin: win.end])
         for index in self._index:
-            ret.append(index(data=self._data[win.begin: win.end]).value)
-        return ret
+            if isinstance(index, str) | isinstance(index, unicode):
+                index = getattr(pyHRV, index)
+            ret.append(index(data=win_ds).value)
+        return [win.name, win.begin, win.end] + ret
 
     def step_windowing(self):
         return self._comp_one(self._win_iter.next())
 
     def compute_all(self):
         self._map = map(self._comp_one, self._wing)
+
+    @property
+    def labels(self):
+        ret = []
+        for index in self._index:
+            if isinstance(index, str) | isinstance(index, unicode):
+                index = getattr(pyHRV, index)
+            ret.append(index.__name__)
+        return ret
 
     @property
     def results(self):

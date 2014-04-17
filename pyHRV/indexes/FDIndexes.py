@@ -4,6 +4,7 @@ __all__ = ['HF', 'HFNormal', 'HFPeak', 'LF', 'LFHF', 'LFNormal', 'LFPeak', 'Norm
            'VLFNormal', 'VLFPeak']
 
 import numpy as np
+
 from pyHRV.indexes.BaseIndexes import FDIndex
 from pyHRV.Cache import CacheableDataCalc, PSDWelchCalc
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
@@ -17,9 +18,8 @@ class InBand(FDIndex):
 
         freq, spec, total = PSDWelchCalc.get(self._data, self._interp_freq)
 
-        indexes = np.array([i for i in range(len(spec)) if freq_min <= freq[i] < freq_max])
-        self._freq_band = freq[indexes]
-        self._spec_band = spec[indexes]
+        self._freq_band = [freq[i] for i in xrange(len(freq)) if freq_min <= freq[i] < freq_max]
+        self._spec_band = [spec[i] for i in xrange(len(spec)) if freq_min <= freq[i] < freq_max]
         self._total_band = total
 
 

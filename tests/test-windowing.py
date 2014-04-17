@@ -11,9 +11,9 @@ def main():
     wm = WindowsMapper(rr, wg, Td.Mean)
     ws = WindowsMapper(rr, wg, Td.STD)
     wx = WindowsMapper(rr, wg, Td.DGT20)
-    wm.compute_all()
-    ws.compute_all()
-    wx.compute_all()
+    wm.compute()
+    ws.compute()
+    wx.compute()
     print wm.results
     print ws.results
     print wx.results

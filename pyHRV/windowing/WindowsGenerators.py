@@ -67,3 +67,7 @@ class NamedWinGen(WindowsGenerator):
         w = Window(self._s, self._i - 1, self._l[self._s])
         self._s = self._i
         return w
+
+    def __repr__(self):
+        return "<%s - labels: %d, step: %s object at 0x%hx>" % (
+        self.__class__.__name__, len(self._l), self._s, id(self))

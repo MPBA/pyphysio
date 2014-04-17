@@ -13,9 +13,14 @@ __all__ = ['load_excel_column', 'load_data_series', 'load_rr', 'save_data_series
 
 def load_excel_column(path, column, columnb=None, sheet_name=0):
     if columnb is None:
-        return pd.read_excel(path, sheet_name)[column]
+        a = pd.read_excel(path, sheet_name)
+        return a[column] if isinstance(column, basestring) else a[a.columns[column]]
     else:
-        return pd.read_excel(path, sheet_name)[column], pd.read_excel(path, sheet_name)[columnb]
+        a = pd.read_excel(path, sheet_name)
+        b = pd.read_excel(path, sheet_name)
+        a = a[column] if isinstance(column, basestring) else a[a.columns[column]]
+        b = b[columnb] if isinstance(columnb, basestring) else b[b.columns[columnb]]
+        return a, b
 
 
 def load_data_series(path, column, sep=Sett.Files.csv_separator):
