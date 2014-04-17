@@ -1,5 +1,5 @@
 __author__ = 'AleB'
-__all__ = ['Mean', 'Median', 'STD', 'SDSD', 'NNx', 'NN10', 'NN20', 'NN50', 'PNNx', 'RMSSD', 'HRMean', 'HRMedian',
+__all__ = ['Mean', 'Median', 'STD', 'SDSD', 'NNx', 'PNN10', 'PNN25', 'PNN50', 'PNNx', 'RMSSD', 'HRMean', 'HRMedian',
            'HRSTD']
 
 import numpy as np
@@ -35,6 +35,14 @@ class HRMean(TDIndex, CacheableDataCalc):
     @classmethod
     def _calculate_data(cls, data, params):
         return np.mean(60000 / data)
+
+    @classmethod
+    def calculate_on(cls, state):
+        if state.ready():
+            val = 60000 / Mean.calculate_on(state)
+        else:
+            val = None
+        return val
 
 
 class Median(TDIndex, CacheableDataCalc):
@@ -77,7 +85,15 @@ class PNNx(TDIndex):
     def __init__(self, data=None, threshold=PyHRVDefaultSettings.TDIndexes.nnx_default_threshold):
         super(PNNx, self).__init__(data)
         self._xth = threshold
-        self._value = NNx(data, threshold).value / len(data) / 100.0
+        self._value = NNx(data, threshold).value / len(data)
+
+    @staticmethod
+    def threshold():
+        return PyHRVDefaultSettings.TDIndexes.nnx_default_threshold
+
+    @classmethod
+    def calculate_on(cls, state):
+        NNx.calculate_on(state, cls.threshold()) / state.len
 
 
 class NNx(TDIndex):
@@ -94,14 +110,16 @@ class NNx(TDIndex):
         return PyHRVDefaultSettings.TDIndexes.nnx_default_threshold
 
     @classmethod
-    def calculate_on(cls, state):
+    def calculate_on(cls, state, threshold=None):
         name = cls.__name__ + "_E4j2oj23"
+        if threshold is None:
+            threshold = cls.threshold()
         if state.ready() and state.len() >= 2:
             val = state.get(name)
             if not state.old() is None:
-                if abs(state.old() - state.vec[0]) > cls.threshold():
+                if abs(state.old() - state.vec[0]) > threshold:
                     val -= 1
-            if abs(state.vec[-1] - state.vec[-2]) > cls.threshold():
+            if abs(state.vec[-1] - state.vec[-2]) > threshold:
                 val += 1
             state.set(name, val)
         else:
@@ -109,19 +127,19 @@ class NNx(TDIndex):
         return val
 
 
-class NN10(NNx):
+class PNN10(PNNx):
     @staticmethod
     def threshold():
         return 10
 
 
-class NN20(NNx):
+class PNN25(PNNx):
     @staticmethod
     def threshold():
-        return 20
+        return 25
 
 
-class NN50(NNx):
+class PNN50(PNNx):
     @staticmethod
     def threshold():
         return 50

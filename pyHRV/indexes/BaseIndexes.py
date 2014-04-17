@@ -59,6 +59,8 @@ class SupportValues(object):
         self._sum = 0
         self._len = 0
         self._old = None
+        self._balance = None
+        self._max = None
 
     def get(self, index, default=0):
         if not index in self._p:
@@ -68,12 +70,15 @@ class SupportValues(object):
     def set(self, index, value):
         self._p[index] = value
 
+    @property
     def old(self):
         return self._last[0]
 
+    @property
     def last(self):
         return self._last[0]
 
+    @property
     def new(self):
         return self._last[-1]
 
@@ -85,25 +90,36 @@ class SupportValues(object):
         for a in values:
             self._enqueue(a)
         if self._win_size >= 0:
-            while self.len() > self._win_size:
+            while self.len > self._win_size:
                 self._dequeue()
 
+    @property
     def len(self):
         return self._len
 
+    @property
     def sum(self):
         return self._sum
 
+    @property
+    def min(self):
+        return self._sum
+
+    @property
+    def max(self):
+        return self._sum
+
+    @property
     def ready(self):
-        return self._win_size < 0 < self.len() or self.len() == self._win_size
+        return self._win_size < 0 < self.len or self.len == self._win_size
 
     def _enqueue(self, val):
         self._last.append(val)
         self._sum += val
-        self._len += 1
 
     def _dequeue(self):
-        self._sum -= self._last[0]
-        self._old = self._last[0]
+        val = self._last[0]
         del self._last[0]
+        self._sum -= val
+        self._old = val
         self._len -= 1
