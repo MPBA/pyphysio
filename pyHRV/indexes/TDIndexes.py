@@ -34,7 +34,7 @@ class HRMean(TDIndex, CacheableDataCalc):
 
     @classmethod
     def _calculate_data(cls, data, params):
-        return np.mean(60 / data)
+        return np.mean(60000 / data)
 
 
 class Median(TDIndex, CacheableDataCalc):
@@ -50,7 +50,7 @@ class Median(TDIndex, CacheableDataCalc):
 class HRMedian(TDIndex):
     def __init__(self, data=None):
         super(HRMedian, self).__init__(data)
-        self._value = 60 / Median.get(self._data)
+        self._value = 60000 / Median.get(self._data)
 
 
 class STD(TDIndex, CacheableDataCalc):
