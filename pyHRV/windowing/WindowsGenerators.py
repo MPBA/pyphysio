@@ -3,6 +3,32 @@ __all__ = ['NamedWinGen', 'LinearWinGen']
 from WindowsBase import WindowsGenerator, Window
 
 
+class MixedWindow(Window):
+    """Base Window, a begin-end pair
+    """
+
+    #TODO: AleB: Solve Nones problem as in Window (super)
+    def __init__(self, begin=None, end=None, name=None, name2=None, center=None, copy=None):
+        super(MixedWindow, self).__init__(begin, end, name, copy)
+        if copy is None:
+            self._name2 = name2
+            self._center = center
+        else:
+            self._name2 = copy.name2
+            self._center = copy.center
+
+    @property
+    def name2(self):
+        return self._name2
+
+    @property
+    def center(self):
+        return self._center
+
+    def __repr__(self):
+        return "MixedWin(%d, %s, %d, %s, %d)" % (self.begin, self.name, self.center, self.name2, self.end)
+
+
 class LinearWinGen(WindowsGenerator):
     """Generates a linear set of windows (b+i*s, b+i*s+w).
     """
@@ -70,4 +96,4 @@ class NamedWinGen(WindowsGenerator):
 
     def __repr__(self):
         return "<%s - labels: %d, step: %s object at 0x%hx>" % (
-        self.__class__.__name__, len(self._l), self._s, id(self))
+            self.__class__.__name__, len(self._l), self._s, id(self))

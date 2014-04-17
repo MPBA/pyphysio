@@ -13,17 +13,16 @@ class GalaxyLoadWindows(ParamExecClass):
     kwargs['format'] ---> one in [ 'excel', 'csv' ]
                  default: 'csv'
     kwargs['column'] ---> column to load
-                 default: PyHRVSettings.load_rr_column_name
     kwargs['sheet'] ---> excel's sheet's name or ordinal number
                  default: None if format != 'excel'
-    kwargs['windows_type'] ---> windows type in [ 'labeled_sequences', 'begin_values' ]
+    kwargs['windows_type'] ---> windows type to load in [ 'labels_sequences_linear', 'labels_sequences', 'begin_values' ]
     """
 
     def execute(self):
         output_file = self._kwargs['output']
         c = self.load_column()
 
-        if self._kwargs['windows_type'] == 'labeled_sequences':
+        if self._kwargs['windows_type'] == 'labels_sequences':
             w = NamedWinGen(None, c)
         else:
             if self._kwargs['windows_type'] == 'begin_values':
