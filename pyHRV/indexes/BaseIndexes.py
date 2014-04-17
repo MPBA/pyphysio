@@ -59,8 +59,6 @@ class SupportValues(object):
         self._sum = 0
         self._len = 0
         self._old = None
-        self._balance = None
-        self._max = None
 
     def get(self, index, default=0):
         if not index in self._p:
