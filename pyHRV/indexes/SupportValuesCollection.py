@@ -1,13 +1,12 @@
 __author__ = 'AleB'
-__all__ = ['SupportValues']
+__all__ = ['SupportValuesCollection']
 
 
-class SupportValues(object):
+class SupportValuesCollection(object):
     def __init__(self, window=50):
         self._last = []
         self._win_size = window
         self._p = {}
-        self._sum = 0
         self._len = 0
         self._old = None
 
@@ -47,28 +46,14 @@ class SupportValues(object):
         return self._len
 
     @property
-    def sum(self):
-        return self._sum
-
-    @property
-    def min(self):
-        return self._sum
-
-    @property
-    def max(self):
-        return self._sum
-
-    @property
     def ready(self):
         return self._win_size < 0 < self.len or self.len == self._win_size
 
     def _enqueue(self, val):
         self._last.append(val)
-        self._sum += val
 
     def _dequeue(self):
         val = self._last[0]
         del self._last[0]
-        self._sum -= val
         self._old = val
         self._len -= 1
