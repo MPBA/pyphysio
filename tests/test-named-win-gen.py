@@ -19,8 +19,9 @@ def test(f):
 
     ds = DataSeries(ibi)
     wg = NamedWinGen(ds, lab)
+    ws = NamedWinGen(ds, lab, include_baseline_name="baseline")
 
-    mm = WindowsMapper(ds, wg, pyHRV.indexes.TDIndexes.__all__ + pyHRV.indexes.FDIndexes.__all__)
+    mm = WindowsMapper(ds, ws, pyHRV.indexes.TDIndexes.__all__ + pyHRV.indexes.FDIndexes.__all__)
     mm.compute_all()
     df = pd.DataFrame(mm.results)
     df.columns = ['win_name', 'win_first', 'win_last'] + mm.labels
