@@ -76,7 +76,7 @@ class CollectionWinGen(WindowsGenerator):
 
 
 class NamedWinGen(WindowsGenerator):
-    """Generates a list of windows from a states list.
+    """Generates a list of windows from a labels list.
     """
 
     def __init__(self, data, labels):
