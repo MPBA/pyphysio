@@ -12,15 +12,17 @@ class Window(object):
     """Base Window, a begin-end pair
     """
 
-    def __init__(self, begin=None, end=None, name=None, copy=None):
+    def __init__(self, begin=None, end=None, name=None, data=None, copy=None):
         if copy is None:
             self._begin = begin
             self._end = end
             self._name = name
+            self._data = data
         else:
             self._begin = copy.begin
             self._end = copy.end
             self._name = copy.name
+            self._data = copy.data
 
     @property
     def begin(self):

@@ -3,8 +3,20 @@ __all__ = ['NamedWinGen', 'LinearWinGen']
 from WindowsBase import WindowsGenerator, Window
 
 
-class MixedWindow(Window):
+class IBIWindow(Window):
     """Base Window, a begin-end pair
+    """
+
+    @property
+    def duration(self):
+        return sum(self._data[self._begin: self._end])
+
+    def __repr__(self):
+        return "Win(%d, %d, %s: %dms)" % (self.begin, self.end, self.name, self.duration)
+
+
+class MixedWindow(Window):
+    """Mixed states Window, a begin-center-end triad
     """
 
     #TODO: AleB: Solve Nones problem as in Window (super)
@@ -79,16 +91,17 @@ class NamedWinGen(WindowsGenerator):
     """Generates a list of windows from a labels list.
     """
 
-    def __init__(self, data, labels):
+    def __init__(self, data, labels, include_baseline_name=None):
         super(NamedWinGen, self).__init__(data)
         self._l = labels
         self._s = 0
         self._i = 0
+        self._ibn = include_baseline_name
 
     def step_windowing(self):
         if self._i >= len(self._l):
             raise StopIteration()
-        while self._i < len(self._l) and self._l[self._s] == self._l[self._i]:
+        while self._i < len(self._l) and (self._l[self._s] == self._l[self._i] or self._ibn == self._l[self._i]):
             self._i += 1
         w = Window(self._s, self._i - 1, self._l[self._s])
         self._s = self._i
