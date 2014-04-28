@@ -40,7 +40,7 @@ def interpolate_rr(rr, interp_freq):
 
 def template_interpolation(x, t, freq, template=None):
     if template is None:
-        template = 0.5 * np.cos(np.arange(0, 1.01, 0.01) * np.pi) + 0.5
+        template = np.square(np.cos(np.arange(0, 0.505, 0.005) * np.pi))
 
     x_old = x[0]
     t_old = t[0]

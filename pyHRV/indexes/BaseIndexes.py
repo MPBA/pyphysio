@@ -20,6 +20,21 @@ class Index(object):
         raise NotImplementedError(cls.__name__ + " is not available as an on-line index.")
 
 
+class SupportValue(object):
+    """Abstract class that defines the SupportValues' interface
+    """
+
+    def enqueuing(self, new_value):
+        """Updates the support-value with the new enqueued value.
+        """
+        pass
+
+    def dequeuing(self, old_value):
+        """Updates the support-value with the just dequeued value.
+        """
+        pass
+
+
 class TDIndex(Index):
     def __init__(self, data=None):
         super(TDIndex, self).__init__(data)

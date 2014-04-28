@@ -1,59 +1,27 @@
 __author__ = 'AleB'
 __all__ = ['SupportValuesCollection']
+from BaseIndexes import SupportValue
 
 
 class SupportValuesCollection(object):
-    def __init__(self, window=50):
-        self._last = []
-        self._win_size = window
-        self._p = {}
-        self._len = 0
-        self._old = None
+    def __init__(self, win_size=50):
+        self._win_size = win_size
+        self._supp = {}
 
-    def get(self, index, default=0):
-        if not index in self._p:
-            self._p[index] = default
-        return self._p[index]
+    def __len__(self):
+        return self._supp
 
-    def set(self, index, value):
-        self._p[index] = value
+    def __getitem__(self, item):
+        """
+        @rtype : SupportValue
+        """
+        if not item in self._supp:
+            assert isinstance(item, type)
+            self._supp[item] = item(self)
+        return self._supp[item]
 
-    @property
-    def old(self):
-        return self._last[0]
+    def __delitem__(self, key):
+        del self._supp[key]
 
-    @property
-    def last(self):
-        return self._last[0]
-
-    @property
-    def new(self):
-        return self._last[-1]
-
-    @property
-    def vec(self):
-        return self._last
-
-    def update(self, values):
-        for a in values:
-            self._enqueue(a)
-        if self._win_size >= 0:
-            while self.len > self._win_size:
-                self._dequeue()
-
-    @property
-    def len(self):
-        return self._len
-
-    @property
-    def ready(self):
-        return self._win_size < 0 < self.len or self.len == self._win_size
-
-    def _enqueue(self, val):
-        self._last.append(val)
-
-    def _dequeue(self):
-        val = self._last[0]
-        del self._last[0]
-        self._old = val
-        self._len -= 1
+    def __iter__(self):
+        return self._supp.__iter__()
