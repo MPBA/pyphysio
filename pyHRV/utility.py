@@ -38,7 +38,7 @@ def interpolate_rr(rr, interp_freq):
     return rr_interp, bt_interp
 
 
-def template_interpolation(x, t, freq, template=None):
+def template_interpolation(x, t, step, template=None):
     if template is None:
         template = np.square(np.cos(np.arange(0, 0.505, 0.005) * np.pi))
 
@@ -61,7 +61,7 @@ def template_interpolation(x, t, freq, template=None):
         t_old = t_curr
         x_old = x_curr
 
-    t_output = np.arange(t[0], t[-1], 1 / freq)
+    t_output = np.arange(t[0], t[-1], step)
 
     f = interpolate.interp1d(t_out, x_out, 'linear')
     x_output = f(t_output)

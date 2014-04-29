@@ -61,6 +61,12 @@ class PyHRVDefaultSettings:
 
         nnx_default_threshold = 50
 
+    class DefaultInterpolation:
+        def __init__(self):
+            pass
+
+        online_step_milliseconds = 100
+
     class Local:
         def __init__(self):
             pass

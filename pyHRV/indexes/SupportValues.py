@@ -1,6 +1,8 @@
 __author__ = 'AleB'
 
 from BaseIndexes import SupportValue
+from pyHRV.utility import template_interpolation
+from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Ps
 
 
 class SumSV(SupportValue):
@@ -123,8 +125,39 @@ class VectorSV(SupportValue):
 
 
 class InterpolationSV(SupportValue):
-    """Support value: INTERPOLATION of the VALUES
+    """Support value: INTERPOLATION of the VALUES in (seconds O bpm) [~ xOy]
     """
 
-    def __init__(self):
-        self._r = []
+    def __init__(self, sv_collection):
+        self._v = []
+        self._lx = 0
+        self._ly = None
+        self._fx = 0
+        self._fy = None
+        assert isinstance(sv_collection, SupportValue)
+        self._sv = sv_collection
+
+    def enqueuing(self, new_value):
+        y = 60000 / new_value
+        x = self._lx + new_value / 1000  # NO TIME-TOLERANCE ERRORS!
+        if self._ly is None:  # with the first IBI I get the hr of the first (t=x=0) beat and of the second (t=x=IBI)
+            self._fy = self._ly = y
+            self._fx = self._lx = 0  # NO TIME-TOLERANCE ERRORS!
+        hr, t = template_interpolation([self._ly, y],
+                                       [self._lx, x],
+                                       Ps.DefaultInterpolation.online_step_milliseconds / 1000.0)
+        self._v.extend(hr)
+        self._lx = x  # NO TIME-TOLERANCE ERRORS!
+
+    def dequeuing(self, old_value):
+        nt = old_value / 1000  # NO TIME-TOLERANCE ERRORS!
+        v = self._sv[VectorSV]
+        assert isinstance(v, VectorSV)
+        v = v.items[0]
+        i = self._v[0]
+
+    @property
+    def items(self):
+        """READ-ONLY!!!
+        """
+        return self._v
