@@ -69,7 +69,7 @@ class PSDWelchCalc(CacheableDataCalc):
         if to_freq is None:
             to_freq = Sett.default_interpolation_freq
         rr_interp, bt_interp = interpolate_rr(data, to_freq)
-        bands, powers = signal.welch(rr_interp, to_freq, nfft=min(rr_interp.shape[-1]))
+        bands, powers = signal.welch(rr_interp, to_freq, nfft=128)
         powers = np.sqrt(powers)
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 

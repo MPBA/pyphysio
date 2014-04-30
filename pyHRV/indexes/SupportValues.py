@@ -1,6 +1,7 @@
 __author__ = 'AleB'
 
 from BaseIndexes import SupportValue
+from SupportValuesCollection import SupportValuesCollection
 from pyHRV.utility import template_interpolation
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Ps
 
@@ -134,7 +135,7 @@ class InterpolationSV(SupportValue):
         self._ly = None
         self._fx = 0
         self._fy = None
-        assert isinstance(sv_collection, SupportValue)
+        assert isinstance(sv_collection, SupportValuesCollection)
         self._sv = sv_collection
 
     def enqueuing(self, new_value):
@@ -150,11 +151,11 @@ class InterpolationSV(SupportValue):
         self._lx = x  # NO TIME-TOLERANCE ERRORS!
 
     def dequeuing(self, old_value):
-        nt = old_value / 1000  # NO TIME-TOLERANCE ERRORS!
-        v = self._sv[VectorSV]
-        assert isinstance(v, VectorSV)
-        v = v.items[0]
-        i = self._v[0]
+        mt = old_value / 1000  # NO TIME-TOLERANCE ERRORS!
+        ct = self._fx
+        while ct + self._v[0] <= mt:
+            ct += self._v[0]
+            del self._v[0]
 
     @property
     def items(self):
