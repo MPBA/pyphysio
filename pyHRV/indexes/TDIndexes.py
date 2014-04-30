@@ -1,5 +1,6 @@
 __author__ = 'AleB'
-__all__ = ['Mean', 'Median', 'STD', 'SDSD', 'NNx', 'PNN10', 'PNN25', 'PNN50', 'PNNx', 'RMSSD', 'HRMean', 'HRMedian',
+__all__ = ['Mean', 'Median', 'STD', 'SDSD', 'NN10', 'NN25', 'NN50', 'NNx', 'PNN10', 'PNN25', 'PNN50', 'PNNx', 'RMSSD',
+           'HRMean', 'HRMedian',
            'HRSTD']
 
 import numpy as np
@@ -85,7 +86,7 @@ class PNNx(TDIndex):
     def __init__(self, data=None, threshold=PyHRVDefaultSettings.TDIndexes.nnx_default_threshold):
         super(PNNx, self).__init__(data)
         self._xth = threshold
-        self._value = NNx(data, threshold).value / len(data)
+        self._value = NNx(data, threshold).value / float(len(data))
 
     @staticmethod
     def threshold():
@@ -93,7 +94,7 @@ class PNNx(TDIndex):
 
     @classmethod
     def calculate_on(cls, state):
-        NNx.calculate_on(state, cls.threshold()) / state.len
+        NNx.calculate_on(state, cls.threshold()) / float(state.len)  # TODO: (AleB) Wrong
 
 
 class NNx(TDIndex):
@@ -110,7 +111,7 @@ class NNx(TDIndex):
         return PyHRVDefaultSettings.TDIndexes.nnx_default_threshold
 
     @classmethod
-    def calculate_on(cls, state, threshold=None):
+    def calculate_on(cls, state, threshold=None):  # TODO: (AleB) Wrong
         name = cls.__name__ + "_E4j2oj23"
         if threshold is None:
             threshold = cls.threshold()
@@ -140,6 +141,24 @@ class PNN25(PNNx):
 
 
 class PNN50(PNNx):
+    @staticmethod
+    def threshold():
+        return 50
+
+
+class NN10(NNx):
+    @staticmethod
+    def threshold():
+        return 10
+
+
+class NN25(NNx):
+    @staticmethod
+    def threshold():
+        return 25
+
+
+class NN50(NNx):
     @staticmethod
     def threshold():
         return 50
