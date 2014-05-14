@@ -80,8 +80,10 @@ def build_takens_vector(x, m):
 
 
 def peak_detection(v, delta, x=None):
-    max_tab = []
-    min_tab = []
+    max_i = []
+    min_i = []
+    max_v = []
+    min_v = []
 
     if x is None:
         x = np.arange(len(v))
@@ -113,15 +115,17 @@ def peak_detection(v, delta, x=None):
 
         if look_for_max:
             if this < mx - delta:
-                max_tab.append((mx_pos, mx))
+                max_v.append(mx)
+                max_i.append(mx_pos)
                 mn = this
                 mn_pos = x[i]
                 look_for_max = False
         else:
             if this > mn + delta:
-                min_tab.append((mn_pos, mn))
+                min_v.append(mn)
+                min_i.append(mn_pos)
                 mx = this
                 mx_pos = x[i]
                 look_for_max = True
 
-    return np.array(max_tab), np.array(min_tab)
+    return max_i, min_i, max_v, min_v

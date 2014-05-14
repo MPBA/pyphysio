@@ -1,10 +1,6 @@
 __author__ = 'AleB'
 
 
-class DataAnalysis(object):
-    pass
-
-
 class Index(object):
     def __init__(self, data=None, value=None):
         self._value = value
@@ -49,18 +45,3 @@ class FDIndex(Index):
 class NonLinearIndex(Index):
     def __init__(self, data=None):
         super(NonLinearIndex, self).__init__(data)
-
-
-class RRFilters(DataAnalysis):
-    """ Static class containing methods for filtering RR intervals data. """
-
-    @staticmethod
-    def example_filter(series):
-        """ Example filter method, does nothing
-        :param series: DataSeries object to filter
-        :return: DataSeries object filtered
-        """
-        ### assert type(series) is DataSeries
-        return series
-
-        # xTODO: add filtering scripts like in the example
