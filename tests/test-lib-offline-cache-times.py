@@ -23,8 +23,8 @@ def test(rr_series):
     print "Mean: ", TDIn.Mean(rr_series).value
     print "STD: ", TDIn.STD(rr_series).value
     print "Median: ", TDIn.Median(rr_series).value
-    print "PNNx: ", TDIn.PNNx(50, rr_series).value
-    print "NNx: ", TDIn.NNx(50, rr_series).value
+    print "PNN50: ", TDIn.PNN50(rr_series).value
+    print "NN50: ", TDIn.NN50(rr_series).value
     print "RMSSD: ", TDIn.RMSSD(rr_series).value
     print "SDSD: ", TDIn.SDSD(rr_series).value
     t1 = delay()
@@ -56,7 +56,7 @@ def test(rr_series):
 if __name__ == '__main__':
     delay(False)
     print 'Loading file'
-    RRSeries = load_rr("A05.txt")
+    RRSeries = load_rr("../z_data/A05.txt")
     delay()
 
     print 'Starting analysis'

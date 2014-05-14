@@ -85,7 +85,7 @@ class HRSTD(TDIndex, CacheableDataCalc):
 class PNNx(TDIndex):
     def __init__(self, data=None, threshold=PyHRVDefaultSettings.TDIndexes.nnx_default_threshold):
         super(PNNx, self).__init__(data)
-        self._xth = threshold
+        self._xth = threshold if not threshold is None else threshold()
         self._value = NNx(data, threshold).value / float(len(data))
 
     @staticmethod
