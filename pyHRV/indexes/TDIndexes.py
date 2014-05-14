@@ -5,7 +5,7 @@ __all__ = ['Mean', 'Median', 'STD', 'SDSD', 'NN10', 'NN25', 'NN50', 'NNx', 'PNN1
 
 import numpy as np
 
-from pyHRV.Cache import CacheableDataCalc, RRDiff
+from pyHRV.Cache import CacheableDataCalc, RRDiff, Histogram
 from pyHRV.indexes.BaseIndexes import TDIndex
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings
 
@@ -176,3 +176,10 @@ class SDSD(TDIndex):
         super(SDSD, self).__init__(data)
         diff = RRDiff.get(self._data)
         self._value = np.std(diff)
+
+
+class Triang(TDIndex):
+    def __init__(self, data=None):
+        super(Triang, self).__init__(data)
+        h, b = Histogram.get(self._data)
+        self._value = len(self._data) / np.max(h)

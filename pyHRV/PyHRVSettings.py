@@ -6,6 +6,7 @@ class PyHRVDefaultSettings:
         pass
 
     default_interpolation_freq = 4
+    default_histogram_bins = 100
 
     class DataImports:
         def __init__(self):

@@ -74,6 +74,18 @@ class PSDWelchCalc(CacheableDataCalc):
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 
 
+class Histogram(CacheableDataCalc):
+    @classmethod
+    def _calculate_data(cls, data, params=None):
+        """ Calculates the intermediate data
+        :type data: DataSeries
+        :param data: RRSeries object
+        :param params: Params object
+        :return: Data to cache
+        """
+        return np.histogram(data, Sett.default_histogram_bins)
+
+
 class RRDiff(CacheableDataCalc):
     @classmethod
     def _calculate_data(cls, data, params=None):
