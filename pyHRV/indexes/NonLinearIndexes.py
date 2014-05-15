@@ -5,7 +5,7 @@ import numpy as np
 from scipy.spatial.distance import cdist, pdist
 from scipy.stats.mstats import mquantiles
 
-from pyHRV.Cache import RRDiff, BuildTakensVector2, BuildTakensVector3, PoinSD
+from pyHRV.Cache import RRDiff, BuildTakensVector2, BuildTakensVector3, PoinSD, StandardDeviation
 from pyHRV.indexes.BaseIndexes import NonLinearIndex
 from pyHRV.indexes.TDIndexes import Mean
 from pyHRV.utility import build_takens_vector
@@ -27,14 +27,14 @@ class ApproxEntropy(NonLinearIndex):
         d_m1 = cdist(uj_m1, uj_m1, 'chebyshev')
 
         cmr_m_apen = np.zeros(card_elem_m)
-        for i in range(card_elem_m):
+        for i in xrange(card_elem_m):
             vector = d_m[i]
-            cmr_m_apen[i] = float((vector <= r).sum()) / card_elem_m
+            cmr_m_apen[i] = float(vector.count(lambda x: x <= r)) / card_elem_m
 
         cmr_m1_apen = np.zeros(card_elem_m1)
-        for i in range(card_elem_m1):
+        for i in xrange(card_elem_m1):
             vector = d_m1[i]
-            cmr_m1_apen[i] = float((vector <= r).sum()) / card_elem_m1
+            cmr_m1_apen[i] = float(vector.count(lambda x: x <= r)) / card_elem_m1
 
         phi_m = np.sum(np.log(cmr_m_apen)) / card_elem_m
         phi_m1 = np.sum(np.log(cmr_m1_apen)) / card_elem_m1
@@ -52,19 +52,19 @@ class SampleEntropy(NonLinearIndex):
         num_elem_m = uj_m.shape[0]
         num_elem_m1 = uj_m1.shape[0]
 
-        r = r * np.std(self._data)  #cacheable
+        r = r * StandardDeviation.get(self._data)
         d_m = cdist(uj_m, uj_m, 'chebyshev')
         d_m1 = cdist(uj_m1, uj_m1, 'chebyshev')
 
         cmr_m_samp_en = np.zeros(num_elem_m)
-        for i in range(num_elem_m):
+        for i in xrange(num_elem_m):
             vector = d_m[i]
-            cmr_m_samp_en[i] = float((vector <= r).sum() - 1) / (num_elem_m - 1)
+            cmr_m_samp_en[i] = float(vector.count(lambda x: x <= r) - 1) / (num_elem_m - 1)
 
         cmr_m1_samp_en = np.zeros(num_elem_m1)
-        for i in range(num_elem_m1):
+        for i in xrange(num_elem_m1):
             vector = d_m1[i]
-            cmr_m1_samp_en[i] = float((vector <= r).sum() - 1) / (num_elem_m1 - 1)
+            cmr_m1_samp_en[i] = float(vector.count(lambda x: x <= r) - 1) / (num_elem_m1 - 1)
 
         cm = np.sum(cmr_m_samp_en) / num_elem_m
         cm1 = np.sum(cmr_m1_samp_en) / num_elem_m1
@@ -86,8 +86,8 @@ class FractalDimension(NonLinearIndex):
         ra = rr[0]
         rb = rr[1]
 
-        cmr_a = float(((mutual_distance <= ra).sum())) / num_elem
-        cmr_b = float(((mutual_distance <= rb).sum())) / num_elem
+        cmr_a = float(mutual_distance.count(lambda x: x <= ra)) / num_elem
+        cmr_b = float(mutual_distance.count(lambda x: x <= rb)) / num_elem
 
         self._value = (np.log(cmr_b) - np.log(cmr_a)) / (np.log(rb) - np.log(ra))
 
@@ -126,9 +126,9 @@ class CorrelationDim(NonLinearIndex):
         n = np.zeros(num_elem)
         dj = cdist(uj, uj, 'euclidean')
         for r in r_vector:
-            for i in range(num_elem):
+            for i in xrange(num_elem):
                 vector = dj[i]
-                n[i] = float((vector <= r).sum()) / num_elem
+                n[i] = float(vector.count(lambda x: x <= r)) / num_elem
             c[jj] = np.sum(n) / num_elem
             jj += 1
 
@@ -142,7 +142,6 @@ class PoinSD1(NonLinearIndex):
     def __init__(self, data=None):
         super(PoinSD1, self).__init__(data)
         sd1, sd2 = PoinSD.get(self._data)
-        # TODO: Is this return right? (Andrea)
         self._value = sd1
 
 
@@ -150,7 +149,6 @@ class PoinSD2(NonLinearIndex):
     def __init__(self, data=None):
         super(PoinSD2, self).__init__(data)
         sd1, sd2 = PoinSD.get(self._data)
-        # TODO: Is this return right? (Andrea)
         self._value = sd2
 
 

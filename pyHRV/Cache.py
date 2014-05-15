@@ -105,6 +105,18 @@ class RRDiff(CacheableDataCalc):
         return np.diff(np.array(data))
 
 
+class StandardDeviation(CacheableDataCalc):
+    @classmethod
+    def _calculate_data(cls, data, params=None):
+        """ Calculates the intermediate data
+        :type data: DataSeries
+        :param data: RRSeries object
+        :param params: Params object
+        :return: Data to cache
+        """
+        return np.std(np.array(data))
+
+
 class BuildTakensVector2(CacheableDataCalc):
     @classmethod
     def _calculate_data(cls, data, params=None):
