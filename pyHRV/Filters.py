@@ -50,8 +50,37 @@ class RRFilters(DataAnalysis):
         return DataSeries((series - np.mean(series)) / (np.max(series) - np.min(series)))
 
     @staticmethod
-    def normalize_rr_all_mean_calm(series, rr_all, mean_calm_msec):
+    def normalize_rr_all_mean_calm(series, rr_all, mean_calm_milliseconds):
         """PSD estimation method:
             5) RR_ALL*RR/meanCALM"""
         assert isinstance(series, DataSeries)
-        return DataSeries(rr_all * series - mean_calm_msec)
+        return DataSeries(rr_all * series - mean_calm_milliseconds)
+
+    @staticmethod
+    def filter_out_layers(series, last=13, min_bpm=24, max_bpm=198, win_length=50):
+        """Removes outliers from RR series"""
+        assert isinstance(series, DataSeries)
+        new_series = np.array(series)
+        max_rr = 60000 / min_bpm
+        min_rr = 60000 / max_bpm
+
+        # threshold initialization
+        u_last = last  # 13%
+        u_mean = 1.5 * u_last  # 19%
+
+        index = 1  # discard the first
+        var_pre = 100 * abs((new_series[1] - new_series[0]) / new_series[0])
+        while index < len(new_series) - 1:  # pre-last
+            v = new_series[max(index - win_length, 0):index]  # last win_length values avg
+            m = np.mean(v)
+            var_next = 100 * abs((new_series[index + 1] - new_series[index]) / new_series[index + 1])
+            var_mean = 100 * abs((new_series[index] - m) / m)
+
+            if (((var_pre < u_last) |  # last var
+                     (var_next < u_last) |  # last var
+                     (var_mean < u_mean)) &  # avg var
+                    (new_series[index] > min_rr) & (new_series[index] < max_rr)):  # ok values
+                index += 1  # ok
+            else:
+                new_series = np.delete(new_series, index)
+        return DataSeries(new_series)

@@ -194,7 +194,7 @@ class TINN(TDIndex):
         hist_right = np.array(hist[np.argmax(hist):-1])
         rl = len(hist_right)
 
-        y_left, u = np.linspace(0, max_x, ll)
+        y_left = np.array(np.linspace(0, max_x, ll))
 
         minx = np.Inf
         pos = 0
@@ -208,7 +208,7 @@ class TINN(TDIndex):
 
         n = bins[pos - 1]
 
-        y_right, w = np.linspace(max_x, 0, rl)
+        y_right = np.array(np.linspace(max_x, 0, rl))
         minx = np.Inf
         pos = 0
         for i in range(rl, 1, -1):
