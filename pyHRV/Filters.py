@@ -1,5 +1,6 @@
 __author__ = 'AleB'
 __all__ = ["RRFilters"]
+
 import numpy as np
 
 from pyHRV.DataSeries import DataSeries
