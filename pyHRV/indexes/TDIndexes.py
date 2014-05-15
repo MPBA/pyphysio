@@ -1,11 +1,10 @@
 __author__ = 'AleB'
 __all__ = ['Mean', 'Median', 'STD', 'SDSD', 'NN10', 'NN25', 'NN50', 'NNx', 'PNN10', 'PNN25', 'PNN50', 'PNNx', 'RMSSD',
-           'HRMean', 'HRMedian',
-           'HRSTD']
+           'HRMean', 'HRMedian', 'HRSTD', "Triang", "TINN"]
 
 import numpy as np
 
-from pyHRV.Cache import CacheableDataCalc, RRDiff, Histogram
+from pyHRV.Cache import CacheableDataCalc, RRDiff, Histogram, HistogramMax
 from pyHRV.indexes.BaseIndexes import TDIndex
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings
 
@@ -183,3 +182,43 @@ class Triang(TDIndex):
         super(Triang, self).__init__(data)
         h, b = Histogram.get(self._data)
         self._value = len(self._data) / np.max(h)
+
+
+class TINN(TDIndex):
+    def __init__(self, data=None):
+        super(TINN, self).__init__(data)
+        hist, bins = Histogram.get(self._data)
+        max_x = HistogramMax.get(self._data)
+        hist_left = np.array(hist[0:np.argmax(hist)])
+        ll = len(hist_left)
+        hist_right = np.array(hist[np.argmax(hist):-1])
+        rl = len(hist_right)
+
+        y_left, u = np.linspace(0, max_x, ll)
+
+        minx = np.Inf
+        pos = 0
+        for i in range(len(hist_left) - 1):
+            curr_min = np.sum((hist_left - y_left) ** 2)
+            if curr_min < minx:
+                minx = curr_min
+                pos = i
+            y_left[i] = 0
+            y_left[i + 1:] = np.linspace(0, max_x, ll - i - 1)
+
+        n = bins[pos - 1]
+
+        y_right, w = np.linspace(max_x, 0, rl)
+        minx = np.Inf
+        pos = 0
+        for i in range(rl, 1, -1):
+            curr_min = np.sum((hist_right - y_right) ** 2)
+            if curr_min < minx:
+                minx = curr_min
+                pos = i
+            y_right[i - 1] = 0
+            y_right[0:i - 2] = np.linspace(max_x, 0, i - 2)
+
+        m = bins[np.argmax(hist) + pos + 1]
+
+        self._value = m - n

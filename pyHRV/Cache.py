@@ -86,6 +86,13 @@ class Histogram(CacheableDataCalc):
         return np.histogram(data, Sett.default_histogram_bins)
 
 
+class HistogramMax(CacheableDataCalc):
+    @classmethod
+    def _calculate_data(cls, data, params=None):
+        h, b = Histogram.get(data)
+        return np.max(h)
+
+
 class RRDiff(CacheableDataCalc):
     @classmethod
     def _calculate_data(cls, data, params=None):
