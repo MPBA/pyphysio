@@ -6,59 +6,41 @@ import numpy as np
 from pyHRV.DataSeries import DataSeries
 
 
-class DataAnalysis(object):
-    pass
-
-
-class RRFilters(DataAnalysis):
+class RRFilters(object):
     """ Static class containing methods for filtering RR intervals data. """
 
     @staticmethod
-    def example_filter(series):
-        """ Example filter method, does nothing
-        :param series: DataSeries object to filter
-        :return: DataSeries object filtered
-        """
-        assert isinstance(series, DataSeries)
-        return series
-
-    @staticmethod
     def normalize_mean(series):
-        """PSD estimation method:
-            1) RR-mean"""
+        """Normalizes the series removing the mean (RR-mean)"""
         assert isinstance(series, DataSeries)
         return DataSeries(series - np.mean(series))
 
     @staticmethod
     def normalize_mean_sd(series):
-        """PSD estimation method:
-            2) (RR-mean)/sd"""
+        """Normalizes the series removing the mean and dividing by the standard deviation (RR-mean)/sd"""
         assert isinstance(series, DataSeries)
         return DataSeries((series - np.mean(series)) / np.std(series))
 
     @staticmethod
     def normalize_min(series):
-        """PSD estimation method:
-            3) RR - min"""
+        """Normalizes the series removing the minimum value (RR-min)"""
         assert isinstance(series, DataSeries)
         return DataSeries(series - np.min(series))
 
     @staticmethod
     def normalize_max_min(series):
-        """PSD estimation method:
-            4) (RR-min)/(max-min)"""
+        """Normalizes the series removing the mean and dividing by the range width (RR-mean)/(max-min)"""
         assert isinstance(series, DataSeries)
         return DataSeries((series - np.mean(series)) / (np.max(series) - np.min(series)))
 
     @staticmethod
-    def normalize_rr_all_mean_calm(series, rr_all, mean_calm_milliseconds):
-        """PSD estimation method:
-            5) RR_ALL*RR/meanCALM"""
+    def normalize_rr_all_mean_calm(series, param, mean_calm_milliseconds):
+        """Normalizes the series scaling by two factors ((PAR*RR)/meanCALM)"""
         assert isinstance(series, DataSeries)
-        return DataSeries(rr_all * series - mean_calm_milliseconds)
+        return DataSeries(param * series - mean_calm_milliseconds)
 
     @staticmethod
-    def filter_out_layers(series, last=13, min_bpm=24, max_bpm=198, win_length=50):
+    def filter_outliers(series, last=13, min_bpm=24, max_bpm=198, win_length=50):
         """Removes outliers from RR series"""
         assert isinstance(series, DataSeries)
         new_series = np.array(series)
@@ -85,3 +67,12 @@ class RRFilters(DataAnalysis):
             else:
                 new_series = np.delete(new_series, index)
         return DataSeries(new_series)
+
+    @staticmethod
+    def example_filter(series):
+        """ Example filter method, does nothing
+        :param series: DataSeries
+        :return: DataSeries
+        """
+        assert isinstance(series, DataSeries)
+        return series

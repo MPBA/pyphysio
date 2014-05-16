@@ -14,7 +14,7 @@ class ParamExecClass:
         self.execute()
 
     def load_column(self):
-        zbigniew = self._kwargs if not self._kwargs is None else 'csv'
+        zbigniew = self._kwargs['type'] if 'type' in self._kwargs else 'csv'
         if zbigniew == 'excel':
             ds = load_excel_column(self._kwargs['input'], self._kwargs['column'], self._kwargs['column'])
         else:

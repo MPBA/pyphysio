@@ -4,23 +4,13 @@ from scipy import interpolate
 
 
 def power(spec, freq, min_freq, max_freq):
-    """Returns the power calculated in the specified band of the spec-freq spectrum
-    @param spec: power values
-    @param freq: frequency values
-    @param min_freq: lower band bound
-    @param max_freq: higher band bound
-    @return: power in band
-    """
+    """Returns the power calculated in the specified band of the spec-freq spectrum"""
     band = np.array([spec[i] for i in range(len(spec)) if min_freq <= freq[i] < max_freq])
     return np.sum(band) / len(spec)
 
 
 def interpolate_rr(rr, interp_freq):
-    """Returns as a tuple the interpolated RR and BT arrays
-    @param rr:
-    @param interp_freq:
-    @return: (RR interpolated, BT interpolated)
-    """
+    """Returns as a tuple the interpolated RR and BT arrays"""
     step = 1.0 / interp_freq
     rr /= 1000
     rr = np.array(rr)

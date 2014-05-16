@@ -1,15 +1,17 @@
 __author__ = 'AleB'
-__all__ = ['Mean', 'Median', 'STD', 'SDSD', 'NN10', 'NN25', 'NN50', 'NNx', 'PNN10', 'PNN25', 'PNN50', 'PNNx', 'RMSSD',
-           'HRMean', 'HRMedian', 'HRSTD', "Triang", "TINN"]
+__all__ = ['Mean', 'Median', 'SD', 'SDSD', 'NN10', 'NN25', 'NN50', 'NNx', 'PNN10', 'PNN25', 'PNN50', 'PNNx', 'RMSSD',
+           'HRMean', 'HRMedian', 'HRSD', "Triang", "TINN"]
 
 import numpy as np
 
 from pyHRV.Cache import CacheableDataCalc, RRDiff, Histogram, HistogramMax
 from pyHRV.indexes.BaseIndexes import TDIndex
-from pyHRV.PyHRVSettings import PyHRVDefaultSettings
+from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
 
 class Mean(TDIndex, CacheableDataCalc):
+    """Calculates the average of the data series."""
+
     def __init__(self, data=None):
         super(Mean, self).__init__(data)
         self._value = Mean.get(self._data)
@@ -28,6 +30,8 @@ class Mean(TDIndex, CacheableDataCalc):
 
 
 class HRMean(TDIndex, CacheableDataCalc):
+    """Calculates the average of the data series and converts it into Beats per Minute."""
+
     def __init__(self, data=None):
         super(HRMean, self).__init__(data)
         self._value = HRMean.get(self._data)
@@ -46,6 +50,8 @@ class HRMean(TDIndex, CacheableDataCalc):
 
 
 class Median(TDIndex, CacheableDataCalc):
+    """Calculates the median of the data series."""
+
     def __init__(self, data=None):
         super(Median, self).__init__(data)
         self._value = Median.get(self._data)
@@ -56,25 +62,31 @@ class Median(TDIndex, CacheableDataCalc):
 
 
 class HRMedian(TDIndex):
+    """Calculates the average of the data series and converts it into Beats per Minute."""
+
     def __init__(self, data=None):
         super(HRMedian, self).__init__(data)
         self._value = 60000 / Median.get(self._data)
 
 
-class STD(TDIndex, CacheableDataCalc):
+class SD(TDIndex, CacheableDataCalc):
+    """Calculates the standard deviation of the data series."""
+
     def __init__(self, data=None):
-        super(STD, self).__init__(data)
-        self._value = STD.get(self._data)
+        super(SD, self).__init__(data)
+        self._value = SD.get(self._data)
 
     @classmethod
     def _calculate_data(cls, data, params):
         return np.std(data)
 
 
-class HRSTD(TDIndex, CacheableDataCalc):
+class HRSD(TDIndex, CacheableDataCalc):
+    """Calculates the average of the data series and converts it into Beats per Minute."""
+
     def __init__(self, data=None):
-        super(HRSTD, self).__init__(data)
-        self._value = HRSTD.get(self._data)
+        super(HRSD, self).__init__(data)
+        self._value = HRSD.get(self._data)
 
     @classmethod
     def _calculate_data(cls, data, params):
@@ -82,14 +94,17 @@ class HRSTD(TDIndex, CacheableDataCalc):
 
 
 class PNNx(TDIndex):
-    def __init__(self, data=None, threshold=PyHRVDefaultSettings.TDIndexes.nnx_default_threshold):
+    """Calculates the presence proportion (0.0-1.0) in the data series of pairs of consecutive IBIs
+    where the difference between the two values is greater than the default parameter."""
+
+    def __init__(self, data=None, threshold=None):
         super(PNNx, self).__init__(data)
-        self._xth = threshold if not threshold is None else threshold()
+        self._xth = threshold if not threshold is None else self.threshold()
         self._value = NNx(data, threshold).value / float(len(data))
 
     @staticmethod
     def threshold():
-        return PyHRVDefaultSettings.TDIndexes.nnx_default_threshold
+        return Sett.nnx_default_threshold
 
     @classmethod
     def calculate_on(cls, state):
@@ -97,17 +112,18 @@ class PNNx(TDIndex):
 
 
 class NNx(TDIndex):
+    """Calculates number of pairs of consecutive IBIs in the data series where the difference between
+     the two values is greater than the default parameter."""
+
     def __init__(self, data=None, threshold=None):
         super(NNx, self).__init__(data)
-        if threshold is None:
-            threshold = type(self).threshold()
-        self._xth = threshold
+        self._xth = threshold if not threshold is None else self.threshold()
         diff = RRDiff.get(self._data)
         self._value = sum(1 for x in diff if x > self._xth)
 
     @staticmethod
     def threshold():
-        return PyHRVDefaultSettings.TDIndexes.nnx_default_threshold
+        return Sett.nnx_default_threshold
 
     @classmethod
     def calculate_on(cls, state, threshold=None):  # TODO: (AleB) Wrong
@@ -128,63 +144,91 @@ class NNx(TDIndex):
 
 
 class PNN10(PNNx):
+    """Calculates the presence proportion (0.0-1.0) in the data series of pairs of consecutive IBIs
+    where the difference between the two values is greater than 10."""
+
     @staticmethod
     def threshold():
         return 10
 
 
 class PNN25(PNNx):
+    """Calculates the presence proportion (0.0-1.0) in the data series of pairs of consecutive IBIs
+    where the difference between the two values is greater than 25."""
+
     @staticmethod
     def threshold():
         return 25
 
 
 class PNN50(PNNx):
+    """Calculates the presence proportion (0.0-1.0) in the data series of pairs of consecutive IBIs
+    where the difference between the two values is greater than 50."""
+
     @staticmethod
     def threshold():
         return 50
 
 
 class NN10(NNx):
+    """Calculates number of pairs of consecutive IBIs in the data series where the difference between
+     the two values is greater than 10."""
+
     @staticmethod
     def threshold():
         return 10
 
 
 class NN25(NNx):
+    """Calculates number of pairs of consecutive IBIs in the data series where the difference between
+     the two values is greater than 25."""
+
     @staticmethod
     def threshold():
         return 25
 
 
 class NN50(NNx):
+    """Calculates number of pairs of consecutive IBIs in the data series where the difference between
+     the two values is greater than 50."""
+
     @staticmethod
     def threshold():
         return 50
 
 
 class RMSSD(TDIndex):
+    """Calculates the ."""
+
     def __init__(self, data=None):
         super(RMSSD, self).__init__(data)
         diff = RRDiff.get(self._data)
-        self._value = np.sqrt(sum(diff ** 2) / (len(diff) - 1))
+        self._value = np.sqrt(sum(diff ** 2) / (len(diff)))
 
 
 class SDSD(TDIndex):
+    """Calculates the standard deviation of the differences between each value and its next."""
+
     def __init__(self, data=None):
         super(SDSD, self).__init__(data)
         diff = RRDiff.get(self._data)
         self._value = np.std(diff)
 
 
+#TODO: fix docu
 class Triang(TDIndex):
+    """Calculates the Triangular HRV index."""
+
     def __init__(self, data=None):
         super(Triang, self).__init__(data)
         h, b = Histogram.get(self._data)
         self._value = len(self._data) / np.max(h)
 
 
+#TODO: fix docu
 class TINN(TDIndex):
+    """Calculates the difference between two histogram-related indexes."""
+
     def __init__(self, data=None):
         super(TINN, self).__init__(data)
         hist, bins = Histogram.get(self._data)

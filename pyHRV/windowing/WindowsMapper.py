@@ -10,8 +10,9 @@ __all__ = ['WindowsMapper']
 
 
 class WindowsMapper(object):
-    """Allows the iteration of the computation of a list of indexes over a WindowsGenerator
-    """
+    """Takes some indexes and calculates them on the given set of windows.
+    Allows the iteration of the computation of a list of indexes over a WindowsGenerator.
+    Use compute_all to execute the computation."""
 
     def __init__(self, data, win_gen, indexes):
         """Initializes
@@ -42,10 +43,14 @@ class WindowsMapper(object):
         return self._comp_one(self._win_iter.next())
 
     def compute_all(self):
+        """Executes the indexes computation (mapping with the windows)."""
         self._map = map(self._comp_one, self._wing)
 
     @property
     def labels(self):
+        """Gets the labels of the table returned from the results property after the compute_all call.
+        @rtype : list
+        """
         ret = []
         for index in self._index:
             if isinstance(index, str) | isinstance(index, unicode):
@@ -55,4 +60,8 @@ class WindowsMapper(object):
 
     @property
     def results(self):
+        """
+        Returns the results table calculated in the compute_all call.
+        @return: dict
+        """
         return self._map

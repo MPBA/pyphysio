@@ -2,7 +2,7 @@
 __author__ = "AleB"
 __all__ = ['DataSeries']
 
-from numpy import mean as npmean
+from numpy import mean as np_mean
 
 import pandas as pd
 
@@ -10,7 +10,7 @@ from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
 
 class DataSeries(pd.TimeSeries):
-    """ Pandas' DataFrame class. Gives a cache support through CacheableDataCalc subclasses. """
+    """ Pandas' DataFrame class extension that gives a cache support through CacheableDataCalc subclasses."""
 
     def __init__(self, data=None, copy=False, meta_tag=None):
         """ Default constructor.
@@ -23,10 +23,10 @@ class DataSeries(pd.TimeSeries):
             self.meta_tag = {}
         else:
             self.meta_tag = meta_tag
-        mean = npmean(data)
-        assert (not Sett.TimeUnitCheck.time_unit_check_ibi_mean_max < Sett.TimeUnitCheck.time_unit_check_ibi
-                    | (mean < Sett.TimeUnitCheck.time_unit_check_ibi_mean_min)), \
-            Sett.Local.time_unit_check_ibi_warn % mean
+        mean = np_mean(data)
+        assert (not Sett.time_unit_check_ibi_mean_max < Sett.time_unit_check_ibi
+                    | (mean < Sett.time_unit_check_ibi_mean_min)), \
+            Sett.time_unit_check_ibi_warn % mean
 
     def cache_clear(self):
         """ Clears the cache and frees memory (GC?)

@@ -1,9 +1,9 @@
 __author__ = 'AleB'
+
 import numpy as np
 from scipy import signal
 
-from utility import interpolate_rr
-from pyHRV.utility import build_takens_vector
+from pyHRV.utility import build_takens_vector, interpolate_rr
 from pyHRV.DataSeries import DataSeries
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
@@ -83,7 +83,7 @@ class Histogram(CacheableDataCalc):
         :param params: Params object
         :return: Data to cache
         """
-        return np.histogram(data, Sett.default_histogram_bins)
+        return np.histogram(data, Sett.cache_histogram_bins)
 
 
 class HistogramMax(CacheableDataCalc):

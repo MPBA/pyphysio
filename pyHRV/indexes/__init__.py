@@ -1,12 +1,16 @@
-__author__ = "AleB"
+__author__ = 'AleB'
+
+# Will make every index and index directory accessible from the pyHRV namespace
+
 import TDIndexes
-from TDIndexes import *
 import FDIndexes
-from FDIndexes import *
 import NonLinearIndexes
+import BaseIndexes
+from TDIndexes import *
+from FDIndexes import *
 from NonLinearIndexes import *
 
-__all_indexes__ = list()
+__all_indexes__ = []
 __all_indexes__.extend(TDIndexes.__all__)
 __all_indexes__.extend(FDIndexes.__all__)
 __all_indexes__.extend(NonLinearIndexes.__all__)

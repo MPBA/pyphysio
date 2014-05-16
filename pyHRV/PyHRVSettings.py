@@ -1,3 +1,4 @@
+__author__ = "AleB"
 __all__ = ['PyHRVSettings', 'PyHRVDefaultSettings']
 
 

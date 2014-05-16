@@ -6,6 +6,8 @@ import spectrum as spct
 
 
 
+
+
 #####################################
 ## NOTE
 # PSD estimation: AR method
@@ -54,7 +56,7 @@ def calculate_td_indexes(rr):
     RMSSD = np.sqrt(sum(RRDiffs ** 2) / (len(RRDiffs) - 1))
     SDSD = np.std(RRDiffs)
 
-    labels = np.array(['RRmean', 'STD', 'pNN50', 'pNN25', 'pNN10', 'RMSSD', 'SDSD'], dtype='S10')
+    labels = np.array(['RRmean', 'SD', 'pNN50', 'pNN25', 'pNN10', 'RMSSD', 'SDSD'], dtype='S10')
 
     return [RRmean, RRSTD, pNN50, pNN25, pNN10, RMSSD, SDSD], labels
 

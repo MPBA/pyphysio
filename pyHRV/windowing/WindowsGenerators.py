@@ -4,8 +4,7 @@ from WindowsBase import WindowsGenerator, Window
 
 
 class IBIWindow(Window):
-    """Base Window, a begin-end pair
-    """
+    """Base IBI Window, a begin-end pair that provides the duration computation."""
 
     @property
     def duration(self):
@@ -16,8 +15,7 @@ class IBIWindow(Window):
 
 
 class MixedWindow(Window):
-    """Mixed states Window, a begin-center-end triad
-    """
+    """Mixed states Window, a begin-center-end triad."""
 
     #TODO: AleB: Solve Nones problem as in Window (super)
     def __init__(self, begin=None, end=None, name=None, name2=None, center=None, copy=None):
@@ -42,8 +40,7 @@ class MixedWindow(Window):
 
 
 class LinearWinGen(WindowsGenerator):
-    """Generates a linear set of windows (b+i*s, b+i*s+w).
-    """
+    """Generates a linear set of windows (b+i*s, b+i*s+w)."""
 
     def __init__(self, begin, step, width, data=None, end=None):
         super(LinearWinGen, self).__init__(data)

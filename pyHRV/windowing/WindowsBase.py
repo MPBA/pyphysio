@@ -3,14 +3,12 @@ __all__ = ['WindowError', 'Window', 'WindowsGenerator']
 
 
 class WindowError(Exception):
-    """Generic Windowing error.
-    """
+    """Generic Windowing error."""
     pass
 
 
 class Window(object):
-    """Base Window, a begin-end pair
-    """
+    """Base Window, a begin-end pair"""
 
     def __init__(self, begin=None, end=None, name=None, data=None, copy=None):
         if copy is None:
@@ -45,9 +43,7 @@ class Window(object):
 
 
 class WindowsIterator(object):
-    """A generic iterator that is called from each WindowGenerator from the __iter__ method.
-    Not for the end user.
-    """
+    """A generic iterator that is called from each WindowGenerator from the __iter__ method."""
 
     def __init__(self, win):
         assert isinstance(win, WindowsGenerator)
@@ -58,8 +54,7 @@ class WindowsIterator(object):
 
 
 class WindowsGenerator(object):
-    """Base and abstract class for the windows computation.
-    """
+    """Base and abstract class for the windows computation."""
 
     def __init__(self, data=None):
         self._data = None
