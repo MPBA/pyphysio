@@ -24,7 +24,7 @@ def test(f):
     mm.compute_all()
     df = pd.DataFrame(mm.results)
     df.columns = ['win_name', 'win_first', 'win_last'] + mm.labels
-    df.to_csv(os.path.dirname(f) + "/results/" + os.path.basename(f) + ".results.csv", Ps.Files.csv_separator,
+    df.to_csv(os.path.dirname(f) + "/results/" + os.path.basename(f) + ".results.csv", Ps.load_csv_separator,
               index=False)
 
 

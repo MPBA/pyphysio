@@ -75,4 +75,3 @@ def load_rr_from_bvp(path, delta_ratio=Sett.import_bvp_delta_max_min_numerator, 
     s.meta_tag['from_delta'] = delta
     s.meta_tag['from_filters'] = list(Sett.import_bvp_filters)
     return s
-

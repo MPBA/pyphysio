@@ -8,12 +8,12 @@ from pyHRV.indexes import TDIndexes as Td
 def main():
     rr = load_rr("../z_data/D01.txt")
     wg = LinearWinGen(0, 20, 40, rr)
-    wm = WindowsMapper(rr, wg, Td.Mean)
-    ws = WindowsMapper(rr, wg, Td.SD)
-    wx = WindowsMapper(rr, wg, Td.PNN25)
-    wm.compute()
-    ws.compute()
-    wx.compute()
+    wm = WindowsMapper(rr, wg, [Td.Mean])
+    ws = WindowsMapper(rr, wg, [Td.SD])
+    wx = WindowsMapper(rr, wg, [Td.PNN25])
+    wm.compute_all()
+    ws.compute_all()
+    wx.compute_all()
     print wm.results
     print ws.results
     print wx.results
