@@ -1,6 +1,14 @@
-__author__ = 'AleB'
+# coding=utf-8
+"""
+indexes package:
+Contains classes with 43 of the main algorithms for the HRV analysis.
+They are divided by:
+TDIndexes:          Time domain indices,
+FDIndexes:          Frequency domain indices,
+NonLinearIndexes:   Like e.g. entropy indexes and Poincaré indexes.
+"""
 
-# Will make every index and index directory accessible from the pyHRV namespace
+__author__ = 'AleB'
 
 import TDIndexes
 import FDIndexes
