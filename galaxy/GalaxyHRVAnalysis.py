@@ -2,8 +2,8 @@ import pandas as pd
 
 from ParamExecClass import ParamExecClass
 import pyHRV
-from pyHRV.windowing import CollectionWinGen, WindowsMapper
-from pyHRV.Files import load_data_series
+from pyHRV.Files import load_data
+from pyHRV.windowing import CollectionWinGen, Window
 
 
 class GalaxyHRVAnalysis(ParamExecClass):
@@ -33,7 +33,13 @@ class GalaxyHRVAnalysis(ParamExecClass):
                 for index in indexes:
                     values[index] = getattr(pyHRV, index)(data).value
             else:
-                values = WindowsMapper(data, CollectionWinGen(data, wins), indexes)
+                u = []
+                for x in wins:
+                    z = x.split(":")
+                    u.append(Window(int(z[0]), int(z[1])))
+                print u
+                values = pyHRV.WindowsMapper(data, CollectionWinGen(data, u), indexes).compute_all()
+                values = values.results
         return values
 
     def execute(self):
@@ -41,7 +47,7 @@ class GalaxyHRVAnalysis(ParamExecClass):
 
         indexes = self._kwargs['indexes']
 
-        wins = load_data_series(self._kwargs['input_w'])
+        wins = load_data(self._kwargs['input_w']) if 'input_w' in self._kwargs else None
         values = self.calculate_indexes(data, indexes, wins)
 
         pyHRV.Files.save_data_series(pd.Series(values), self._kwargs['output'])

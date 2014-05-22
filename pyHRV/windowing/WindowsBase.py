@@ -39,7 +39,7 @@ class Window(object):
         return self._name
 
     def __repr__(self):
-        return "Win(%d, %d, %s)" % (self.begin, self.end, self.name)
+        return '%d:%d:%s' % (self.begin, self.end, self.name)
 
 
 class WindowsIterator(object):

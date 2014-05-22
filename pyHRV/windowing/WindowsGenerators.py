@@ -1,5 +1,5 @@
 __author__ = 'AleB'
-__all__ = ['NamedWinGen', 'LinearWinGen']
+__all__ = ['NamedWinGen', 'LinearWinGen', 'CollectionWinGen']
 from WindowsBase import WindowsGenerator, Window
 
 

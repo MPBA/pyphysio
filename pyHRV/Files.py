@@ -35,6 +35,17 @@ def load_data_series(path, column=None, sep=Sett.load_csv_separator):
     return inst
 
 
+def load_data(path, column=None, sep=Sett.load_csv_separator):
+    """For galaxy use: loads a column from a csv file."""
+
+    d = pd.read_csv(path, sep)
+    if not column in d.columns:
+        column = d.columns[1]
+    inst = d[column]
+    inst.name = column
+    return inst
+
+
 def save_data_series(data_series, path, sep=Sett.load_csv_separator, header=True):
     """For galaxy use saves the DataSeries (rr) to a csv file."""
     assert isinstance(data_series, pd.Series)
