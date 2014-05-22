@@ -23,17 +23,16 @@ def load_excel_column(path, column, column_b=None, sheet_name=0):
         return a, b
 
 
-def load_data_series(path, column, sep=Sett.load_csv_separator):
+def load_data_series(path, column=None, sep=Sett.load_csv_separator):
     """For galaxy use: loads a column from a csv file."""
 
     d = pd.read_csv(path, sep)
-    if column in d.columns:
-        inst = DataSeries(np.array(d[column]))
-        inst.name = column
-        assert isinstance(inst, pd.Series)
-        return inst
-    else:
-        raise KeyError("COLUMN_NAME: Column %s not found in file %s".format(column, path))
+    if not column in d.columns:
+        column = d.columns[0]
+    inst = DataSeries(np.array(d[column]))
+    inst.name = column
+    assert isinstance(inst, pd.Series)
+    return inst
 
 
 def save_data_series(data_series, path, sep=Sett.load_csv_separator, header=True):

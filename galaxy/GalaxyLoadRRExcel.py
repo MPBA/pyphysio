@@ -4,9 +4,9 @@ from ParamExecClass import ParamExecClass
 from pyHRV.Files import save_data_series, load_excel_column
 
 
-class GalaxyLoadRR(ParamExecClass):
+class GalaxyLoadRRExcel(ParamExecClass):
     """
-    ONLY RR..
+    FILE_EXCEL -> T_RR_CSV
     kwargs['input'] ----> input file
     kwargs['output'] ---> output file
     kwargs['column'] ---> column to load
@@ -17,7 +17,5 @@ class GalaxyLoadRR(ParamExecClass):
     def execute(self):
         out = self._kwargs['output']
 
-        save_data_series(self.load_column(), out)
-
-    def load_column(self):
-        return load_excel_column(self._kwargs['input'], self._kwargs['column'], None, self._kwargs['sheet'])
+        save_data_series(load_excel_column(self._kwargs['input'], self._kwargs['column'],
+                                           None, self._kwargs['sheet']), out)

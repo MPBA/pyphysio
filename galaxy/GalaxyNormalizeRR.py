@@ -7,6 +7,7 @@ from pyHRV.Filters import RRFilters
 
 class GalaxyNormalizeRR(ParamExecClass):
     """
+    T_RR_CSV -> T_RR_CSV
     kwargs['input'] ----> input file
     kwargs['output'] ---> output file
     kwargs['column'] ---> column to load

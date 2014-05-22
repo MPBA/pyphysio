@@ -6,6 +6,7 @@ from pyHRV.Files import *
 
 class GalaxyLoadRR(ParamExecClass):
     """
+    FILE_CSV -> T_RR_CSV
     kwargs['input'] ----> input file
     kwargs['output'] ---> output file
     kwargs['data_type'] ---> [ 'ecg', 'bvp', 'rr' ]

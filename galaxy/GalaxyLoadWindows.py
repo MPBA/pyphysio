@@ -9,6 +9,7 @@ from pyHRV.Files import *
 
 class GalaxyLoadWindows(ParamExecClass):
     """
+    T_FILE_LABELS -> T_WIN_COLLECTION_CSV
     kwargs['input'] ----> input file
     kwargs['output'] ---> output file
     kwargs['format'] ---> one in [ 'excel', 'csv' ]
