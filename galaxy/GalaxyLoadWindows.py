@@ -4,6 +4,7 @@ from pandas import Series
 
 from ParamExecClass import ParamExecClass
 from pyHRV.windowing import NamedWinGen, CollectionWinGen, Window
+from pyHRV.Files import *
 
 
 class GalaxyLoadWindows(ParamExecClass):
@@ -12,15 +13,16 @@ class GalaxyLoadWindows(ParamExecClass):
     kwargs['output'] ---> output file
     kwargs['format'] ---> one in [ 'excel', 'csv' ]
                  default: 'csv'
-    kwargs['column'] ---> column to load
+    kwargs['column'] ---> column of the windows to load
     kwargs['sheet'] ---> excel's sheet's name or ordinal number
                  default: None if format != 'excel'
-    kwargs['windows_type'] ---> windows type to load in [ 'labels_sequences_linear', 'labels_sequences', 'begin_values' ]
+    kwargs['windows_type'] ---> windows type to load in
+                                [ 'labels_sequences_linear', 'labels_sequences', 'begin_values' ]
     """
 
     def execute(self):
         output_file = self._kwargs['output']
-        c = self.load_column()
+        c = load_excel_column(self._kwargs['input'], self._kwargs['column'])
 
         if self._kwargs['windows_type'] == 'labels_sequences':
             w = NamedWinGen(None, c)
