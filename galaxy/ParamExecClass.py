@@ -1,5 +1,4 @@
 __author__ = 'AleB'
-from pyHRV.Files import load_rr, load_excel_column
 
 
 class ParamExecClass:
@@ -12,14 +11,3 @@ class ParamExecClass:
 
     def __call__(self):
         self.execute()
-
-    def load_column(self):
-        zbigniew = self._kwargs['type'] if 'type' in self._kwargs else 'csv'
-        if zbigniew == 'excel':
-            ds = load_excel_column(self._kwargs['input'], self._kwargs['column'], self._kwargs['column'])
-        else:
-            if zbigniew == 'csv':
-                ds = load_rr(self._kwargs['input'], self._kwargs['column'])
-            else:
-                raise ValueError("No %s file type" % zbigniew)
-        return ds
