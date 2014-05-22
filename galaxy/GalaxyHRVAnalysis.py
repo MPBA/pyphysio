@@ -10,7 +10,7 @@ class GalaxyHRVAnalysis(ParamExecClass):
     """
     kwargs['input'] ----> input file
     kwargs['output'] ---> output file
-    kwargs['indexes'] --> indexes list [1,0, ... 1,0]
+    kwargs['indexes'] --> indexes list (names)
     """
 
     @staticmethod
