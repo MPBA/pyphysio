@@ -2,8 +2,7 @@ from __builtin__ import property
 
 import pyHRV
 from pyHRV.windowing.WindowsBase import WindowsIterator
-from pyHRV import DataSeries
-
+from pyHRV.DataSeries import DataSeries
 
 __author__ = 'AleB'
 __all__ = ['WindowsMapper']
@@ -51,7 +50,8 @@ class WindowsMapper(object):
         """Gets the labels of the table returned from the results property after the compute_all call.
         @rtype : list
         """
-        ret = []
+        ret = ['w_name', pyHRV.PyHRVDefaultSettings.load_windows_col_begin,
+               pyHRV.PyHRVDefaultSettings.load_windows_col_end]
         for index in self._index:
             if isinstance(index, str) | isinstance(index, unicode):
                 index = getattr(pyHRV, index)

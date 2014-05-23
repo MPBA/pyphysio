@@ -10,8 +10,6 @@ class GalaxyLoadRR(ParamExecClass):
     kwargs['input'] ----> input file
     kwargs['output'] ---> output file
     kwargs['data_type'] ---> [ 'ecg', 'bvp', 'rr' ]
-    kwargs['column'] ---> column to load
-                 default(None): PyHRVSettings.load_rr_column_name
     """
 
     def execute(self):
@@ -23,7 +21,7 @@ class GalaxyLoadRR(ParamExecClass):
         elif d == 'bvp':
             ds = load_rr_from_bvp(inp)
         elif d == 'rr':
-            ds = load_rr(inp, self._kwargs['column'])
+            ds = load_rr(inp)
         else:
             raise ValueError("data_type is " + d)
         save_data_series(ds, out)

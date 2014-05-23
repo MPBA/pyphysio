@@ -1,6 +1,6 @@
 # coding=utf-8
 __author__ = 'AleB'
-__all__ = ['ApproxEntropy', 'CorrelationDim', 'DFALongTerm', 'DFAShortTerm', 'Fisher', 'FractalDimension', 'Hurst',
+__all__ = ['ApproxEntropy', 'CorrelationDim', 'Fisher', 'FractalDimension',
            'PetrosianFracDim', 'PoinEll', 'PoinSD1', 'PoinSD12', 'PoinSD2', 'SVDEntropy', 'SampleEntropy']
 
 from scipy.spatial.distance import cdist, pdist
@@ -272,7 +272,7 @@ class DFALongTerm(NonLinearIndex):
                 if j + n < len(x):
                     c = range(j, j + n)
                     c = np.vstack([c, np.ones(n)]).T  # coordinates of time in the box
-                    y = y[j:j + n]  # the value of data in the box
+                    y = x[j:j + n]  # the value of data in the box
                     f[i] += np.linalg.lstsq(c, y)[1]  # add residue in this box
             f[i] /= ((len(x) / n) * n)
         f = np.sqrt(f)

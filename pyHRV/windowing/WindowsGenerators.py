@@ -1,5 +1,7 @@
 __author__ = 'AleB'
-__all__ = ['NamedWinGen', 'LinearWinGen', 'CollectionWinGen']
+__all__ = ['NamedWinGen', 'LinearWinGen', 'LinearTimeWinGen', 'CollectionWinGen']
+import numpy as np
+
 from WindowsBase import WindowsGenerator, Window
 
 
@@ -63,7 +65,39 @@ class LinearWinGen(WindowsGenerator):
             raise StopIteration
         else:
             self._pos += self._step
-            return Window(b, e)
+
+
+class LinearTimeWinGen(WindowsGenerator):
+    """Generates a linear set of Time windows (b+i*s, b+i*s+w)."""
+
+    def __init__(self, step, width, data, end=None):
+        super(LinearTimeWinGen, self).__init__(data)
+        self._step = step * 1000
+        self._width = width * 1000
+        self._cums = [0]
+        self._cums.extend(np.cumsum(data))
+        self._pos = 0
+        if end is None:
+            self._end = len(data) - 1  # RR sum should be the total time
+        else:
+            self._end = end
+
+    def step_windowing(self):
+        b = e = self._pos
+        if b < self._end:
+            et = self._cums[self._pos] + self._width
+            while e <= self._end and et > self._cums[e]:
+                e += 1
+            if e > self._end:
+                self._pos = 0
+                raise StopIteration
+            else:
+                nt = self._cums[self._pos] + self._step
+                while e < self._end and nt > self._cums[self._pos]:
+                    self._pos += 1
+                return Window(b, e)
+        else:
+            raise StopIteration
 
 
 class CollectionWinGen(WindowsGenerator):
@@ -80,8 +114,8 @@ class CollectionWinGen(WindowsGenerator):
             raise StopIteration
         else:
             self._ind += 1
-            assert self._wins[self._ind] is Window
-            return self._wins[self._ind]
+            assert isinstance(self._wins[self._ind - 1], Window)
+            return self._wins[self._ind - 1]
 
 
 class NamedWinGen(WindowsGenerator):

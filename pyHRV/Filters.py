@@ -19,19 +19,19 @@ class RRFilters(object):
     def normalize_mean_sd(series):
         """Normalizes the series removing the mean and dividing by the standard deviation (RR-mean)/sd"""
         assert isinstance(series, DataSeries)
-        return DataSeries((series - np.mean(series)) / np.std(series))
+        return DataSeries((series - np.mean(series)) / np.std(series) + np.mean(series))
 
     @staticmethod
     def normalize_min(series):
         """Normalizes the series removing the minimum value (RR-min)"""
         assert isinstance(series, DataSeries)
-        return DataSeries(series - np.min(series))
+        return DataSeries(series - np.min(series) + np.mean(series))
 
     @staticmethod
     def normalize_max_min(series):
         """Normalizes the series removing the mean and dividing by the range width (RR-mean)/(max-min)"""
         assert isinstance(series, DataSeries)
-        return DataSeries((series - np.mean(series)) / (np.max(series) - np.min(series)))
+        return DataSeries((series - np.mean(series)) / (np.max(series) - np.min(series)) + np.mean(series))
 
     @staticmethod
     def normalize_rr_all_mean_calm(series, param, mean_calm_milliseconds):

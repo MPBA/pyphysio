@@ -1,3 +1,5 @@
+from pyHRV.windowing.WindowsBase import Window
+
 __all__ = ['load_excel_column', 'load_data_series', 'load_rr', 'save_data_series', 'load_rr_from_bvp',
            'load_rr_from_ecg']
 
@@ -23,7 +25,7 @@ def load_excel_column(path, column, column_b=None, sheet_name=0):
         return a, b
 
 
-def load_data_series(path, column=None, sep=Sett.load_csv_separator):
+def load_data_series(path, column=Sett.load_rr_column_name, sep=Sett.load_csv_separator):
     """For galaxy use: loads a column from a csv file."""
 
     d = pd.read_csv(path, sep)
@@ -35,7 +37,7 @@ def load_data_series(path, column=None, sep=Sett.load_csv_separator):
     return inst
 
 
-def load_data(path, column=None, sep=Sett.load_csv_separator):
+def load_data(path, column=Sett.load_rr_column_name, sep=Sett.load_csv_separator):
     """For galaxy use: loads a column from a csv file."""
 
     d = pd.read_csv(path, sep)
@@ -46,9 +48,18 @@ def load_data(path, column=None, sep=Sett.load_csv_separator):
     return inst
 
 
+def load_windows(path, column_begin=Sett.load_windows_col_begin, column_end=Sett.load_windows_col_end,
+                 sep=Sett.load_csv_separator):
+    d = pd.read_csv(path, sep=sep)
+    assert len(d[column_begin]) == len(d[column_end])
+    w = map((lambda x, y: Window(x, y)), d[column_begin], d[column_end])
+    return w
+
+
 def save_data_series(data_series, path, sep=Sett.load_csv_separator, header=True):
     """For galaxy use saves the DataSeries (rr) to a csv file."""
     assert isinstance(data_series, pd.Series)
+    data_series.name = Sett.load_rr_column_name
     data_series.to_csv(path, sep=sep, header=header)
 
 

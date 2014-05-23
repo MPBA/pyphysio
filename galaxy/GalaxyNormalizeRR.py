@@ -19,4 +19,4 @@ class GalaxyNormalizeRR(ParamExecClass):
         inp = self._kwargs['input']
         out = self._kwargs['output']
         save_data_series(
-            getattr(RRFilters, "normalize_" + self._kwargs['norm_mode'])(load_rr(inp, self._kwargs['column'])), out)
+            getattr(RRFilters, "normalize_" + self._kwargs['norm_mode'])(load_rr(inp)), out)

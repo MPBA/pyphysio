@@ -12,11 +12,7 @@ class GalaxyLoadWindows(ParamExecClass):
     T_FILE_LABELS -> T_WIN_COLLECTION_CSV
     kwargs['input'] ----> input file
     kwargs['output'] ---> output file
-    kwargs['format'] ---> one in [ 'excel', 'csv' ]
-                 default: 'csv'
     kwargs['column'] ---> column of the windows to load
-    kwargs['sheet'] ---> excel's sheet's name or ordinal number
-                 default: None if format != 'excel'
     kwargs['windows_type'] ---> windows type to load in
                                 [ 'labels_sequences_linear', 'labels_sequences', 'begin_values' ]
     """

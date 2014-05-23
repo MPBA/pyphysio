@@ -21,6 +21,8 @@ class PyHRVSettings(object):
         self.load_ecg_time_column_name = 'timestamp'
         self.load_bvp_column_name = 'BVP'
         self.load_bvp_time_column_name = 'timestamp'
+        self.load_windows_col_begin = 'begin'
+        self.load_windows_col_end = 'end'
 
         # TimeUnitCheck:
         self.time_unit_check_ibi = True
