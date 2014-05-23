@@ -1,6 +1,6 @@
 # coding=utf-8
 __author__ = 'AleB'
-__all__ = ['ApproxEntropy', 'CorrelationDim', 'Fisher', 'FractalDimension',
+__all__ = ['ApproxEntropy', 'CorrelationDim', 'Fisher', 'FractalDimension', 'DFALongTerm', 'DFAShortTerm', 'Hurst',
            'PetrosianFracDim', 'PoinEll', 'PoinSD1', 'PoinSD12', 'PoinSD2', 'SVDEntropy', 'SampleEntropy']
 
 from scipy.spatial.distance import cdist, pdist
@@ -196,7 +196,7 @@ class Hurst(NonLinearIndex):
         n = len(self._data)
         t = np.array([float(i) for i in xrange(1, n + 1)])
         y = np.cumsum(self._data)
-        ave_t = y / t
+        ave_t = np.array(y / t)
 
         s_t = np.zeros(n)
         r_t = np.zeros(n)
@@ -245,8 +245,8 @@ class DFAShortTerm(NonLinearIndex):
                 if j + n < len(x):
                     c = range(j, j + n)
                     c = np.vstack([c, np.ones(n)]).T  # coordinates of time in the box
-                    y = y[j:j + n]  # the value of data in the box
-                    f[i] += np.linalg.lstsq(c, y)[1]  # add residue in this box
+                    z = y[j:j + n]  # the value of data in the box
+                    f[i] += np.linalg.lstsq(c, z)[1]  # add residue in this box
             f[i] /= ((len(x) / n) * n)
         f = np.sqrt(f)
         self._value = np.linalg.lstsq(np.vstack([np.log(l), np.ones(len(l))]).T, np.log(f))[0][0]
@@ -272,8 +272,8 @@ class DFALongTerm(NonLinearIndex):
                 if j + n < len(x):
                     c = range(j, j + n)
                     c = np.vstack([c, np.ones(n)]).T  # coordinates of time in the box
-                    y = x[j:j + n]  # the value of data in the box
-                    f[i] += np.linalg.lstsq(c, y)[1]  # add residue in this box
+                    z = y[j:j + n]  # the value of data in the box
+                    f[i] += np.linalg.lstsq(c, z)[1]  # add residue in this box
             f[i] /= ((len(x) / n) * n)
         f = np.sqrt(f)
 
