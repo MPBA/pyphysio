@@ -33,7 +33,6 @@ def load_data_series(path, column=Sett.load_rr_column_name, sep=Sett.load_csv_se
         column = d.columns[0]
     inst = DataSeries(np.array(d[column]))
     inst.name = column
-    assert isinstance(inst, pd.Series)
     return inst
 
 
