@@ -18,6 +18,7 @@ class RRFilters(object):
     @staticmethod
     def normalize_mean_sd(series):
         """Normalizes the series removing the mean and dividing by the standard deviation (RR-mean)/sd"""
+        print type(series)
         assert isinstance(series, DataSeries)
         return DataSeries((series - np.mean(series)) / np.std(series) + np.mean(series))
 
