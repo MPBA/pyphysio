@@ -1,19 +1,21 @@
+from galaxy import ParamExecClass
+
 __author__ = 'AleB'
 
-from ParamExecClass import ParamExecClass
 import pyHRV
 
 
 class GalaxyOnLineHRVAnalysis(ParamExecClass):
     """
-    kwargs['value'] ----> new value not None
-    kwargs['state'] ----> last support values class not None
+    kwargs['value'] ------> indexes to calculate
+    kwargs['indexes'] ----> new value not None
+    kwargs['state'] ------> last support values class not None
     return:
     last_value, updated_state
     """
 
     def execute(self):
-        indexes = ['Mean']
+        indexes = self._kwargs['indexes']
         state = self._kwargs['state']
         value = self._kwargs['value']
         errors = list()
@@ -29,7 +31,6 @@ class GalaxyOnLineHRVAnalysis(ParamExecClass):
         else:
             state.update(value)
 
-            for index in indexes:
-                value = getattr(pyHRV, index).calculate_on(state)
+            values = map(lambda x: getattr(pyHRV, x).calculate_on(state), indexes) if state.ready() else None
 
-        return value, state
+        return values, state

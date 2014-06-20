@@ -1,6 +1,7 @@
+from galaxy import ParamExecClass
+
 __author__ = 'AleB'
 
-from ParamExecClass import ParamExecClass
 from pyHRV.Files import load_rr, save_data_series
 from pyHRV.Filters import RRFilters
 

@@ -27,6 +27,10 @@ def get_available_indexes():
     return indexes.__all_indexes__
 
 
+def get_available_online_indexes():
+    return filter(lambda x: hasattr(x, "calcualte_on"), get_available_indexes())
+
+
 from DataSeries import *
 from Files import *
 from PyHRVSettings import *

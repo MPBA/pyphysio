@@ -1,8 +1,8 @@
+from galaxy import ParamExecClass
+
 __author__ = 'AleB'
 
 from pandas import DataFrame
-
-from ParamExecClass import ParamExecClass
 
 from pyHRV.windowing import LinearTimeWinGen
 from pyHRV.Files import *

@@ -1,8 +1,8 @@
 import pandas as pd
 
-from ParamExecClass import ParamExecClass
 import pyHRV
 from pyHRV.Files import load_windows
+from galaxy import ParamExecClass
 from pyHRV.windowing import CollectionWinGen
 
 

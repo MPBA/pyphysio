@@ -1,6 +1,7 @@
+from galaxy import ParamExecClass
+
 __author__ = 'AleB'
 
-from ParamExecClass import ParamExecClass
 from pyHRV.Files import save_data_series, load_excel_column
 
 

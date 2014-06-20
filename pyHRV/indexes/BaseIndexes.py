@@ -56,13 +56,15 @@ class NonLinearIndex(Index):
         super(NonLinearIndex, self).__init__(data)
 
 
-# not released
 class SupportValue(object):
     """Abstract class that defines the SupportValues' interface."""
 
+    def __init__(self):
+        self._state = 0
+
     def enqueuing(self, new_value):
         """Updates the support-value with the new enqueued value."""
-        pass
+        self._state += 1
 
     def dequeuing(self, old_value):
         """Updates the support-value with the just dequeued value."""

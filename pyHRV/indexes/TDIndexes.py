@@ -7,6 +7,7 @@ import numpy as np
 from pyHRV.Cache import CacheableDataCalc, RRDiff, Histogram, HistogramMax
 from pyHRV.indexes.BaseIndexes import TDIndex
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
+from pyHRV.indexes.SupportValues import SumSV, LengthSV, DiffsSV
 
 
 class Mean(TDIndex, CacheableDataCalc):
@@ -21,12 +22,12 @@ class Mean(TDIndex, CacheableDataCalc):
         return np.mean(data)
 
     @classmethod
+    def required_sv(cls):
+        return [SumSV, LengthSV]
+
+    @classmethod
     def calculate_on(cls, state):
-        if state.ready():
-            val = (state.sum() - state.last() + state.new()) / state.len()
-        else:
-            val = None
-        return val
+        return state[SumSV] / float(state[LengthSV])
 
 
 class HRMean(TDIndex, CacheableDataCalc):
@@ -41,12 +42,12 @@ class HRMean(TDIndex, CacheableDataCalc):
         return np.mean(60000 / data)
 
     @classmethod
+    def required_sv(cls):
+        return Mean.required_sv()
+
+    @classmethod
     def calculate_on(cls, state):
-        if state.ready():
-            val = 60000 / Mean.calculate_on(state)
-        else:
-            val = None
-        return val
+        return 60000 / Mean.calculate_on(state)
 
 
 class Median(TDIndex, CacheableDataCalc):
@@ -107,8 +108,12 @@ class PNNx(TDIndex):
         return Sett.nnx_default_threshold
 
     @classmethod
+    def required_sv(cls):
+        return NNx.required_sv()
+
+    @classmethod
     def calculate_on(cls, state):
-        NNx.calculate_on(state, cls.threshold()) / float(state.len)  # TODO: (AleB) Wrong
+        NNx.calculate_on(state, cls.threshold()) / float(state[LengthSV])
 
 
 class NNx(TDIndex):
@@ -126,20 +131,16 @@ class NNx(TDIndex):
         return Sett.nnx_default_threshold
 
     @classmethod
+    def required_sv(cls):
+        return [DiffsSV]
+
+    @classmethod
     def calculate_on(cls, state, threshold=None):  # TODO: (AleB) Wrong
-        name = cls.__name__ + "_E4j2oj23"
         if threshold is None:
             threshold = cls.threshold()
-        if state.ready() and state.len() >= 2:
-            val = state.get(name)
-            if not state.old() is None:
-                if abs(state.old() - state.vec[0]) > threshold:
-                    val -= 1
-            if abs(state.vec[-1] - state.vec[-2]) > threshold:
-                val += 1
-            state.set(name, val)
-        else:
-            val = None
+
+        val = sum(1 if state[DiffsSV] > threshold else 0)
+
         return val
 
 

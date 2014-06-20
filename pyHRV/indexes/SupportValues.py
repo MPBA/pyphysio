@@ -10,6 +10,7 @@ class SumSV(SupportValue):
     """
 
     def __init__(self, sv_collection=None):
+        SupportValue.__init__(self)
         self._s = 0
         self._c = sv_collection
 
@@ -25,10 +26,12 @@ class DistributionSV(SupportValue):
     """
 
     def __init__(self, sv_collection):
+        SupportValue.__init__(self)
         self._c = sv_collection
         self._m = {}
 
     def enqueuing(self, new_value):
+        SupportValue.enqueuing(self, None)
         if new_value in self._m:
             self._m[new_value] += 1  # can not be 0
         else:
@@ -53,10 +56,12 @@ class MinSV(SupportValue):
     """
 
     def __init__(self, sv_collection):
+        SupportValue.__init__(self)
         self._c = sv_collection
         self._v = None
 
     def enqueuing(self, new_value):
+        SupportValue.enqueuing(self, None)
         if self._v is None:
             self._v = new_value
         else:
@@ -73,10 +78,12 @@ class MaxSV(SupportValue):
     """
 
     def __init__(self, sv_collection):
+        SupportValue.__init__(self)
         self._c = sv_collection
         self._v = None
 
     def enqueuing(self, new_value):
+        SupportValue.enqueuing(self, None)
         if self._v is None:
             self._v = new_value
         else:
@@ -93,10 +100,12 @@ class LengthSV(SupportValue):
     """
 
     def __init__(self, sv_collection):
+        SupportValue.__init__(self)
         self._c = sv_collection
         self._v = 0
 
     def enqueuing(self, new_value):
+        SupportValue.enqueuing(self, None)
         self._v += 1
 
     def dequeuing(self, old_value):
@@ -108,10 +117,12 @@ class VectorSV(SupportValue):
     """
 
     def __init__(self):
+        SupportValue.__init__(self)
         self._v = []
 
     def enqueuing(self, new_value):
-        self._v.append(new_value)
+        SupportValue.enqueuing(self, None)
+        self._v.insert(0, new_value)
 
     def dequeuing(self, old_value=None):
         if len(self._v) > 0:
@@ -129,6 +140,7 @@ class InterpolationSV(SupportValue):
     """
 
     def __init__(self):
+        SupportValue.__init__(self)
         self._v = []
         self._lx = 0
         self._ly = None
@@ -136,6 +148,7 @@ class InterpolationSV(SupportValue):
         self._fy = None
 
     def enqueuing(self, new_value):
+        SupportValue.enqueuing(self, None)
         y = 60000.0 / new_value
         x = self._lx + new_value / 1000.0  # NO TIME-TOLERANCE ERRORS!
         if self._ly is None:  # with the first IBI I get the hr of the first (t=x=0) beat and of the second (t=x=IBI)
@@ -154,6 +167,30 @@ class InterpolationSV(SupportValue):
         while ct + self._v[0] <= mt:
             ct += self._v[0]
             del self._v[0]
+
+    @property
+    def items(self):
+        """READ-ONLY!!!
+        """
+        return self._v
+
+
+class DiffsSV(SupportValue):
+    """Support value: VECTOR of the DIFFERENCES between adjacent VALUES
+    """
+
+    def __init__(self):
+        SupportValue.__init__(self)
+        self._v = []
+        self._last = None
+
+    def enqueuing(self, new_value):
+        SupportValue.enqueuing(self, None)
+        self._v.insert(0, (new_value - self._last) if not self._last is None else 0)
+
+    def dequeuing(self, old_value=None):
+        if len(self._v) > 0:
+            del self._v[-1]
 
     @property
     def items(self):

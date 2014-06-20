@@ -1,8 +1,9 @@
+from galaxy import ParamExecClass
+
 __author__ = 'AleB'
 
 from pandas import Series
 
-from ParamExecClass import ParamExecClass
 from pyHRV.windowing import NamedWinGen, CollectionWinGen, Window
 from pyHRV.Files import *
 
