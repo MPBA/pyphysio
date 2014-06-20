@@ -17,6 +17,7 @@ import BaseIndexes
 from TDIndexes import *
 from FDIndexes import *
 from NonLinearIndexes import *
+import pyHRV
 
 __all_indexes__ = []
 __all_indexes__.extend(TDIndexes.__all__)
@@ -24,3 +25,11 @@ __all_indexes__.extend(FDIndexes.__all__)
 __all_indexes__.extend(NonLinearIndexes.__all__)
 __all__ = ['TDIndexes', 'FDIndexes', 'NonLinearIndexes']
 __all__.extend(__all_indexes__)
+
+
+def get_available_indexes():
+    return __all_indexes__
+
+
+def get_available_online_indexes():
+    return filter(lambda x: hasattr(getattr(pyHRV, x), "required_sv"), get_available_indexes())

@@ -1,8 +1,8 @@
-from galaxy.GalaxyHRVAnalysis import *
-from galaxy.GalaxyLoadRR import *
-from galaxy.GalaxyFilter import *
-from galaxy.GalaxyNormalizeRR import *
-from galaxy.GalaxyLinearTimeWindows import *
+from pyHRV.galaxy.GalaxyHRVAnalysis import *
+from pyHRV.galaxy.GalaxyLoadRR import *
+from pyHRV.galaxy.GalaxyFilter import *
+from pyHRV.galaxy.GalaxyNormalizeRR import *
+from pyHRV.galaxy.GalaxyLinearTimeWindows import *
 from pyHRV import get_available_indexes
 
 hrv_list = get_available_indexes()

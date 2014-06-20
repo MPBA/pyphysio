@@ -9,7 +9,7 @@ class SumSV(SupportValue):
     """Support value: SUM
     """
 
-    def __init__(self, sv_collection=None):
+    def __init__(self, sv_collection):
         SupportValue.__init__(self)
         self._s = 0
         self._c = sv_collection
@@ -19,6 +19,10 @@ class SumSV(SupportValue):
 
     def dequeuing(self, old_value):
         self._s -= old_value
+
+    @property
+    def value(self):
+        return self._s
 
 
 class DistributionSV(SupportValue):
@@ -45,9 +49,7 @@ class DistributionSV(SupportValue):
             self._m[old_value] -= 1
 
     @property
-    def items(self):
-        """READ-ONLY!!!
-        """
+    def value(self):
         return self._m
 
 
@@ -70,7 +72,11 @@ class MinSV(SupportValue):
 
     def dequeuing(self, old_value):
         if old_value == self._v:
-            self._v = min(self._c[DistributionSV].items.keys())
+            self._v = min(self._c[DistributionSV].value.keys())
+
+    @property
+    def value(self):
+        return self._v
 
 
 class MaxSV(SupportValue):
@@ -92,7 +98,11 @@ class MaxSV(SupportValue):
 
     def dequeuing(self, old_value):
         if old_value == self._v:
-            self._v = max(self._c[DistributionSV].items.keys())
+            self._v = max(self._c[DistributionSV].value.keys())
+
+    @property
+    def value(self):
+        return self._v
 
 
 class LengthSV(SupportValue):
@@ -111,13 +121,18 @@ class LengthSV(SupportValue):
     def dequeuing(self, old_value):
         self._v -= 1
 
+    @property
+    def value(self):
+        return self._v
+
 
 class VectorSV(SupportValue):
     """Support value: VECTOR of the VALUES
     """
 
-    def __init__(self):
+    def __init__(self, sv_collection):
         SupportValue.__init__(self)
+        self.sv_collection = sv_collection
         self._v = []
 
     def enqueuing(self, new_value):
@@ -129,9 +144,7 @@ class VectorSV(SupportValue):
             del self._v[-1]
 
     @property
-    def items(self):
-        """READ-ONLY!!!
-        """
+    def value(self):
         return self._v
 
 
@@ -139,8 +152,9 @@ class InterpolationSV(SupportValue):
     """Support value: INTERPOLATION of the VALUES in (seconds O bpm) [~ xOy]
     """
 
-    def __init__(self):
+    def __init__(self, sv_collection):
         SupportValue.__init__(self)
+        self.sv_collection = sv_collection
         self._v = []
         self._lx = 0
         self._ly = None
@@ -169,9 +183,7 @@ class InterpolationSV(SupportValue):
             del self._v[0]
 
     @property
-    def items(self):
-        """READ-ONLY!!!
-        """
+    def value(self):
         return self._v
 
 
@@ -179,21 +191,21 @@ class DiffsSV(SupportValue):
     """Support value: VECTOR of the DIFFERENCES between adjacent VALUES
     """
 
-    def __init__(self):
+    def __init__(self, sv_collection):
         SupportValue.__init__(self)
+        self.sv_collection = sv_collection
         self._v = []
         self._last = None
 
     def enqueuing(self, new_value):
         SupportValue.enqueuing(self, None)
         self._v.insert(0, (new_value - self._last) if not self._last is None else 0)
+        self._last = new_value
 
     def dequeuing(self, old_value=None):
         if len(self._v) > 0:
             del self._v[-1]
 
     @property
-    def items(self):
-        """READ-ONLY!!!
-        """
+    def value(self):
         return self._v

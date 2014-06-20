@@ -27,7 +27,7 @@ class Mean(TDIndex, CacheableDataCalc):
 
     @classmethod
     def calculate_on(cls, state):
-        return state[SumSV] / float(state[LengthSV])
+        return state[SumSV].value / float(state[LengthSV].value)
 
 
 class HRMean(TDIndex, CacheableDataCalc):
@@ -113,7 +113,7 @@ class PNNx(TDIndex):
 
     @classmethod
     def calculate_on(cls, state):
-        NNx.calculate_on(state, cls.threshold()) / float(state[LengthSV])
+        return NNx.calculate_on(state, cls.threshold()) / float(state[LengthSV].value)
 
 
 class NNx(TDIndex):
@@ -135,13 +135,11 @@ class NNx(TDIndex):
         return [DiffsSV]
 
     @classmethod
-    def calculate_on(cls, state, threshold=None):  # TODO: (AleB) Wrong
+    def calculate_on(cls, state, threshold=None):
         if threshold is None:
             threshold = cls.threshold()
 
-        val = sum(1 if state[DiffsSV] > threshold else 0)
-
-        return val
+        return sum(1 for x in state[DiffsSV].value if x > threshold)
 
 
 class PNN10(PNNx):
