@@ -12,5 +12,5 @@ a = load_rr("../z_data/A05.txt")
 s = SupportValuesCollection(indexes=get_available_online_indexes())
 for i in a:
     g = GalaxyOnLineHRVAnalysis(indexes=get_available_online_indexes(), state=s, value=i)
-    v, s = g.execute()
+    v, x = g.execute()
     print(v)
