@@ -7,7 +7,7 @@ import numpy as np
 from pyHRV.Cache import CacheableDataCalc, RRDiff, Histogram, HistogramMax
 from pyHRV.indexes.BaseIndexes import TDIndex
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
-from pyHRV.indexes.SupportValues import SumSV, LengthSV, DiffsSV
+from pyHRV.indexes.SupportValues import SumSV, LengthSV, DiffsSV, MedianSV
 
 
 class Mean(TDIndex, CacheableDataCalc):
@@ -39,7 +39,7 @@ class HRMean(TDIndex, CacheableDataCalc):
 
     @classmethod
     def _calculate_data(cls, data, params):
-        return np.mean(60000 / data)
+        return np.mean(60000. / data)
 
     @classmethod
     def required_sv(cls):
@@ -47,7 +47,7 @@ class HRMean(TDIndex, CacheableDataCalc):
 
     @classmethod
     def calculate_on(cls, state):
-        return 60000 / Mean.calculate_on(state)
+        return 60000. / Mean.calculate_on(state)
 
 
 class Median(TDIndex, CacheableDataCalc):
@@ -61,13 +61,29 @@ class Median(TDIndex, CacheableDataCalc):
     def _calculate_data(cls, data, params):
         return np.median(data)
 
+    @classmethod
+    def required_sv(cls):
+        return [MedianSV]
+
+    @classmethod
+    def calculate_on(cls, state):
+        return state[MedianSV].value
+
 
 class HRMedian(TDIndex):
     """Calculates the average of the data series and converts it into Beats per Minute."""
 
     def __init__(self, data=None):
         super(HRMedian, self).__init__(data)
-        self._value = 60000 / Median.get(self._data)
+        self._value = 60000. / Median.get(self._data)
+
+    @classmethod
+    def required_sv(cls):
+        return [MedianSV]
+
+    @classmethod
+    def calculate_on(cls, state):
+        return 60000. / state[MedianSV].value
 
 
 class SD(TDIndex, CacheableDataCalc):

@@ -209,3 +209,62 @@ class DiffsSV(SupportValue):
     @property
     def value(self):
         return self._v
+
+
+class MedianSV(SupportValue):
+    """Support value: VECTOR of the DIFFERENCES between adjacent VALUES
+    """
+
+    # noinspection PyUnusedLocal
+    def __init__(self, sv_collection):
+        SupportValue.__init__(self)
+        self._hist = {}
+        self._bal = 0
+        self._split = 0
+        self._m = None
+
+    def enqueuing(self, new_value):
+        SupportValue.enqueuing(self, None)
+        if new_value in self._hist:
+            self._hist[new_value] += 1
+        else:
+            self._hist[new_value] = 1
+        if self._m is None:
+            self._m = new_value
+        else:
+            self._bal += -1 if new_value < self._m else 1
+            if self._bal > 1:
+                self._bal -= 2
+                self._split += 1
+                if (self._m in self._hist and self._hist[self._m] == self._split) \
+                        or (not self._m in self._hist and self._split == 0):
+                    self._split = 0
+                    self._m += 1
+                    while self._m in self._hist and self._hist[self._m] > 0:
+                        self._m += 1
+            elif self._bal < 0:
+                self._bal += 2
+                self._split -= 1
+                if self._split < 0:
+                    self._split = 0
+                    self._m -= 1
+                    while self._m in self._hist and self._hist[self._m] > 0:
+                        self._m -= 1
+                    if self._m in self._hist:
+                        self._split = self._hist[self._m] - 1
+                    else:
+                        self._split = 0 - 1
+            elif (self._m in self._hist and self._hist[self._m] == self._split) \
+                    or (not self._m in self._hist and self._split == 0):
+                self._split = 0
+                self._m += 1
+                while self._m in self._hist and self._hist[self._m] > 0:
+                    self._m += 1
+
+    def dequeuing(self, old_value=None):
+        self._hist[old_value] -= 1
+        self._bal += 1 if old_value < self._m else -1
+
+    @property
+    def value(self):
+        return self._m

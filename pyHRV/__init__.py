@@ -29,4 +29,3 @@ from indexes import *
 from windowing import *
 
 del _Ds
-
