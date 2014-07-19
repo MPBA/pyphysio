@@ -65,6 +65,7 @@ class LinearWinGen(WindowsGenerator):
             raise StopIteration
         else:
             self._pos += self._step
+            return Window(b, e)
 
 
 class LinearTimeWinGen(WindowsGenerator):

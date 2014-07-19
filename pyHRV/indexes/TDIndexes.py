@@ -140,7 +140,7 @@ class NNx(TDIndex):
         super(NNx, self).__init__(data)
         self._xth = threshold if not threshold is None else self.threshold()
         diff = RRDiff.get(self._data)
-        self._value = sum(1 for x in diff if x > self._xth)
+        self._value = sum(1.0 for x in diff if x > self._xth)
 
     @staticmethod
     def threshold():

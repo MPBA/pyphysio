@@ -3,7 +3,7 @@ from pyHRV.galaxy.GalaxyLoadRR import *
 from pyHRV.galaxy.GalaxyFilter import *
 from pyHRV.galaxy.GalaxyNormalizeRR import *
 from pyHRV.galaxy.GalaxyLinearTimeWindows import *
-from pyHRV import get_available_indexes
+from pyHRV.indexes import get_available_indexes
 
 hrv_list = get_available_indexes()
 in_file = "../z_data/A05.txt"

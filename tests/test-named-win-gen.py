@@ -23,7 +23,7 @@ def test(f):
     mm = WindowsMapper(ds, ws, pyHRV.indexes.TDIndexes.__all__ + pyHRV.indexes.FDIndexes.__all__)
     mm.compute_all()
     df = pd.DataFrame(mm.results)
-    df.columns = ['win_name', 'win_first', 'win_last'] + mm.labels
+    df.columns = mm.labels
     df.to_csv(os.path.dirname(f) + "/results/" + os.path.basename(f) + ".results.csv", Ps.load_csv_separator,
               index=False)
 
