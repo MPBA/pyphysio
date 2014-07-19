@@ -2,7 +2,7 @@ from pyHRV.galaxy.ParamExecClass import ParamExecClass
 
 __author__ = 'AleB'
 
-from pyHRV.Files import save_data_series, load_excel_column
+from pyHRV.Files import save_ds_to_csv, load_pd_from_excel_column
 
 
 class GalaxyLoadRRExcel(ParamExecClass):
@@ -18,5 +18,5 @@ class GalaxyLoadRRExcel(ParamExecClass):
     def execute(self):
         out = self._kwargs['output']
 
-        save_data_series(load_excel_column(self._kwargs['input'], self._kwargs['column'],
-                                           None, self._kwargs['sheet']), out)
+        save_ds_to_csv(load_pd_from_excel_column(self._kwargs['input'], self._kwargs['column'],
+                                                 None, self._kwargs['sheet']), out)

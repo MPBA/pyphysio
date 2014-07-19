@@ -1,6 +1,5 @@
-from pyHRV.windowing.WindowsBase import Window
-
-__all__ = ['load_excel_column', 'load_data_series', 'load_rr', 'save_data_series', 'load_rr_from_bvp',
+__all__ = ['load_pd_from_excel_column', 'load_ds_from_csv_column', 'load_ds_from_csv_column', 'save_ds_to_csv',
+           'load_rr_from_bvp',
            'load_rr_from_ecg']
 
 import numpy as np
@@ -10,10 +9,12 @@ import pandas as pd
 from pyHRV.DataSeries import DataSeries
 from pyHRV.utility import peak_detection
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
+from pyHRV.windowing.WindowsBase import Window
+from pyHRV.windowing.WindowsGenerators import CollectionWinGen
 
 
-def load_excel_column(path, column, column_b=None, sheet_name=0):
-    """Loads a column from an excel format file."""
+def load_pd_from_excel_column(path, column, column_b=None, sheet_name=0):
+    """Loads one or two columns as pandas.Series from an excel format file."""
     if column_b is None:
         a = pd.read_excel(path, sheet_name)
         return a[column] if isinstance(column, basestring) else a[a.columns[column]]
@@ -25,9 +26,8 @@ def load_excel_column(path, column, column_b=None, sheet_name=0):
         return a, b
 
 
-def load_data_series(path, column=Sett.load_rr_column_name, sep=Sett.load_csv_separator):
-    """For galaxy use: loads a column from a csv file."""
-
+def load_ds_from_csv_column(path, column=Sett.load_rr_column_name, sep=Sett.load_csv_separator):
+    """Loads a column from a csv file."""
     d = pd.read_csv(path, sep)
     if not column in d.columns:
         column = d.columns[0]
@@ -36,35 +36,19 @@ def load_data_series(path, column=Sett.load_rr_column_name, sep=Sett.load_csv_se
     return inst
 
 
-def load_data(path, column=Sett.load_rr_column_name, sep=Sett.load_csv_separator):
-    """For galaxy use: loads a column from a csv file."""
-
-    d = pd.read_csv(path, sep)
-    if not column in d.columns:
-        column = d.columns[1]
-    inst = d[column]
-    inst.name = column
-    return inst
-
-
-def load_windows(path, column_begin=Sett.load_windows_col_begin, column_end=Sett.load_windows_col_end,
-                 sep=Sett.load_csv_separator):
+def load_windows_gen_from_csv(path, column_begin=Sett.load_windows_col_begin, column_end=Sett.load_windows_col_end,
+                              sep=Sett.load_csv_separator):
+    """Loads a CollectionWinGen from a csv column"""
     d = pd.read_csv(path, sep=sep)
     assert len(d[column_begin]) == len(d[column_end])
-    w = map((lambda x, y: Window(x, y)), d[column_begin], d[column_end])
-    return w
+    return CollectionWinGen(map((lambda x, y: Window(x, y)), d[column_begin], d[column_end]))
 
 
-def save_data_series(data_series, path, sep=Sett.load_csv_separator, header=True):
-    """For galaxy use saves the DataSeries (rr) to a csv file."""
+def save_ds_to_csv(data_series, path, sep=Sett.load_csv_separator, header=True):
+    """Saves the DataSeries (rr) to a csv file."""
     assert isinstance(data_series, pd.Series)
     data_series.name = Sett.load_rr_column_name
     data_series.to_csv(path, sep=sep, header=header)
-
-
-def load_rr(path, column=Sett.load_rr_column_name, sep=Sett.load_csv_separator):
-    """For galaxy use loads an rrs column from a csv file."""
-    return load_data_series(path, column, sep)
 
 
 def load_rr_from_ecg(path, delta=Sett.import_ecg_delta, sep=Sett.load_csv_separator, *args):

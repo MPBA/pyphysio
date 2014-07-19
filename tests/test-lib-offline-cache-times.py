@@ -56,7 +56,7 @@ def test(rr_series):
 if __name__ == '__main__':
     delay(False)
     print 'Loading file'
-    RRSeries = load_rr("../z_data/A05.txt")
+    RRSeries = load_ds_from_csv_column("../z_data/A05.txt")
     delay()
 
     print 'Starting analysis'

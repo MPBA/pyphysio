@@ -22,7 +22,7 @@ class GalaxyLoadRR(ParamExecClass):
         elif d == 'bvp':
             ds = load_rr_from_bvp(inp)
         elif d == 'rr':
-            ds = load_rr(inp)
+            ds = load_ds_from_csv_column(inp)
         else:
             raise ValueError("data_type is " + d)
-        save_data_series(ds, out)
+        save_ds_to_csv(ds, out)

@@ -1,9 +1,8 @@
 import pandas as pd
 
 import pyHRV
-from pyHRV.Files import load_windows
+from pyHRV.Files import load_windows_gen_from_csv
 from pyHRV.galaxy.ParamExecClass import ParamExecClass
-from pyHRV.windowing import CollectionWinGen
 
 
 class GalaxyHRVAnalysis(ParamExecClass):
@@ -17,7 +16,7 @@ class GalaxyHRVAnalysis(ParamExecClass):
     """
 
     @staticmethod
-    def calculate_indexes(data, indexes=None, wins=None):
+    def calculate_indexes(data, indexes=None, wing=None):
         errors = list()
         if indexes is None:
             indexes = pyHRV.get_available_indexes()
@@ -28,19 +27,19 @@ class GalaxyHRVAnalysis(ParamExecClass):
             raise NameError(pyHRV.PyHRVDefaultSettings.Local.names(
                 pyHRV.PyHRVDefaultSettings.Local.indexes_not_found, errors))
         else:
-            if wins is None:
+            if wing is None:
                 values = pd.DataFrame(columns=indexes)
                 for index in indexes:
                     values[index] = getattr(pyHRV, index)(data).value
             else:
-                m = pyHRV.WindowsMapper(data, CollectionWinGen(data, wins), indexes)
+                m = pyHRV.WindowsMapper(data, wing, indexes)
                 m.compute_all()
                 values = pd.DataFrame(columns=m.labels, data=m.results)
         return values
 
     def execute(self):
-        data = pyHRV.Files.load_rr(self._kwargs['input'])
-        wins = load_windows(self._kwargs['input_w']) if 'input_w' in self._kwargs else None
+        data = pyHRV.Files.load_ds_from_csv_column(self._kwargs['input'])
+        wins = load_windows_gen_from_csv(self._kwargs['input_w']) if 'input_w' in self._kwargs else None
 
         indexes = self._kwargs['indexes']
 

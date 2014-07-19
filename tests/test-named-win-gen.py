@@ -15,7 +15,7 @@ from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Ps
 def test(f):
     print f
 
-    lab, ibi = load_excel_column(f, 2, 3)
+    lab, ibi = load_pd_from_excel_column(f, 2, 3)
 
     ds = DataSeries(ibi)
     ws = NamedWinGen(ds, lab, include_baseline_name="baseline")

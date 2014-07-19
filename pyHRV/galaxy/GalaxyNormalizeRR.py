@@ -2,7 +2,7 @@ from pyHRV.galaxy.ParamExecClass import ParamExecClass
 
 __author__ = 'AleB'
 
-from pyHRV.Files import load_data_series, save_data_series
+from pyHRV.Files import load_ds_from_csv_column, save_ds_to_csv
 from pyHRV.Filters import RRFilters
 
 
@@ -17,5 +17,5 @@ class GalaxyNormalizeRR(ParamExecClass):
     def execute(self):
         inp = self._kwargs['input']
         out = self._kwargs['output']
-        save_data_series(
-            getattr(RRFilters, "normalize_" + self._kwargs['norm_mode'])(load_data_series(inp)), out)
+        save_ds_to_csv(
+            getattr(RRFilters, "normalize_" + self._kwargs['norm_mode'])(load_ds_from_csv_column(inp)), out)

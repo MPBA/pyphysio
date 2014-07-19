@@ -105,7 +105,7 @@ class CollectionWinGen(WindowsGenerator):
     """Wraps a list of windows from an existing collection.
     """
 
-    def __init__(self, data, win_list):
+    def __init__(self, win_list, data=None):
         super(CollectionWinGen, self).__init__(data)
         self._wins = win_list
         self._ind = 0

@@ -21,9 +21,9 @@ class GalaxyLoadWindows(ParamExecClass):
     def execute(self):
         output_file = self._kwargs['output']
         if self._kwargs['excel']:
-            c = load_excel_column(self._kwargs['input'], self._kwargs['column'], None, self._kwargs['sheet'])
+            c = load_pd_from_excel_column(self._kwargs['input'], self._kwargs['column'], None, self._kwargs['sheet'])
         else:
-            c = load_rr(self._kwargs['input'], self._kwargs['column'])
+            c = load_ds_from_csv_column(self._kwargs['input'], self._kwargs['column'])
 
         if self._kwargs['windows_type'] == 'labels_sequences':
             w = NamedWinGen(None, c)
