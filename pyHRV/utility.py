@@ -59,8 +59,6 @@ def template_interpolation(x, t, step, template=None):
 
 
 def build_takens_vector(x, m):
-    #creo embedded matrix
-    #righe = Uj
     n = len(x)
     num = n - m + 1
     emb = np.zeros([num, m])

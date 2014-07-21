@@ -1,3 +1,4 @@
+##ck3
 __author__ = 'AleB'
 __all__ = ["RRFilters"]
 
@@ -7,41 +8,86 @@ from pyHRV.DataSeries import DataSeries
 
 
 class RRFilters(object):
-    """ Static class containing methods for filtering RR intervals data. """
+    """
+    Static class containing methods for filtering RR intervals data.
+    """
 
     @staticmethod
     def normalize_mean(series):
-        """Normalizes the series removing the mean (RR-mean)"""
+        """
+        Normalizes the series removing the mean (RR-mean)
+        @param series: DataSeries
+        @type series: DataSeries
+        @return: Filtered DataSeries
+        @rtype: DataSeries
+        """
         assert isinstance(series, DataSeries)
         return DataSeries(series - np.mean(series))
 
     @staticmethod
     def normalize_mean_sd(series):
-        """Normalizes the series removing the mean and dividing by the standard deviation (RR-mean)/sd"""
+        """
+        Normalizes the series removing the mean and dividing by the standard deviation (RR-mean)/sd
+        @param series: DataSeries
+        @type series: DataSeries
+        @return: Filtered DataSeries
+        @rtype: DataSeries
+        """
         assert isinstance(series, DataSeries)
         return DataSeries((series - np.mean(series)) / np.std(series) + np.mean(series))
 
     @staticmethod
     def normalize_min(series):
-        """Normalizes the series removing the minimum value (RR-min)"""
+        """
+        Normalizes the series removing the minimum value (RR-min)
+        @param series: DataSeries
+        @type series: DataSeries
+        @return: Filtered DataSeries
+        @rtype: DataSeries
+        """
         assert isinstance(series, DataSeries)
         return DataSeries(series - np.min(series) + np.mean(series))
 
     @staticmethod
     def normalize_max_min(series):
-        """Normalizes the series removing the mean and dividing by the range width (RR-mean)/(max-min)"""
+        """
+        Normalizes the series removing the mean and dividing by the range width (RR-mean)/(max-min)
+        @param series: DataSeries
+        @type series: DataSeries
+        @return: Filtered DataSeries
+        @rtype: DataSeries
+        """
         assert isinstance(series, DataSeries)
         return DataSeries((series - np.mean(series)) / (np.max(series) - np.min(series)) + np.mean(series))
 
     @staticmethod
     def normalize_rr_all_mean_calm(series, param, mean_calm_milliseconds):
-        """Normalizes the series scaling by two factors ((PAR*RR)/meanCALM)"""
+        """
+        Normalizes the series scaling by two factors ((PAR*RR)/meanCALM)
+        @param param: first factor PAR
+        @param mean_calm_milliseconds: second parameter: average calm-state expected bpm
+        @type mean_calm_milliseconds: float
+        @return: Filtered DataSeries
+        @rtype: DataSeries
+        """
         assert isinstance(series, DataSeries)
         return DataSeries(param * series - mean_calm_milliseconds)
 
     @staticmethod
     def filter_outliers(series, last=13, min_bpm=24, max_bpm=198, win_length=50):
-        """Removes outliers from RR series"""
+        """
+        Removes outliers from RR series.
+        @param series: DataSeries
+        @type series: DataSeries
+        @param last: last percentage
+        @type last: float
+        @param min_bpm: minimum bpm to be considered valid
+        @type min_bpm: float
+        @param max_bpm: maximum bpm to be considered valid
+        @type max_bpm: float
+        @return: Filtered DataSeries
+        @rtype: DataSeries
+        """
         assert isinstance(series, DataSeries)
         new_series = np.array(series)
         max_rr = 60000 / min_bpm
@@ -70,9 +116,12 @@ class RRFilters(object):
 
     @staticmethod
     def example_filter(series):
-        """ Example filter method, does nothing
-        :param series: DataSeries
-        :return: DataSeries
+        """
+        Example filter method, does nothing
+        @param series: DataSeries
+        @type series: DataSeries
+        @return: Filtered DataSeries
+        @rtype: DataSeries
         """
         assert isinstance(series, DataSeries)
         return series

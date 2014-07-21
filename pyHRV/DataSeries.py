@@ -1,21 +1,19 @@
-# coding=utf-8
+##ck3
 __author__ = "AleB"
 __all__ = ['DataSeries']
 
-from numpy import mean as np_mean
-
 import pandas as pd
 
-from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
-
-class DataSeries(pd.TimeSeries):
-    """ Pandas' DataFrame class extension that gives a cache support through CacheableDataCalc subclasses."""
+class DataSeries(pd.Series):
+    """ Pandas' Series class extension that gives a cache support through CacheableDataCalc's subclasses."""
 
     def __init__(self, data=None, copy=False, meta_tag=None):
-        """ Default constructor.
-        @param data: Data to insert in the DataFrame
-        @param copy: see Pandas doc
+        """
+        Constructor
+        @param data: Data to be stored.
+        @param copy: If to copy the data (see Pandas doc.)
+        @param meta_tag: Dict that stores meta-data tags about the data.
         """
         super(DataSeries, self).__init__(data=data, copy=copy)
         self._cache = {}
@@ -23,45 +21,48 @@ class DataSeries(pd.TimeSeries):
             self.meta_tag = {}
         else:
             self.meta_tag = meta_tag
-        mean = np_mean(data)
-        assert (not Sett.time_unit_check_ibi_mean_max < Sett.time_unit_check_ibi
-                    | (mean < Sett.time_unit_check_ibi_mean_min)), \
-            Sett.time_unit_check_ibi_warn % mean
 
     def cache_clear(self):
-        """ Clears the cache and frees memory (GC?)
+        """
+        Clears the cache and frees memory (GC?)
         """
         self._cache = {}
 
     def cache_check(self, calculator):
-        """ Check if the cache contains valid calculator's data
-        :type calculator: CacheableDataCalc
-        :param calculator: CacheableDataCalc
-        :return: If the cache is valid
+        """
+        Checks the presence in the cache of the specified calculator's data.
+        @param calculator: Cacheable data calculator
+        @type calculator: CacheableDataCalc
+        @return: Presence in the cache
+        @rtype: Boolean
         """
         return calculator.cid() in self._cache
 
     def cache_invalidate(self, calculator):
         """
-        :type calculator: CacheableDataCalc
-        :param calculator: CacheableDataCalc
+        Invalidates the specified calculator's cached data if any.
+        @param calculator: Cacheable data calculator
+        @type calculator: CacheableDataCalc
         """
         if self.cache_check(calculator):
             del self._cache[calculator.cid()]
 
     def cache_pre_calc_data(self, calculator, params):
-        """ Pre-calculates data and caches it
-        :type calculator: CacheableDataCalc
-        :param calculator: CacheableDataCalc
+        """
+        Calculates data and caches it
+        @param calculator: Cacheable data calculator
+        @type calculator: CacheableDataCalc
         """
         self._cache[calculator.cid()] = calculator.get(self, params, use_cache=False)
         return self._cache[calculator.cid()]
 
     def cache_get_data(self, calculator):
-        """ Gets data from the cache if valid
-        :type calculator: CacheableDataCalc
-        :param calculator: CacheableDataCalc subclass
-        :return: The data or None
+        """
+        Gets data from the cache if valid
+        @param calculator: Cacheable data calculator
+        @type calculator: CacheableDataCalc
+        @return: The data or None
+        @rtype: DataSeries or None
         """
         if self.cache_check(calculator):
             return self._cache[calculator.cid()]

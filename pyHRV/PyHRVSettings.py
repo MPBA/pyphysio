@@ -1,3 +1,4 @@
+##ck3
 __author__ = "AleB"
 __all__ = ['PyHRVSettings', 'PyHRVDefaultSettings']
 
@@ -5,6 +6,9 @@ __all__ = ['PyHRVSettings', 'PyHRVDefaultSettings']
 class PyHRVSettings(object):
     def __init__(self):
         # Interpolation
+        """
+        This constructor sets the default used values for the library.
+        """
         self.default_interpolation_freq = 4
         self.online_step_milliseconds = 100
 
@@ -51,13 +55,6 @@ class PyHRVSettings(object):
             "Some of the indexes requested are not implemented:" \
             "maybe the name is incorrect or pyHRV version is old.\n" \
             "Indexes names: {:s}"
-
-        self.time_unit_check_ibi_warn = \
-            "Warning: the inter-beat-time (IBI) should be loaded in ms (milli-seconds). The mean is {:d}!"
-
-    @staticmethod
-    def names(phrase, names):
-        return phrase.format(", ".join(names))
 
 
 PyHRVDefaultSettings = PyHRVSettings()

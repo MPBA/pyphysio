@@ -1,26 +1,30 @@
+##ck3
 __author__ = 'AleB'
 __all__ = ['WindowError', 'Window', 'WindowsGenerator']
 
 
 class WindowError(Exception):
-    """Generic Windowing error."""
+    """
+    Generic Windowing error.
+    """
     pass
 
 
 class Window(object):
-    """Base Window, a begin-end pair"""
+    """
+    Base Window, a begin-end pair.
+    """
 
-    def __init__(self, begin=None, end=None, name=None, data=None, copy=None):
-        if copy is None:
-            self._begin = begin
-            self._end = end
-            self._name = name
-            self._data = data
-        else:
-            self._begin = copy.begin
-            self._end = copy.end
-            self._name = copy.name
-            self._data = copy.data
+    def __init__(self, begin, end, name=None):
+        """
+        Creates a base Window
+        @param begin: Begin sample index
+        @param end: End sample index
+        @param name: Label for the window
+        """
+        self._begin = begin
+        self._end = end
+        self._name = name
 
     @property
     def begin(self):
@@ -43,7 +47,9 @@ class Window(object):
 
 
 class WindowsIterator(object):
-    """A generic iterator that is called from each WindowGenerator from the __iter__ method."""
+    """
+    A generic iterator that is called from each WindowGenerator from the __iter__ method.
+    """
 
     def __init__(self, win):
         assert isinstance(win, WindowsGenerator)
@@ -54,7 +60,9 @@ class WindowsIterator(object):
 
 
 class WindowsGenerator(object):
-    """Base and abstract class for the windows computation."""
+    """
+    Base and abstract class for the windows computation.
+    """
 
     def __init__(self, data=None):
         self._data = None
@@ -67,8 +75,15 @@ class WindowsGenerator(object):
         return WindowsIterator(self)
 
     def init_windowing(self, data):
-        # the class must have a reference to the used data
+        """
+        Initializes the windowing generator
+        @param data: Data to window
+        """
         self._data = data
 
     def step_windowing(self):
+        """
+        Executes a windowing step.
+        @raise StopIteration: End of the iteration
+        """
         raise StopIteration
