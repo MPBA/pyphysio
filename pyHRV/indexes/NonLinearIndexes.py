@@ -1,4 +1,5 @@
 # coding=utf-8
+##ck3
 __author__ = 'AleB'
 __all__ = ['ApproxEntropy', 'CorrelationDim', 'Fisher', 'FractalDimension', 'DFALongTerm', 'DFAShortTerm', 'Hurst',
            'PetrosianFracDim', 'PoinEll', 'PoinSD1', 'PoinSD12', 'PoinSD2', 'SVDEntropy', 'SampleEntropy']
@@ -15,7 +16,9 @@ from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
 
 class ApproxEntropy(NonLinearIndex):
-    """Calculates the approx entropy of the data series."""
+    """
+    Calculates the approx entropy of the data series.
+    """
 
     def __init__(self, data=None):
         super(ApproxEntropy, self).__init__(data)
@@ -47,7 +50,9 @@ class ApproxEntropy(NonLinearIndex):
 
 
 class SampleEntropy(NonLinearIndex):
-    """Calculates the sample entropy of the data series."""
+    """
+    Calculates the sample entropy of the data series.
+    """
 
     def __init__(self, data=None):
         super(SampleEntropy, self).__init__(data)
@@ -79,7 +84,9 @@ class SampleEntropy(NonLinearIndex):
 
 
 class FractalDimension(NonLinearIndex):
-    """Calculates the fractal dimension of the data series."""
+    """
+    Calculates the fractal dimension of the data series.
+    """
 
     def __init__(self, data=None):
         super(FractalDimension, self).__init__(data)
@@ -101,7 +108,9 @@ class FractalDimension(NonLinearIndex):
 
 
 class SVDEntropy(NonLinearIndex):
-    """Calculates the SVD entropy of the data series."""
+    """
+    Calculates the SVD entropy of the data series.
+    """
 
     def __init__(self, data=None):
         super(SVDEntropy, self).__init__(data)
@@ -112,7 +121,9 @@ class SVDEntropy(NonLinearIndex):
 
 
 class Fisher(NonLinearIndex):
-    """Calculates the Fisher index of the data series."""
+    """
+    Calculates the Fisher index of the data series.
+    """
 
     def __init__(self, data=None):
         super(Fisher, self).__init__(data)
@@ -127,7 +138,9 @@ class Fisher(NonLinearIndex):
 
 
 class CorrelationDim(NonLinearIndex):
-    """Calculates the correlation dimension of the data series."""
+    """
+    Calculates the correlation dimension of the data series.
+    """
 
     def __init__(self, data=None):
         super(CorrelationDim, self).__init__(data)
@@ -153,7 +166,9 @@ class CorrelationDim(NonLinearIndex):
 
 
 class PoinSD1(NonLinearIndex):
-    """Calculates the SD1 Poincaré index of the data series."""
+    """
+    Calculates the SD1 Poincaré index of the data series.
+    """
 
     def __init__(self, data=None):
         super(PoinSD1, self).__init__(data)
@@ -162,7 +177,9 @@ class PoinSD1(NonLinearIndex):
 
 
 class PoinSD2(NonLinearIndex):
-    """Calculates the SD2 Poincaré index of the data series."""
+    """
+    Calculates the SD2 Poincaré index of the data series.
+    """
 
     def __init__(self, data=None):
         super(PoinSD2, self).__init__(data)
@@ -171,7 +188,9 @@ class PoinSD2(NonLinearIndex):
 
 
 class PoinSD12(NonLinearIndex):
-    """Calculates the ratio between SD1 and SD2 Poincaré indexes of the data series."""
+    """
+    Calculates the ratio between SD1 and SD2 Poincaré indexes of the data series.
+    """
 
     def __init__(self, data=None):
         super(PoinSD12, self).__init__(data)
@@ -180,7 +199,9 @@ class PoinSD12(NonLinearIndex):
 
 
 class PoinEll(NonLinearIndex):
-    """Calculates the Poincaré Ell. index of the data series."""
+    """
+    Calculates the Poincaré Ell. index of the data series.
+    """
 
     def __init__(self, data=None):
         super(PoinEll, self).__init__(data)
@@ -189,7 +210,9 @@ class PoinEll(NonLinearIndex):
 
 
 class Hurst(NonLinearIndex):
-    """Calculates the Hurst HRV index of the data series."""
+    """
+    Calculates the Hurst HRV index of the data series.
+    """
 
     def __init__(self, data=None):
         super(Hurst, self).__init__(data)
@@ -213,7 +236,9 @@ class Hurst(NonLinearIndex):
 
 
 class PetrosianFracDim(NonLinearIndex):
-    """Calculates the petrosian's fractal dimension of the data series."""
+    """
+    Calculates the petrosian's fractal dimension of the data series.
+    """
 
     def __init__(self, data=None):
         super(PetrosianFracDim, self).__init__(data)
@@ -227,7 +252,9 @@ class PetrosianFracDim(NonLinearIndex):
 
 
 class DFAShortTerm(NonLinearIndex):
-    """Calculate the alpha1 (short term) component index of the De-trended Fluctuation Analysis."""
+    """
+    Calculate the alpha1 (short term) component index of the De-trended Fluctuation Analysis.
+    """
 
     def __init__(self, data=None):
         super(DFAShortTerm, self).__init__(data)
@@ -253,11 +280,13 @@ class DFAShortTerm(NonLinearIndex):
 
 
 class DFALongTerm(NonLinearIndex):
-    """Calculate the alpha2 (long term) component index of the De-trended Fluctuation Analysis."""
+    """
+    Calculate the alpha2 (long term) component index of the De-trended Fluctuation Analysis.
+    """
 
     def __init__(self, data=None):
         super(DFALongTerm, self).__init__(data)
-        #calculates De-trended Fluctuation Analysis: alpha2 (long term) component
+        # calculates De-trended Fluctuation Analysis: alpha2 (long term) component
         x = self._data
         assert len(self._data) >= 16
         ave = Mean.get(x)

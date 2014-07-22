@@ -1,3 +1,4 @@
+##ck3
 __author__ = 'AleB'
 
 from BaseIndexes import SupportValue
@@ -6,7 +7,8 @@ from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Ps
 
 
 class SumSV(SupportValue):
-    """Support value: SUM
+    """
+    Support value: SUM of the samples' values
     """
 
     def __init__(self, sv_collection):
@@ -26,7 +28,8 @@ class SumSV(SupportValue):
 
 
 class DistributionSV(SupportValue):
-    """Support value: FREQUENCIES DISTRIBUTION of the VALUES CONSIDERED
+    """
+    Support value: FREQUENCIES DISTRIBUTION of the VALUES CONSIDERED
     """
 
     def __init__(self, sv_collection):
@@ -54,7 +57,8 @@ class DistributionSV(SupportValue):
 
 
 class MinSV(SupportValue):
-    """Support value: MINOR VALUE
+    """
+    Support value: the MINOR VALUE in the window
     """
 
     def __init__(self, sv_collection):
@@ -80,7 +84,8 @@ class MinSV(SupportValue):
 
 
 class MaxSV(SupportValue):
-    """Support value: MAXIMUM VALUE
+    """
+    Support value: MAXIMUM VALUE of the window
     """
 
     def __init__(self, sv_collection):
@@ -106,7 +111,8 @@ class MaxSV(SupportValue):
 
 
 class LengthSV(SupportValue):
-    """Support value: VALUES NUMBER
+    """
+    Support value: VALUES NUMBER
     """
 
     def __init__(self, sv_collection):
@@ -127,7 +133,8 @@ class LengthSV(SupportValue):
 
 
 class VectorSV(SupportValue):
-    """Support value: VECTOR of the VALUES
+    """
+    Support value: a simple VECTOR of the VALUES in the window
     """
 
     def __init__(self, sv_collection):
@@ -149,7 +156,8 @@ class VectorSV(SupportValue):
 
 
 class InterpolationSV(SupportValue):
-    """Support value: INTERPOLATION of the VALUES in (seconds O bpm) [~ xOy]
+    """
+    Support value: INTERPOLATION of the VALUES in (x O y ~ seconds O bpm) [O != 0]
     """
 
     def __init__(self, sv_collection):
@@ -188,7 +196,8 @@ class InterpolationSV(SupportValue):
 
 
 class DiffsSV(SupportValue):
-    """Support value: VECTOR of the DIFFERENCES between adjacent VALUES
+    """
+    Support value: VECTOR of the DIFFERENCES between adjacent VALUES
     """
 
     def __init__(self, sv_collection):
@@ -212,7 +221,8 @@ class DiffsSV(SupportValue):
 
 
 class MedianSV(SupportValue):
-    """Support value: VECTOR of the DIFFERENCES between adjacent VALUES
+    """
+    Support value: VECTOR of the DIFFERENCES between adjacent VALUES
     """
 
     # noinspection PyUnusedLocal

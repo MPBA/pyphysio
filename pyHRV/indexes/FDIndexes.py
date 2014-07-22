@@ -1,3 +1,4 @@
+##ck3
 __author__ = 'AleB'
 __all__ = ['HF', 'HFNormal', 'HFPeak', 'LF', 'LFHF', 'LFNormal', 'LFPeak', 'NormalizedHF', 'NormalizedLF', 'Total',
            'VLF', 'VLFNormal', 'VLFPeak']
@@ -44,17 +45,27 @@ class PeakInBand(InBand):
 
 
 class VLF(PowerInBand):
-    """Calculates the power in the VLF band (parametrized in the settings)."""
+    """
+    Calculates the power in the VLF band (parametrized in the settings).
+    """
 
-    def __init__(self, data=None):
+    def __init__(self, data):
+        """
+        Calculates the power in the VLF band (parametrized in the settings).
+        """
         super(VLF, self).__init__(Sett.vlf_band_lower_bound, Sett.vlf_band_upper_bound, data)
-        self._value = VLF._calculate_data(self)
+        self._value = VLF.get(self)
 
 
 class LF(PowerInBand):
-    """Calculates the power in the LF band (parametrized in the settings)."""
+    """
+    Calculates the power in the LF band (parametrized in the settings).
+    """
 
-    def __init__(self, data=None):
+    def __init__(self, data):
+        """
+        Calculates the power in the LF band (parametrized in the settings).
+        """
         super(LF, self).__init__(Sett.vlf_band_upper_bound, Sett.lf_band_upper_bound, data)
         # .get(..) called on LF only for the .cid() in the cache. The actually important data is self._freq_band that
         # has been calculated by PowerInBand.__init__(..)
@@ -62,18 +73,28 @@ class LF(PowerInBand):
 
 
 class HF(PowerInBand):
-    """Calculates the power in the HF band (parametrized in the settings)."""
+    """
+    Calculates the power in the HF band (parametrized in the settings).
+    """
 
-    def __init__(self, data=None):
+    def __init__(self, data):
+        """
+        Calculates the power in the HF band (parametrized in the settings).
+        """
         super(HF, self).__init__(Sett.lf_band_upper_bound, Sett.hf_band_upper_bound, data)
         # Here as in LF
         self._value = HF.get(self)
 
 
 class Total(PowerInBand):
-    """Calculates the power of the whole spectrum."""
+    """
+    Calculates the power of the whole spectrum.
+    """
 
-    def __init__(self, data=None):
+    def __init__(self, data):
+        """
+        Calculates the power of the whole spectrum.
+        """
         super(Total, self).__init__(Sett.vlf_band_lower_bound, Sett.lf_band_upper_bound, data)
         # Used _calculate_data(..) (here as in other indexes) as a substitute of the ex 'calculate' to bypass the
         # cache system
@@ -81,66 +102,111 @@ class Total(PowerInBand):
 
 
 class VLFPeak(PeakInBand):
-    """Calculates the peak in the VLF band (parametrized in the settings)."""
+    """
+    Calculates the peak in the VLF band (parametrized in the settings).
+    """
 
-    def __init__(self, data=None):
+    def __init__(self, data):
+        """
+        Calculates the peak in the VLF band (parametrized in the settings).
+        """
         super(VLFPeak, self).__init__(Sett.vlf_band_lower_bound, Sett.vlf_band_upper_bound, data)
 
 
 class LFPeak(PeakInBand):
-    """Calculates the peak in the LF band (parametrized in the settings)."""
+    """
+    Calculates the peak in the LF band (parametrized in the settings).
+    """
 
-    def __init__(self, data=None):
+    def __init__(self, data):
+        """
+        Calculates the peak in the LF band (parametrized in the settings).
+        """
         super(LFPeak, self).__init__(Sett.vlf_band_upper_bound, Sett.lf_band_upper_bound, data)
 
 
 class HFPeak(PeakInBand):
-    """Calculates the peak in the HF band (parametrized in the settings)."""
+    """
+    Calculates the peak in the HF band (parametrized in the settings).
+    """
 
-    def __init__(self, data=None):
+    def __init__(self, data):
+        """
+        Calculates the peak in the HF band (parametrized in the settings).
+        """
         super(HFPeak, self).__init__(Sett.lf_band_upper_bound, Sett.hf_band_upper_bound, data)
 
 
 class VLFNormal(PowerInBandNormal):
-    """Calculates the normal of the VLF band (parametrized in the settings)."""
+    """
+    Calculates the normal of the VLF band (parametrized in the settings).
+    """
 
-    def __init__(self, data=None):
+    def __init__(self, data):
+        """
+        Calculates the normal of the VLF band (parametrized in the settings).
+        """
         super(VLFNormal, self).__init__(Sett.vlf_band_lower_bound, Sett.vlf_band_upper_bound, data)
 
 
 class LFNormal(PowerInBandNormal):
-    """Calculates the normal of the LF band (parametrized in the settings)."""
+    """
+    Calculates the normal of the LF band (parametrized in the settings).
+    """
 
-    def __init__(self, data=None):
+    def __init__(self, data):
+        """
+        Calculates the normal of the LF band (parametrized in the settings).
+        """
         super(LFNormal, self).__init__(Sett.vlf_band_upper_bound, Sett.lf_band_upper_bound, data)
 
 
 class HFNormal(PowerInBandNormal):
-    """Calculates the normal of the HF band (parametrized in the settings)."""
+    """
+    Calculates the normal of the HF band (parametrized in the settings).
+    """
 
-    def __init__(self, data=None):
+    def __init__(self, data):
+        """
+        Calculates the normal of the HF band (parametrized in the settings).
+        """
         super(HFNormal, self).__init__(Sett.lf_band_upper_bound, Sett.hf_band_upper_bound, data)
 
 
 class LFHF(FDIndex):
-    """Calculates the power ratio between the LF and the HF band (parametrized in the settings)."""
+    """
+    Calculates the power ratio between the LF and the HF band (parametrized in the settings).
+    """
 
-    def __init__(self, data=None):
+    def __init__(self, data):
+        """
+        Calculates the power ratio between the LF and the HF band (parametrized in the settings).
+        """
         super(FDIndex, self).__init__(data)
         self._value = LF(self._data).value / HF(self._data).value
 
 
 class NormalizedLF(FDIndex):
-    """Calculates the normalized power value of the LF band (parametrized in the settings) over the LF and HF bands."""
+    """
+    Calculates the normalized power value of the LF band (parametrized in the settings) over the LF and HF bands.
+    """
 
-    def __init__(self, data=None):
+    def __init__(self, data):
+        """
+        Calculates the normalized power value of the LF band (parametrized in the settings) over the LF and HF bands.
+        """
         super(FDIndex, self).__init__(data)
         self._value = LF(self._data).value / (HF(self._data).value + LF(self._data).value)
 
 
 class NormalizedHF(FDIndex):
-    """Calculates the normalized power value of the HF band (parametrized in the settings) over the LF and HF bands."""
+    """
+    Calculates the normalized power value of the HF band (parametrized in the settings) over the LF and HF bands.
+    """
 
-    def __init__(self, data=None):
+    def __init__(self, data):
+        """
+        Calculates the normalized power value of the HF band (parametrized in the settings) over the LF and HF bands.
+        """
         super(FDIndex, self).__init__(data)
         self._value = HF(self._data).value / (HF(self._data).value + LF(self._data).value)

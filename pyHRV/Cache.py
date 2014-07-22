@@ -27,11 +27,9 @@ class CacheableDataCalc(object):
         """
         Gets the data if cached or calculates it, saves it in the cache and returns it.
         @param data: Source data
-        @type data: DataSeries
         @param params: Parameters for the calculator
         @param use_cache: Weather to use the cache memory or not
         @return: The final data
-        @rtype: DataSeries
         """
         if use_cache and isinstance(data, DataSeries):
             if not data.cache_check(cls):

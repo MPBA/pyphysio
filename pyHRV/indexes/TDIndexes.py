@@ -1,3 +1,4 @@
+##ck2
 __author__ = 'AleB'
 __all__ = ['Mean', 'Median', 'SD', 'SDSD', 'NN10', 'NN25', 'NN50', 'NNx', 'PNN10', 'PNN25', 'PNN50', 'PNNx', 'RMSSD',
            'HRMean', 'HRMedian', 'HRSD', "Triang", "TINN"]
@@ -11,7 +12,9 @@ from pyHRV.indexes.SupportValues import SumSV, LengthSV, DiffsSV, MedianSV
 
 
 class Mean(TDIndex, CacheableDataCalc):
-    """Calculates the average of the data series."""
+    """
+    Calculates the average of the data series.
+    """
 
     def __init__(self, data=None):
         super(Mean, self).__init__(data)
@@ -31,7 +34,9 @@ class Mean(TDIndex, CacheableDataCalc):
 
 
 class HRMean(TDIndex, CacheableDataCalc):
-    """Calculates the average of the data series and converts it into Beats per Minute."""
+    """
+    Calculates the average of the data series and converts it into Beats per Minute.
+    """
 
     def __init__(self, data=None):
         super(HRMean, self).__init__(data)
@@ -51,7 +56,9 @@ class HRMean(TDIndex, CacheableDataCalc):
 
 
 class Median(TDIndex, CacheableDataCalc):
-    """Calculates the median of the data series."""
+    """
+    Calculates the median of the data series.
+    """
 
     def __init__(self, data=None):
         super(Median, self).__init__(data)
@@ -71,7 +78,9 @@ class Median(TDIndex, CacheableDataCalc):
 
 
 class HRMedian(TDIndex):
-    """Calculates the average of the data series and converts it into Beats per Minute."""
+    """
+    Calculates the average of the data series and converts it into Beats per Minute.
+    """
 
     def __init__(self, data=None):
         super(HRMedian, self).__init__(data)
@@ -87,7 +96,9 @@ class HRMedian(TDIndex):
 
 
 class SD(TDIndex, CacheableDataCalc):
-    """Calculates the standard deviation of the data series."""
+    """
+    Calculates the standard deviation of the data series.
+    """
 
     def __init__(self, data=None):
         super(SD, self).__init__(data)
@@ -99,7 +110,9 @@ class SD(TDIndex, CacheableDataCalc):
 
 
 class HRSD(TDIndex, CacheableDataCalc):
-    """Calculates the average of the data series and converts it into Beats per Minute."""
+    """
+    Calculates the average of the data series and converts it into Beats per Minute.
+    """
 
     def __init__(self, data=None):
         super(HRSD, self).__init__(data)
@@ -111,8 +124,10 @@ class HRSD(TDIndex, CacheableDataCalc):
 
 
 class PNNx(TDIndex):
-    """Calculates the presence proportion (0.0-1.0) in the data series of pairs of consecutive IBIs
-    where the difference between the two values is greater than the default parameter."""
+    """
+    Calculates the presence proportion (0.0-1.0) of pairs of consecutive IBIs in the data series
+    where the difference between the two values is greater than the parameter (threshold).
+    """
 
     def __init__(self, data=None, threshold=None):
         super(PNNx, self).__init__(data)
@@ -133,8 +148,10 @@ class PNNx(TDIndex):
 
 
 class NNx(TDIndex):
-    """Calculates number of pairs of consecutive IBIs in the data series where the difference between
-     the two values is greater than the default parameter."""
+    """
+    Calculates the number of pairs of consecutive IBIs in the data series where the difference between
+    the two values is greater than the parameter (threshold).
+    """
 
     def __init__(self, data=None, threshold=None):
         super(NNx, self).__init__(data)
@@ -159,8 +176,10 @@ class NNx(TDIndex):
 
 
 class PNN10(PNNx):
-    """Calculates the presence proportion (0.0-1.0) in the data series of pairs of consecutive IBIs
-    where the difference between the two values is greater than 10."""
+    """
+    Calculates the presence proportion (0.0-1.0) in the data series of pairs of consecutive IBIs
+    where the difference between the two values is greater than 10.
+    """
 
     @staticmethod
     def threshold():
@@ -168,8 +187,10 @@ class PNN10(PNNx):
 
 
 class PNN25(PNNx):
-    """Calculates the presence proportion (0.0-1.0) in the data series of pairs of consecutive IBIs
-    where the difference between the two values is greater than 25."""
+    """
+    Calculates the presence proportion (0.0-1.0) in the data series of pairs of consecutive IBIs
+    where the difference between the two values is greater than 25.
+    """
 
     @staticmethod
     def threshold():
@@ -177,8 +198,10 @@ class PNN25(PNNx):
 
 
 class PNN50(PNNx):
-    """Calculates the presence proportion (0.0-1.0) in the data series of pairs of consecutive IBIs
-    where the difference between the two values is greater than 50."""
+    """
+    Calculates the presence proportion (0.0-1.0) in the data series of pairs of consecutive IBIs
+    where the difference between the two values is greater than 50.
+    """
 
     @staticmethod
     def threshold():
@@ -186,8 +209,10 @@ class PNN50(PNNx):
 
 
 class NN10(NNx):
-    """Calculates number of pairs of consecutive IBIs in the data series where the difference between
-     the two values is greater than 10."""
+    """
+    Calculates number of pairs of consecutive IBIs in the data series where the difference between
+    the two values is greater than 10.
+    """
 
     @staticmethod
     def threshold():
@@ -195,8 +220,10 @@ class NN10(NNx):
 
 
 class NN25(NNx):
-    """Calculates number of pairs of consecutive IBIs in the data series where the difference between
-     the two values is greater than 25."""
+    """
+    Calculates number of pairs of consecutive IBIs in the data series where the difference between
+    the two values is greater than 25.
+    """
 
     @staticmethod
     def threshold():
@@ -204,8 +231,10 @@ class NN25(NNx):
 
 
 class NN50(NNx):
-    """Calculates number of pairs of consecutive IBIs in the data series where the difference between
-     the two values is greater than 50."""
+    """
+    Calculates number of pairs of consecutive IBIs in the data series where the difference between
+    the two values is greater than 50.
+    """
 
     @staticmethod
     def threshold():
@@ -213,7 +242,9 @@ class NN50(NNx):
 
 
 class RMSSD(TDIndex):
-    """Calculates the ."""
+    """
+    Calculates the square root of the mean of the squared differences.
+    """
 
     def __init__(self, data=None):
         super(RMSSD, self).__init__(data)
