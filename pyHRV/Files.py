@@ -1,5 +1,5 @@
 ##ck2
-__all__ = ['load_pd_from_excel_column', 'load_ds_from_csv_column', 'load_ds_from_csv_column', 'save_ds_to_csv',
+__all__ = ['load_pd_from_excel_column', 'load_ds_from_csv_column', 'load_windows_gen_from_csv', 'save_ds_to_csv',
            'load_rr_from_bvp', 'load_rr_from_ecg']
 
 import numpy as np
@@ -87,7 +87,8 @@ def save_ds_to_csv(data_series, path, name=Sett.load_rr_column_name, sep=Sett.lo
 
 
 def load_rr_from_ecg(path, delta=Sett.import_ecg_delta, ecg_col=Sett.load_ecg_column_name,
-                     ecg_time_col=Sett.load_ecg_time_column_name, sep=Sett.load_csv_separator, *args):
+                     ecg_time_col=Sett.load_ecg_time_column_name, filters=Sett.import_bvp_filters,
+                     sep=Sett.load_csv_separator, *args):
     """
     Loads an IBI (RR) data series from an ECG data set and filters it with the specified filters list.
     @param path: path of the file to read
@@ -109,7 +110,7 @@ def load_rr_from_ecg(path, delta=Sett.import_ecg_delta, ecg_col=Sett.load_ecg_co
     max_tab, min_tab, ii, iii = peak_detection(df[ecg_col], delta,
                                                df[ecg_time_col])
     s = DataSeries(np.diff(max_tab))
-    for f in Sett.import_ecg_filters:
+    for f in filters:
         s = f(s)
     s.meta_tag['from_type'] = "csv_ecg"
     s.meta_tag['from_peak_delta'] = delta
@@ -119,8 +120,8 @@ def load_rr_from_ecg(path, delta=Sett.import_ecg_delta, ecg_col=Sett.load_ecg_co
 
 
 def load_rr_from_bvp(path, delta_ratio=Sett.import_bvp_delta_max_min_numerator, bvp_col=Sett.load_bvp_column_name,
-                     bvp_time_col=Sett.load_bvp_time_column_name, sep=Sett.load_csv_separator,
-                     filters=Sett.import_bvp_filters, *args):
+                     bvp_time_col=Sett.load_bvp_time_column_name, filters=Sett.import_bvp_filters,
+                     sep=Sett.load_csv_separator, *args):
     """
     Loads an IBI (RR) data series from a BVP data set and filters it with the specified filters list.
     @param path: path of the file to read

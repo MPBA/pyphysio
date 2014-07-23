@@ -104,7 +104,7 @@ class LinearTimeWinGen(WindowsGenerator):
     Generates a linear-timed set of Time windows (b+i*s, b+i*s+w).
     """
 
-    def __init__(self, step, width, data, end=None):
+    def __init__(self, begin, step, width, data, end=None):
         """
         Initializes the win generator
         @param step: Step samples
@@ -112,9 +112,10 @@ class LinearTimeWinGen(WindowsGenerator):
         @param data: Data of the windows point
         @param end: End index or None for the end of the data specified
         """
+        #TODO: add begin support
         super(LinearTimeWinGen, self).__init__(data)
-        self._step = step * 1000
-        self._width = width * 1000
+        self._step = step
+        self._width = width
         self._cums = [0]
         self._cums.extend(np.cumsum(data))
         self._pos = 0

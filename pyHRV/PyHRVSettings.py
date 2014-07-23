@@ -28,11 +28,6 @@ class PyHRVSettings(object):
         self.load_windows_col_begin = 'begin'
         self.load_windows_col_end = 'end'
 
-        # TimeUnitCheck:
-        self.time_unit_check_ibi = True
-        self.time_unit_check_ibi_mean_min = 80
-        self.time_unit_check_ibi_mean_max = 1200
-
         # TDIndexes:
         self.nnx_default_threshold = 50
         self.cache_histogram_bins = 100
