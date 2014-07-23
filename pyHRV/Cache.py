@@ -34,9 +34,9 @@ class CacheableDataCalc(object):
         if use_cache and isinstance(data, DataSeries):
             if not data.cache_check(cls):
                 data.cache_pre_calc_data(cls, params)
+            return data.cache_get_data(cls)
         else:
             return cls._calculate_data(data, params)
-        return data.cache_get_data(cls)
 
     @classmethod
     def _calculate_data(cls, data, params):
@@ -109,6 +109,8 @@ class Histogram(CacheableDataCalc):
         @return: Data to cache: (hist, bin_edges)
         @rtype: (array, array)
         """
+        if histogram_bins is None:
+            histogram_bins = Sett.cache_histogram_bins
         return np.histogram(data, histogram_bins)
 
 

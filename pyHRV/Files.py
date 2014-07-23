@@ -1,7 +1,6 @@
 ##ck2
 __all__ = ['load_pd_from_excel_column', 'load_ds_from_csv_column', 'load_ds_from_csv_column', 'save_ds_to_csv',
-           'load_rr_from_bvp',
-           'load_rr_from_ecg']
+           'load_rr_from_bvp', 'load_rr_from_ecg']
 
 import numpy as np
 
@@ -107,8 +106,8 @@ def load_rr_from_ecg(path, delta=Sett.import_ecg_delta, ecg_col=Sett.load_ecg_co
     """
     # TODO: explain delta
     df = pd.read_csv(path, sep=sep, *args)
-    max_tab, min_tab = peak_detection(df[ecg_col], delta,
-                                      df[ecg_time_col])
+    max_tab, min_tab, ii, iii = peak_detection(df[ecg_col], delta,
+                                               df[ecg_time_col])
     s = DataSeries(np.diff(max_tab))
     for f in Sett.import_ecg_filters:
         s = f(s)

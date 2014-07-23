@@ -1,7 +1,7 @@
 ##ck3
 __author__ = 'AleB'
 from pyHRV import DataSeries
-from pyHRV import PyHRVDefaultSettings as Sett
+from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
 
 class Index(object):

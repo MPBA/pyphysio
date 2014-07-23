@@ -8,5 +8,9 @@
   <component name="PyDocumentationSettings">
     <option name="myDocStringFormat" value="Epytext" />
   </component>
+  <component name="ReSTService">
+    <option name="workdir" value="$MODULE_DIR$" />
+    <option name="DOC_DIR" value="$MODULE_DIR$" />
+  </component>
 </module>
 
