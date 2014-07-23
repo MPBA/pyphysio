@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from pyHRV.DataSeries import DataSeries
-from pyHRV.utility import peak_detection
+from pyHRV.Utility import peak_detection
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 from pyHRV.windowing.WindowsBase import Window
 from pyHRV.windowing.WindowsGenerators import CollectionWinGen

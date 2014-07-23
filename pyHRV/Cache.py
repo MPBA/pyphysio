@@ -5,7 +5,7 @@ __author__ = 'AleB'
 import numpy as np
 from scipy import signal
 
-from pyHRV.utility import build_takens_vector, interpolate_rr
+from pyHRV.Utility import build_takens_vector, interpolate_rr
 from pyHRV.DataSeries import DataSeries
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 

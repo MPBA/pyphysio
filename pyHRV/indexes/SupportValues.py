@@ -2,7 +2,7 @@
 __author__ = 'AleB'
 
 from BaseIndexes import SupportValue
-from pyHRV.utility import template_interpolation
+from pyHRV.Utility import template_interpolation
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Ps
 
 

@@ -11,7 +11,7 @@ import numpy as np
 from pyHRV.Cache import RRDiff, BuildTakensVector2, BuildTakensVector3, PoinSD, StandardDeviation
 from pyHRV.indexes.BaseIndexes import NonLinearIndex
 from pyHRV.indexes.TDIndexes import Mean
-from pyHRV.utility import build_takens_vector
+from pyHRV.Utility import build_takens_vector
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
 
