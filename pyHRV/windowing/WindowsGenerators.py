@@ -104,7 +104,7 @@ class LinearTimeWinGen(WindowsGenerator):
     Generates a linear-timed set of Time windows (b+i*s, b+i*s+w).
     """
 
-    def __init__(self, begin, step, width, data, end=None):
+    def __init__(self, step, width, data, begin=None, end=None):
         """
         Initializes the win generator
         @param step: Step samples
@@ -112,32 +112,36 @@ class LinearTimeWinGen(WindowsGenerator):
         @param data: Data of the windows point
         @param end: End index or None for the end of the data specified
         """
-        #TODO: add begin support
         super(LinearTimeWinGen, self).__init__(data)
-        self._step = step
-        self._width = width
-        self._cums = [0]
-        self._cums.extend(np.cumsum(data))
-        self._pos = 0
-        if end is None:
-            self._end = len(data) - 1  # RR sum should be the total time
-        else:
-            self._end = end
+        self._step_t = step
+        self._width_t = width
+        self._cums_t = np.cumsum(data)
+        self._pos_i = 0
+        self._begin_i = 0
+        if not begin is None:
+            self._begin_i = 0
+            while begin > self._cums_t[self._begin_i]:
+                self._begin_i += 1
+        self._end_i = len(data) - 1  # RR sum should be the total time
+        if not end is None:
+            while end < self._cums_t[self._end_i - 1]:
+                self._end_i -= 1
 
+    # end sample not included, end[n] == begin[n+1]
     def step_windowing(self):
-        b = e = self._pos
-        if b < self._end:
-            et = self._cums[self._pos] + self._width
-            while e <= self._end and et > self._cums[e]:
-                e += 1
-            if e > self._end:
-                self._pos = 0
+        bi = ei = self._pos_i
+        if bi < self._end_i:
+            et = self._cums_t[self._pos_i] + self._width_t
+            while ei <= self._end_i and et > self._cums_t[ei]:
+                ei += 1
+            if ei > self._end_i:
+                self._pos_i = 0
                 raise StopIteration
             else:
-                nt = self._cums[self._pos] + self._step
-                while e < self._end and nt > self._cums[self._pos]:
-                    self._pos += 1
-                return Window(b, e)
+                nt = self._cums_t[self._pos_i] + self._step_t
+                while ei < self._end_i and nt > self._cums_t[self._pos_i]:
+                    self._pos_i += 1
+                return Window(bi, ei)
         else:
             raise StopIteration
 
