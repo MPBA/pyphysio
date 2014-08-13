@@ -1,9 +1,10 @@
 ##ck3
+
 from __builtin__ import property
 
 import pyHRV
 from pyHRV.windowing.WindowsBase import WindowsIterator
-from pyHRV.DataSeries import DataSeries
+
 
 __author__ = 'AleB'
 __all__ = ['WindowsMapper']
@@ -34,7 +35,7 @@ class WindowsMapper(object):
 
     def _comp_one(self, win):
         ret = []
-        win_ds = DataSeries(self._data[win.begin: win.end])
+        win_ds = self._data[win]
         for index in self._index:
             if isinstance(index, str) | isinstance(index, unicode):
                 index = getattr(pyHRV, index)

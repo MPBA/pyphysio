@@ -217,7 +217,7 @@ class Hurst(NonLinearIndex):
     def __init__(self, data=None):
         super(Hurst, self).__init__(data)
         n = len(self._data)
-        t = np.array([float(i) for i in xrange(1, n + 1)])
+        t = np.arange(1.0, n + 1)
         y = np.cumsum(self._data)
         ave_t = np.array(y / t)
 

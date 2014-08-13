@@ -1,8 +1,11 @@
 ##ck3
+
 __author__ = "AleB"
 __all__ = ['DataSeries']
 
 import pandas as pd
+
+from pyHRV.windowing.WindowsBase import Window
 
 
 class DataSeries(pd.Series):
@@ -68,3 +71,7 @@ class DataSeries(pd.Series):
             return self._cache[calculator.cid()]
         else:
             return None
+
+    def __getitem__(self, win):
+        assert win is Window
+        return DataSeries(self[win.begin, win.end], True, self.meta_tag)
