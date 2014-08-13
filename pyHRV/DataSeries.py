@@ -5,8 +5,6 @@ __all__ = ['DataSeries']
 
 import pandas as pd
 
-from pyHRV.windowing.WindowsBase import Window
-
 
 class DataSeries(pd.Series):
     """ Pandas' Series class extension that gives a cache support through CacheableDataCalc's subclasses."""
@@ -73,5 +71,4 @@ class DataSeries(pd.Series):
             return None
 
     def __getitem__(self, win):
-        assert win is Window
-        return DataSeries(self[win.begin, win.end], True, self.meta_tag)
+        return DataSeries(self[win.begin: win.end], True, self.meta_tag)
