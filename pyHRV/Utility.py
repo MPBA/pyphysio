@@ -25,7 +25,6 @@ def interpolate_rr(rr, interp_freq):
     bt = np.append(bt, bt[-1] + 1)
     rr = np.insert(rr, 0, 0)
     rr = np.append(rr, rr[-1])
-
     tck = interpolate.splrep(bt, rr)
     bt_interp = np.arange(x_min, x_max, step)
     rr_interp = interpolate.splev(bt_interp, tck)
