@@ -9,16 +9,26 @@ from WindowsBase import WindowsGenerator, Window
 class IBIWindow(Window):
     """Base IBI Window, a begin-end pair that provides the duration computation."""
 
-    def __init__(self, begin, end, data, name=None):
+    def __init__(self, begin, end, data):
         """
         Creates a time Window
         @param begin: Begin sample index
         @param end: End sample index
         @param data: IBI data from where to calculate the duration
-        @param name: Label for the window
         """
-        Window.__init__(self, begin, end, name)
+        Window.__init__(self, begin, end, data)
         self._data = data
+        l, i, t = self._data.get_labels()
+        if l is None:
+            self._label = None
+        else:
+            p = -1
+            while i[p + 1] < self._begin and p < len(i):
+                p += 1
+            self._label = l[p]
+            while p + 1 < len(l) and self._end > l[p + 1]:
+                self._label += "|" + l[p + 1]
+                p += 1
 
     @property
     def duration(self):
@@ -28,37 +38,37 @@ class IBIWindow(Window):
         """
         return sum(self._data[self._begin: self._end])
 
-    def __repr__(self):
-        return "Win(%d, %d, %s: %dms)" % (self.begin, self.end, self.name, self.duration)
-
-
-class MixedWindow(Window):
-    """
-    Mixed states Window, a begin-center-end triad.
-    """
-
-    def __init__(self, begin, end, center, name=None, name2=None):
-        """
-        Creates a mixed labels Window
-        @param begin: Begin sample index
-        @param end: End sample index
-        @param name: First label for the window
-        @param name2: Second label for the window
-        """
-        super(MixedWindow, self).__init__(begin, end, name)
-        self._name2 = name2
-        self._center = center
-
     @property
-    def name2(self):
-        return self._name2
-
-    @property
-    def center(self):
-        return self._center
+    def label(self):
+        return self._label
 
     def __repr__(self):
-        return "MixedWin(%d, %s, %d, %s, %d)" % (self.begin, self.name, self.center, self.name2, self.end)
+        return "%d:%d:%dms:%s" % (self.begin, self.end, self.label, self.duration)
+
+
+class TimeWinGen(WindowsGenerator):
+    """
+    Generates a timed set of Time windows (b+i*s, b+i*s+w).
+    """
+
+    def __init__(self, data):
+        """
+        Initializes the win generator
+        @param data: Data (mandatory) for the time computations
+        """
+        super(TimeWinGen, self).__init__(data)
+        self._i = 0
+        self._t = 0
+        self._ei = len(data)
+
+    def _next_sample(self, plus):
+        tt = self._t
+        ii = self._i
+        t = self._t + plus
+        while tt < t and ii < self._ei:
+            tt += self._data[ii]
+            ii += 1
+        return tt, ii
 
 
 class LinearWinGen(WindowsGenerator):
@@ -99,7 +109,7 @@ class LinearWinGen(WindowsGenerator):
             return Window(b, e)
 
 
-class LinearTimeWinGen(WindowsGenerator):
+class LinearTimeWinGen(TimeWinGen):
     """
     Generates a linear-timed set of Time windows (b+i*s, b+i*s+w).
     """
@@ -115,33 +125,20 @@ class LinearTimeWinGen(WindowsGenerator):
         super(LinearTimeWinGen, self).__init__(data)
         self._step_t = step
         self._width_t = width
-        self._cums_t = np.cumsum(data)
-        self._pos_i = 0
-        self._begin_i = 0
         if not begin is None:
-            self._begin_i = 0
-            while begin > self._cums_t[self._begin_i]:
-                self._begin_i += 1
-        self._end_i = len(data) - 1  # RR sum should be the total time
+            self._t, self._i = self._next_sample(begin)
         if not end is None:
-            while end < self._cums_t[self._end_i - 1]:
-                self._end_i -= 1
+            et = np.sum(self._data)
+            while end < et:
+                self._ei -= 1
+                et -= self._data[self._ei - 1]
 
-    # end sample not included, end[n] == begin[n+1]
     def step_windowing(self):
-        bi = ei = self._pos_i
-        if bi < self._end_i:
-            et = self._cums_t[self._pos_i] + self._width_t
-            while ei <= self._end_i and et > self._cums_t[ei]:
-                ei += 1
-            if ei > self._end_i:
-                self._pos_i = 0
-                raise StopIteration
-            else:
-                nt = self._cums_t[self._pos_i] + self._step_t
-                while ei < self._end_i and nt > self._cums_t[self._pos_i]:
-                    self._pos_i += 1
-                return Window(bi, ei)
+        if self._i < self._ei:
+            tt, ii = self._next_sample(self._width_t)
+            w = IBIWindow(self._i, ii, self._data)
+            self._t, self._i = self._next_sample(self._step_t)
+            return w
         else:
             raise StopIteration
 
@@ -154,10 +151,12 @@ class CollectionWinGen(WindowsGenerator):
     def __init__(self, win_list, data=None):
         """
         Initializes the win generator
-        @param win_list: List of Windows to consider list(Window)
+        @param win_list: List of Windows to consider
+        @type win_list: Sized Iterable
         @param data: Data of the windows point
         """
         super(CollectionWinGen, self).__init__(data)
+
         self._wins = win_list
         self._ind = 0
 
@@ -175,7 +174,7 @@ class NamedWinGen(WindowsGenerator):
     Generates a list of windows from a labels list.
     """
 
-    def __init__(self, data, labels, include_baseline_name=None):
+    def __init__(self, data, include_baseline_name=None):
         """
         Initializes the win generator
         @param data: Data to window
@@ -183,20 +182,19 @@ class NamedWinGen(WindowsGenerator):
         @type labels: list(str) or list(unicode)
         """
         super(NamedWinGen, self).__init__(data)
-        self._l = labels
         self._s = 0
         self._i = 0
         self._ibn = include_baseline_name
+        l, self._is, t = self._data.get_labels()
 
     def step_windowing(self):
-        if self._i >= len(self._l):
+        if self._i < len(self._is) - 1:
+            return IBIWindow(self._is[self._i], self._is[self._i + 1], self._data)
+        elif self._i < len(self._is):
+            return IBIWindow(self._is[self._i], len(self._data), self._data)
+        else:
             raise StopIteration()
-        while self._i < len(self._l) and (self._l[self._s] == self._l[self._i] or self._ibn == self._l[self._i]):
-            self._i += 1
-        w = Window(self._s, self._i, self._l[self._s])
-        self._s = self._i
-        return w
 
     def __repr__(self):
-        return "<%s - labels: %d, step: %s object at 0x%hx>" % (
+        return "<%s - labels: %d, step: %s at 0x%hx>" % (
             self.__class__.__name__, len(self._l), self._s, id(self))

@@ -2,12 +2,9 @@
 __all__ = ['load_pd_from_excel_column', 'load_ds_from_csv_column', 'load_windows_gen_from_csv', 'save_ds_to_csv',
            'load_rr_from_bvp', 'load_rr_from_ecg']
 
-import numpy as np
-
 import pandas as pd
 
-from pyHRV.DataSeries import DataSeries
-from pyHRV.Utility import peak_detection
+from pyHRV.DataSeries import DataSeries, data_series_from_ecg, data_series_from_bvp
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 from pyHRV.windowing.WindowsBase import Window
 from pyHRV.windowing.WindowsGenerators import CollectionWinGen
@@ -90,7 +87,7 @@ def load_rr_from_ecg(path, delta=Sett.import_ecg_delta, ecg_col=Sett.load_ecg_co
                      ecg_time_col=Sett.load_ecg_time_column_name, filters=Sett.import_bvp_filters,
                      sep=Sett.load_csv_separator, *args):
     """
-    Loads an IBI (RR) data series from an ECG data set and filters it with the specified filters list.
+    Loads an IBI (RR) data series from an ECG data set csv file and filters it with the specified filters list.
     @param path: path of the file to read
     @type path: str or unicode
     @param delta: delta parameter for the peak detection
@@ -101,52 +98,34 @@ def load_rr_from_ecg(path, delta=Sett.import_ecg_delta, ecg_col=Sett.load_ecg_co
     @type ecg_time_col: str or unicode
     @param sep: separator char
     @type sep: str or unicode or char
-    @param args: sequence of filters to be applied to the data (e.g. from RRFilters)
+    @param filters: list of filters to be applied to the data (e.g. from RRFilters)
     @return: Filtered signal DataSeries
     @rtype: DataSeries
     """
     # TODO: explain delta
     df = pd.read_csv(path, sep=sep, *args)
-    max_tab, min_tab, ii, iii = peak_detection(df[ecg_col], delta,
-                                               df[ecg_time_col])
-    s = DataSeries(np.diff(max_tab))
-    for f in filters:
-        s = f(s)
-    s.meta_tag['from_type'] = "csv_ecg"
-    s.meta_tag['from_peak_delta'] = delta
-    s.meta_tag['from_freq'] = np.mean(np.diff(df[ecg_time_col]))
-    s.meta_tag['from_filters'] = list(Sett.import_ecg_filters)
-    return s
+    return data_series_from_ecg(df[ecg_col], df[ecg_time_col], delta, filters)
 
 
 def load_rr_from_bvp(path, delta_ratio=Sett.import_bvp_delta_max_min_numerator, bvp_col=Sett.load_bvp_column_name,
                      bvp_time_col=Sett.load_bvp_time_column_name, filters=Sett.import_bvp_filters,
                      sep=Sett.load_csv_separator, *args):
     """
-    Loads an IBI (RR) data series from a BVP data set and filters it with the specified filters list.
+    Loads an IBI (RR) data series from a BVP data set csv file and filters it with the specified filters list.
     @param path: path of the file to read
     @type path: str or unicode
-    @param delta: delta parameter for the peak detection
-    @type delta: float
+    @param delta_ratio: delta parameter for the peak detection
+    @type delta_ratio: float
     @param bvp_col: ecg values column
     @type bvp_col: str or unicode
     @param bvp_time_col: ecg timestamps column
     @type bvp_time_col: str or unicode
     @param sep: separator char
     @type sep: str or unicode or char
-    @param args: sequence of filters to be applied to the data (e.g. from RRFilters)
+    @param filters: sequence of filters to be applied to the data (e.g. from RRFilters)
     @return: Filtered signal DataSeries
     @rtype: DataSeries
     """
+    # TODO: explain delta
     df = pd.read_csv(path, sep=sep, *args)
-    delta = (np.max(df[Sett.load_bvp_column_name]) - np.min(df[Sett.load_bvp_column_name])) / delta_ratio
-    max_i, ii, iii, iv = peak_detection(df[bvp_col], delta,
-                                        df[bvp_time_col])
-    s = DataSeries(np.diff(max_i) * 1000)
-    for f in filters:
-        s = f(s)
-    s.meta_tag['from_type'] = "csv_bvp"
-    s.meta_tag['from_peak_delta'] = delta
-    s.meta_tag['from_freq'] = np.mean(np.diff(df[bvp_time_col]))
-    s.meta_tag['from_filters'] = list(Sett.import_bvp_filters)
-    return s
+    return data_series_from_bvp(df[bvp_col], df[bvp_time_col], delta_ratio, filters)

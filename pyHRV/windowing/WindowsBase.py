@@ -1,4 +1,6 @@
 ##ck3
+from pyHRV.DataSeries import DataSeries
+
 __author__ = 'AleB'
 __all__ = ['WindowError', 'Window', 'WindowsGenerator']
 
@@ -15,16 +17,15 @@ class Window(object):
     Base Window, a begin-end pair.
     """
 
-    def __init__(self, begin, end, name=None):
+    def __init__(self, begin, end, data):
         """
         Creates a base Window
         @param begin: Begin sample index
         @param end: End sample index
-        @param name: Label for the window
         """
         self._begin = begin
         self._end = end
-        self._name = name
+        self._data = data
 
     @property
     def begin(self):
@@ -38,12 +39,11 @@ class Window(object):
     def len(self):
         return self._end - self._begin
 
-    @property
-    def name(self):
-        return self._name
+    def extract_data(self):
+        return DataSeries(self._data[self._begin, self._end])
 
     def __repr__(self):
-        return '%d:%d:%s' % (self.begin, self.end, self.name)
+        return '%d:%d' % (self.begin, self.end)
 
 
 class WindowsIterator(object):
@@ -70,6 +70,7 @@ class WindowsGenerator(object):
             pass
         else:
             self.init_windowing(data)
+            self._winn = 0
 
     def __iter__(self):
         return WindowsIterator(self)

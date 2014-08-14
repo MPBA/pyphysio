@@ -35,7 +35,7 @@ class WindowsMapper(object):
 
     def _comp_one(self, win):
         ret = []
-        win_ds = self._data[win]
+        win_ds = win.extract_data()
         for index in self._index:
             if isinstance(index, str) | isinstance(index, unicode):
                 index = getattr(pyHRV, index)

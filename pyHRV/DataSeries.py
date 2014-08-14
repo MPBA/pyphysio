@@ -1,15 +1,86 @@
 ##ck3
 
 __author__ = "AleB"
-__all__ = ['DataSeries']
+__all__ = ['DataSeries', 'data_series_from_ecg', 'data_series_from_bvp']
+
+from numpy import min, max, mean, diff, array
 
 import pandas as pd
+
+from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
+from pyHRV.Utility import peak_detection
+
+
+def data_series_from_bvp(bvp, bvp_time, delta_ratio=Sett.import_bvp_delta_max_min_numerator,
+                         filters=Sett.import_bvp_filters):
+    """
+    Loads an IBI (RR) data series from a BVP data set and filters it with the specified filters list.
+    @param delta_ratio: delta parameter for the peak detection
+    @type delta_ratio: float
+    @param bvp: ecg values column
+    @type bvp: Iterable
+    @param bvp_time: ecg timestamps column
+    @type bvp_time: Iterable
+    @param filters: sequence of filters to be applied to the data (e.g. from RRFilters)
+    @return: Filtered signal DataSeries
+    @rtype: DataSeries
+    """
+    delta = (max(bvp) - min(bvp)) / delta_ratio
+    max_i, ii, iii, iv = peak_detection(bvp, delta, bvp_time)
+    s = DataSeries(diff(max_i) * 1000)
+    for f in filters:
+        s = f(s)
+    s.meta_tag['from_type'] = "data_time-bvp"
+    s.meta_tag['from_peak_delta'] = delta
+    s.meta_tag['from_freq'] = mean(diff(bvp_time))
+    s.meta_tag['from_filters'] = list(Sett.import_bvp_filters)
+    return s
+
+
+def data_series_from_ecg(ecg, ecg_time, delta=Sett.import_ecg_delta, filters=Sett.import_bvp_filters):
+    """
+    Loads an IBI (RR) data series from an ECG data set and filters it with the specified filters list.
+    @param delta: delta parameter for the peak detection
+    @type delta: float
+    @param ecg: ecg values column
+    @type ecg: Iterable
+    @param ecg_time: ecg timestamps column
+    @type ecg_time: Iterable
+    @return: Filtered signal DataSeries
+    @rtype: DataSeries
+    """
+    # TODO: explain delta
+    max_tab, min_tab, ii, iii = peak_detection(ecg, delta, ecg_time)
+    s = DataSeries(np.diff(max_tab))
+    for f in filters:
+        s = f(s)
+    s.meta_tag['from_type'] = "data_time-ecg"
+    s.meta_tag['from_peak_delta'] = delta
+    s.meta_tag['from_freq'] = np.mean(np.diff(ecg_time))
+    s.meta_tag['from_filters'] = list(Sett.import_ecg_filters)
+    return s
+
+
+def derive_holdings(data, labels):
+    ll = []
+    tt = []
+    ii = []
+    ts = 0
+    pre = None
+    for i in xrange(len(labels)):
+        if pre != labels[i]:
+            ll.append(labels[i])
+            tt.append(ts)
+            ii.append(i)
+            ts += data[i]
+            pre = labels[i]
+    return ll, tt, ii
 
 
 class DataSeries(pd.Series):
     """ Pandas' Series class extension that gives a cache support through CacheableDataCalc's subclasses."""
 
-    def __init__(self, data=None, copy=False, meta_tag=None):
+    def __init__(self, data=None, copy=False, meta_tag=None, labels=None, labels_event_times=None):
         """
         Constructor
         @param data: Data to be stored.
@@ -22,6 +93,16 @@ class DataSeries(pd.Series):
             self.meta_tag = {}
         else:
             self.meta_tag = meta_tag
+        if not labels is None:
+            if labels_event_times is None and len(labels) == len(data):
+                self._labels, self._timestamps, self._samples = derive_holdings(data, labels)
+            elif not labels_event_times is None and len(data) >= len(labels) == len(labels_event_times):
+                self._labels = array(labels)
+                self._timestamps = array(labels_event_times)
+            else:
+                raise ValueError("Labels format not valid.")
+        else:
+            self._labels = self._timestamps = self._samples = None
 
     def cache_clear(self):
         """
@@ -70,5 +151,9 @@ class DataSeries(pd.Series):
         else:
             return None
 
-    def __getitem__(self, win):
-        return DataSeries(self[win.begin: win.end], True, self.meta_tag)
+    def get_labels(self):
+        """
+        Returns a tuple composed by the label names their start timestamps and their start indexes
+        @return:
+        """
+        return self._labels, self._samples, self._timestamps
