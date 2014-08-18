@@ -1,6 +1,6 @@
 PyHRV
 =====
-*Requires pandas 0.13.1 or greater
+*Requires pandas 0.13.1 or greater*
 
 PyHRV is a Python based library for the on-line and off-line HRV analysis designed to be easy to use by coding in Python and also through Galaxy. It allows to compute the classical time and frequency domain indexes and also a set of non-linear indexes like Poincaré plot and entropy analysis indexes. It has an integrated windowing system that allows to easily work with temporal segments of data and to compute the indexes on them automatically. The algorithms are efficient and up-to-date, the library provides several optimizations both in the on-line mode and in the off-line one.
 
