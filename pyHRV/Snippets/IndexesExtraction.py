@@ -14,8 +14,8 @@ value1 = Mean(data).value
 
 ## Index class usage with a window
 # This is the simplest way to calculate an index on a window
-win = Window(1, 5)
-value2 = Mean(data[win]).value
+win = Window(1, 5, data)
+value2 = Mean(win.extract_data()).value
 
 ## WindowsMapper usage
 # This is the minimal structure of the code needed to calculate the indexes on each window

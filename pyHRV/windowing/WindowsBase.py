@@ -17,7 +17,7 @@ class Window(object):
     Base Window, a begin-end pair.
     """
 
-    def __init__(self, begin, end, data):
+    def __init__(self, begin, end, data=None):
         """
         Creates a base Window
         @param begin: Begin sample index
