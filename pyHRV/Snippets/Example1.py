@@ -5,7 +5,6 @@ import pandas
 import pyHRV
 
 
-
 # We load the data series from a csv file with tabulations as separators
 # IBI from the column "IBI"
 ibi = pandas.read_csv("../../z_data/D01.txt", sep="\t")["IBI"]
@@ -18,8 +17,8 @@ windows = pyHRV.LinearTimeWinGen(width=7000, step=7000, data=data_series)
 # there every Time (TD) and Frequency (FD) Domain and every Non Linear Index
 mapper = pyHRV.WindowsMapper(
     data_series, windows, pyHRV.indexes.TDIndexes.__all__ +
-                          pyHRV.indexes.FDIndexes.__all__ +
-                          pyHRV.indexes.NonLinearIndexes.__all__)
+    pyHRV.indexes.FDIndexes.__all__ +
+    pyHRV.indexes.NonLinearIndexes.__all__)
 mapper.compute_all()
 # We convert the results to a data frame
 data_frame = pandas.DataFrame(mapper.results)
