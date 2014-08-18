@@ -40,7 +40,7 @@ class Window(object):
         return self._end - self._begin
 
     def extract_data(self):
-        return DataSeries(self._data[self._begin, self._end])
+        return DataSeries(self._data[self._begin: self._end])
 
     def __repr__(self):
         return '%d:%d' % (self.begin, self.end)

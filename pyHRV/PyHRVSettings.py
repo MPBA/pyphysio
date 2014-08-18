@@ -28,6 +28,10 @@ class PyHRVSettings(object):
         self.load_windows_col_begin = 'begin'
         self.load_windows_col_end = 'end'
 
+        # Windows
+        # Set to None to have mixed windows names as win1|win2
+        self.win_name_mixed = "W_MIXED"
+
         # TDIndexes:
         self.nnx_default_threshold = 50
         self.cache_histogram_bins = 100

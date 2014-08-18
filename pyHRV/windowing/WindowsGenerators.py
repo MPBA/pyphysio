@@ -4,6 +4,7 @@ __all__ = ['NamedWinGen', 'LinearWinGen', 'LinearTimeWinGen', 'CollectionWinGen'
 import numpy as np
 
 from WindowsBase import WindowsGenerator, Window
+from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
 
 class IBIWindow(Window):
@@ -22,13 +23,17 @@ class IBIWindow(Window):
         if l is None:
             self._label = None
         else:
-            p = -1
-            while i[p + 1] < self._begin and p < len(i):
+            p = 0
+            while p < len(i) and i[p] < self._begin:
                 p += 1
             self._label = l[p]
-            while p + 1 < len(l) and self._end > l[p + 1]:
-                self._label += "|" + l[p + 1]
-                p += 1
+            while p + 1 < len(l) and i[p + 1] < self._end:
+                if Sett.win_name_mixed is None:
+                    self._label += "|" + l[p]
+                    p += 1
+                else:
+                    self._label = Sett.win_name_mixed
+                    break
 
     @property
     def duration(self):
@@ -41,6 +46,10 @@ class IBIWindow(Window):
     @property
     def label(self):
         return self._label
+
+    @property
+    def data(self):
+        return self._data
 
     def __repr__(self):
         return "%d:%d:%dms:%s" % (self.begin, self.end, self.label, self.duration)
@@ -106,7 +115,7 @@ class LinearWinGen(WindowsGenerator):
             raise StopIteration
         else:
             self._pos += self._step
-            return Window(b, e)
+            return Window(b, e, self._data)
 
 
 class LinearTimeWinGen(TimeWinGen):
@@ -178,16 +187,15 @@ class NamedWinGen(WindowsGenerator):
         """
         Initializes the win generator
         @param data: Data to window
-        @param labels: List of the labels (one per sample) to consider
-        @type labels: list(str) or list(unicode)
         """
         super(NamedWinGen, self).__init__(data)
         self._s = 0
-        self._i = 0
+        self._i = -1
         self._ibn = include_baseline_name
         l, self._is, t = self._data.get_labels()
 
     def step_windowing(self):
+        self._i += 1
         if self._i < len(self._is) - 1:
             return IBIWindow(self._is[self._i], self._is[self._i + 1], self._data)
         elif self._i < len(self._is):
@@ -197,4 +205,4 @@ class NamedWinGen(WindowsGenerator):
 
     def __repr__(self):
         return "<%s - labels: %d, step: %s at 0x%hx>" % (
-            self.__class__.__name__, len(self._l), self._s, id(self))
+            self.__class__.__name__, len(self._is), self._s, id(self))

@@ -51,12 +51,12 @@ def data_series_from_ecg(ecg, ecg_time, delta=Sett.import_ecg_delta, filters=Set
     """
     # TODO: explain delta
     max_tab, min_tab, ii, iii = peak_detection(ecg, delta, ecg_time)
-    s = DataSeries(np.diff(max_tab))
+    s = DataSeries(diff(max_tab))
     for f in filters:
         s = f(s)
     s.meta_tag['from_type'] = "data_time-ecg"
     s.meta_tag['from_peak_delta'] = delta
-    s.meta_tag['from_freq'] = np.mean(np.diff(ecg_time))
+    s.meta_tag['from_freq'] = mean(diff(ecg_time))
     s.meta_tag['from_filters'] = list(Sett.import_ecg_filters)
     return s
 
@@ -157,3 +157,6 @@ class DataSeries(pd.Series):
         @return:
         """
         return self._labels, self._samples, self._timestamps
+
+    def has_labels(self):
+        return not self._labels is None

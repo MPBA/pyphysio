@@ -29,6 +29,7 @@ class WindowsMapper(object):
         self._wing = win_gen
         self._win_iter = win_gen.__iter__()
         self._index = indexes
+        self._winn = -1
 
     def __iter__(self):
         return WindowsIterator(self)
@@ -40,7 +41,11 @@ class WindowsMapper(object):
             if isinstance(index, str) | isinstance(index, unicode):
                 index = getattr(pyHRV, index)
             ret.append(index(data=win_ds).value)
-        return [win.name, win.begin, win.end] + ret
+        self._winn += 1
+        if win.data.has_labels():
+            return [win.label, win.begin, win.end] + ret
+        else:
+            return [self._winn, win.begin, win.end] + ret
 
     def step_windowing(self):
         return self._comp_one(self._win_iter.next())

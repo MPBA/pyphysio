@@ -66,7 +66,7 @@ def load_windows_gen_from_csv(path, column_begin=Sett.load_windows_col_begin, co
     @type sep: str or unicode or char
     """
     d = pd.read_csv(path, sep=sep)
-    return CollectionWinGen(map((lambda x, y: Window(x, y)), d[column_begin], d[column_end]))
+    return CollectionWinGen(map((lambda x, y: Window(x, y, None)), d[column_begin], d[column_end]))
 
 
 def save_ds_to_csv(data_series, path, name=Sett.load_rr_column_name, sep=Sett.load_csv_separator, header=True):
@@ -79,7 +79,7 @@ def save_ds_to_csv(data_series, path, name=Sett.load_rr_column_name, sep=Sett.lo
     @param sep: separator char
     @type sep: str or unicode or char
     """
-    data_series.name = name
+    data_series.label = name
     data_series.to_csv(path, sep=sep, header=header)
 
 
