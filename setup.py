@@ -23,9 +23,9 @@ setup(
     long_description=long_description,
     keywords='HRV, heart, rate, variability, analysis, galaxy, project',
     author='FBK - MPBA',
-    author_email='',
+    author_email='albattisti@fbk.eu',
     license='GNU GPL version 3',
-    download_url='https://github.com/MPBA/pyHRV',
+    download_url='https://github.com/MPBA/pyHRV/archive/master.zip',
     classifiers=[
         'Development Status :: 3 - Beta',
         'Intended Audience :: Science/Research',
