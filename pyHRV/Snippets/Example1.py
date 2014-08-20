@@ -1,14 +1,29 @@
 __author__ = 'AleB'
 
+import numpy
+
 import pandas
 
 import pyHRV
 
 
+# We create as example a random database
+rr = numpy.random.randint(500, 1500, 2000)
+ls = numpy.random.randint(20, 50, 100)
+ln = ["Red", "Green", "Blue", "Relaxed", "Noise"]
+ll = []
+# noinspection PyTypeChecker
+for s in ls:
+    # noinspection PyArgumentList
+    l = ln[int(numpy.random.rand() * len(ln))]
+    for i in xrange(int(s)):
+        ll.append(l)
+pandas.DataFrame({"IBI": rr, "label": ll[:2000]}).to_csv("RD.txt", sep="\t", index=False, header=True)
+
 # We load the data series from a csv file with tabulations as separators
 # IBI from the column "IBI"
-ibi = pandas.read_csv("../../z_data/D01.txt", sep="\t")["IBI"]
-lab = pandas.read_csv("../../z_data/D01.txt", sep="\t")["sit"]
+ibi = pandas.read_csv("RD.txt", sep="\t")["IBI"]
+lab = pandas.read_csv("RD.txt", sep="\t")["label"]
 # We create the data series specifying the optional field labels
 data_series = pyHRV.DataSeries(data=ibi, labels=lab)
 # and the windows collection with the linear time windows generator with windows of 7s every 7s.
