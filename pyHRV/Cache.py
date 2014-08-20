@@ -5,7 +5,7 @@ __author__ = 'AleB'
 import numpy as np
 from scipy import signal
 
-from pyHRV.Utility import build_takens_vector, interpolate_rr
+from pyHRV.Utility import ordered_subsets, interpolate_rr
 from pyHRV.DataSeries import DataSeries
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
@@ -168,7 +168,7 @@ class BuildTakensVector2(CacheableDataCalc):
         @return: Data to cache: Takens vector (2)
         @rtype: array
         """
-        return build_takens_vector(data, 2)
+        return ordered_subsets(data, 2)
 
 
 class BuildTakensVector3(CacheableDataCalc):
@@ -182,7 +182,7 @@ class BuildTakensVector3(CacheableDataCalc):
         @return: Data to cache: Takens vector (3)
         @rtype: array
         """
-        return build_takens_vector(data, 3)
+        return ordered_subsets(data, 3)
 
 
 class PoinSD(CacheableDataCalc):

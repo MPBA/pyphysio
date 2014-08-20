@@ -61,9 +61,11 @@ def template_interpolation(x, t, step, template=None):
     return x_output, t_output
 
 
-def build_takens_vector(x, m):
+def ordered_subsets(x, m):
     n = len(x)
     num = n - m + 1
+    if num <= 0:
+        raise ValueError("The size of the subset (m) must be <= than the length of the vector (x).")
     emb = np.zeros([num, m])
     for i in xrange(num):
         emb[i, :] = x[i:i + m]

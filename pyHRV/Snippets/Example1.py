@@ -7,9 +7,10 @@ import pandas
 import pyHRV
 
 
-# We create as example a random database
+
+# We create as example a random database in the file "RD.txt"
 rr = numpy.random.randint(500, 1500, 2000)
-ls = numpy.random.randint(20, 50, 100)
+ls = numpy.random.randint(50, 80, 100)
 ln = ["Red", "Green", "Blue", "Relaxed", "Noise"]
 ll = []
 # noinspection PyTypeChecker
@@ -26,8 +27,8 @@ ibi = pandas.read_csv("RD.txt", sep="\t")["IBI"]
 lab = pandas.read_csv("RD.txt", sep="\t")["label"]
 # We create the data series specifying the optional field labels
 data_series = pyHRV.DataSeries(data=ibi, labels=lab)
-# and the windows collection with the linear time windows generator with windows of 7s every 7s.
-windows = pyHRV.LinearTimeWinGen(width=7000, step=7000, data=data_series)
+# and the windows collection with the linear time windows generator with windows of 30s every 30s.
+windows = pyHRV.LinearTimeWinGen(width=30000, step=30000, data=data_series)
 # The windows mapper will do all the rest of the work, we just need to put
 # there every Time (TD) and Frequency (FD) Domain and every Non Linear Index
 mapper = pyHRV.WindowsMapper(

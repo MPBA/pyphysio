@@ -11,7 +11,7 @@ import numpy as np
 from pyHRV.Cache import RRDiff, BuildTakensVector2, BuildTakensVector3, PoinSD, StandardDeviation
 from pyHRV.indexes.BaseIndexes import NonLinearIndex
 from pyHRV.indexes.TDIndexes import Mean
-from pyHRV.Utility import build_takens_vector
+from pyHRV.Utility import ordered_subsets
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
 
@@ -144,8 +144,11 @@ class CorrelationDim(NonLinearIndex):
 
     def __init__(self, data=None):
         super(CorrelationDim, self).__init__(data)
+        if len(self._data) < Sett.correlation_dimension_len:
+            raise ValueError("The sample length for the correlation dimension must be greater or equal \
+            to the correlation_dimension_len setting value.")
         rr = self._data / 1000  # rr in seconds
-        uj = build_takens_vector(rr, Sett.correlation_dimension_len)
+        uj = ordered_subsets(rr, Sett.correlation_dimension_len)
         num_elem = uj.shape[0]
         r_vector = np.arange(0.3, 0.46, 0.02)  # settings
         c = np.zeros(len(r_vector))
@@ -260,23 +263,26 @@ class DFAShortTerm(NonLinearIndex):
         super(DFAShortTerm, self).__init__(data)
         #calculates De-trended Fluctuation Analysis: alpha1 (short term) component
         x = self._data
-        assert len(self._data) >= 16
-        ave = Mean.get(x)
-        y = np.cumsum(x)
-        y -= ave
-        l = np.arange(4, 17, 4)
-        f = np.zeros(len(l))  # f(n) of different given box length n
-        for i in xrange(0, len(l)):
-            n = int(l[i])  # for each box length l[i]
-            for j in xrange(0, len(x), n):  # for each box
-                if j + n < len(x):
-                    c = range(j, j + n)
-                    c = np.vstack([c, np.ones(n)]).T  # coordinates of time in the box
-                    z = y[j:j + n]  # the value of data in the box
-                    f[i] += np.linalg.lstsq(c, z)[1]  # add residue in this box
-            f[i] /= ((len(x) / n) * n)
-        f = np.sqrt(f)
-        self._value = np.linalg.lstsq(np.vstack([np.log(l), np.ones(len(l))]).T, np.log(f))[0][0]
+        if len(self._data) >= 16:
+            ave = Mean.get(x)
+            y = np.cumsum(x)
+            y -= ave
+            l = np.arange(4, 17, 4)
+            f = np.zeros(len(l))  # f(n) of different given box length n
+            for i in xrange(0, len(l)):
+                n = int(l[i])  # for each box length l[i]
+                for j in xrange(0, len(x), n):  # for each box
+                    if j + n < len(x):
+                        c = range(j, j + n)
+                        c = np.vstack([c, np.ones(n)]).T  # coordinates of time in the box
+                        z = y[j:j + n]  # the value of data in the box
+                        f[i] += np.linalg.lstsq(c, z)[1]  # add residue in this box
+                f[i] /= ((len(x) / n) * n)
+            f = np.sqrt(f)
+            self._value = np.linalg.lstsq(np.vstack([np.log(l), np.ones(len(l))]).T, np.log(f))[0][0]
+        else:
+            self._value = np.nan
+            print self.__class__.__name__ + "Warning: not enough samples (" + str(len(self._data)) + " < 16)."
 
 
 class DFALongTerm(NonLinearIndex):
@@ -288,22 +294,25 @@ class DFALongTerm(NonLinearIndex):
         super(DFALongTerm, self).__init__(data)
         # calculates De-trended Fluctuation Analysis: alpha2 (long term) component
         x = self._data
-        assert len(self._data) >= 16
-        ave = Mean.get(x)
-        y = np.cumsum(x)
-        y -= ave
-        l_max = np.min([64, len(x)])
-        l = np.arange(16, l_max + 1, 4)
-        f = np.zeros(len(l))  # f(n) of different given box length n
-        for i in xrange(0, len(l)):
-            n = int(l[i])  # for each box length l[i]
-            for j in xrange(0, len(x), n):  # for each box
-                if j + n < len(x):
-                    c = range(j, j + n)
-                    c = np.vstack([c, np.ones(n)]).T  # coordinates of time in the box
-                    z = y[j:j + n]  # the value of data in the box
-                    f[i] += np.linalg.lstsq(c, z)[1]  # add residue in this box
-            f[i] /= ((len(x) / n) * n)
-        f = np.sqrt(f)
+        if len(self._data) >= 16:
+            ave = Mean.get(x)
+            y = np.cumsum(x)
+            y -= ave
+            l_max = np.min([64, len(x)])
+            l = np.arange(16, l_max + 1, 4)
+            f = np.zeros(len(l))  # f(n) of different given box length n
+            for i in xrange(0, len(l)):
+                n = int(l[i])  # for each box length l[i]
+                for j in xrange(0, len(x), n):  # for each box
+                    if j + n < len(x):
+                        c = range(j, j + n)
+                        c = np.vstack([c, np.ones(n)]).T  # coordinates of time in the box
+                        z = y[j:j + n]  # the value of data in the box
+                        f[i] += np.linalg.lstsq(c, z)[1]  # add residue in this box
+                f[i] /= ((len(x) / n) * n)
+            f = np.sqrt(f)
 
-        self._value = np.linalg.lstsq(np.vstack([np.log(l), np.ones(len(l))]).T, np.log(f))[0][0]
+            self._value = np.linalg.lstsq(np.vstack([np.log(l), np.ones(len(l))]).T, np.log(f))[0][0]
+        else:
+            self._value = np.nan
+            print self.__class__.__name__ + "Warning: not enough samples (" + str(len(self._data)) + " < 16)."
