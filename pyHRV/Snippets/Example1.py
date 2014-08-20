@@ -1,11 +1,8 @@
 __author__ = 'AleB'
 
-import numpy
-
-import pandas
-
 import pyHRV
-
+import numpy
+import pandas
 
 
 # We create as example a random database in the file "RD.txt"
