@@ -42,7 +42,7 @@ class WindowsMapper(object):
                 index = getattr(pyHRV, index)
             ret.append(index(data=win_ds).value)
         self._winn += 1
-        if win.data.has_labels():
+        if win.extract_data().has_labels():
             return [win.label, win.begin, win.end] + ret
         else:
             return [self._winn, win.begin, win.end] + ret

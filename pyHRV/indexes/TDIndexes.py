@@ -248,8 +248,13 @@ class RMSSD(TDIndex):
 
     def __init__(self, data=None):
         super(RMSSD, self).__init__(data)
-        diff = RRDiff.get(self._data)
-        self._value = np.sqrt(sum(diff ** 2) / (len(diff)))
+        if len(data) < 2:
+            print self.__class__.__name__ + " Warning: not enough samples (" + str(len(data)) + " < 2)." +\
+                "To calculate the differences between consecutive values at least 2 samples are needed."
+            self._value = np.nan
+        else:
+            diff = RRDiff.get(self._data)
+            self._value = np.sqrt(sum(diff ** 2) / len(diff))
 
 
 class SDSD(TDIndex):

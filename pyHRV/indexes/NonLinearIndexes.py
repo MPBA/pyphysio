@@ -145,27 +145,31 @@ class CorrelationDim(NonLinearIndex):
     def __init__(self, data=None):
         super(CorrelationDim, self).__init__(data)
         if len(self._data) < Sett.correlation_dimension_len:
-            raise ValueError("The sample length for the correlation dimension must be greater or equal \
-            to the correlation_dimension_len setting value.")
-        rr = self._data / 1000  # rr in seconds
-        uj = ordered_subsets(rr, Sett.correlation_dimension_len)
-        num_elem = uj.shape[0]
-        r_vector = np.arange(0.3, 0.46, 0.02)  # settings
-        c = np.zeros(len(r_vector))
-        jj = 0
-        n = np.zeros(num_elem)
-        dj = cdist(uj, uj, 'euclidean')
-        for r in r_vector:
-            for i in xrange(num_elem):
-                vector = dj[i]
-                n[i] = float((vector <= r).sum()) / num_elem
-            c[jj] = np.sum(n) / num_elem
-            jj += 1
+            print self.__class__.__name__ + " Warning: not enough samples (" + str(len(data)) +\
+                " < " + str(Sett.correlation_dimension_len) + "). " +\
+                "The sample length for the correlation dimension must be greater or equal " +\
+                "to the correlation_dimension_len setting value."
+            self._value = np.nan
+        else:
+            rr = self._data / 1000  # rr in seconds
+            uj = ordered_subsets(rr, Sett.correlation_dimension_len)
+            num_elem = uj.shape[0]
+            r_vector = np.arange(0.3, 0.46, 0.02)  # settings
+            c = np.zeros(len(r_vector))
+            jj = 0
+            n = np.zeros(num_elem)
+            dj = cdist(uj, uj, 'euclidean')
+            for r in r_vector:
+                for i in xrange(num_elem):
+                    vector = dj[i]
+                    n[i] = float((vector <= r).sum()) / num_elem
+                c[jj] = np.sum(n) / num_elem
+                jj += 1
 
-        log_c = np.log(c)
-        log_r = np.log(r_vector)
+            log_c = np.log(c)
+            log_r = np.log(r_vector)
 
-        self._value = (log_c[-1] - log_c[0]) / (log_r[-1] - log_r[0])
+            self._value = (log_c[-1] - log_c[0]) / (log_r[-1] - log_r[0])
 
 
 class PoinSD1(NonLinearIndex):
@@ -282,7 +286,7 @@ class DFAShortTerm(NonLinearIndex):
             self._value = np.linalg.lstsq(np.vstack([np.log(l), np.ones(len(l))]).T, np.log(f))[0][0]
         else:
             self._value = np.nan
-            print self.__class__.__name__ + "Warning: not enough samples (" + str(len(self._data)) + " < 16)."
+            print self.__class__.__name__ + " Warning: not enough samples (" + str(len(self._data)) + " < 16)."
 
 
 class DFALongTerm(NonLinearIndex):
@@ -315,4 +319,4 @@ class DFALongTerm(NonLinearIndex):
             self._value = np.linalg.lstsq(np.vstack([np.log(l), np.ones(len(l))]).T, np.log(f))[0][0]
         else:
             self._value = np.nan
-            print self.__class__.__name__ + "Warning: not enough samples (" + str(len(self._data)) + " < 16)."
+            print self.__class__.__name__ + " Warning: not enough samples (" + str(len(self._data)) + " < 16)."

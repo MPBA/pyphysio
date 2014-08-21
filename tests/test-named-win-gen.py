@@ -17,8 +17,8 @@ def test(f):
 
     lab, ibi = load_pd_from_excel_column(f, 2, 3)
 
-    ds = DataSeries(ibi)
-    ws = NamedWinGen(ds, lab, include_baseline_name="baseline")
+    ds = DataSeries(ibi, labels=lab)
+    ws = NamedWinGen(ds, include_baseline_name="baseline")
 
     mm = WindowsMapper(ds, ws, pyHRV.indexes.TDIndexes.__all__ + pyHRV.indexes.FDIndexes.__all__)
     mm.compute_all()
