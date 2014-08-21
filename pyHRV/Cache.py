@@ -157,7 +157,7 @@ class StandardDeviation(CacheableDataCalc):
         return np.std(np.array(data))
 
 
-class BuildTakensVector2(CacheableDataCalc):
+class OrderedSubsets2(CacheableDataCalc):
     @classmethod
     def _calculate_data(cls, data, params=None):
         """
@@ -171,7 +171,7 @@ class BuildTakensVector2(CacheableDataCalc):
         return ordered_subsets(data, 2)
 
 
-class BuildTakensVector3(CacheableDataCalc):
+class OrderedSubsets3(CacheableDataCalc):
     @classmethod
     def _calculate_data(cls, data, params=None):
         """

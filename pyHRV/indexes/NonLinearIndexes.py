@@ -8,7 +8,7 @@ from scipy.spatial.distance import cdist, pdist
 from scipy.stats.mstats import mquantiles
 import numpy as np
 
-from pyHRV.Cache import RRDiff, BuildTakensVector2, BuildTakensVector3, PoinSD, StandardDeviation
+from pyHRV.Cache import RRDiff, OrderedSubsets2, OrderedSubsets3, PoinSD, StandardDeviation
 from pyHRV.indexes.BaseIndexes import NonLinearIndex
 from pyHRV.indexes.TDIndexes import Mean
 from pyHRV.Utility import ordered_subsets
@@ -23,30 +23,34 @@ class ApproxEntropy(NonLinearIndex):
     def __init__(self, data=None):
         super(ApproxEntropy, self).__init__(data)
         r = Sett.approx_entropy_r
-        uj_m = BuildTakensVector2.get(self._data)
-        uj_m1 = BuildTakensVector3.get(self._data)
+        uj_m = OrderedSubsets2.get(self._data)
+        uj_m1 = OrderedSubsets3.get(self._data)
+        if len(uj_m) == 0 or len(uj_m1) == 0:
+            self._value = np.nan
+            print self.__class__.__name__ + " Warning: not enough samples (" + str(len(data)) + " < 3). " +\
+                "At least 3 samples are needed to build a non-empty set of 3-sized ordered subsets of the array."
+        else:
+            card_elem_m = uj_m.shape[0]
+            card_elem_m1 = uj_m1.shape[0]
 
-        card_elem_m = uj_m.shape[0]
-        card_elem_m1 = uj_m1.shape[0]
+            r = r * np.std(self._data)
+            d_m = cdist(uj_m, uj_m, 'chebyshev')
+            d_m1 = cdist(uj_m1, uj_m1, 'chebyshev')
 
-        r = r * np.std(self._data)
-        d_m = cdist(uj_m, uj_m, 'chebyshev')
-        d_m1 = cdist(uj_m1, uj_m1, 'chebyshev')
+            cmr_m_apen = np.zeros(card_elem_m)
+            for i in xrange(card_elem_m):
+                vector = d_m[i]
+                cmr_m_apen[i] = float((vector <= r).sum()) / card_elem_m
 
-        cmr_m_apen = np.zeros(card_elem_m)
-        for i in xrange(card_elem_m):
-            vector = d_m[i]
-            cmr_m_apen[i] = float((vector <= r).sum()) / card_elem_m
+            cmr_m1_apen = np.zeros(card_elem_m1)
+            for i in xrange(card_elem_m1):
+                vector = d_m1[i]
+                cmr_m1_apen[i] = float((vector <= r).sum()) / card_elem_m1
 
-        cmr_m1_apen = np.zeros(card_elem_m1)
-        for i in xrange(card_elem_m1):
-            vector = d_m1[i]
-            cmr_m1_apen[i] = float((vector <= r).sum()) / card_elem_m1
+            phi_m = np.sum(np.log(cmr_m_apen)) / card_elem_m
+            phi_m1 = np.sum(np.log(cmr_m1_apen)) / card_elem_m1
 
-        phi_m = np.sum(np.log(cmr_m_apen)) / card_elem_m
-        phi_m1 = np.sum(np.log(cmr_m1_apen)) / card_elem_m1
-
-        self._value = phi_m - phi_m1
+            self._value = phi_m - phi_m1
 
 
 class SampleEntropy(NonLinearIndex):
@@ -57,8 +61,8 @@ class SampleEntropy(NonLinearIndex):
     def __init__(self, data=None):
         super(SampleEntropy, self).__init__(data)
         r = Sett.sample_entropy_r
-        uj_m = BuildTakensVector2.get(self._data)
-        uj_m1 = BuildTakensVector3.get(self._data)
+        uj_m = OrderedSubsets2.get(self._data)
+        uj_m1 = OrderedSubsets3.get(self._data)
 
         num_elem_m = uj_m.shape[0]
         num_elem_m1 = uj_m1.shape[0]
@@ -90,21 +94,26 @@ class FractalDimension(NonLinearIndex):
 
     def __init__(self, data=None):
         super(FractalDimension, self).__init__(data)
-        uj_m = BuildTakensVector2.get(self._data)
-        cra = Sett.fractal_dimension_cra
-        crb = Sett.fractal_dimension_crb
-        mutual_distance = pdist(uj_m, 'chebyshev')
+        uj_m = OrderedSubsets2.get(self._data)
+        if len(uj_m) == 0:
+            self._value = np.nan
+            print self.__class__.__name__ + " Warning: not enough samples (" + str(len(data)) + " < 2). " +\
+                "At least 2 samples are needed to build a non-empty set of 2-sized ordered subsets of the array."
+        else:
+            cra = Sett.fractal_dimension_cra
+            crb = Sett.fractal_dimension_crb
+            mutual_distance = pdist(uj_m, 'chebyshev')
 
-        num_elem = len(mutual_distance)
+            num_elem = len(mutual_distance)
 
-        rr = mquantiles(mutual_distance, prob=[cra, crb])
-        ra = rr[0]
-        rb = rr[1]
+            rr = mquantiles(mutual_distance, prob=[cra, crb])
+            ra = rr[0]
+            rb = rr[1]
 
-        cmr_a = float((mutual_distance <= ra).sum()) / num_elem
-        cmr_b = float((mutual_distance <= rb).sum()) / num_elem
+            cmr_a = float((mutual_distance <= ra).sum()) / num_elem
+            cmr_b = float((mutual_distance <= rb).sum()) / num_elem
 
-        self._value = (np.log(cmr_b) - np.log(cmr_a)) / (np.log(rb) - np.log(ra))
+            self._value = (np.log(cmr_b) - np.log(cmr_a)) / (np.log(rb) - np.log(ra))
 
 
 class SVDEntropy(NonLinearIndex):
@@ -114,7 +123,7 @@ class SVDEntropy(NonLinearIndex):
 
     def __init__(self, data=None):
         super(SVDEntropy, self).__init__(data)
-        uj_m = BuildTakensVector2.get(self._data)
+        uj_m = OrderedSubsets2.get(self._data)
         w = np.linalg.svd(uj_m, compute_uv=False)
         w /= sum(w)
         self._value = -1 * sum(w * np.log(w))
@@ -127,14 +136,19 @@ class Fisher(NonLinearIndex):
 
     def __init__(self, data=None):
         super(Fisher, self).__init__(data)
-        uj_m = BuildTakensVector2.get(self._data)
-        w = np.linalg.svd(uj_m, compute_uv=False)
-        w /= sum(w)
-        fi = 0
-        for i in xrange(0, len(w) - 1):  # from 1 to M
-            fi += ((w[i + 1] - w[i]) ** 2) / (w[i])
+        uj_m = OrderedSubsets2.get(self._data)
+        if len(uj_m) == 0:
+            self._value = np.nan
+            print self.__class__.__name__ + " Warning: not enough samples (" + str(len(data)) + " < 2). " +\
+                "At least 2 samples are needed to build a non-empty set of 2-sized ordered subsets of the array."
+        else:
+            w = np.linalg.svd(uj_m, compute_uv=False)
+            w /= sum(w)
+            fi = 0
+            for i in xrange(0, len(w) - 1):  # from 1 to M
+                fi += ((w[i + 1] - w[i]) ** 2) / (w[i])
 
-        self._value = fi
+            self._value = fi
 
 
 class CorrelationDim(NonLinearIndex):
