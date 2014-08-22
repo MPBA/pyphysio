@@ -18,10 +18,10 @@ The main data structure for this mode is provided by the DataSeries class. DataS
 
 Windowing
 ---------
-The library allows to compute the indexes on slices of the entire dataset. The library provides some classes to analyze the data and extract windows from there, for example if there are labels on the IBIs the NamedWinGen creates an iterable object that yields the windows (begin-end indexes pairs) as the labels change, and the WindowsMapper class that takes indexes and windows information and puts the results in a pandas.DataFrame.
+The library allows to compute the indexes on slices of the entire data-set. The library provides some classes to analyze the data and extract windows from there, for example if there are labels on the IBIs the NamedWinGen creates an iterable object that yields the windows (begin-end indexes pairs) as the labels change, and the WindowsMapper class that takes indexes and windows information and puts the results in a pandas.DataFrame.
 
 Optimizations
 -------------
-As sometimes the elaboration of some indexes requires a former computation of other things on the same data, like the differences between consecutives values or for example the spectrum estimation for every frequency domain index, the DataSeries class provides an internal cache system to avoid the duplication of congruent computations on the same data.
+As sometimes the elaboration of some indexes requires a former computation of other things on the same data, like the differences between consecutive values or for example the spectrum estimation for every frequency domain index, the DataSeries class provides an internal cache system to avoid the duplication of congruent computations on the same data.
 
 The Cache.py package provides some classes for the generalized computation of these cached values. The average speed up on an about 8000 IBIs DataSeries between the cached and the non cached mode is about of the 60%.
