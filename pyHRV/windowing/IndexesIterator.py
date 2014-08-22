@@ -3,7 +3,7 @@
 from __builtin__ import property
 
 import pyHRV
-from pyHRV.windowing.WindowsBase import IndexesIterator
+from pyHRV.windowing.WindowsBase import WindowsIterator
 
 
 __author__ = 'AleB'
@@ -32,7 +32,7 @@ class WindowsMapper(object):
         self._winn = -1
 
     def __iter__(self):
-        return IndexesIterator(self)
+        return WindowsIterator(self)
 
     def _comp_one(self, win):
         ret = []
@@ -42,10 +42,7 @@ class WindowsMapper(object):
                 index = getattr(pyHRV, index)
             ret.append(index(data=win_ds).value)
         self._winn += 1
-        if win.extract_data().has_labels():
-            return [win.label, win.begin, win.end] + ret
-        else:
-            return [self._winn, win.begin, win.end] + ret
+        return [self._winn if win.label is None else win.label, win.begin, win.end] + ret
 
     def step_windowing(self):
         return self._comp_one(self._win_iter.next())

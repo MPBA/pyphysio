@@ -24,8 +24,9 @@ class IBIWindow(Window):
             self._label = None
         else:
             p = 0
-            while p < len(i) - 1 and i[p] < self._begin:
+            while p < len(i) and self._begin >= i[p]:
                 p += 1
+            p -= 1
             self._label = l[p]
             while p + 1 < len(l) and i[p + 1] < self._end:
                 if Sett.win_name_mixed is None:
