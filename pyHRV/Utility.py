@@ -15,8 +15,6 @@ def interpolate_rr(rr, interp_freq):
     """
     Returns as a tuple the interpolated RR and BT arrays
     """
-    if len(rr) < 4:
-        pass
     step = 1.0 / interp_freq
     rr /= 1000
     rr = np.array(rr)
@@ -27,7 +25,7 @@ def interpolate_rr(rr, interp_freq):
     bt = np.append(bt, bt[-1] + 1)
     rr = np.insert(rr, 0, 0)
     rr = np.append(rr, rr[-1])
-    tck = interpolate.splrep(bt, rr, k=min(len(bt) - 1, 3))
+    tck = interpolate.splrep(bt, rr)
     bt_interp = np.arange(x_min, x_max, step)
     rr_interp = interpolate.splev(bt_interp, tck)
     return rr_interp, bt_interp

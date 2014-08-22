@@ -4,7 +4,7 @@ import pyHRV
 import numpy
 import pandas
 
-if False:
+if True:
     # We create as example a random database in the file "RD.txt"
     ls = numpy.random.randint(50, 80, 100)
     ln = ["Red", "Green", "Blue", "Relaxed", "Noise"]
@@ -29,8 +29,8 @@ windows = pyHRV.LinearTimeWinGen(step=20000, width=20000, data=data_series)
 # The windows mapper will do all the rest of the work, we just need to put
 # there every Time (TD) and Frequency (FD) Domain and every Non Linear Index
 mapper = pyHRV.WindowsMapper(
-    data_series, windows,  # pyHRV.indexes.TDIndexes.__all__ +
-    #pyHRV.indexes.FDIndexes.__all__ +
+    data_series, windows, pyHRV.indexes.TDIndexes.__all__ +
+    pyHRV.indexes.FDIndexes.__all__ +
     pyHRV.indexes.NonLinearIndexes.__all__)
 mapper.compute_all()
 # We convert the results to a data frame

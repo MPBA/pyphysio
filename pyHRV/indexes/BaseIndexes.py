@@ -66,6 +66,8 @@ class FDIndex(Index):
     def __init__(self, interp_freq=Sett.default_interpolation_freq, data=None):
         super(FDIndex, self).__init__(data)
         self._interp_freq = interp_freq
+        if len(data) < 3:
+            raise TypeError("Not enough samples to perform a cube-spline interpolation.")
 
 
 class NonLinearIndex(Index):
