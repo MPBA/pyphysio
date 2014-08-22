@@ -22,14 +22,12 @@ class ApproxEntropy(NonLinearIndex):
 
     def __init__(self, data=None):
         super(ApproxEntropy, self).__init__(data)
-        r = Sett.approx_entropy_r
-        uj_m = OrderedSubsets2.get(self._data)
-        uj_m1 = OrderedSubsets3.get(self._data)
-        if len(uj_m) == 0 or len(uj_m1) == 0:
+        if len(data) < 3:
             self._value = np.nan
-            print self.__class__.__name__ + " Warning: not enough samples (" + str(len(data)) + " < 3). " +\
-                "At least 3 samples are needed to build a non-empty set of 3-sized ordered subsets of the array."
         else:
+            r = Sett.approx_entropy_r
+            uj_m = OrderedSubsets2.get(self._data)
+            uj_m1 = OrderedSubsets3.get(self._data)
             card_elem_m = uj_m.shape[0]
             card_elem_m1 = uj_m1.shape[0]
 
@@ -60,31 +58,34 @@ class SampleEntropy(NonLinearIndex):
 
     def __init__(self, data=None):
         super(SampleEntropy, self).__init__(data)
-        r = Sett.sample_entropy_r
-        uj_m = OrderedSubsets2.get(self._data)
-        uj_m1 = OrderedSubsets3.get(self._data)
+        if len(data) < 4:
+            self._value = np.nan
+        else:
+            r = Sett.sample_entropy_r
+            uj_m = OrderedSubsets2.get(self._data)
+            uj_m1 = OrderedSubsets3.get(self._data)
 
-        num_elem_m = uj_m.shape[0]
-        num_elem_m1 = uj_m1.shape[0]
+            num_elem_m = uj_m.shape[0]
+            num_elem_m1 = uj_m1.shape[0]
 
-        r = r * StandardDeviation.get(self._data)
-        d_m = cdist(uj_m, uj_m, 'chebyshev')
-        d_m1 = cdist(uj_m1, uj_m1, 'chebyshev')
+            r = r * StandardDeviation.get(self._data)
+            d_m = cdist(uj_m, uj_m, 'chebyshev')
+            d_m1 = cdist(uj_m1, uj_m1, 'chebyshev')
 
-        cmr_m_samp_en = np.zeros(num_elem_m)
-        for i in xrange(num_elem_m):
-            vector = d_m[i]
-            cmr_m_samp_en[i] = float((vector <= r).sum() - 1) / (num_elem_m - 1)
+            cmr_m_samp_en = np.zeros(num_elem_m)
+            for i in xrange(num_elem_m):
+                vector = d_m[i]
+                cmr_m_samp_en[i] = float((vector <= r).sum() - 1) / (num_elem_m - 1)
 
-        cmr_m1_samp_en = np.zeros(num_elem_m1)
-        for i in xrange(num_elem_m1):
-            vector = d_m1[i]
-            cmr_m1_samp_en[i] = float((vector <= r).sum() - 1) / (num_elem_m1 - 1)
+            cmr_m1_samp_en = np.zeros(num_elem_m1)
+            for i in xrange(num_elem_m1):
+                vector = d_m1[i]
+                cmr_m1_samp_en[i] = float((vector <= r).sum() - 1) / (num_elem_m1 - 1)
 
-        cm = np.sum(cmr_m_samp_en) / num_elem_m
-        cm1 = np.sum(cmr_m1_samp_en) / num_elem_m1
+            cm = np.sum(cmr_m_samp_en) / num_elem_m
+            cm1 = np.sum(cmr_m1_samp_en) / num_elem_m1
 
-        self._value = np.log(cm / cm1)
+            self._value = np.log(cm / cm1)
 
 
 class FractalDimension(NonLinearIndex):
@@ -94,12 +95,10 @@ class FractalDimension(NonLinearIndex):
 
     def __init__(self, data=None):
         super(FractalDimension, self).__init__(data)
-        uj_m = OrderedSubsets2.get(self._data)
-        if len(uj_m) == 0:
+        if len(data) < 3:
             self._value = np.nan
-            print self.__class__.__name__ + " Warning: not enough samples (" + str(len(data)) + " < 2). " +\
-                "At least 2 samples are needed to build a non-empty set of 2-sized ordered subsets of the array."
         else:
+            uj_m = OrderedSubsets2.get(self._data)
             cra = Sett.fractal_dimension_cra
             crb = Sett.fractal_dimension_crb
             mutual_distance = pdist(uj_m, 'chebyshev')
@@ -123,10 +122,13 @@ class SVDEntropy(NonLinearIndex):
 
     def __init__(self, data=None):
         super(SVDEntropy, self).__init__(data)
-        uj_m = OrderedSubsets2.get(self._data)
-        w = np.linalg.svd(uj_m, compute_uv=False)
-        w /= sum(w)
-        self._value = -1 * sum(w * np.log(w))
+        if len(data) < 2:
+            self._value = np.nan
+        else:
+            uj_m = OrderedSubsets2.get(self._data)
+            w = np.linalg.svd(uj_m, compute_uv=False)
+            w /= sum(w)
+            self._value = -1 * sum(w * np.log(w))
 
 
 class Fisher(NonLinearIndex):
@@ -136,12 +138,10 @@ class Fisher(NonLinearIndex):
 
     def __init__(self, data=None):
         super(Fisher, self).__init__(data)
-        uj_m = OrderedSubsets2.get(self._data)
-        if len(uj_m) == 0:
+        if len(data) < 2:
             self._value = np.nan
-            print self.__class__.__name__ + " Warning: not enough samples (" + str(len(data)) + " < 2). " +\
-                "At least 2 samples are needed to build a non-empty set of 2-sized ordered subsets of the array."
         else:
+            uj_m = OrderedSubsets2.get(self._data)
             w = np.linalg.svd(uj_m, compute_uv=False)
             w /= sum(w)
             fi = 0
@@ -159,10 +159,6 @@ class CorrelationDim(NonLinearIndex):
     def __init__(self, data=None):
         super(CorrelationDim, self).__init__(data)
         if len(self._data) < Sett.correlation_dimension_len:
-            print self.__class__.__name__ + " Warning: not enough samples (" + str(len(data)) +\
-                " < " + str(Sett.correlation_dimension_len) + "). " +\
-                "The sample length for the correlation dimension must be greater or equal " +\
-                "to the correlation_dimension_len setting value."
             self._value = np.nan
         else:
             rr = self._data / 1000  # rr in seconds
@@ -238,22 +234,25 @@ class Hurst(NonLinearIndex):
     def __init__(self, data=None):
         super(Hurst, self).__init__(data)
         n = len(self._data)
-        t = np.arange(1.0, n + 1)
-        y = np.cumsum(self._data)
-        ave_t = np.array(y / t)
+        if n < 2:
+            self._value = np.nan
+        else:
+            t = np.arange(1.0, n + 1)
+            y = np.cumsum(self._data)
+            ave_t = np.array(y / t)
 
-        s_t = np.zeros(n)
-        r_t = np.zeros(n)
-        for i in xrange(n):
-            s_t[i] = np.std(self._data[:i + 1])
-            x_t = y - t * ave_t[i]
-            r_t[i] = np.max(x_t[:i + 1]) - np.min(x_t[:i + 1])
+            s_t = np.zeros(n)
+            r_t = np.zeros(n)
+            for i in xrange(n):
+                s_t[i] = np.std(self._data[:i + 1])
+                x_t = y - t * ave_t[i]
+                r_t[i] = np.max(x_t[:i + 1]) - np.min(x_t[:i + 1])
 
-        r_s = r_t / s_t
-        r_s = np.log(r_s)
-        n = np.log(t).reshape(n, 1)
-        h = np.linalg.lstsq(n[1:], r_s[1:])[0]
-        self._value = h[0]
+            r_s = r_t / s_t
+            r_s = np.log(r_s)
+            n = np.log(t).reshape(n, 1)
+            h = np.linalg.lstsq(n[1:], r_s[1:])[0]
+            self._value = h[0]
 
 
 class PetrosianFracDim(NonLinearIndex):
@@ -300,7 +299,6 @@ class DFAShortTerm(NonLinearIndex):
             self._value = np.linalg.lstsq(np.vstack([np.log(l), np.ones(len(l))]).T, np.log(f))[0][0]
         else:
             self._value = np.nan
-            print self.__class__.__name__ + " Warning: not enough samples (" + str(len(self._data)) + " < 16)."
 
 
 class DFALongTerm(NonLinearIndex):
@@ -333,4 +331,3 @@ class DFALongTerm(NonLinearIndex):
             self._value = np.linalg.lstsq(np.vstack([np.log(l), np.ones(len(l))]).T, np.log(f))[0][0]
         else:
             self._value = np.nan
-            print self.__class__.__name__ + " Warning: not enough samples (" + str(len(self._data)) + " < 16)."
