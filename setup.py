@@ -27,7 +27,7 @@ setup(
     license='GNU GPL version 3',
     download_url='https://github.com/MPBA/pyHRV/archive/master.zip',
     classifiers=[
-        'Development Status :: 3 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: GNU General Public License (GPL)',
         'Natural Language :: English',
@@ -35,6 +35,7 @@ setup(
         'Operating System :: MacOS',
         'Operating System :: Microsoft :: Windows',
         'Programming Language :: Python',
+        'Topic :: Scientific/Engineering :: Bio-Informatics'
     ],
     requires=[
         'pandas (>= 0.13.1)',
