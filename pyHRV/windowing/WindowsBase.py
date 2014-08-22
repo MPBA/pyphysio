@@ -46,7 +46,7 @@ class Window(object):
         return '%d:%d' % (self.begin, self.end)
 
 
-class WindowsIterator(object):
+class IndexesIterator(object):
     """
     A generic iterator that is called from each WindowGenerator from the __iter__ method.
     """
@@ -73,7 +73,7 @@ class WindowsGenerator(object):
             self._winn = 0
 
     def __iter__(self):
-        return WindowsIterator(self)
+        return IndexesIterator(self)
 
     def init_windowing(self, data):
         """
