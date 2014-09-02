@@ -1,5 +1,3 @@
-##ck3
-
 __author__ = "AleB"
 __all__ = ['DataSeries', 'data_series_from_ecg', 'data_series_from_bvp']
 

@@ -1,4 +1,3 @@
-##ck3
 from pyHRV.DataSeries import DataSeries
 
 __author__ = 'AleB'

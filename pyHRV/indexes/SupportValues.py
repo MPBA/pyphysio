@@ -1,4 +1,3 @@
-##ck3
 __author__ = 'AleB'
 
 from BaseIndexes import SupportValue

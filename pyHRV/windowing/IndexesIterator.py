@@ -1,5 +1,3 @@
-##ck3
-
 from __builtin__ import property
 
 import pyHRV

@@ -1,4 +1,3 @@
-##ck3
 __author__ = 'AleB'
 __all__ = ['HF', 'HFNormal', 'HFPeak', 'LF', 'LFHF', 'LFNormal', 'LFPeak', 'NormalizedHF', 'NormalizedLF', 'Total',
            'VLF', 'VLFNormal', 'VLFPeak']

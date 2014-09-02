@@ -1,4 +1,3 @@
-##ck3
 __author__ = 'AleB'
 __all__ = ['NamedWinGen', 'LinearWinGen', 'LinearTimeWinGen', 'CollectionWinGen']
 import numpy as np

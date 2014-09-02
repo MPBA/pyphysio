@@ -1,4 +1,3 @@
-##ck2
 __all__ = ['load_pd_from_excel_column', 'load_ds_from_csv_column', 'load_windows_gen_from_csv', 'save_ds_to_csv',
            'load_rr_from_bvp', 'load_rr_from_ecg']
 

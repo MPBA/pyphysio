@@ -1,4 +1,3 @@
-##ck2
 __author__ = 'AleB'
 __all__ = ['Mean', 'Median', 'SD', 'SDSD', 'NN10', 'NN25', 'NN50', 'NNx', 'PNN10', 'PNN25', 'PNN50', 'PNNx', 'RMSSD',
            'HRMean', 'HRMedian', 'HRSD', "Triang", "TINN"]
