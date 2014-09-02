@@ -106,12 +106,17 @@ class LinearWinGen(WindowsGenerator):
         self._step = step
         self._width = width
         self._begin = begin
+        self._pos = None
+        self._init()
+
+    def _init(self):
         self._pos = self._begin
 
     def step_windowing(self):
         b, e = (self._pos, self._pos + self._width)
         if e > self._end:
             self._pos = self._begin
+            self._init()
             raise StopIteration
         else:
             self._pos += self._step
@@ -134,13 +139,20 @@ class LinearTimeWinGen(TimeWinGen):
         super(LinearTimeWinGen, self).__init__(data)
         self._step_t = step
         self._width_t = width
-        if not begin is None:
-            self._t, self._i = self._next_sample(begin)
-        if not end is None:
+        self._begin = begin
+        self._end = end
+        self._bt, self._bi = self._t, self._i
+        if not self._begin is None:
+            self._bt, self._bi = self._next_sample(self._begin)
+        if not self._end is None:
             et = np.sum(self._data)
-            while end < et:
+            while self._end < et:
                 self._ei -= 1
                 et -= self._data[self._ei - 1]
+        self._init()
+
+    def _init(self):
+        self._t, self._i = self._bt, self._bi
 
     def step_windowing(self):
         if self._i < self._ei:
@@ -149,6 +161,7 @@ class LinearTimeWinGen(TimeWinGen):
             self._t, self._i = self._next_sample(self._step_t)
             return w
         else:
+            self._init()
             raise StopIteration
 
 
@@ -171,6 +184,7 @@ class CollectionWinGen(WindowsGenerator):
 
     def step_windowing(self):
         if self._ind >= len(self._wins):
+            self._ind = 0
             raise StopIteration
         else:
             self._ind += 1
@@ -189,9 +203,10 @@ class NamedWinGen(WindowsGenerator):
         @param data: Data to window
         """
         super(NamedWinGen, self).__init__(data)
-        self._s = 0
         self._i = -1
         self._ibn = include_baseline_name
+        if not self._data.has_labels():
+            raise TypeError("Data has no labels.")
         l, self._is, t = self._data.get_labels()
 
     def step_windowing(self):
@@ -201,8 +216,9 @@ class NamedWinGen(WindowsGenerator):
         elif self._i < len(self._is):
             return IBIWindow(self._is[self._i], len(self._data), self._data)
         else:
+            self._i = -1
             raise StopIteration()
 
     def __repr__(self):
-        return "<%s - labels: %d, step: %s at 0x%hx>" % (
-            self.__class__.__name__, len(self._is), self._s, id(self))
+        return "<%s - labels: %d at 0x%hx>" % (
+            self.__class__.__name__, len(self._is), id(self))

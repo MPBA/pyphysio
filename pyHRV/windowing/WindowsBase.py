@@ -38,6 +38,10 @@ class Window(object):
     def len(self):
         return self._end - self._begin
 
+    @property
+    def label(self):
+        return None
+
     def extract_data(self):
         return DataSeries(self._data[self._begin: self._end])
 
