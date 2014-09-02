@@ -22,5 +22,5 @@ data_frame = pandas.DataFrame(mapper.results)
 # to give it an header
 data_frame.columns = mapper.labels
 # and to save it in a csv file, without the line number (index)
-data_frame.to_csv("example_results.csv", sep="\t", index=False)
+data_frame.to_csv("example2_results.csv", sep="\t", index=False)
 # This results can be compared to the ones in Test2.results
