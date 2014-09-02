@@ -52,7 +52,7 @@ class IBIWindow(Window):
         return self._data
 
     def __repr__(self):
-        return "%d:%d:%dms:%s" % (self.begin, self.end, self.label, self.duration)
+        return "%d:%d:%dms:%s" % (self.begin, self.end, self.duration, self.label)
 
 
 class TimeWinGen(WindowsGenerator):
