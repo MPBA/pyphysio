@@ -12,12 +12,12 @@ bvp_time = [0, 1, 2, 3, 4, 5, 6, 7, 8]
 # Passing an iterable object (list, array, ndarray etc)
 data_series = DataSeries(data)
 ## Generating a DataSeries: Aux functions
-# From bvp or ecg value-time data through the internal peak detection algorithm
+# From bvp or ecg value-time example_data through the internal peak detection algorithm
 data_series_ecg = data_series_from_ecg(ecg_val, ecg_time)
 data_series_bvp = data_series_from_bvp(bvp_val, bvp_time)
 
 ## Loading IBI from a CSV file
-# This is the simplest way to load data.
+# This is the simplest way to load example_data.
 # Complete usage
 # The column name and the CSV separator can be specified if they are different from the default ones.
 # Minimal usage
@@ -26,7 +26,7 @@ data2 = load_ds_from_csv_column(path="my_ibi_data.csv", column="Intervals", sep=
 
 
 ## Loading IBI from an ECG CSV file
-# This function will automatically convert the ECG data to IBI data,
+# This function will automatically convert the ECG example_data to IBI example_data,
 # the delta parameter can be specified or left to the default value.
 # Minimal usage
 data4 = load_rr_from_ecg("my_ecg_data.csv")
@@ -35,7 +35,7 @@ data3 = load_rr_from_ecg(path="my_ecg_data.csv", delta=2, ecg_col="Value", ecg_t
 
 
 ## Loading IBI from a BVP CSV file
-# This function will automatically convert the BVP data to IBI data,
+# This function will automatically convert the BVP example_data to IBI example_data,
 # the delta parameter can be specified or left to the default value.
 # Minimal usage
 data6 = load_rr_from_bvp("my_bvp_data.csv")

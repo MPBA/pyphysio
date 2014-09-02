@@ -66,7 +66,7 @@ class LF(PowerInBand):
         Calculates the power in the LF band (parametrized in the settings).
         """
         super(LF, self).__init__(Sett.vlf_band_upper_bound, Sett.lf_band_upper_bound, data)
-        # .get(..) called on LF only for the .cid() in the cache. The actually important data is self._freq_band that
+        # .get(..) called on LF only for the .cid() in the cache. The actually important example_data is self._freq_band that
         # has been calculated by PowerInBand.__init__(..)
         self._value = LF.get(self)
 

@@ -144,7 +144,7 @@ class Fisher(NonLinearIndex):
             w = np.linalg.svd(uj_m, compute_uv=False)
             w /= sum(w)
             fi = 0
-            for i in xrange(0, len(w) - 1):  # from 1 to M
+            for i in xrange(0, len(w) - 1):  # from Test1 to M
                 fi += ((w[i + 1] - w[i]) ** 2) / (w[i])
 
             self._value = fi
@@ -291,7 +291,7 @@ class DFAShortTerm(NonLinearIndex):
                     if j + n < len(x):
                         c = range(j, j + n)
                         c = np.vstack([c, np.ones(n)]).T  # coordinates of time in the box
-                        z = y[j:j + n]  # the value of data in the box
+                        z = y[j:j + n]  # the value of example_data in the box
                         f[i] += np.linalg.lstsq(c, z)[1]  # add residue in this box
                 f[i] /= ((len(x) / n) * n)
             f = np.sqrt(f)
@@ -322,7 +322,7 @@ class DFALongTerm(NonLinearIndex):
                     if j + n < len(x):
                         c = range(j, j + n)
                         c = np.vstack([c, np.ones(n)]).T  # coordinates of time in the box
-                        z = y[j:j + n]  # the value of data in the box
+                        z = y[j:j + n]  # the value of example_data in the box
                         f[i] += np.linalg.lstsq(c, z)[1]  # add residue in this box
                 f[i] /= ((len(x) / n) * n)
             f = np.sqrt(f)

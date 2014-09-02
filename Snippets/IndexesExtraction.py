@@ -19,7 +19,7 @@ value2 = Mean(win.extract_data()).value
 
 ## WindowsMapper usage
 # This is the minimal structure of the code needed to calculate the indexes on each window
-# Creating the windows (the data parameter is needed to know the total length)
+# Creating the windows (the example_data parameter is needed to know the total length)
 win_gen = LinearWinGen(0, 2, 4, data)
 # The mapper initialization (it will compute the mean and the standard deviation of each window
 win_mapper = WindowsMapper(data, win_gen, [Mean, SD])

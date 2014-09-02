@@ -17,7 +17,7 @@ wins4 = LinearTimeWinGen(0, 20, 40, data)
 
 ## Collection Windows Generator
 # Wraps a windows collections, creates a windows generator with that windows
-# Here the data is needed due to the time-offsets determination.
+# Here the example_data is needed due to the time-offsets determination.
 w = [Window(1, 2), Window(2, 5)]
 wins5 = CollectionWinGen(win_list=w, data=data)
 wins6 = CollectionWinGen(w, data)
