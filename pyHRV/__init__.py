@@ -15,7 +15,7 @@ import indexes
 import windowing
 import DataSeries as _Ds
 
-__all__ = ['Files', 'PyHRVSettings', 'indexes', 'Filters']
+__all__ = ['Files', 'PyHRVSettings', 'windowing', 'indexes', 'Filters']
 __all__.extend(_Ds.__all__)
 __all__.extend(Filters.__all__)
 __all__.extend(Files.__all__)
@@ -27,5 +27,6 @@ from Files import *
 from PyHRVSettings import *
 from indexes import *
 from windowing import *
+from Filters import *
 
 del _Ds

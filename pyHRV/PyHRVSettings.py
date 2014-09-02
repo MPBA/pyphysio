@@ -30,6 +30,7 @@ class PyHRVSettings(object):
         # Windows
         # Set to None to have mixed windows names as win1|win2
         self.win_name_mixed = "W_MIXED"
+        self.ind_iter_verbose = True
 
         # TDIndexes:
         self.nnx_default_threshold = 50

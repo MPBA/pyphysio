@@ -49,7 +49,11 @@ class WindowsMapper(object):
         """
         Executes the indexes computation (mapping with the windows).
         """
-        self._map = map(self._comp_one, self._wing)
+        self._map = []
+        for w in self._wing:
+            if pyHRV.PyHRVDefaultSettings.ind_iter_verbose:
+                print "Processing", w
+            self._map.append(self._comp_one(w))
 
     @property
     def labels(self):
