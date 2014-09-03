@@ -16,7 +16,7 @@ def load_pd_from_excel_column(path, column, column_b=None, sheet_name=0):
     @param column: first column to load
     @type column: int
     @param column_b: second optional column to load
-    @type column_b: int
+    @type column_b: int or None
     @param sheet_name: excel sheet ordinal position or name
     @type sheet_name: int or str or unicode
     @return: One or two loaded columns
@@ -83,8 +83,8 @@ def save_ds_to_csv(data_series, path, name=Sett.load_rr_column_name, sep=Sett.lo
 
 
 def load_ibi_from_ecg(path, delta=Sett.import_ecg_delta, ecg_col=Sett.load_ecg_column_name,
-                     ecg_time_col=Sett.load_ecg_time_column_name, filters=Sett.import_bvp_filters,
-                     sep=Sett.load_csv_separator, *args):
+                      ecg_time_col=Sett.load_ecg_time_column_name, filters=Sett.import_bvp_filters,
+                      sep=Sett.load_csv_separator, *args):
     """
     Loads an IBI (RR) data series from an ECG data set csv file and filters it with the specified filters list.
     @param path: path of the file to read
@@ -107,8 +107,8 @@ def load_ibi_from_ecg(path, delta=Sett.import_ecg_delta, ecg_col=Sett.load_ecg_c
 
 
 def load_ibi_from_bvp(path, delta_ratio=Sett.import_bvp_delta_max_min_numerator, bvp_col=Sett.load_bvp_column_name,
-                     bvp_time_col=Sett.load_bvp_time_column_name, filters=Sett.import_bvp_filters,
-                     sep=Sett.load_csv_separator, *args):
+                      bvp_time_col=Sett.load_bvp_time_column_name, filters=Sett.import_bvp_filters,
+                      sep=Sett.load_csv_separator, *args):
     """
     Loads an IBI (RR) data series from a BVP data set csv file and filters it with the specified filters list.
     @param path: path of the file to read

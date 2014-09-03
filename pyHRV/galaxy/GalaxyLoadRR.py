@@ -2,7 +2,7 @@ from pyHRV.galaxy.ParamExecClass import ParamExecClass
 
 __author__ = 'AleB'
 
-from pyHRV.Files import *
+from pyHRV.Files import load_ibi_from_ecg, load_ibi_from_bvp, load_ds_from_csv_column, save_ds_to_csv
 
 
 class GalaxyLoadRR(ParamExecClass):
@@ -18,9 +18,9 @@ class GalaxyLoadRR(ParamExecClass):
         out = self._kwargs['output']
         d = self._kwargs['data_type']
         if d == 'ecg':
-            ds = load_rr_from_ecg(inp)
+            ds = load_ibi_from_ecg(inp)
         elif d == 'bvp':
-            ds = load_rr_from_bvp(inp)
+            ds = load_ibi_from_bvp(inp)
         elif d == 'rr':
             ds = load_ds_from_csv_column(inp)
         else:

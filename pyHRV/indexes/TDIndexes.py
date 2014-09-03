@@ -265,7 +265,7 @@ class SDSD(TDIndex):
         self._value = np.std(diff)
 
 
-#TODO: fix docu
+#TODO: fix documentation
 class Triang(TDIndex):
     """Calculates the Triangular HRV index."""
 
@@ -275,7 +275,7 @@ class Triang(TDIndex):
         self._value = len(self._data) / np.max(h)
 
 
-#TODO: fix docu
+#TODO: fix documentation
 class TINN(TDIndex):
     """Calculates the difference between two histogram-related indexes."""
 

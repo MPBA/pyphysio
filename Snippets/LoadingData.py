@@ -29,18 +29,18 @@ data2 = load_ds_from_csv_column(path="my_ibi_data.csv", column="Intervals", sep=
 # This function will automatically convert the ECG example_data to IBI example_data,
 # the delta parameter can be specified or left to the default value.
 # Minimal usage
-data4 = load_rr_from_ecg("my_ecg_data.csv")
+data4 = load_ibi_from_ecg("my_ecg_data.csv")
 # Complete usage
-data3 = load_rr_from_ecg(path="my_ecg_data.csv", delta=2, ecg_col="Value", ecg_time_col="Time", sep=";")
+data3 = load_ibi_from_ecg(path="my_ecg_data.csv", delta=2, ecg_col="Value", ecg_time_col="Time", sep=";")
 
 
 ## Loading IBI from a BVP CSV file
 # This function will automatically convert the BVP example_data to IBI example_data,
 # the delta parameter can be specified or left to the default value.
 # Minimal usage
-data6 = load_rr_from_bvp("my_bvp_data.csv")
+data6 = load_ibi_from_bvp("my_bvp_data.csv")
 # Complete usage
-data5 = load_rr_from_bvp(path="my_bvp_data.csv", delta_ratio=47, bvp_col="Value", bvp_time_col="Time", sep=";")
+data5 = load_ibi_from_bvp(path="my_bvp_data.csv", delta_ratio=47, bvp_col="Value", bvp_time_col="Time", sep=";")
 
 
 ## Loading a Windows Set from a CSV file

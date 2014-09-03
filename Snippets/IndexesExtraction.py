@@ -2,7 +2,7 @@ from pyHRV import DataSeries
 from pyHRV.indexes.TDIndexes import Mean, SD
 from pyHRV.windowing.WindowsBase import Window
 from pyHRV.windowing.WindowsGenerators import LinearWinGen
-from pyHRV.windowing.IndexesIterator import WindowsIterator
+from pyHRV.windowing.WindowsIterator import WindowsIterator
 
 __author__ = 'AleB'
 

@@ -20,5 +20,5 @@ for x in i:
     print x, "\t", getattr(pyHRV, x)(ds).value
 u = time() - t
 print "-----------Cached:", c
-print "-----------Uncached:", u
+print "-----------Non cached:", u
 print "-----------Ratio:", u / c * 100 - 100, "%"
