@@ -97,7 +97,7 @@ def load_rr_from_ecg(path, delta=Sett.import_ecg_delta, ecg_col=Sett.load_ecg_co
     @type ecg_time_col: str or unicode
     @param sep: separator char
     @type sep: str or unicode or char
-    @param filters: list of filters to be applied to the data (e.g. from RRFilters)
+    @param filters: list of filters to be applied to the data (e.g. from IBIFilters)
     @return: Filtered signal DataSeries
     @rtype: DataSeries
     """
@@ -121,7 +121,7 @@ def load_rr_from_bvp(path, delta_ratio=Sett.import_bvp_delta_max_min_numerator, 
     @type bvp_time_col: str or unicode
     @param sep: separator char
     @type sep: str or unicode or char
-    @param filters: sequence of filters to be applied to the data (e.g. from RRFilters)
+    @param filters: sequence of filters to be applied to the data (e.g. from IBIFilters)
     @return: Filtered signal DataSeries
     @rtype: DataSeries
     """

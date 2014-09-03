@@ -1,14 +1,15 @@
 __author__ = 'AleB'
-__all__ = ["RRFilters"]
+__all__ = ["IBIFilters"]
 
 import numpy as np
 
 from pyHRV.DataSeries import DataSeries
+from pyHRV.indexes.TDIndexes import Mean, SD
 
 
-class RRFilters(object):
+class IBIFilters(object):
     """
-    Static class containing methods for filtering RR intervals data.
+    Static class containing methods for filtering IBI data.
     """
 
     @staticmethod
@@ -21,56 +22,55 @@ class RRFilters(object):
         @rtype: DataSeries
         """
         assert isinstance(series, DataSeries)
-        return DataSeries(series - np.mean(series))
+        return DataSeries(series - Mean.get(series))
 
     @staticmethod
     def normalize_mean_sd(series):
         """
-        Normalizes the series removing the mean and dividing by the standard deviation (RR-mean)/sd
+        Normalizes the series removing the mean and dividing by the standard deviation (IBI-mean)/sd
         @param series: DataSeries
         @type series: DataSeries
         @return: Filtered DataSeries
         @rtype: DataSeries
         """
         assert isinstance(series, DataSeries)
-        return DataSeries((series - np.mean(series)) / np.std(series) + np.mean(series))
+        return DataSeries((series - Mean.get(series)) / SD.get(series))
 
     @staticmethod
     def normalize_min(series):
         """
-        Normalizes the series removing the minimum value (RR-min)
+        Normalizes the series removing the minimum value (IBI-min)
         @param series: DataSeries
         @type series: DataSeries
         @return: Filtered DataSeries
         @rtype: DataSeries
         """
         assert isinstance(series, DataSeries)
-        return DataSeries(series - np.min(series) + np.mean(series))
+        return DataSeries(series - np.min(series))
 
     @staticmethod
     def normalize_max_min(series):
         """
-        Normalizes the series removing the mean and dividing by the range width (RR-mean)/(max-min)
+        Normalizes the series removing the min value and dividing by the range width (IBI-min)/(max-min)
         @param series: DataSeries
         @type series: DataSeries
         @return: Filtered DataSeries
         @rtype: DataSeries
         """
         assert isinstance(series, DataSeries)
-        return DataSeries((series - np.mean(series)) / (np.max(series) - np.min(series)) + np.mean(series))
+        return DataSeries(series / (np.max(series) - np.min(series)))
 
     @staticmethod
-    def normalize_rr_all_mean_calm(series, param, mean_calm_milliseconds):
+    def normalize_custom(series, bias, scale):
         """
-        Normalizes the series scaling by two factors ((PAR*RR)/meanCALM)
-        @param param: first factor PAR
-        @param mean_calm_milliseconds: second parameter: average calm-state expected bpm
-        @type mean_calm_milliseconds: float
+        Normalizes the series scaling by two factors ((IBI-bias)/meanCALM)
+        @param scale: a scale for each sample
+        @param bias: second parameter: average calm-state expected bpm
         @return: Filtered DataSeries
         @rtype: DataSeries
         """
         assert isinstance(series, DataSeries)
-        return DataSeries(param * series - mean_calm_milliseconds)
+        return DataSeries((bias - series) / scale)
 
     @staticmethod
     def filter_outliers(series, last=13, min_bpm=24, max_bpm=198, win_length=50):
@@ -105,8 +105,8 @@ class RRFilters(object):
             var_mean = 100 * abs((new_series[index] - m) / m)
 
             if (((var_pre < u_last) |  # last var
-                     (var_next < u_last) |  # last var
-                     (var_mean < u_mean)) &  # avg var
+                    (var_next < u_last) |  # last var
+                    (var_mean < u_mean)) &  # avg var
                     (new_series[index] > min_rr) & (new_series[index] < max_rr)):  # ok values
                 index += 1  # ok
             else:

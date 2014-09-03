@@ -19,7 +19,7 @@ def data_series_from_bvp(bvp, bvp_time, delta_ratio=Sett.import_bvp_delta_max_mi
     @type bvp: Iterable
     @param bvp_time: ecg timestamps column
     @type bvp_time: Iterable
-    @param filters: sequence of filters to be applied to the data (e.g. from RRFilters)
+    @param filters: sequence of filters to be applied to the data (e.g. from IBIFilters)
     @return: Filtered signal DataSeries
     @rtype: DataSeries
     """
