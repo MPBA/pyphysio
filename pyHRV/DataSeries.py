@@ -5,7 +5,7 @@ from numpy import min, max, mean, diff, array
 
 import pandas as pd
 
-from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
+from pyHRV.PyHRVSettings import MainSettings as Sett
 from pyHRV.Utility import peak_detection
 
 

@@ -9,7 +9,7 @@ from pyHRV.windowing import NamedWinGen, WindowsIterator
 from pyHRV import DataSeries
 import pyHRV.indexes.TDIndexes
 import pyHRV.indexes.FDIndexes
-from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Ps
+from pyHRV.PyHRVSettings import MainSettings as Ps
 
 
 def test(f):

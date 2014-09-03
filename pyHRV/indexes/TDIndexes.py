@@ -6,7 +6,7 @@ import numpy as np
 
 from pyHRV.Cache import CacheableDataCalc, Diff, Histogram, HistogramMax
 from pyHRV.indexes.BaseIndexes import TDIndex
-from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
+from pyHRV.PyHRVSettings import MainSettings as Sett
 from pyHRV.indexes.SupportValues import SumSV, LengthSV, DiffsSV, MedianSV
 
 

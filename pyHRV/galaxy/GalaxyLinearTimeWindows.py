@@ -6,7 +6,7 @@ from pandas import DataFrame
 
 from pyHRV.windowing import LinearTimeWinGen
 from pyHRV.Files import *
-from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
+from pyHRV.PyHRVSettings import MainSettings as Sett
 
 
 class GalaxyLinearTimeWindows(ParamExecClass):

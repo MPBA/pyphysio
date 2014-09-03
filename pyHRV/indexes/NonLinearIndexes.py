@@ -11,7 +11,7 @@ from pyHRV.Cache import Diff, OrderedSubsets2, OrderedSubsets3, PoinSD, Standard
 from pyHRV.indexes.BaseIndexes import NonLinearIndex
 from pyHRV.indexes.TDIndexes import Mean
 from pyHRV.Utility import ordered_subsets
-from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
+from pyHRV.PyHRVSettings import MainSettings as Sett
 
 
 class ApproxEntropy(NonLinearIndex):

@@ -24,8 +24,8 @@ class GalaxyHRVAnalysis(ParamExecClass):
             if not hasattr(pyHRV, index):
                 errors.append(index)
         if len(errors) > 0:
-            raise NameError(pyHRV.PyHRVDefaultSettings.Local.names(
-                pyHRV.PyHRVDefaultSettings.Local.indexes_not_found, errors))
+            raise NameError(pyHRV.MainSettings.Local.names(
+                pyHRV.MainSettings.Local.indexes_not_found, errors))
         else:
             if wing is None:
                 values = pd.DataFrame(columns=indexes)
@@ -44,5 +44,5 @@ class GalaxyHRVAnalysis(ParamExecClass):
         indexes = self._kwargs['indexes']
 
         values = self.calculate_indexes(data, indexes, wins)
-        values.to_csv(self._kwargs['output'], sep=pyHRV.PyHRVDefaultSettings.load_csv_separator)
+        values.to_csv(self._kwargs['output'], sep=pyHRV.MainSettings.load_csv_separator)
         return values

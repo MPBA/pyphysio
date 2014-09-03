@@ -4,7 +4,7 @@ __all__ = ['load_pd_from_excel_column', 'load_ds_from_csv_column', 'load_windows
 import pandas as pd
 
 from pyHRV.DataSeries import DataSeries, data_series_from_ecg, data_series_from_bvp
-from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
+from pyHRV.PyHRVSettings import MainSettings as Sett
 from pyHRV.windowing.WindowsBase import Window
 from pyHRV.windowing.WindowsGenerators import CollectionWinGen
 

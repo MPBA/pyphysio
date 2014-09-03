@@ -6,7 +6,7 @@ from scipy import signal
 
 from pyHRV.Utility import ordered_subsets, interpolate_ibi
 from pyHRV.DataSeries import DataSeries
-from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
+from pyHRV.PyHRVSettings import MainSettings as Sett
 
 
 class CacheableDataCalc(object):

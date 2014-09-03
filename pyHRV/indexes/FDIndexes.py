@@ -6,7 +6,7 @@ import numpy as np
 
 from pyHRV.indexes.BaseIndexes import FDIndex
 from pyHRV.Cache import CacheableDataCalc, PSDWelchCalc
-from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
+from pyHRV.PyHRVSettings import MainSettings as Sett
 
 
 class InBand(FDIndex):

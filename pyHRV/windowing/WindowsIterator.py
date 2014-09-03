@@ -51,7 +51,7 @@ class WindowsIterator(object):
         """
         self._map = []
         for w in self._wing:
-            if pyHRV.PyHRVDefaultSettings.ind_iter_verbose:
+            if pyHRV.MainSettings.ind_iter_verbose:
                 print "Processing", w
             self._map.append(self._comp_one(w))
 
@@ -61,8 +61,8 @@ class WindowsIterator(object):
         Gets the labels of the table returned from the results property after the compute_all call.
         @rtype : list
         """
-        ret = ['w_name', pyHRV.PyHRVDefaultSettings.load_windows_col_begin,
-               pyHRV.PyHRVDefaultSettings.load_windows_col_end]
+        ret = ['w_name', pyHRV.MainSettings.load_windows_col_begin,
+               pyHRV.MainSettings.load_windows_col_end]
         for index in self._index:
             if isinstance(index, str) | isinstance(index, unicode):
                 index = getattr(pyHRV, index)

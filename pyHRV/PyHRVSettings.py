@@ -1,5 +1,5 @@
 __author__ = "AleB"
-__all__ = ['PyHRVSettings', 'PyHRVDefaultSettings']
+__all__ = ['PyHRVSettings', 'MainSettings']
 
 
 class PyHRVSettings(object):
@@ -56,4 +56,4 @@ class PyHRVSettings(object):
             "Indexes names: {:s}"
 
 
-PyHRVDefaultSettings = PyHRVSettings()
+MainSettings = PyHRVSettings()

@@ -3,7 +3,7 @@ __all__ = ['NamedWinGen', 'LinearWinGen', 'LinearTimeWinGen', 'CollectionWinGen'
 import numpy as np
 
 from WindowsBase import WindowsGenerator, Window
-from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
+from pyHRV.PyHRVSettings import MainSettings as Sett
 
 
 class IBIWindow(Window):

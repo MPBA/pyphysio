@@ -2,7 +2,7 @@ __author__ = 'AleB'
 
 from BaseIndexes import SupportValue
 from pyHRV.Utility import template_interpolation
-from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Ps
+from pyHRV.PyHRVSettings import MainSettings as Ps
 
 
 class SumSV(SupportValue):
