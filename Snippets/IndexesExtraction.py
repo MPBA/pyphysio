@@ -2,7 +2,7 @@ from pyHRV import DataSeries
 from pyHRV.indexes.TDIndexes import Mean, SD
 from pyHRV.windowing.WindowsBase import Window
 from pyHRV.windowing.WindowsGenerators import LinearWinGen
-from pyHRV.windowing.IndexesIterator import WindowsMapper
+from pyHRV.windowing.IndexesIterator import WindowsIterator
 
 __author__ = 'AleB'
 
@@ -17,12 +17,12 @@ value1 = Mean(data).value
 win = Window(1, 5, data)
 value2 = Mean(win.extract_data()).value
 
-## WindowsMapper usage
+## WindowsIterator usage
 # This is the minimal structure of the code needed to calculate the indexes on each window
 # Creating the windows (the example_data parameter is needed to know the total length)
 win_gen = LinearWinGen(0, 2, 4, data)
 # The mapper initialization (it will compute the mean and the standard deviation of each window
-win_mapper = WindowsMapper(data, win_gen, [Mean, SD])
+win_mapper = WindowsIterator(data, win_gen, [Mean, SD])
 # The core work (here all the work is done)
 win_mapper.compute_all()
 # The results usage

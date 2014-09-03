@@ -32,7 +32,7 @@ class GalaxyHRVAnalysis(ParamExecClass):
                 for index in indexes:
                     values[index] = getattr(pyHRV, index)(data).value
             else:
-                m = pyHRV.WindowsMapper(data, wing, indexes)
+                m = pyHRV.WindowsIterator(data, wing, indexes)
                 m.compute_all()
                 values = pd.DataFrame(columns=m.labels, data=m.results)
         return values

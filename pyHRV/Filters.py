@@ -61,16 +61,16 @@ class IBIFilters(object):
         return DataSeries(series / (np.max(series) - np.min(series)))
 
     @staticmethod
-    def normalize_custom(series, bias, scale):
+    def normalize_custom(series, par1, par2):
         """
-        Normalizes the series scaling by two factors ((IBI-bias)/meanCALM)
-        @param scale: a scale for each sample
-        @param bias: second parameter: average calm-state expected bpm
+        Normalizes the series considering two factors ((IBI-par1)/par2)
+        @param par1: a scale for each sample
+        @param par2: second parameter: average calm-state expected bpm
         @return: Filtered DataSeries
         @rtype: DataSeries
         """
         assert isinstance(series, DataSeries)
-        return DataSeries((bias - series) / scale)
+        return DataSeries((par1 - series) / par2)
 
     @staticmethod
     def filter_outliers(series, last=13, min_bpm=24, max_bpm=198, win_length=50):

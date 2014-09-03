@@ -10,7 +10,7 @@ from pyHRV.example_data import Test1
 windows = pyHRV.LinearTimeWinGen(step=20000, width=40000, data=Test1.data_series)
 # The windows mapper will do all the rest of the work, we just need to put
 # there every Time (TD) and Frequency (FD) Domain and every Non Linear Index
-mapper = pyHRV.WindowsMapper(
+mapper = pyHRV.WindowsIterator(
     Test1.data_series,
     windows,
     pyHRV.indexes.TDIndexes.__all__ +

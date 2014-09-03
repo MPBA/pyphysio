@@ -5,7 +5,7 @@ import os
 import pandas as pd
 
 from pyHRV.Files import *
-from pyHRV.windowing import NamedWinGen, WindowsMapper
+from pyHRV.windowing import NamedWinGen, WindowsIterator
 from pyHRV import DataSeries
 import pyHRV.indexes.TDIndexes
 import pyHRV.indexes.FDIndexes
@@ -20,7 +20,7 @@ def test(f):
     ds = DataSeries(ibi, labels=lab)
     ws = NamedWinGen(ds, include_baseline_name="baseline")
 
-    mm = WindowsMapper(ds, ws, pyHRV.indexes.TDIndexes.__all__ + pyHRV.indexes.FDIndexes.__all__)
+    mm = WindowsIterator(ds, ws, pyHRV.indexes.TDIndexes.__all__ + pyHRV.indexes.FDIndexes.__all__)
     mm.compute_all()
     df = pd.DataFrame(mm.results)
     df.columns = mm.labels

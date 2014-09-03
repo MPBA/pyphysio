@@ -11,7 +11,7 @@ def power(spec, freq, min_freq, max_freq):
     return np.sum(band) / len(spec)
 
 
-def interpolate_rr(rr, interp_freq):
+def interpolate_ibi(rr, interp_freq):
     """
     Returns as a tuple the interpolated RR and BT arrays
     """

@@ -4,7 +4,7 @@ __all__ = ['Mean', 'Median', 'SD', 'SDSD', 'NN10', 'NN25', 'NN50', 'NNx', 'PNN10
 
 import numpy as np
 
-from pyHRV.Cache import CacheableDataCalc, RRDiff, Histogram, HistogramMax
+from pyHRV.Cache import CacheableDataCalc, Diff, Histogram, HistogramMax
 from pyHRV.indexes.BaseIndexes import TDIndex
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 from pyHRV.indexes.SupportValues import SumSV, LengthSV, DiffsSV, MedianSV
@@ -155,7 +155,7 @@ class NNx(TDIndex):
     def __init__(self, data=None, threshold=None):
         super(NNx, self).__init__(data)
         self._xth = threshold if not threshold is None else self.threshold()
-        diff = RRDiff.get(self._data)
+        diff = Diff.get(self._data)
         self._value = sum(1.0 for x in diff if x > self._xth)
 
     @staticmethod
@@ -252,7 +252,7 @@ class RMSSD(TDIndex):
                 "To calculate the differences between consecutive values at least 2 samples are needed."
             self._value = np.nan
         else:
-            diff = RRDiff.get(self._data)
+            diff = Diff.get(self._data)
             self._value = np.sqrt(sum(diff ** 2) / len(diff))
 
 
@@ -261,7 +261,7 @@ class SDSD(TDIndex):
 
     def __init__(self, data=None):
         super(SDSD, self).__init__(data)
-        diff = RRDiff.get(self._data)
+        diff = Diff.get(self._data)
         self._value = np.std(diff)
 
 

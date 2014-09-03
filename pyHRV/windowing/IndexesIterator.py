@@ -1,14 +1,14 @@
 from __builtin__ import property
 
 import pyHRV
-from pyHRV.windowing.WindowsBase import WindowsIterator
+from pyHRV.windowing.WindowsBase import WindowsGeneratorIterator
 
 
 __author__ = 'AleB'
-__all__ = ['WindowsMapper']
+__all__ = ['WindowsIterator']
 
 
-class WindowsMapper(object):
+class WindowsIterator(object):
     """
     Takes some indexes and calculates them on the given set of windows.
     Allows the iteration of the computation of a list of indexes over a WindowsGenerator.
@@ -30,7 +30,7 @@ class WindowsMapper(object):
         self._winn = -1
 
     def __iter__(self):
-        return WindowsIterator(self)
+        return WindowsGeneratorIterator(self)
 
     def _comp_one(self, win):
         ret = []

@@ -1,5 +1,5 @@
 __all__ = ['load_pd_from_excel_column', 'load_ds_from_csv_column', 'load_windows_gen_from_csv', 'save_ds_to_csv',
-           'load_rr_from_bvp', 'load_rr_from_ecg']
+           'load_ibi_from_bvp', 'load_ibi_from_ecg']
 
 import pandas as pd
 
@@ -82,7 +82,7 @@ def save_ds_to_csv(data_series, path, name=Sett.load_rr_column_name, sep=Sett.lo
     data_series.to_csv(path, sep=sep, header=header)
 
 
-def load_rr_from_ecg(path, delta=Sett.import_ecg_delta, ecg_col=Sett.load_ecg_column_name,
+def load_ibi_from_ecg(path, delta=Sett.import_ecg_delta, ecg_col=Sett.load_ecg_column_name,
                      ecg_time_col=Sett.load_ecg_time_column_name, filters=Sett.import_bvp_filters,
                      sep=Sett.load_csv_separator, *args):
     """
@@ -106,7 +106,7 @@ def load_rr_from_ecg(path, delta=Sett.import_ecg_delta, ecg_col=Sett.load_ecg_co
     return data_series_from_ecg(df[ecg_col], df[ecg_time_col], delta, filters)
 
 
-def load_rr_from_bvp(path, delta_ratio=Sett.import_bvp_delta_max_min_numerator, bvp_col=Sett.load_bvp_column_name,
+def load_ibi_from_bvp(path, delta_ratio=Sett.import_bvp_delta_max_min_numerator, bvp_col=Sett.load_bvp_column_name,
                      bvp_time_col=Sett.load_bvp_time_column_name, filters=Sett.import_bvp_filters,
                      sep=Sett.load_csv_separator, *args):
     """

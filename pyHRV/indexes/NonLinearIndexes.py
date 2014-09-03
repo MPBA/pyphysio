@@ -7,7 +7,7 @@ from scipy.spatial.distance import cdist, pdist
 from scipy.stats.mstats import mquantiles
 import numpy as np
 
-from pyHRV.Cache import RRDiff, OrderedSubsets2, OrderedSubsets3, PoinSD, StandardDeviation
+from pyHRV.Cache import Diff, OrderedSubsets2, OrderedSubsets3, PoinSD, StandardDeviation
 from pyHRV.indexes.BaseIndexes import NonLinearIndex
 from pyHRV.indexes.TDIndexes import Mean
 from pyHRV.Utility import ordered_subsets
@@ -261,7 +261,7 @@ class PetrosianFracDim(NonLinearIndex):
 
     def __init__(self, data=None):
         super(PetrosianFracDim, self).__init__(data)
-        d = RRDiff.get(self._data)
+        d = Diff.get(self._data)
         n_delta = 0  # number of sign changes in derivative of the signal
         for i in xrange(1, len(d)):
             if d[i] * d[i - 1] < 0:

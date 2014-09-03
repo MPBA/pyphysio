@@ -4,7 +4,7 @@ __author__ = 'AleB'
 import numpy as np
 from scipy import signal
 
-from pyHRV.Utility import ordered_subsets, interpolate_rr
+from pyHRV.Utility import ordered_subsets, interpolate_ibi
 from pyHRV.DataSeries import DataSeries
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
 
@@ -65,7 +65,7 @@ class FFTCalc(CacheableDataCalc):
         @return: Data to cache: (bands, powers)
         @rtype: (array, ndarray)
         """
-        rr_interp, bt_interp = interpolate_rr(data.series, interp_freq)
+        rr_interp, bt_interp = interpolate_ibi(data.series, interp_freq)
         interp_freq = interp_freq
         hw = np.hamming(len(rr_interp))
 
@@ -91,7 +91,7 @@ class PSDWelchCalc(CacheableDataCalc):
         """
         if interp_freq is None:
             interp_freq = Sett.default_interpolation_freq
-        rr_interp, bt_interp = interpolate_rr(data, interp_freq)
+        rr_interp, bt_interp = interpolate_ibi(data, interp_freq)
         bands, powers = signal.welch(rr_interp, interp_freq, nfft=max(128, rr_interp.shape[-1]))
         powers = np.sqrt(powers)
         return bands, powers / np.max(powers), sum(powers) / len(powers)
@@ -128,7 +128,7 @@ class HistogramMax(CacheableDataCalc):
         return np.max(h)  # TODO: max h or b(max h)??
 
 
-class RRDiff(CacheableDataCalc):
+class Diff(CacheableDataCalc):
     @classmethod
     def _calculate_data(cls, data, params=None):
         """
