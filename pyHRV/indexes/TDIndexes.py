@@ -7,7 +7,6 @@ import numpy as np
 from pyHRV.Cache import CacheableDataCalc, RRDiff, Histogram, HistogramMax
 from pyHRV.indexes.BaseIndexes import TDIndex
 from pyHRV.PyHRVSettings import PyHRVDefaultSettings as Sett
-from pyHRV.indexes.SupportValues import SumSV, LengthSV, DiffsSV, MedianSV
 
 
 class Mean(TDIndex, CacheableDataCalc):
@@ -22,14 +21,6 @@ class Mean(TDIndex, CacheableDataCalc):
     @classmethod
     def _calculate_data(cls, data, params):
         return np.mean(data)
-
-    @classmethod
-    def required_sv(cls):
-        return [SumSV, LengthSV]
-
-    @classmethod
-    def calculate_on(cls, state):
-        return state[SumSV].value / float(state[LengthSV].value)
 
 
 class HRMean(TDIndex, CacheableDataCalc):
@@ -67,14 +58,6 @@ class Median(TDIndex, CacheableDataCalc):
     def _calculate_data(cls, data, params):
         return np.median(data)
 
-    @classmethod
-    def required_sv(cls):
-        return [MedianSV]
-
-    @classmethod
-    def calculate_on(cls, state):
-        return state[MedianSV].value
-
 
 class HRMedian(TDIndex):
     """
@@ -84,14 +67,6 @@ class HRMedian(TDIndex):
     def __init__(self, data=None):
         super(HRMedian, self).__init__(data)
         self._value = 60000. / Median.get(self._data)
-
-    @classmethod
-    def required_sv(cls):
-        return [MedianSV]
-
-    @classmethod
-    def calculate_on(cls, state):
-        return 60000. / state[MedianSV].value
 
 
 class SD(TDIndex, CacheableDataCalc):
@@ -137,14 +112,6 @@ class PNNx(TDIndex):
     def threshold():
         return Sett.nnx_default_threshold
 
-    @classmethod
-    def required_sv(cls):
-        return NNx.required_sv()
-
-    @classmethod
-    def calculate_on(cls, state):
-        return NNx.calculate_on(state, cls.threshold()) / float(state[LengthSV].value)
-
 
 class NNx(TDIndex):
     """
@@ -161,17 +128,6 @@ class NNx(TDIndex):
     @staticmethod
     def threshold():
         return Sett.nnx_default_threshold
-
-    @classmethod
-    def required_sv(cls):
-        return [DiffsSV]
-
-    @classmethod
-    def calculate_on(cls, state, threshold=None):
-        if threshold is None:
-            threshold = cls.threshold()
-
-        return sum(1 for x in state[DiffsSV].value if x > threshold)
 
 
 class PNN10(PNNx):
