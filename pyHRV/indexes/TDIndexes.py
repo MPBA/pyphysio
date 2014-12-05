@@ -131,7 +131,7 @@ class PNNx(TDIndex):
     def __init__(self, data=None, threshold=None):
         super(PNNx, self).__init__(data)
         self._xth = threshold if not threshold is None else self.threshold()
-        self._value = NNx(data, threshold).value / float(len(data))
+        self._value = NNx(data, self._xth).value / float(len(data))
 
     @staticmethod
     def threshold():
