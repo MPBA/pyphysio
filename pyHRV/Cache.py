@@ -1,4 +1,6 @@
 # coding=utf-8
+import spectrum
+
 __author__ = 'AleB'
 
 import numpy as np
@@ -19,7 +21,7 @@ class CacheableDataCalc(object):
         """
         @raise NotImplementedError: Ever, this class is static and not instantiable.
         """
-        raise NotImplementedError(self.__class__.__name__ + " is static and not instantiable.")
+        raise TypeError(self.__class__.__name__ + " is static and not instantiable.")
 
     @classmethod
     def get(cls, data, params=None, use_cache=True):
@@ -78,11 +80,11 @@ class FFTCalc(CacheableDataCalc):
         return bands, powers
 
 
-class PSDWelchCalc(CacheableDataCalc):
+class PSDWelch1Calc(CacheableDataCalc):
     @classmethod
     def _calculate_data(cls, data, interp_freq):
         """
-        Calculates the PSDWelch data to cache
+        Calculates the PSDWelch data to cache, uses algorithms bands distribution
         @param data: DataSeries object
         @type data: DataSeries
         @param interp_freq: Frequency for the interpolation before the pow. spec. estimation.
@@ -92,8 +94,141 @@ class PSDWelchCalc(CacheableDataCalc):
         if interp_freq is None:
             interp_freq = Sett.default_interpolation_freq
         rr_interp, bt_interp = interpolate_ibi(data, interp_freq)
-        bands, powers = signal.welch(rr_interp, interp_freq, nfft=max(128, rr_interp.shape[-1]))
+        bands, powers = signal.welch(rr_interp, interp_freq, nfft=max(128, len(rr_interp)))
         powers = np.sqrt(powers)
+        return bands, powers / np.max(powers), sum(powers) / len(powers)
+
+
+class PSDLombscargleCalc(CacheableDataCalc):
+    @classmethod
+    def _calculate_data(cls, data, interp_freq):
+        """
+        Calculates the PSD data to cache using the Lombscargle algorithm
+        @param data: DataSeries object
+        @type data: DataSeries
+        @param interp_freq: Frequency for the interpolation before the pow. spec. estimation.
+        @return: Data to cache: (bands, powers, total_power)
+        @rtype: (array, ndarray, float)
+        """
+        if interp_freq is None:
+            interp_freq = Sett.default_interpolation_freq
+        if Sett.remove_mean:
+            data = data - np.mean(data)
+        t = np.cumsum(data)
+        bands = np.linspace(start=0, stop=interp_freq / 2, num=max(128, len(data)), endpoint=True)
+        bands = bands[1:]
+        powers = np.sqrt(4 * (signal.lombscargle(t, data, bands) / len(data)))
+
+        return bands, powers / np.max(powers), sum(powers) / len(powers)
+
+
+class PSDFFTCalc(CacheableDataCalc):
+    @classmethod
+    def _calculate_data(cls, data, interp_freq):
+        """
+        Calculates the PSD data to cache using the fft algorithm
+        @param data: DataSeries object
+        @type data: DataSeries
+        @param interp_freq: Frequency for the interpolation before the pow. spec. estimation.
+        @return: Data to cache: (bands, powers, total_power)
+        @rtype: (array, ndarray, float)
+        """
+        if interp_freq is None:
+            interp_freq = Sett.default_interpolation_freq
+        data_interp, t_interp = interpolate_ibi(data, interp_freq)
+        if Sett.remove_mean:
+            data_interp = data_interp - np.mean(data_interp)
+
+        hw = np.hamming(len(data_interp))
+        frame = data_interp * hw
+        spec_tmp = np.absolute(np.fft.fft(frame)) ** 2  # FFT
+        powers = spec_tmp[0:(np.ceil(len(spec_tmp) / 2))]
+
+        bands = np.linspace(start=0, stop=interp_freq / 2, num=len(powers), endpoint=True)
+
+        return bands, powers / np.max(powers), sum(powers) / len(powers)
+
+
+class PSDWelchCalc(CacheableDataCalc):
+    @classmethod
+    def _calculate_data(cls, data, interp_freq):
+        """
+        Calculates the PSD data to cache using the welch algorithm, uses linspace bands distribution
+        @param data: DataSeries object
+        @type data: DataSeries
+        @param interp_freq: Frequency for the interpolation before the pow. spec. estimation.
+        @return: Data to cache: (bands, powers, total_power)
+        @rtype: (array, ndarray, float)
+        """
+        if interp_freq is None:
+            interp_freq = Sett.default_interpolation_freq
+        data_interp, t_interp = interpolate_ibi(data, interp_freq)
+        if Sett.remove_mean:
+            data_interp = data_interp - np.mean(data_interp)
+        bands_w, powers = signal.welch(data_interp, interp_freq, nfft=max(128, len(data_interp)))
+        bands = np.linspace(start=0, stop=interp_freq / 2, num=len(powers), endpoint=True)
+
+        return bands, powers / np.max(powers), sum(powers) / len(powers)
+
+
+class PSDAr1Calc(CacheableDataCalc):
+    @classmethod
+    def _calculate_data(cls, data, interp_freq):
+        """
+        Calculates the PSD data to cache using the ar_1 algorithm
+        @param data: DataSeries object
+        @type data: DataSeries
+        @param interp_freq: Frequency for the interpolation before the pow. spec. estimation.
+        @return: Data to cache: (bands, powers, total_power)
+        @rtype: (array, ndarray, float)
+        """
+        if interp_freq is None:
+            interp_freq = Sett.default_interpolation_freq
+        data_interp, t_interp = interpolate_ibi(data, interp_freq)
+        if Sett.remove_mean:
+            data_interp = data_interp - np.mean(data_interp)
+
+        p = spectrum.Periodogram(data_interp, sampling=interp_freq, NFFT=max(128, len(data_interp)))
+        p()
+        powers = p.get_converted_psd('onesided')
+        bands = np.linspace(start=0, stop=interp_freq / 2, num=len(powers), endpoint=True)
+
+        return bands, powers / np.max(powers), sum(powers) / len(powers)
+
+
+class PSDAr2Calc(CacheableDataCalc):
+    @classmethod
+    def _calculate_data(cls, data, interp_freq):
+        """
+        Calculates the PSD data to cache using the ar_2 algorithm
+        @param data: DataSeries object
+        @type data: DataSeries
+        @param interp_freq: Frequency for the interpolation before the pow. spec. estimation.
+        @return: Data to cache: (bands, powers, total_power)
+        @rtype: (array, ndarray, float)
+        """
+        if interp_freq is None:
+            interp_freq = Sett.default_interpolation_freq
+        powers = []
+
+        data_interp, t_interp = interpolate_ibi(data, interp_freq)
+        if Sett.remove_mean:
+            data_interp = data_interp - np.mean(data_interp)
+
+        orders = range(1, Sett.ar_2_max_order + 1)
+        for order in orders:
+            try:
+                ar, p, k = spectrum.aryule(data_interp, order=order, norm='biased')
+            except AssertionError:
+                ar = 1
+                print("Error in ar_2 psd ayrule, assumed ar=1")
+            powers = spectrum.arma2psd(ar, NFFT=max(128, len(data_interp)))
+            powers = powers[0: np.ceil(len(powers) / 2)]
+        else:
+            print("Error in ar_2 psd, orders=0, empty powers")
+
+        bands = np.linspace(start=0, stop=interp_freq / 2, num=len(powers), endpoint=True)
+
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 
 
@@ -164,7 +299,7 @@ class OrderedSubsets2(CacheableDataCalc):
         @param data: DataSeries object
         @type data: DataSeries
         @param params: Unused
-        @return: Data to cache: Takens vector (2)
+        @return: Data to cache: Tokens vector (2)
         @rtype: array
         """
         return ordered_subsets(data, 2)
@@ -178,17 +313,17 @@ class OrderedSubsets3(CacheableDataCalc):
         @param data: DataSeries object
         @type data: DataSeries
         @param params: Unused
-        @return: Data to cache: Takens vector (3)
+        @return: Data to cache: Tokens vector (3)
         @rtype: array
         """
         return ordered_subsets(data, 3)
 
 
-class PoinSD(CacheableDataCalc):
+class PoincareSD(CacheableDataCalc):
     @classmethod
     def _calculate_data(cls, data, params=None):
         """
-        Calculates Poincaré SD 1 and 2
+        Calculates Poincare SD 1 and 2
         @param data: DataSeries object
         @type data: DataSeries
         @param params: Unused

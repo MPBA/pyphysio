@@ -1,3 +1,5 @@
+from pyHRV.Cache import PSDWelchCalc
+
 __author__ = "AleB"
 __all__ = ['PyHRVSettings', 'MainSettings']
 
@@ -41,6 +43,9 @@ class PyHRVSettings(object):
         self.vlf_band_upper_bound = 0.04
         self.lf_band_upper_bound = 0.15
         self.hf_band_upper_bound = 0.4
+        self.psd_algorithm = PSDWelchCalc
+        self.remove_mean = True
+        self.ar_2_max_order = 30
 
         # NonLinearIndexes:
         self.sample_entropy_r = 0.2

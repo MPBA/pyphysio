@@ -7,7 +7,7 @@ from scipy.spatial.distance import cdist, pdist
 from scipy.stats.mstats import mquantiles
 import numpy as np
 
-from pyHRV.Cache import Diff, OrderedSubsets2, OrderedSubsets3, PoinSD, StandardDeviation
+from pyHRV.Cache import Diff, OrderedSubsets2, OrderedSubsets3, PoincareSD, StandardDeviation
 from pyHRV.indexes.BaseIndexes import NonLinearIndex
 from pyHRV.indexes.TDIndexes import Mean
 from pyHRV.Utility import ordered_subsets
@@ -188,7 +188,7 @@ class PoinSD1(NonLinearIndex):
 
     def __init__(self, data=None):
         super(PoinSD1, self).__init__(data)
-        sd1, sd2 = PoinSD.get(self._data)
+        sd1, sd2 = PoincareSD.get(self._data)
         self._value = sd1
 
 
@@ -199,7 +199,7 @@ class PoinSD2(NonLinearIndex):
 
     def __init__(self, data=None):
         super(PoinSD2, self).__init__(data)
-        sd1, sd2 = PoinSD.get(self._data)
+        sd1, sd2 = PoincareSD.get(self._data)
         self._value = sd2
 
 
@@ -210,7 +210,7 @@ class PoinSD12(NonLinearIndex):
 
     def __init__(self, data=None):
         super(PoinSD12, self).__init__(data)
-        sd1, sd2 = PoinSD.get(self._data)
+        sd1, sd2 = PoincareSD.get(self._data)
         self._value = sd1 / sd2
 
 
@@ -221,7 +221,7 @@ class PoinEll(NonLinearIndex):
 
     def __init__(self, data=None):
         super(PoinEll, self).__init__(data)
-        sd1, sd2 = PoinSD.get(self._data)
+        sd1, sd2 = PoincareSD.get(self._data)
         self._value = sd1 * sd2 * np.pi
 
 

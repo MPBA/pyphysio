@@ -45,7 +45,7 @@ class Index(object):
         @param state: Support values
         @raise NotImplementedError: Ever here.
         """
-        raise NotImplementedError(cls.__name__ + " is not available as an on-line index.")
+        raise TypeError(cls.__name__ + " is not available as an on-line index.")
 
 
 class TDIndex(Index):
