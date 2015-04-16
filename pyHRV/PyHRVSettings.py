@@ -1,4 +1,4 @@
-from pyHRV.Cache import PSDWelchCalc
+from pyHRV.indexes.CacheOnlyFeatures import PSDWelchCalc
 
 __author__ = "AleB"
 __all__ = ['PyHRVSettings', 'MainSettings']

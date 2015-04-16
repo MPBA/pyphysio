@@ -4,12 +4,12 @@ __all__ = ['HF', 'HFNormal', 'HFPeak', 'LF', 'LFHF', 'LFNormal', 'LFPeak', 'Norm
 
 import numpy as np
 
-from pyHRV.indexes.BaseIndexes import FDIndex
-from pyHRV.Cache import CacheableDataCalc
+from pyHRV.indexes.BaseFeatures import FDFeature
+from pyHRV.indexes.CacheOnlyFeatures import CacheableDataCalc
 from pyHRV.PyHRVSettings import MainSettings as Sett
 
 
-class InBand(FDIndex):
+class InBand(FDFeature):
     def __init__(self, freq_min, freq_max, interp_freq=Sett.default_interpolation_freq, data=None):
         super(InBand, self).__init__(interp_freq, data)
         self._freq_min = freq_min
@@ -172,7 +172,7 @@ class HFNormal(PowerInBandNormal):
         super(HFNormal, self).__init__(Sett.lf_band_upper_bound, Sett.hf_band_upper_bound, data)
 
 
-class LFHF(FDIndex):
+class LFHF(FDFeature):
     """
     Calculates the power ratio between the LF and the HF band (parametrized in the settings).
     """
@@ -181,11 +181,11 @@ class LFHF(FDIndex):
         """
         Calculates the power ratio between the LF and the HF band (parametrized in the settings).
         """
-        super(FDIndex, self).__init__(data)
+        super(FDFeature, self).__init__(data)
         self._value = LF(self._data).value / HF(self._data).value
 
 
-class NormalizedLF(FDIndex):
+class NormalizedLF(FDFeature):
     """
     Calculates the normalized power value of the LF band (parametrized in the settings) over the LF and HF bands.
     """
@@ -194,11 +194,11 @@ class NormalizedLF(FDIndex):
         """
         Calculates the normalized power value of the LF band (parametrized in the settings) over the LF and HF bands.
         """
-        super(FDIndex, self).__init__(data)
+        super(FDFeature, self).__init__(data)
         self._value = LF(self._data).value / (HF(self._data).value + LF(self._data).value)
 
 
-class NormalizedHF(FDIndex):
+class NormalizedHF(FDFeature):
     """
     Calculates the normalized power value of the HF band (parametrized in the settings) over the LF and HF bands.
     """
@@ -207,5 +207,5 @@ class NormalizedHF(FDIndex):
         """
         Calculates the normalized power value of the HF band (parametrized in the settings) over the LF and HF bands.
         """
-        super(FDIndex, self).__init__(data)
+        super(FDFeature, self).__init__(data)
         self._value = HF(self._data).value / (HF(self._data).value + LF(self._data).value)

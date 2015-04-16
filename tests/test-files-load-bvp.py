@@ -1,4 +1,4 @@
-from pyHRV.indexes.TDIndexes import TINN, Triang
+from pyHRV.indexes.TDFeatures import TINN, Triang
 from pyHRV.Files import load_ibi_from_bvp
 from pyHRV.Filters import IBIFilters
 

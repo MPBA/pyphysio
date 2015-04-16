@@ -13,9 +13,9 @@ windows = pyHRV.LinearTimeWinGen(step=20000, width=40000, data=Test1.data_series
 mapper = pyHRV.WindowsIterator(
     Test1.data_series,
     windows,
-    pyHRV.indexes.TDIndexes.__all__ +
-    pyHRV.indexes.FDIndexes.__all__ +
-    pyHRV.indexes.NonLinearIndexes.__all__)
+    pyHRV.indexes.TDFeatures.__all__ +
+    pyHRV.indexes.FDFeatures.__all__ +
+    pyHRV.indexes.NonLinearFeatures.__all__)
 mapper.compute_all()
 # We convert the results to a example_data frame
 data_frame = pandas.DataFrame(mapper.results)

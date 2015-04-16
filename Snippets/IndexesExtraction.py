@@ -1,5 +1,5 @@
 from pyHRV import DataSeries
-from pyHRV.indexes.TDIndexes import Mean, SD
+from pyHRV.indexes.TDFeatures import Mean, SD
 from pyHRV.windowing.WindowsBase import Window
 from pyHRV.windowing.WindowsGenerators import LinearWinGen
 from pyHRV.windowing.WindowsIterator import WindowsIterator

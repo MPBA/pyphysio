@@ -10,20 +10,20 @@ NonLinearIndexes:   Like e.g. entropy indexes and Poincaré indexes.
 
 __author__ = 'AleB'
 
-import TDIndexes
-import FDIndexes
-import NonLinearIndexes
-import BaseIndexes
-from TDIndexes import *
-from FDIndexes import *
-from NonLinearIndexes import *
+import TDFeatures
+import FDFeatures
+import NonLinearFeatures
+import BaseFeatures
+from TDFeatures import *
+from FDFeatures import *
+from NonLinearFeatures import *
 import pyHRV
 
 __all_indexes__ = []
-__all_indexes__.extend(TDIndexes.__all__)
-__all_indexes__.extend(FDIndexes.__all__)
-__all_indexes__.extend(NonLinearIndexes.__all__)
-__all__ = ['TDIndexes', 'FDIndexes', 'NonLinearIndexes']
+__all_indexes__.extend(TDFeatures.__all__)
+__all_indexes__.extend(FDFeatures.__all__)
+__all_indexes__.extend(NonLinearFeatures.__all__)
+__all__ = ['TDFeatures.py', 'FDFeatures.py', 'NonLinearFeatures.py']
 __all__.extend(__all_indexes__)
 
 

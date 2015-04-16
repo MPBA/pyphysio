@@ -1,19 +1,20 @@
 __author__ = 'AleB'
 __all__ = ['Mean', 'Median', 'SD', 'SDSD', 'NN10', 'NN25', 'NN50', 'NNx', 'PNN10', 'PNN25', 'PNN50', 'PNNx', 'RMSSD',
-           'HRMean', 'HRMedian', 'HRSD', "Triang", "TINN"]
+           'HRMean', 'HRMedian', "Triang", "TINN"]
 
 import numpy as np
 
-from pyHRV.Cache import CacheableDataCalc, Diff, Histogram, HistogramMax
-from pyHRV.indexes.BaseIndexes import TDIndex
+from pyHRV.indexes.CacheOnlyFeatures import CacheableDataCalc, Diff, Histogram, HistogramMax
+from pyHRV.indexes.BaseFeatures import TDFeature
 from pyHRV.PyHRVSettings import MainSettings as Sett
 from pyHRV.indexes.SupportValues import SumSV, LengthSV, DiffsSV, MedianSV
 
 
-class Mean(TDIndex, CacheableDataCalc):
+class Mean(TDFeature, CacheableDataCalc):
     """
-    Calculates the average of the data series.
+    Calculates the average of the data.
     """
+    # PyPhysio ready
 
     def __init__(self, data=None):
         super(Mean, self).__init__(data)
@@ -32,32 +33,11 @@ class Mean(TDIndex, CacheableDataCalc):
         return state[SumSV].value / float(state[LengthSV].value)
 
 
-class HRMean(TDIndex, CacheableDataCalc):
-    """
-    Calculates the average of the data series and converts it into Beats per Minute.
-    """
-
-    def __init__(self, data=None):
-        super(HRMean, self).__init__(data)
-        self._value = HRMean.get(self._data)
-
-    @classmethod
-    def _calculate_data(cls, data, params):
-        return np.mean(60000. / data)
-
-    @classmethod
-    def required_sv(cls):
-        return Mean.required_sv()
-
-    @classmethod
-    def calculate_on(cls, state):
-        return 60000. / Mean.calculate_on(state)
-
-
-class Median(TDIndex, CacheableDataCalc):
+class Median(TDFeature, CacheableDataCalc):
     """
     Calculates the median of the data series.
     """
+    # PyPhysio ready
 
     def __init__(self, data=None):
         super(Median, self).__init__(data)
@@ -76,28 +56,11 @@ class Median(TDIndex, CacheableDataCalc):
         return state[MedianSV].value
 
 
-class HRMedian(TDIndex):
-    """
-    Calculates the average of the data series and converts it into Beats per Minute.
-    """
-
-    def __init__(self, data=None):
-        super(HRMedian, self).__init__(data)
-        self._value = 60000. / Median.get(self._data)
-
-    @classmethod
-    def required_sv(cls):
-        return [MedianSV]
-
-    @classmethod
-    def calculate_on(cls, state):
-        return 60000. / state[MedianSV].value
-
-
-class SD(TDIndex, CacheableDataCalc):
+class SD(TDFeature, CacheableDataCalc):
     """
     Calculates the standard deviation of the data series.
     """
+    # PyPhysio ready
 
     def __init__(self, data=None):
         super(SD, self).__init__(data)
@@ -108,7 +71,7 @@ class SD(TDIndex, CacheableDataCalc):
         return np.std(data)
 
 
-class HRSD(TDIndex, CacheableDataCalc):
+class HRSD(TDFeature, CacheableDataCalc):
     """
     Calculates the average of the data series and converts it into Beats per Minute.
     """
@@ -122,7 +85,7 @@ class HRSD(TDIndex, CacheableDataCalc):
         return np.std(60 / data)
 
 
-class PNNx(TDIndex):
+class PNNx(TDFeature):
     """
     Calculates the presence proportion (0.0-1.0) of pairs of consecutive IBIs in the data series
     where the difference between the two values is greater than the parameter (threshold).
@@ -146,7 +109,7 @@ class PNNx(TDIndex):
         return NNx.calculate_on(state, cls.threshold()) / float(state[LengthSV].value)
 
 
-class NNx(TDIndex):
+class NNx(TDFeature):
     """
     Calculates the number of pairs of consecutive IBIs in the data series where the difference between
     the two values is greater than the parameter (threshold).
@@ -240,23 +203,7 @@ class NN50(NNx):
         return 50
 
 
-class RMSSD(TDIndex):
-    """
-    Calculates the square root of the mean of the squared differences.
-    """
-
-    def __init__(self, data=None):
-        super(RMSSD, self).__init__(data)
-        if len(data) < 2:
-            print self.__class__.__name__ + " Warning: not enough samples (" + str(len(data)) + " < 2). " +\
-                "To calculate the differences between consecutive values at least 2 samples are needed."
-            self._value = np.nan
-        else:
-            diff = Diff.get(self._data)
-            self._value = np.sqrt(sum(diff ** 2) / len(diff))
-
-
-class SDSD(TDIndex):
+class SDSD(TDFeature):
     """Calculates the standard deviation of the differences between each value and its next."""
 
     def __init__(self, data=None):
@@ -266,7 +213,7 @@ class SDSD(TDIndex):
 
 
 #TODO: fix documentation
-class Triang(TDIndex):
+class Triang(TDFeature):
     """Calculates the Triangular HRV index."""
 
     def __init__(self, data=None):
@@ -276,7 +223,7 @@ class Triang(TDIndex):
 
 
 #TODO: fix documentation
-class TINN(TDIndex):
+class TINN(TDFeature):
     """Calculates the difference between two histogram-related indexes."""
 
     def __init__(self, data=None):

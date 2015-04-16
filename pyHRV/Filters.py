@@ -4,7 +4,7 @@ __all__ = ["IBIFilters"]
 import numpy as np
 
 from pyHRV.DataSeries import DataSeries
-from pyHRV.indexes.TDIndexes import Mean, SD
+from pyHRV.indexes.TDFeatures import Mean, SD
 
 
 class IBIFilters(object):

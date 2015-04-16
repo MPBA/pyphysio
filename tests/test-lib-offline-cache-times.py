@@ -1,8 +1,8 @@
 import time
 
 from pyHRV.Files import *
-from pyHRV.indexes import TDIndexes as TDIn
-from pyHRV.indexes import FDIndexes as FDIn
+from pyHRV.indexes import TDFeatures as TDIn
+from pyHRV.indexes import FDFeatures as FDIn
 
 
 _debug_time = 0

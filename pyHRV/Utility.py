@@ -2,6 +2,75 @@ __author__ = 'Andrea'
 import numpy as np
 from scipy import interpolate
 
+from pyHRV.PyHRVSettings import MainSettings as Sett
+from pyHRV.DataSeries import DataSeries, Cache
+
+
+def data_series_from_bvp(bvp, bvp_time, delta_ratio=Sett.import_bvp_delta_max_min_numerator,
+                         filters=Sett.import_bvp_filters):
+    """
+    Loads an IBI (RR) data series from a BVP data set and filters it with the specified filters list.
+    @param delta_ratio: delta parameter for the peak detection
+    @type delta_ratio: float
+    @param bvp: ecg values column
+    @type bvp: Iterable
+    @param bvp_time: ecg timestamps column
+    @type bvp_time: Iterable
+    @param filters: sequence of filters to be applied to the data (e.g. from IBIFilters)
+    @return: Filtered signal DataSeries
+    @rtype: DataSeries
+    """
+    delta = (max(bvp) - min(bvp)) / delta_ratio
+    max_i, ii, iii, iv = peak_detection(bvp, delta, bvp_time)
+    s = DataSeries(np.diff(max_i) * 1000)
+    for f in filters:
+        s = f(s)
+    s.meta_tag['from_type'] = "data_time-bvp"
+    s.meta_tag['from_peak_delta'] = delta
+    s.meta_tag['from_freq'] = np.mean(np.diff(bvp_time))
+    s.meta_tag['from_filters'] = list(Sett.import_bvp_filters)
+    return s
+
+
+def data_series_from_ecg(ecg, ecg_time, delta=Sett.import_ecg_delta, filters=Sett.import_bvp_filters):
+    """
+    Loads an IBI (RR) data series from an ECG data set and filters it with the specified filters list.
+    @param delta: delta parameter for the peak detection
+    @type delta: float
+    @param ecg: ecg values column
+    @type ecg: Iterable
+    @param ecg_time: ecg timestamps column
+    @type ecg_time: Iterable
+    @return: Filtered signal DataSeries
+    @rtype: DataSeries
+    """
+    # TODO: explain delta
+    max_tab, min_tab, ii, iii = peak_detection(ecg, delta, ecg_time)
+    s = DataSeries(np.diff(max_tab))
+    for f in filters:
+        s = f(s)
+    s.meta_tag['from_type'] = "data_time-ecg"
+    s.meta_tag['from_peak_delta'] = delta
+    s.meta_tag['from_freq'] = np.mean(np.diff(ecg_time))
+    s.meta_tag['from_filters'] = list(Sett.import_ecg_filters)
+    return s
+
+
+def derive_holdings(data, labels):
+    ll = []
+    tt = []
+    ii = []
+    ts = 0
+    pre = None
+    for i in xrange(len(labels)):
+        if pre != labels[i]:
+            ll.append(labels[i])
+            tt.append(ts)
+            ii.append(i)
+            ts += data[i]
+            pre = labels[i]
+    return ll, tt, ii
+
 
 def power(spec, freq, min_freq, max_freq):
     """

@@ -2,7 +2,7 @@ __author__ = 'AleB'
 
 from pyHRV.windowing import *
 from pyHRV.Files import *
-from pyHRV.indexes import TDIndexes as Td
+from pyHRV.indexes import TDFeatures as Td
 
 
 def main():

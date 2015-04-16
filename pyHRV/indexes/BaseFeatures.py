@@ -1,10 +1,10 @@
-##ck3
 __author__ = 'AleB'
-from pyHRV import DataSeries
+
+from pyHRV.DataSeries import Cache
 from pyHRV.PyHRVSettings import MainSettings as Sett
 
 
-class Index(object):
+class Feature(object):
     """
     This is an index extractor class.
     To calculate an index the relative class (subclass of this) must be instantiated,
@@ -18,7 +18,7 @@ class Index(object):
         @type data: DataSeries
         @param value: Already present result.
         """
-        assert self.__class__ != Index
+        assert self.__class__ != Feature
         self._value = value
         self._data = data
 
@@ -47,55 +47,78 @@ class Index(object):
         """
         raise TypeError(cls.__name__ + " is not available as an on-line index.")
 
+    @classmethod
+    def get(cls, data, params=None, use_cache=True):
+        """
+        Gets the data if cached or calculates it, saves it in the cache and returns it.
+        @param data: Source data
+        @param params: Parameters for the calculator
+        @param use_cache: Weather to use the cache memory or not
+        @return: The final data
+        """
+        if use_cache:
+            if not Cache.cache_check(data, cls):
+                Cache.cache_pre_calc_data(data, cls, params)
+            return Cache.cache_get_data(data, cls)
+        else:
+            return cls._calculate_data(data, params)
 
-class TDIndex(Index):
+    @classmethod
+    def _calculate_data(cls, data, params):
+        """
+        Placeholder for the subclasses
+        @raise NotImplementedError: Ever
+        """
+        raise NotImplementedError("Use a " + cls.__name__ + " sub-class")
+
+    @classmethod
+    def cid(cls):
+        """
+        Gets an identifier for the class
+        @rtype : str or unicode
+        """
+        return cls.__name__ + "_cn"
+
+
+class TDFeature(Feature):
     """
     This is the base class for the Time Domain Indexes.
     """
 
+    @classmethod
+    def _calculate_data(cls, data, params):
+        raise TypeError("Use a " + cls.__name__ + " sub-class")
+
     def __init__(self, data=None):
-        super(TDIndex, self).__init__(data)
+        super(TDFeature, self).__init__(data)
 
 
-class FDIndex(Index):
+class FDFeature(Feature):
     """
     This is the base class for the Frequency Domain Indexes.
     It uses the settings' default interpolation frequency parameter.
     """
 
     def __init__(self, interp_freq=Sett.default_interpolation_freq, data=None):
-        super(FDIndex, self).__init__(data)
+        super(FDFeature, self).__init__(data)
         self._interp_freq = interp_freq
         if len(data) < 3:
             raise TypeError("Not enough samples to perform a cube-spline interpolation.")
 
 
-class NonLinearIndex(Index):
+class NonLinearFeature(Feature):
     """
     This is the base class for the Non Linear Indexes.
     """
 
     def __init__(self, data=None):
-        super(NonLinearIndex, self).__init__(data)
+        super(NonLinearFeature, self).__init__(data)
 
 
-class SupportValue(object):
+class CacheOnlyFeature(Feature):
     """
-    Abstract class that defines the SupportValues' interface.
+    This is the base class for the Non Linear Indexes.
     """
 
-    def __init__(self):
-        self._state = 0
-
-    def enqueuing(self, new_value):
-        """
-        Updates each support-value with the new enqueued value.
-        """
-        self._state += 1
-
-    def dequeuing(self, old_value):
-        """
-        Updates each support-value with the just dequeued value.
-        """
-        pass
-
+    def __init__(self, data=None):
+        super(CacheOnlyFeature, self).__init__(data)

@@ -8,55 +8,11 @@ from scipy import signal
 
 from pyHRV.Utility import ordered_subsets, interpolate_ibi
 from pyHRV.DataSeries import DataSeries
+from pyHRV.indexes.BaseFeatures import CacheOnlyFeature
 from pyHRV.PyHRVSettings import MainSettings as Sett
 
 
-class CacheableDataCalc(object):
-    """
-    Static class that calculates the data that can be cached.
-    static = not instantiable, no instance methods or fields
-    """
-
-    def __init__(self):
-        """
-        @raise NotImplementedError: Ever, this class is static and not instantiable.
-        """
-        raise TypeError(self.__class__.__name__ + " is static and not instantiable.")
-
-    @classmethod
-    def get(cls, data, params=None, use_cache=True):
-        """
-        Gets the data if cached or calculates it, saves it in the cache and returns it.
-        @param data: Source data
-        @param params: Parameters for the calculator
-        @param use_cache: Weather to use the cache memory or not
-        @return: The final data
-        """
-        if use_cache and isinstance(data, DataSeries):
-            if not data.cache_check(cls):
-                data.cache_pre_calc_data(cls, params)
-            return data.cache_get_data(cls)
-        else:
-            return cls._calculate_data(data, params)
-
-    @classmethod
-    def _calculate_data(cls, data, params):
-        """
-        Placeholder for the subclasses
-        @raise NotImplementedError: Ever
-        """
-        raise NotImplementedError("Only on " + cls.__name__ + " sub-classes")
-
-    @classmethod
-    def cid(cls):
-        """
-        Gets an identifier for the class
-        @rtype : str or unicode
-        """
-        return cls.__name__ + "_cn"
-
-
-class FFTCalc(CacheableDataCalc):
+class FFTCalc(CacheOnlyFeature):
     @classmethod
     def _calculate_data(cls, data, interp_freq):
         """
@@ -65,7 +21,7 @@ class FFTCalc(CacheableDataCalc):
         @type data: DataSeries
         @param interp_freq: Frequency for the interpolation before the pow. spec. estimation.
         @return: Data to cache: (bands, powers)
-        @rtype: (array, ndarray)
+        @rtype: (array, array)
         """
         rr_interp, bt_interp = interpolate_ibi(data.series, interp_freq)
         interp_freq = interp_freq
@@ -80,7 +36,7 @@ class FFTCalc(CacheableDataCalc):
         return bands, powers
 
 
-class PSDWelch1Calc(CacheableDataCalc):
+class PSDWelch1Calc(CacheOnlyFeature):
     @classmethod
     def _calculate_data(cls, data, interp_freq):
         """
@@ -89,7 +45,7 @@ class PSDWelch1Calc(CacheableDataCalc):
         @type data: DataSeries
         @param interp_freq: Frequency for the interpolation before the pow. spec. estimation.
         @return: Data to cache: (bands, powers, total_power)
-        @rtype: (array, ndarray, float)
+        @rtype: (array, array, float)
         """
         if interp_freq is None:
             interp_freq = Sett.default_interpolation_freq
@@ -99,7 +55,7 @@ class PSDWelch1Calc(CacheableDataCalc):
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 
 
-class PSDLombscargleCalc(CacheableDataCalc):
+class PSDLombscargleCalc(CacheOnlyFeature):
     @classmethod
     def _calculate_data(cls, data, interp_freq):
         """
@@ -108,7 +64,7 @@ class PSDLombscargleCalc(CacheableDataCalc):
         @type data: DataSeries
         @param interp_freq: Frequency for the interpolation before the pow. spec. estimation.
         @return: Data to cache: (bands, powers, total_power)
-        @rtype: (array, ndarray, float)
+        @rtype: (array, array, float)
         """
         if interp_freq is None:
             interp_freq = Sett.default_interpolation_freq
@@ -122,7 +78,7 @@ class PSDLombscargleCalc(CacheableDataCalc):
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 
 
-class PSDFFTCalc(CacheableDataCalc):
+class PSDFFTCalc(CacheOnlyFeature):
     @classmethod
     def _calculate_data(cls, data, interp_freq):
         """
@@ -131,7 +87,7 @@ class PSDFFTCalc(CacheableDataCalc):
         @type data: DataSeries
         @param interp_freq: Frequency for the interpolation before the pow. spec. estimation.
         @return: Data to cache: (bands, powers, total_power)
-        @rtype: (array, ndarray, float)
+        @rtype: (array, array, float)
         """
         if interp_freq is None:
             interp_freq = Sett.default_interpolation_freq
@@ -149,7 +105,7 @@ class PSDFFTCalc(CacheableDataCalc):
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 
 
-class PSDWelchCalc(CacheableDataCalc):
+class PSDWelchCalc(CacheOnlyFeature):
     @classmethod
     def _calculate_data(cls, data, interp_freq):
         """
@@ -158,7 +114,7 @@ class PSDWelchCalc(CacheableDataCalc):
         @type data: DataSeries
         @param interp_freq: Frequency for the interpolation before the pow. spec. estimation.
         @return: Data to cache: (bands, powers, total_power)
-        @rtype: (array, ndarray, float)
+        @rtype: (array, array, float)
         """
         if interp_freq is None:
             interp_freq = Sett.default_interpolation_freq
@@ -171,7 +127,7 @@ class PSDWelchCalc(CacheableDataCalc):
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 
 
-class PSDAr1Calc(CacheableDataCalc):
+class PSDAr1Calc(CacheOnlyFeature):
     @classmethod
     def _calculate_data(cls, data, interp_freq):
         """
@@ -180,7 +136,7 @@ class PSDAr1Calc(CacheableDataCalc):
         @type data: DataSeries
         @param interp_freq: Frequency for the interpolation before the pow. spec. estimation.
         @return: Data to cache: (bands, powers, total_power)
-        @rtype: (array, ndarray, float)
+        @rtype: (array, array, float)
         """
         if interp_freq is None:
             interp_freq = Sett.default_interpolation_freq
@@ -196,7 +152,7 @@ class PSDAr1Calc(CacheableDataCalc):
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 
 
-class PSDAr2Calc(CacheableDataCalc):
+class PSDAr2Calc(CacheOnlyFeature):
     @classmethod
     def _calculate_data(cls, data, interp_freq):
         """
@@ -205,7 +161,7 @@ class PSDAr2Calc(CacheableDataCalc):
         @type data: DataSeries
         @param interp_freq: Frequency for the interpolation before the pow. spec. estimation.
         @return: Data to cache: (bands, powers, total_power)
-        @rtype: (array, ndarray, float)
+        @rtype: (array, array, float)
         """
         if interp_freq is None:
             interp_freq = Sett.default_interpolation_freq
@@ -232,7 +188,7 @@ class PSDAr2Calc(CacheableDataCalc):
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 
 
-class Histogram(CacheableDataCalc):
+class Histogram(CacheOnlyFeature):
     @classmethod
     def _calculate_data(cls, data, histogram_bins=Sett.cache_histogram_bins):
         """
@@ -248,7 +204,7 @@ class Histogram(CacheableDataCalc):
         return np.histogram(data, histogram_bins)
 
 
-class HistogramMax(CacheableDataCalc):
+class HistogramMax(CacheOnlyFeature):
     @classmethod
     def _calculate_data(cls, data, histogram_bins=Sett.cache_histogram_bins):
         """
@@ -263,7 +219,7 @@ class HistogramMax(CacheableDataCalc):
         return np.max(h)  # TODO: max h or b(max h)??
 
 
-class Diff(CacheableDataCalc):
+class Diff(CacheOnlyFeature):
     @classmethod
     def _calculate_data(cls, data, params=None):
         """
@@ -277,7 +233,7 @@ class Diff(CacheableDataCalc):
         return np.diff(np.array(data))
 
 
-class StandardDeviation(CacheableDataCalc):
+class StandardDeviation(CacheOnlyFeature):
     @classmethod
     def _calculate_data(cls, data, params=None):
         """
@@ -291,7 +247,7 @@ class StandardDeviation(CacheableDataCalc):
         return np.std(np.array(data))
 
 
-class OrderedSubsets2(CacheableDataCalc):
+class OrderedSubsets2(CacheOnlyFeature):
     @classmethod
     def _calculate_data(cls, data, params=None):
         """
@@ -305,7 +261,7 @@ class OrderedSubsets2(CacheableDataCalc):
         return ordered_subsets(data, 2)
 
 
-class OrderedSubsets3(CacheableDataCalc):
+class OrderedSubsets3(CacheOnlyFeature):
     @classmethod
     def _calculate_data(cls, data, params=None):
         """
@@ -319,7 +275,7 @@ class OrderedSubsets3(CacheableDataCalc):
         return ordered_subsets(data, 3)
 
 
-class PoincareSD(CacheableDataCalc):
+class PoincareSD(CacheOnlyFeature):
     @classmethod
     def _calculate_data(cls, data, params=None):
         """

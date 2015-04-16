@@ -1,7 +1,6 @@
 __author__ = 'AleB'
 __all__ = ['SupportValuesCollection']
 
-from BaseIndexes import SupportValue
 from SupportValues import VectorSV
 import pyHRV
 
@@ -23,7 +22,7 @@ class SupportValuesCollection(object):
         self._supp = {VectorSV: VectorSV(self._supp)}
         for i in indexes:
             for r in getattr(pyHRV, i).required_sv():
-                if not r in self._supp:
+                if r not in self._supp:
                     self._supp[r] = r(self._supp)
 
     def __len__(self):
@@ -33,7 +32,7 @@ class SupportValuesCollection(object):
         """
         @rtype : SupportValue
         """
-        if not item in self._supp:
+        if item not in self._supp:
             print("SupportValue not initialized: " + str(item))
             return None
         return self._supp[item]
@@ -56,8 +55,8 @@ class SupportValuesCollection(object):
         @type new_value: float
         """
         for s in self._supp.values():
-            s.enqueuing(new_value)
+            s.add(new_value)
         if self.ready:
             old_value = self._supp[VectorSV].value[-1]
             for s in self._supp.values():
-                s.dequeuing(old_value)
+                s.sub(old_value)

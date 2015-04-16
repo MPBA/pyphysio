@@ -7,14 +7,14 @@ from scipy.spatial.distance import cdist, pdist
 from scipy.stats.mstats import mquantiles
 import numpy as np
 
-from pyHRV.Cache import Diff, OrderedSubsets2, OrderedSubsets3, PoincareSD, StandardDeviation
-from pyHRV.indexes.BaseIndexes import NonLinearIndex
-from pyHRV.indexes.TDIndexes import Mean
+from pyHRV.indexes.CacheOnlyFeatures import Diff, OrderedSubsets2, OrderedSubsets3, PoincareSD, StandardDeviation
+from pyHRV.indexes.BaseFeatures import NonLinearFeature
+from pyHRV.indexes.TDFeatures import Mean
 from pyHRV.Utility import ordered_subsets
 from pyHRV.PyHRVSettings import MainSettings as Sett
 
 
-class ApproxEntropy(NonLinearIndex):
+class ApproxEntropy(NonLinearFeature):
     """
     Calculates the approx entropy of the data series.
     """
@@ -50,7 +50,7 @@ class ApproxEntropy(NonLinearIndex):
             self._value = phi_m - phi_m1
 
 
-class SampleEntropy(NonLinearIndex):
+class SampleEntropy(NonLinearFeature):
     """
     Calculates the sample entropy of the data series.
     """
@@ -87,7 +87,7 @@ class SampleEntropy(NonLinearIndex):
             self._value = np.log(cm / cm1)
 
 
-class FractalDimension(NonLinearIndex):
+class FractalDimension(NonLinearFeature):
     """
     Calculates the fractal dimension of the data series.
     """
@@ -114,7 +114,7 @@ class FractalDimension(NonLinearIndex):
             self._value = (np.log(cmr_b) - np.log(cmr_a)) / (np.log(rb) - np.log(ra))
 
 
-class SVDEntropy(NonLinearIndex):
+class SVDEntropy(NonLinearFeature):
     """
     Calculates the SVD entropy of the data series.
     """
@@ -130,7 +130,7 @@ class SVDEntropy(NonLinearIndex):
             self._value = -1 * sum(w * np.log(w))
 
 
-class Fisher(NonLinearIndex):
+class Fisher(NonLinearFeature):
     """
     Calculates the Fisher index of the data series.
     """
@@ -150,7 +150,7 @@ class Fisher(NonLinearIndex):
             self._value = fi
 
 
-class CorrelationDim(NonLinearIndex):
+class CorrelationDim(NonLinearFeature):
     """
     Calculates the correlation dimension of the data series.
     """
@@ -181,7 +181,7 @@ class CorrelationDim(NonLinearIndex):
             self._value = (log_c[-1] - log_c[0]) / (log_r[-1] - log_r[0])
 
 
-class PoinSD1(NonLinearIndex):
+class PoinSD1(NonLinearFeature):
     """
     Calculates the SD1 Poincaré index of the data series.
     """
@@ -192,7 +192,7 @@ class PoinSD1(NonLinearIndex):
         self._value = sd1
 
 
-class PoinSD2(NonLinearIndex):
+class PoinSD2(NonLinearFeature):
     """
     Calculates the SD2 Poincaré index of the data series.
     """
@@ -203,7 +203,7 @@ class PoinSD2(NonLinearIndex):
         self._value = sd2
 
 
-class PoinSD12(NonLinearIndex):
+class PoinSD12(NonLinearFeature):
     """
     Calculates the ratio between SD1 and SD2 Poincaré indexes of the data series.
     """
@@ -214,7 +214,7 @@ class PoinSD12(NonLinearIndex):
         self._value = sd1 / sd2
 
 
-class PoinEll(NonLinearIndex):
+class PoinEll(NonLinearFeature):
     """
     Calculates the Poincaré Ell. index of the data series.
     """
@@ -225,7 +225,7 @@ class PoinEll(NonLinearIndex):
         self._value = sd1 * sd2 * np.pi
 
 
-class Hurst(NonLinearIndex):
+class Hurst(NonLinearFeature):
     """
     Calculates the Hurst HRV index of the data series.
     """
@@ -254,7 +254,7 @@ class Hurst(NonLinearIndex):
             self._value = h[0]
 
 
-class PetrosianFracDim(NonLinearIndex):
+class PetrosianFracDim(NonLinearFeature):
     """
     Calculates the petrosian's fractal dimension of the data series.
     """
@@ -270,7 +270,7 @@ class PetrosianFracDim(NonLinearIndex):
         self._value = np.float(np.log10(n) / (np.log10(n) + np.log10(n / n + 0.4 * n_delta)))
 
 
-class DFAShortTerm(NonLinearIndex):
+class DFAShortTerm(NonLinearFeature):
     """
     Calculate the alpha1 (short term) component index of the De-trended Fluctuation Analysis.
     """
@@ -300,7 +300,7 @@ class DFAShortTerm(NonLinearIndex):
             self._value = np.nan
 
 
-class DFALongTerm(NonLinearIndex):
+class DFALongTerm(NonLinearFeature):
     """
     Calculate the alpha2 (long term) component index of the De-trended Fluctuation Analysis.
     """

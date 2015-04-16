@@ -1,8 +1,28 @@
 __author__ = 'AleB'
 
-from BaseIndexes import SupportValue
 from pyHRV.Utility import template_interpolation
 from pyHRV.PyHRVSettings import MainSettings as Ps
+
+
+class SupportValue(object):
+    """
+    Abstract class that defines the SupportValues' interface.
+    """
+
+    def __init__(self):
+        self._state = 0
+
+    def add(self, new_value):
+        """
+        Updates each support-value with the new enqueued value.
+        """
+        self._state += 1
+
+    def sub(self, old_value):
+        """
+        Updates each support-value with the just dequeued value.
+        """
+        pass
 
 
 class SumSV(SupportValue):
@@ -15,10 +35,10 @@ class SumSV(SupportValue):
         self._s = 0
         self._c = sv_collection
 
-    def enqueuing(self, new_value):
+    def add(self, new_value):
         self._s += new_value
 
-    def dequeuing(self, old_value):
+    def sub(self, old_value):
         self._s -= old_value
 
     @property
@@ -36,15 +56,15 @@ class DistributionSV(SupportValue):
         self._c = sv_collection
         self._m = {}
 
-    def enqueuing(self, new_value):
-        SupportValue.enqueuing(self, None)
+    def add(self, new_value):
+        SupportValue.add(self, None)
         if new_value in self._m:
             self._m[new_value] += 1  # can not be 0
         else:
             self._m[new_value] = 1  # as
 
-    def dequeuing(self, old_value):
-        assert not old_value is None, "Big Error: No values to dequeue"
+    def sub(self, old_value):
+        assert old_value is not None, "Big Error: No values to dequeue"
         if self._m[old_value] == 1:  # can not be 0
             del self._m[old_value]  # as
         else:
@@ -65,15 +85,15 @@ class MinSV(SupportValue):
         self._c = sv_collection
         self._v = None
 
-    def enqueuing(self, new_value):
-        SupportValue.enqueuing(self, None)
+    def add(self, new_value):
+        SupportValue.add(self, None)
         if self._v is None:
             self._v = new_value
         else:
             if new_value < self._v:
                 self._v = new_value
 
-    def dequeuing(self, old_value):
+    def sub(self, old_value):
         if old_value == self._v:
             self._v = min(self._c[DistributionSV].value.keys())
 
@@ -92,15 +112,15 @@ class MaxSV(SupportValue):
         self._c = sv_collection
         self._v = None
 
-    def enqueuing(self, new_value):
-        SupportValue.enqueuing(self, None)
+    def add(self, new_value):
+        SupportValue.add(self, None)
         if self._v is None:
             self._v = new_value
         else:
             if new_value > self._v:
                 self._v = new_value
 
-    def dequeuing(self, old_value):
+    def sub(self, old_value):
         if old_value == self._v:
             self._v = max(self._c[DistributionSV].value.keys())
 
@@ -119,11 +139,11 @@ class LengthSV(SupportValue):
         self._c = sv_collection
         self._v = 0
 
-    def enqueuing(self, new_value):
-        SupportValue.enqueuing(self, None)
+    def add(self, new_value):
+        SupportValue.add(self, None)
         self._v += 1
 
-    def dequeuing(self, old_value):
+    def sub(self, old_value):
         self._v -= 1
 
     @property
@@ -141,11 +161,11 @@ class VectorSV(SupportValue):
         self.sv_collection = sv_collection
         self._v = []
 
-    def enqueuing(self, new_value):
-        SupportValue.enqueuing(self, None)
+    def add(self, new_value):
+        SupportValue.add(self, None)
         self._v.insert(0, new_value)
 
-    def dequeuing(self, old_value=None):
+    def sub(self, old_value=None):
         if len(self._v) > 0:
             del self._v[-1]
 
@@ -168,8 +188,8 @@ class InterpolationSV(SupportValue):
         self._fx = 0
         self._fy = None
 
-    def enqueuing(self, new_value):
-        SupportValue.enqueuing(self, None)
+    def add(self, new_value):
+        SupportValue.add(self, None)
         y = 60000.0 / new_value
         x = self._lx + new_value / 1000.0  # NO TIME-TOLERANCE ERRORS!
         if self._ly is None:  # with the first IBI I get the hr of the first (t=x=0) beat and of the second (t=x=IBI)
@@ -182,7 +202,7 @@ class InterpolationSV(SupportValue):
         self._v.extend(hr)
         self._lx = x  # NO TIME-TOLERANCE ERRORS!
 
-    def dequeuing(self, old_value):
+    def sub(self, old_value):
         mt = old_value / 1000.0  # NO TIME-TOLERANCE ERRORS!
         ct = self._fx
         while ct + self._v[0] <= mt:
@@ -205,12 +225,12 @@ class DiffsSV(SupportValue):
         self._v = []
         self._last = None
 
-    def enqueuing(self, new_value):
-        SupportValue.enqueuing(self, None)
+    def add(self, new_value):
+        SupportValue.add(self, None)
         self._v.insert(0, (new_value - self._last) if not self._last is None else 0)
         self._last = new_value
 
-    def dequeuing(self, old_value=None):
+    def sub(self, old_value=None):
         if len(self._v) > 0:
             del self._v[-1]
 
@@ -232,8 +252,8 @@ class MedianSV(SupportValue):
         self._split = 0
         self._m = None
 
-    def enqueuing(self, new_value):
-        SupportValue.enqueuing(self, None)
+    def add(self, new_value):
+        SupportValue.add(self, None)
         if new_value in self._hist:
             self._hist[new_value] += 1
         else:
@@ -246,7 +266,7 @@ class MedianSV(SupportValue):
                 self._bal -= 2
                 self._split += 1
                 if (self._m in self._hist and self._hist[self._m] == self._split) \
-                        or (not self._m in self._hist and self._split == 0):
+                        or (self._m not in self._hist and self._split == 0):
                     self._split = 0
                     self._m += 1
                     while self._m in self._hist and self._hist[self._m] > 0:
@@ -264,13 +284,13 @@ class MedianSV(SupportValue):
                     else:
                         self._split = 0 - 1
             elif (self._m in self._hist and self._hist[self._m] == self._split) \
-                    or (not self._m in self._hist and self._split == 0):
+                    or (self._m not in self._hist and self._split == 0):
                 self._split = 0
                 self._m += 1
                 while self._m in self._hist and self._hist[self._m] > 0:
                     self._m += 1
 
-    def dequeuing(self, old_value=None):
+    def sub(self, old_value=None):
         self._hist[old_value] -= 1
         self._bal += 1 if old_value < self._m else -1
 
