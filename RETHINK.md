@@ -10,11 +10,28 @@ Things
         - Why not Settings? Because of the eventual parallelism, anything static
         - A dictionary with some defaults would be a good choice, but what if we want to compute the same feature with diverse parameters?
             Instead of using a type class instance we can use a wrapper, a decorator containing the parameters and the type information.
+            ===
     
-- We can use a DataFrame instead of a list of Series, but it is better to have a list because of performance issues
+- General compute function: we can use a DataFrame instead of a list of Series as parameter, but it is better to have a list because of performance issues
+
 - I remove the HR variants of Mean Median etc as they are redundant and make no sense in a general context
 
 - Think about if the CacheableDataCalc can be the same class as Feature, FFT for example that is a CDC could be a Feature?
     - It can be a signal's value
     - It is not a numeric value
-    YES
+    YES so TODO: convert+join them
+    ===
+    
+- I begin converting the default series from intervals (IBI) to a generic time series
+    - Which kind of value??
+        - Maybe anyone and then checked inside the tool, inside the feature computation
+            - Tool, nice name
+    - Always a pandas Series!!
+    - Excluded:
+        *Snippets
+        *tests
+        *example_data
+        *galaxy
+
+- Changed the CDC parameter with a kwargs parameter
+    - and added a system that computes an additional hash-key from the used parameters

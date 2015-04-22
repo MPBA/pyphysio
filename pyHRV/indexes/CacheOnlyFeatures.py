@@ -14,7 +14,7 @@ from pyHRV.PyHRVSettings import MainSettings as Sett
 
 class FFTCalc(CacheOnlyFeature):
     @classmethod
-    def _calculate_data(cls, data, interp_freq):
+    def _calculate_data(cls, data, **kwargs):
         """
         Calculates the FFT data to cache
         @param data: DataSeries object
@@ -23,8 +23,10 @@ class FFTCalc(CacheOnlyFeature):
         @return: Data to cache: (bands, powers)
         @rtype: (array, array)
         """
-        rr_interp, bt_interp = interpolate_ibi(data.series, interp_freq)
-        interp_freq = interp_freq
+        if 'interp_freq' not in kwargs or kwargs['interp_freq'] is None:
+            kwargs['interp_freq'] = Sett.default_interpolation_freq
+        rr_interp, ignored = interpolate_ibi(data.series, kwargs['interp_freq'])  # TODO 2 Andrea: change interp. type
+        interp_freq = kwargs['interp_freq']
         hw = np.hamming(len(rr_interp))
 
         frame = rr_interp * hw
@@ -35,29 +37,13 @@ class FFTCalc(CacheOnlyFeature):
         bands = np.linspace(start=0, stop=interp_freq / 2, num=len(powers), endpoint=True)  # frequencies vector
         return bands, powers
 
-
-class PSDWelch1Calc(CacheOnlyFeature):
-    @classmethod
-    def _calculate_data(cls, data, interp_freq):
-        """
-        Calculates the PSDWelch data to cache, uses algorithms bands distribution
-        @param data: DataSeries object
-        @type data: DataSeries
-        @param interp_freq: Frequency for the interpolation before the pow. spec. estimation.
-        @return: Data to cache: (bands, powers, total_power)
-        @rtype: (array, array, float)
-        """
-        if interp_freq is None:
-            interp_freq = Sett.default_interpolation_freq
-        rr_interp, bt_interp = interpolate_ibi(data, interp_freq)
-        bands, powers = signal.welch(rr_interp, interp_freq, nfft=max(128, len(rr_interp)))
-        powers = np.sqrt(powers)
-        return bands, powers / np.max(powers), sum(powers) / len(powers)
+    def _get_used_params(self, **kwargs):
+        return [kwargs['interp_freq']]
 
 
 class PSDLombscargleCalc(CacheOnlyFeature):
     @classmethod
-    def _calculate_data(cls, data, interp_freq):
+    def _calculate_data(cls, data, **kwargs):
         """
         Calculates the PSD data to cache using the Lombscargle algorithm
         @param data: DataSeries object
@@ -66,21 +52,25 @@ class PSDLombscargleCalc(CacheOnlyFeature):
         @return: Data to cache: (bands, powers, total_power)
         @rtype: (array, array, float)
         """
-        if interp_freq is None:
-            interp_freq = Sett.default_interpolation_freq
+        if 'interp_freq' not in kwargs or kwargs['interp_freq'] is None:
+            kwargs['interp_freq'] = Sett.default_interpolation_freq
         if Sett.remove_mean:
             data = data - np.mean(data)
         t = np.cumsum(data)
-        bands = np.linspace(start=0, stop=interp_freq / 2, num=max(128, len(data)), endpoint=True)
+        # TODO 2 Andrea: is it an interpolation frequency?
+        bands = np.linspace(start=0, stop=kwargs['interp_freq'] / 2, num=max(128, len(data)), endpoint=True)
         bands = bands[1:]
         powers = np.sqrt(4 * (signal.lombscargle(t, data, bands) / len(data)))
 
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 
+    def _get_used_params(self, **kwargs):
+        return [kwargs['interp_freq']]
+
 
 class PSDFFTCalc(CacheOnlyFeature):
     @classmethod
-    def _calculate_data(cls, data, interp_freq):
+    def _calculate_data(cls, data, **kwargs):
         """
         Calculates the PSD data to cache using the fft algorithm
         @param data: DataSeries object
@@ -89,9 +79,9 @@ class PSDFFTCalc(CacheOnlyFeature):
         @return: Data to cache: (bands, powers, total_power)
         @rtype: (array, array, float)
         """
-        if interp_freq is None:
-            interp_freq = Sett.default_interpolation_freq
-        data_interp, t_interp = interpolate_ibi(data, interp_freq)
+        if 'interp_freq' not in kwargs or kwargs['interp_freq'] is None:
+            kwargs['interp_freq'] = Sett.default_interpolation_freq
+        data_interp, t_interp = interpolate_ibi(data, kwargs['interp_freq'])  # TODO 2 Andrea: change interp. type
         if Sett.remove_mean:
             data_interp = data_interp - np.mean(data_interp)
 
@@ -100,14 +90,17 @@ class PSDFFTCalc(CacheOnlyFeature):
         spec_tmp = np.absolute(np.fft.fft(frame)) ** 2  # FFT
         powers = spec_tmp[0:(np.ceil(len(spec_tmp) / 2))]
 
-        bands = np.linspace(start=0, stop=interp_freq / 2, num=len(powers), endpoint=True)
+        bands = np.linspace(start=0, stop=kwargs['interp_freq'] / 2, num=len(powers), endpoint=True)
 
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 
+    def _get_used_params(self, **kwargs):
+        return [kwargs['interp_freq']]
 
-class PSDWelchCalc(CacheOnlyFeature):
+
+class PSDWelchLinspaceCalc(CacheOnlyFeature):
     @classmethod
-    def _calculate_data(cls, data, interp_freq):
+    def _calculate_data(cls, data, **kwargs):
         """
         Calculates the PSD data to cache using the welch algorithm, uses linspace bands distribution
         @param data: DataSeries object
@@ -116,20 +109,44 @@ class PSDWelchCalc(CacheOnlyFeature):
         @return: Data to cache: (bands, powers, total_power)
         @rtype: (array, array, float)
         """
-        if interp_freq is None:
-            interp_freq = Sett.default_interpolation_freq
-        data_interp, t_interp = interpolate_ibi(data, interp_freq)
+        if 'interp_freq' not in kwargs or kwargs['interp_freq'] is None:
+            kwargs['interp_freq'] = Sett.default_interpolation_freq
+        data_interp, t_interp = interpolate_ibi(data, kwargs['interp_freq'])  # TODO 2 Andrea: change interp. type
         if Sett.remove_mean:
             data_interp = data_interp - np.mean(data_interp)
-        bands_w, powers = signal.welch(data_interp, interp_freq, nfft=max(128, len(data_interp)))
-        bands = np.linspace(start=0, stop=interp_freq / 2, num=len(powers), endpoint=True)
-
+        bands_w, powers = signal.welch(data_interp, kwargs['interp_freq'], nfft=max(128, len(data_interp)))
+        bands = np.linspace(start=0, stop=kwargs['interp_freq'] / 2, num=len(powers), endpoint=True)
         return bands, powers / np.max(powers), sum(powers) / len(powers)
+
+    def _get_used_params(self, **kwargs):
+        return [kwargs['interp_freq']]
+
+
+class PSDWelchLibCalc(CacheOnlyFeature):
+    @classmethod
+    def _calculate_data(cls, data, **kwargs):
+        """
+        Calculates the PSDWelch data to cache, uses algorithms bands distribution
+        @param data: DataSeries object
+        @type data: DataSeries
+        @param interp_freq: Frequency for the interpolation before the pow. spec. estimation.
+        @return: Data to cache: (bands, powers, total_power)
+        @rtype: (array, array, float)
+        """
+        if 'interp_freq' not in kwargs or kwargs['interp_freq'] is None:
+            kwargs['interp_freq'] = Sett.default_interpolation_freq
+        rr_interp, bt_interp = interpolate_ibi(data, kwargs['interp_freq'])  # TODO 2 Andrea: change interp. type
+        bands, powers = signal.welch(rr_interp, kwargs['interp_freq'], nfft=max(128, len(rr_interp)))
+        powers = np.sqrt(powers)
+        return bands, powers / np.max(powers), sum(powers) / len(powers)
+
+    def _get_used_params(self, **kwargs):
+        return [kwargs['interp_freq']]
 
 
 class PSDAr1Calc(CacheOnlyFeature):
     @classmethod
-    def _calculate_data(cls, data, interp_freq):
+    def _calculate_data(cls, data, **kwargs):
         """
         Calculates the PSD data to cache using the ar_1 algorithm
         @param data: DataSeries object
@@ -138,23 +155,26 @@ class PSDAr1Calc(CacheOnlyFeature):
         @return: Data to cache: (bands, powers, total_power)
         @rtype: (array, array, float)
         """
-        if interp_freq is None:
-            interp_freq = Sett.default_interpolation_freq
-        data_interp, t_interp = interpolate_ibi(data, interp_freq)
+        if 'interp_freq' not in kwargs or kwargs['interp_freq'] is None:
+            kwargs['interp_freq'] = Sett.default_interpolation_freq
+        data_interp, t_interp = interpolate_ibi(data, kwargs['interp_freq'])  # TODO 2 Andrea: change interp. type
         if Sett.remove_mean:
             data_interp = data_interp - np.mean(data_interp)
 
-        p = spectrum.Periodogram(data_interp, sampling=interp_freq, NFFT=max(128, len(data_interp)))
+        p = spectrum.Periodogram(data_interp, sampling=kwargs['interp_freq'], NFFT=max(128, len(data_interp)))
         p()
         powers = p.get_converted_psd('onesided')
-        bands = np.linspace(start=0, stop=interp_freq / 2, num=len(powers), endpoint=True)
+        bands = np.linspace(start=0, stop=kwargs['interp_freq'] / 2, num=len(powers), endpoint=True)
 
         return bands, powers / np.max(powers), sum(powers) / len(powers)
+
+    def _get_used_params(self, **kwargs):
+        return [kwargs['interp_freq']]
 
 
 class PSDAr2Calc(CacheOnlyFeature):
     @classmethod
-    def _calculate_data(cls, data, interp_freq):
+    def _calculate_data(cls, data, **kwargs):
         """
         Calculates the PSD data to cache using the ar_2 algorithm
         @param data: DataSeries object
@@ -163,11 +183,11 @@ class PSDAr2Calc(CacheOnlyFeature):
         @return: Data to cache: (bands, powers, total_power)
         @rtype: (array, array, float)
         """
-        if interp_freq is None:
-            interp_freq = Sett.default_interpolation_freq
+        if 'interp_freq' not in kwargs or kwargs['interp_freq'] is None:
+            kwargs['interp_freq'] = Sett.default_interpolation_freq
         powers = []
 
-        data_interp, t_interp = interpolate_ibi(data, interp_freq)
+        data_interp, t_interp = interpolate_ibi(data, kwargs['interp_freq'])  # TODO 2 Andrea: change interp. type
         if Sett.remove_mean:
             data_interp = data_interp - np.mean(data_interp)
 
@@ -183,14 +203,17 @@ class PSDAr2Calc(CacheOnlyFeature):
         else:
             print("Error in ar_2 psd, orders=0, empty powers")
 
-        bands = np.linspace(start=0, stop=interp_freq / 2, num=len(powers), endpoint=True)
+        bands = np.linspace(start=0, stop=kwargs['interp_freq'] / 2, num=len(powers), endpoint=True)
 
         return bands, powers / np.max(powers), sum(powers) / len(powers)
+
+    def _get_used_params(self, **kwargs):
+        return [kwargs['interp_freq']]
 
 
 class Histogram(CacheOnlyFeature):
     @classmethod
-    def _calculate_data(cls, data, histogram_bins=Sett.cache_histogram_bins):
+    def _calculate_data(cls, data, **kwargs):
         """
         Calculates the Histogram data to cache
         @param data: DataSeries object
@@ -199,14 +222,17 @@ class Histogram(CacheOnlyFeature):
         @return: Data to cache: (hist, bin_edges)
         @rtype: (array, array)
         """
-        if histogram_bins is None:
-            histogram_bins = Sett.cache_histogram_bins
-        return np.histogram(data, histogram_bins)
+        if 'histogram_bins' not in kwargs or kwargs['histogram_bins'] is None:
+            kwargs['histogram_bins'] = Sett.cache_histogram_bins
+        return np.histogram(data, kwargs['histogram_bins'])
+
+    def _get_used_params(self, **kwargs):
+        return [kwargs['histogram_bins']]
 
 
 class HistogramMax(CacheOnlyFeature):
     @classmethod
-    def _calculate_data(cls, data, histogram_bins=Sett.cache_histogram_bins):
+    def _calculate_data(cls, data, **kwargs):
         """
         Calculates the Histogram's max value
         @param data: DataSeries object
@@ -215,13 +241,16 @@ class HistogramMax(CacheOnlyFeature):
         @return: Data to cache: (hist, bin_edges)
         @rtype: (array, array)
         """
-        h, b = Histogram.get(data, histogram_bins)
-        return np.max(h)  # TODO: max h or b(max h)??
+        h, b = Histogram.get(data, kwargs['histogram_bins'])
+        return np.max(h)  # TODO 2 Andrea: max h or b(max h)??
+
+    def _get_used_params(self, **kwargs):
+        return [kwargs['histogram_bins']]
 
 
 class Diff(CacheOnlyFeature):
     @classmethod
-    def _calculate_data(cls, data, params=None):
+    def _calculate_data(cls, data, **kwargs):
         """
         Calculates the differences between consecutive values
         @param data: DataSeries object
@@ -232,10 +261,13 @@ class Diff(CacheOnlyFeature):
         """
         return np.diff(np.array(data))
 
+    def _get_used_params(self, **kwargs):
+        return []
+
 
 class StandardDeviation(CacheOnlyFeature):
     @classmethod
-    def _calculate_data(cls, data, params=None):
+    def _calculate_data(cls, data, **kwargs):
         """
         Calculates the standard deviation data
         @param data: DataSeries object
@@ -246,10 +278,13 @@ class StandardDeviation(CacheOnlyFeature):
         """
         return np.std(np.array(data))
 
+    def _get_used_params(self, **kwargs):
+        return []
+
 
 class OrderedSubsets2(CacheOnlyFeature):
     @classmethod
-    def _calculate_data(cls, data, params=None):
+    def _calculate_data(cls, data, **kwargs):
         """
         Calculates the the vector of the sequences of length 2 of the data
         @param data: DataSeries object
@@ -260,10 +295,13 @@ class OrderedSubsets2(CacheOnlyFeature):
         """
         return ordered_subsets(data, 2)
 
+    def _get_used_params(self, **kwargs):
+        return []
+
 
 class OrderedSubsets3(CacheOnlyFeature):
     @classmethod
-    def _calculate_data(cls, data, params=None):
+    def _calculate_data(cls, data, **kwargs):
         """
         Calculates the the vector of the sequences of length 2 of the data
         @param data: DataSeries object
@@ -274,10 +312,13 @@ class OrderedSubsets3(CacheOnlyFeature):
         """
         return ordered_subsets(data, 3)
 
+    def _get_used_params(self, **kwargs):
+        return []
+
 
 class PoincareSD(CacheOnlyFeature):
     @classmethod
-    def _calculate_data(cls, data, params=None):
+    def _calculate_data(cls, data, **kwargs):
         """
         Calculates Poincare SD 1 and 2
         @param data: DataSeries object
@@ -290,3 +331,6 @@ class PoincareSD(CacheOnlyFeature):
         sd1 = np.std((xd - yd) / np.sqrt(2.0))
         sd2 = np.std((xd + yd) / np.sqrt(2.0))
         return sd1, sd2
+
+    def _get_used_params(self, **kwargs):
+        return []

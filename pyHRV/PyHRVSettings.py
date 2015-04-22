@@ -1,4 +1,4 @@
-from pyHRV.indexes.CacheOnlyFeatures import PSDWelchCalc
+from pyHRV.indexes.CacheOnlyFeatures import PSDWelchLinspaceCalc
 
 __author__ = "AleB"
 __all__ = ['PyHRVSettings', 'MainSettings']
@@ -43,7 +43,7 @@ class PyHRVSettings(object):
         self.vlf_band_upper_bound = 0.04
         self.lf_band_upper_bound = 0.15
         self.hf_band_upper_bound = 0.4
-        self.psd_algorithm = PSDWelchCalc
+        self.psd_algorithm = PSDWelchLinspaceCalc
         self.remove_mean = True
         self.ar_2_max_order = 30
 

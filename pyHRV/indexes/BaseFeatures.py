@@ -71,15 +71,29 @@ class Feature(object):
         """
         raise NotImplementedError("Use a " + cls.__name__ + " sub-class")
 
-    @classmethod
-    def cid(cls):
+    def cid(self, **kwargs):
         """
-        Gets an identifier for the class
-        @rtype : str or unicode
+        This method gives an hash to use as a part of the key in the cache starting from the parameters used by the
+        feature. The method _utility_hash([par1,...parN])
+        This class is abstract.
+        @param kwargs: Every parameter.
+        @return: The hash of the parameters used by the cache feature.
         """
-        return cls.__name__ + "_cn"
+        return self._utility_hash(self._get_used_params(kwargs).extend(self.__class__.__name__, "_cn"))
+
+    def _get_used_params(self, **kwargs):
+        raise NotImplementedError("Abstract.")
+
+    @staticmethod
+    def _utility_hash(x):
+        assert isinstance(x, list)
+        concatenation = "salesale123"
+        for y in x:
+            concatenation += str(y)
+        return concatenation.__hash__()
 
 
+# noinspection PyAbstractClass
 class TDFeature(Feature):
     """
     This is the base class for the Time Domain Indexes.
@@ -93,6 +107,7 @@ class TDFeature(Feature):
         super(TDFeature, self).__init__(data)
 
 
+# noinspection PyAbstractClass
 class FDFeature(Feature):
     """
     This is the base class for the Frequency Domain Indexes.
@@ -106,6 +121,7 @@ class FDFeature(Feature):
             raise TypeError("Not enough samples to perform a cube-spline interpolation.")
 
 
+# noinspection PyAbstractClass
 class NonLinearFeature(Feature):
     """
     This is the base class for the Non Linear Indexes.
@@ -115,6 +131,7 @@ class NonLinearFeature(Feature):
         super(NonLinearFeature, self).__init__(data)
 
 
+# noinspection PyAbstractClass
 class CacheOnlyFeature(Feature):
     """
     This is the base class for the Non Linear Indexes.

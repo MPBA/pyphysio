@@ -23,7 +23,7 @@ __all_indexes__ = []
 __all_indexes__.extend(TDFeatures.__all__)
 __all_indexes__.extend(FDFeatures.__all__)
 __all_indexes__.extend(NonLinearFeatures.__all__)
-__all__ = ['TDFeatures.py', 'FDFeatures.py', 'NonLinearFeatures.py']
+__all__ = ['TDFeatures', 'FDFeatures', 'NonLinearFeatures']
 __all__.extend(__all_indexes__)
 
 
