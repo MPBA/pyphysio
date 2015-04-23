@@ -130,13 +130,12 @@ def template_interpolation(x, t, step, template=None):
     return x_output, t_output
 
 
-def ordered_subsets(x, m):
-    n = len(x)
-    num = n - m + 1
+def ordered_subsets(x, n):
+    num = len(x) - n + 1
     if num > 0:
-        emb = np.zeros([num, m])
+        emb = np.zeros([num, n])
         for i in xrange(num):
-            emb[i, :] = x[i:i + m]
+            emb[i, :] = x[i:i + n]
         return emb
     else:
         return []

@@ -1,11 +1,11 @@
+from __future__ import division
+
 __author__ = 'AleB'
 __all__ = ['HF', 'HFNormal', 'HFPeak', 'LF', 'LFHF', 'LFNormal', 'LFPeak', 'NormalizedHF', 'NormalizedLF', 'Total',
            'VLF', 'VLFNormal', 'VLFPeak']
 
 import numpy as np
-
 from pyHRV.indexes.BaseFeatures import FDFeature
-from pyHRV.indexes.CacheOnlyFeatures import CacheableDataCalc
 from pyHRV.PyHRVSettings import MainSettings as Sett
 
 
@@ -15,19 +15,26 @@ class InBand(FDFeature):
         self._freq_min = freq_min
         self._freq_max = freq_max
 
-        freq, spec, total = Sett.psd_algorithm.get(self._data, self._interp_freq)
+        freq, spec, total = Sett.psd_algorithm.get(self._data, {'interp_freq': self._interp_freq})
 
         self._freq_band = [freq[i] for i in xrange(len(freq)) if freq_min <= freq[i] < freq_max]
         self._spec_band = [spec[i] for i in xrange(len(spec)) if freq_min <= freq[i] < freq_max]
         self._total_band = total
 
 
-class PowerInBand(InBand, CacheableDataCalc):
+class PowerInBand(InBand):
     def __init__(self, freq_min, freq_max, data=None, interp_freq=Sett.default_interpolation_freq):
         super(PowerInBand, self).__init__(freq_min, freq_max, interp_freq, data)
 
     @classmethod
-    def _calculate_data(cls, self, params=None):
+    def _calculate_data(cls, self, params):
+        """
+        Calculates the data to cache using an InBand FDFeature instance as data.
+        @param self: The InBand FDFeature instance as data.
+        @param params: Unused
+        @return: Power in the band
+        @rtype: float
+        """
         return np.sum(self._spec_band) / len(self._freq_band)
 
 
@@ -97,7 +104,7 @@ class Total(PowerInBand):
         super(Total, self).__init__(Sett.vlf_band_lower_bound, Sett.lf_band_upper_bound, data)
         # Used _calculate_data(..) (here as in other indexes) as a substitute of the ex 'calculate' to bypass the
         # cache system
-        self._value = Total._calculate_data(self)
+        self._value = Total._calculate_data(self, {})
 
 
 class VLFPeak(PeakInBand):

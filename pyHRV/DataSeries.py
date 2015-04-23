@@ -1,17 +1,16 @@
 __author__ = "AleB"
-__all__ = ['DataSeries', 'data_series_from_ecg', 'data_series_from_bvp']
+__all__ = ['Cache', 'DataSeries']
 
-import pandas as pd
 from pyHRV.indexes.BaseFeatures import Feature
 
 
 class Cache():
-    """ Class extension that gives a cache support through CacheableDataCalc's subclasses."""
+    """ Class that gives a cache support. Uses Feature."""
 
     def __init__(self):
         pass
 
-    # Checked methods
+    # Field-checked methods
 
     @staticmethod
     def cache_clear(self):
@@ -21,7 +20,7 @@ class Cache():
         setattr(self, "_cache", {})
 
     @staticmethod
-    def cache_check(self, calculator):
+    def cache_check(self, calculator, params):
         """
         Checks the presence in the cache of the specified calculator's data.
         @param calculator: Cacheable data calculator
@@ -34,32 +33,33 @@ class Cache():
             setattr(self, "_cache", {})
             return False
         else:
-            return calculator.cid() in self._cache
+            return calculator.cache_hash(params) in self._cache
 
-    # Safe methods
+    # Field-unchecked methods
 
     @staticmethod
-    def cache_invalidate(self, calculator):
+    def cache_invalidate(self, calculator, params):
         """
         Invalidates the specified calculator's cached data if any.
         @param calculator: Cacheable data calculator
         @type calculator: CacheableDataCalc
         """
-        if self.cache_check(calculator):
-            del self._cache[calculator.cid()]
+        if self.cache_check(calculator, params):
+            del self._cache[calculator.cache_hash(params)]
 
     @staticmethod
-    def cache_pre_calc_data(self, calculator, params):
+    def cache_comp_and_save(self, calculator, params):
         """
         Calculates data and caches it
         @param calculator: Cacheable data calculator
         @type calculator: CacheableDataCalc
         """
-        self._cache[calculator.cid()] = calculator.get(self, params, use_cache=False)
-        return self._cache[calculator.cid()]
+        assert isinstance(calculator, Feature)
+        self._cache[calculator.cache_hash(params)] = calculator.get(self, params, use_cache=False)
+        return self._cache[calculator.cache_hash(params)]
 
     @staticmethod
-    def cache_get_data(self, calculator):
+    def cache_get_data(self, calculator, params):
         """
         Gets data from the cache if valid
         @param calculator: Cacheable data calculator
@@ -67,13 +67,16 @@ class Cache():
         @return: The data or None
         @rtype: DataSeries or None
         """
-        if self.cache_check(calculator):
-            return self._cache[calculator.cid()]
+        if self.cache_check(calculator, params):
+            return self._cache[calculator.cache_hash(params)]
         else:
             return None
 
 
-class DataSeries(pd.Series, Cache):
+from pandas import Series
+
+
+class DataSeries(Series, Cache):
     def _box_item_values(self, key, values):
         raise NotImplementedError()
 

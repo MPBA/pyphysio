@@ -7,7 +7,7 @@ from scipy.spatial.distance import cdist, pdist
 from scipy.stats.mstats import mquantiles
 import numpy as np
 
-from pyHRV.indexes.CacheOnlyFeatures import Diff, OrderedSubsets2, OrderedSubsets3, PoincareSD, StandardDeviation
+from pyHRV.indexes.CacheOnlyFeatures import Diff, OrderedSubsets, PoincareSD, StandardDeviation
 from pyHRV.indexes.BaseFeatures import NonLinearFeature
 from pyHRV.indexes.TDFeatures import Mean
 from pyHRV.Utility import ordered_subsets
@@ -25,8 +25,8 @@ class ApproxEntropy(NonLinearFeature):
             self._value = np.nan
         else:
             r = Sett.approx_entropy_r
-            uj_m = OrderedSubsets2.get(self._data)
-            uj_m1 = OrderedSubsets3.get(self._data)
+            uj_m = OrderedSubsets.get(self._data, subset_size=2)
+            uj_m1 = OrderedSubsets.get(self._data, subset_size=3)
             card_elem_m = uj_m.shape[0]
             card_elem_m1 = uj_m1.shape[0]
 
@@ -61,8 +61,8 @@ class SampleEntropy(NonLinearFeature):
             self._value = np.nan
         else:
             r = Sett.sample_entropy_r
-            uj_m = OrderedSubsets2.get(self._data)
-            uj_m1 = OrderedSubsets3.get(self._data)
+            uj_m = OrderedSubsets.get(self._data, subset_size=2)
+            uj_m1 = OrderedSubsets.get(self._data, subset_size=3)
 
             num_elem_m = uj_m.shape[0]
             num_elem_m1 = uj_m1.shape[0]
@@ -97,7 +97,7 @@ class FractalDimension(NonLinearFeature):
         if len(data) < 3:
             self._value = np.nan
         else:
-            uj_m = OrderedSubsets2.get(self._data)
+            uj_m = OrderedSubsets.get(self._data, subset_size=2)
             cra = Sett.fractal_dimension_cra
             crb = Sett.fractal_dimension_crb
             mutual_distance = pdist(uj_m, 'chebyshev')
@@ -124,7 +124,7 @@ class SVDEntropy(NonLinearFeature):
         if len(data) < 2:
             self._value = np.nan
         else:
-            uj_m = OrderedSubsets2.get(self._data)
+            uj_m = OrderedSubsets.get(self._data, subset_size=2)
             w = np.linalg.svd(uj_m, compute_uv=False)
             w /= sum(w)
             self._value = -1 * sum(w * np.log(w))
@@ -140,7 +140,7 @@ class Fisher(NonLinearFeature):
         if len(data) < 2:
             self._value = np.nan
         else:
-            uj_m = OrderedSubsets2.get(self._data)
+            uj_m = OrderedSubsets.get(self._data, subset_size=2)
             w = np.linalg.svd(uj_m, compute_uv=False)
             w /= sum(w)
             fi = 0
@@ -277,7 +277,7 @@ class DFAShortTerm(NonLinearFeature):
 
     def __init__(self, data=None):
         super(DFAShortTerm, self).__init__(data)
-        #calculates De-trended Fluctuation Analysis: alpha1 (short term) component
+        # calculates De-trended Fluctuation Analysis: alpha1 (short term) component
         x = self._data
         if len(self._data) >= 16:
             ave = Mean.get(x)
