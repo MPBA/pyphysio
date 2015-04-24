@@ -14,7 +14,7 @@ from pyHRV.PyHRVSettings import MainSettings as Sett
 
 class FFTCalc(CacheOnlyFeature):
     @classmethod
-    def _calculate_data(cls, data, params):
+    def _compute(cls, data, params):
         """
         Calculates the FFT data to cache
         @param data: DataSeries object
@@ -44,7 +44,7 @@ class FFTCalc(CacheOnlyFeature):
 
 class PSDLombscargleCalc(CacheOnlyFeature):
     @classmethod
-    def _calculate_data(cls, data, params):
+    def _compute(cls, data, params):
         """
         Calculates the PSD data to cache using the Lombscargle algorithm
         @param data: DataSeries object
@@ -78,7 +78,7 @@ class PSDLombscargleCalc(CacheOnlyFeature):
 
 class PSDFFTCalc(CacheOnlyFeature):
     @classmethod
-    def _calculate_data(cls, data, params):
+    def _compute(cls, data, params):
         """
         Calculates the PSD data to cache using the fft algorithm
         @param data: DataSeries object
@@ -109,7 +109,7 @@ class PSDFFTCalc(CacheOnlyFeature):
 
 class PSDWelchLinspaceCalc(CacheOnlyFeature):
     @classmethod
-    def _calculate_data(cls, data, params):
+    def _compute(cls, data, params):
         """
         Calculates the PSD data to cache using the welch algorithm, uses linspace bands distribution
         @param data: DataSeries object
@@ -134,7 +134,7 @@ class PSDWelchLinspaceCalc(CacheOnlyFeature):
 
 class PSDWelchLibCalc(CacheOnlyFeature):
     @classmethod
-    def _calculate_data(cls, data, params):
+    def _compute(cls, data, params):
         """
         Calculates the PSDWelch data to cache, uses algorithms bands distribution
         @param data: DataSeries object
@@ -157,7 +157,7 @@ class PSDWelchLibCalc(CacheOnlyFeature):
 
 class PSDAr1Calc(CacheOnlyFeature):
     @classmethod
-    def _calculate_data(cls, data, params):
+    def _compute(cls, data, params):
         """
         Calculates the PSD data to cache using the ar_1 algorithm
         @param data: DataSeries object
@@ -186,7 +186,7 @@ class PSDAr1Calc(CacheOnlyFeature):
 
 class PSDAr2Calc(CacheOnlyFeature):
     @classmethod
-    def _calculate_data(cls, data, params):
+    def _compute(cls, data, params):
         """
         Calculates the PSD data to cache using the ar_2 algorithm
         @param data: DataSeries object
@@ -226,7 +226,7 @@ class PSDAr2Calc(CacheOnlyFeature):
 
 class Histogram(CacheOnlyFeature):
     @classmethod
-    def _calculate_data(cls, data, params):
+    def _compute(cls, data, params):
         """
         Calculates the Histogram data to cache
         @param data: DataSeries object
@@ -246,7 +246,7 @@ class Histogram(CacheOnlyFeature):
 
 class HistogramMax(CacheOnlyFeature):
     @classmethod
-    def _calculate_data(cls, data, params):
+    def _compute(cls, data, params):
         """
         Calculates the Histogram's max value
         @param data: DataSeries object
@@ -265,7 +265,7 @@ class HistogramMax(CacheOnlyFeature):
 
 class Diff(CacheOnlyFeature):
     @classmethod
-    def _calculate_data(cls, data, params):
+    def _compute(cls, data, params):
         """
         Calculates the differences between consecutive values
         @param data: DataSeries object
@@ -283,7 +283,7 @@ class Diff(CacheOnlyFeature):
 
 class StandardDeviation(CacheOnlyFeature):
     @classmethod
-    def _calculate_data(cls, data, params):
+    def _compute(cls, data, params):
         """
         Calculates the standard deviation data
         @param data: DataSeries object
@@ -301,7 +301,7 @@ class StandardDeviation(CacheOnlyFeature):
 
 class OrderedSubsets(CacheOnlyFeature):
     @classmethod
-    def _calculate_data(cls, data, params):
+    def _compute(cls, data, params):
         """
         Calculates the the vector of the sequences of length 2 of the data
         @param data: DataSeries object
@@ -319,7 +319,7 @@ class OrderedSubsets(CacheOnlyFeature):
 
 class PoincareSD(CacheOnlyFeature):
     @classmethod
-    def _calculate_data(cls, data, params):
+    def _compute(cls, data, params):
         """
         Calculates Poincare SD 1 and 2
         @param data: DataSeries object

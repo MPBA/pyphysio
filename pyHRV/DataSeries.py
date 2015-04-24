@@ -2,6 +2,15 @@ __author__ = "AleB"
 __all__ = ['Cache', 'DataSeries']
 
 from pyHRV.indexes.BaseFeatures import Feature
+from pandas import Series
+
+
+class DataSeries(Series):
+    def _box_item_values(self, key, values):
+        raise NotImplementedError()
+
+    def _constructor_sliced(self):
+        raise NotImplementedError()
 
 
 class Cache():
@@ -71,14 +80,3 @@ class Cache():
             return self._cache[calculator.cache_hash(params)]
         else:
             return None
-
-
-from pandas import Series
-
-
-class DataSeries(Series, Cache):
-    def _box_item_values(self, key, values):
-        raise NotImplementedError()
-
-    def _constructor_sliced(self):
-        raise NotImplementedError()

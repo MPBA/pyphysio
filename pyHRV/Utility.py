@@ -3,7 +3,7 @@ import numpy as np
 from scipy import interpolate
 
 from pyHRV.PyHRVSettings import MainSettings as Sett
-from pyHRV.DataSeries import DataSeries, Cache
+from pyHRV.DataSeries import DataSeries
 
 
 def data_series_from_bvp(bvp, bvp_time, delta_ratio=Sett.import_bvp_delta_max_min_numerator,

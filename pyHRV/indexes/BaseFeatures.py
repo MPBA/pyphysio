@@ -10,7 +10,7 @@ class Feature(object):
     the resulting value will be available through the 'value' property. This class is abstract.
     """
 
-    def __init__(self, data=None, value=None):  # TODO 3: add parameter params to the hierarchy
+    def __init__(self, data=None, params=None):  # TODO 3: add parameter params to the hierarchy
         """
         Initializes the index. This class is abstract.
         @param data: DataSeries from where extract the index.
@@ -18,7 +18,8 @@ class Feature(object):
         @param value: Already present result.
         """
         assert self.__class__ != Feature, "Class is abstract."
-        self._value = value
+        self._value = None
+        self._params = params
         self._data = data
 
     @property
@@ -63,10 +64,10 @@ class Feature(object):
                 Cache.cache_comp_and_save(data, cls, params)
             return Cache.cache_get_data(data, cls, params)
         else:
-            return cls._calculate_data(data, params)
+            return cls._compute(data, params)
 
     @classmethod
-    def _calculate_data(cls, data, params):
+    def _compute(cls, data, params):
         """
         Placeholder for the subclasses
         @raise NotImplementedError: Ever
@@ -80,7 +81,6 @@ class Feature(object):
         This class is abstract.
         @return: The hash of the parameters used by the cache feature.
         """
-        # TODO 4: add a checked method (anti KeyError)
         return self._utility_hash([params[i] for i in self._get_used_params() if i in params] +
                                   [self.__class__.__name__, "_cn"])
 
@@ -108,8 +108,8 @@ class TDFeature(Feature):
     This is the base class for the Time Domain Indexes.
     """
 
-    def __init__(self, data=None):
-        super(TDFeature, self).__init__(data)
+    def __init__(self, data=None, params=None):
+        super(TDFeature, self).__init__(data, params)
 
 
 # noinspection PyAbstractClass
@@ -119,9 +119,9 @@ class FDFeature(Feature):
     It uses the settings' default interpolation frequency parameter.
     """
 
-    def __init__(self, params, data=None):
-        super(FDFeature, self).__init__(data)
-        self._interp_freq = params['interp_freq']
+    def __init__(self, data=None, params=None):
+        super(FDFeature, self).__init__(data, params)
+        self._interp_freq = params['interp_freq'] if params is not None and 'interp_freq' in params else 4
         if len(data) < 3:
             raise TypeError("Not enough samples to perform a cube-spline interpolation.")
 
@@ -136,8 +136,8 @@ class NonLinearFeature(Feature):
     This is the base class for the Non Linear Indexes.
     """
 
-    def __init__(self, data=None):
-        super(NonLinearFeature, self).__init__(data)
+    def __init__(self, data=None, params=None):
+        super(NonLinearFeature, self).__init__(data, params)
 
 
 # noinspection PyAbstractClass
@@ -146,5 +146,5 @@ class CacheOnlyFeature(Feature):
     This is the base class for the Non Linear Indexes.
     """
 
-    def __init__(self, data=None):
-        super(CacheOnlyFeature, self).__init__(data)
+    def __init__(self, data=None, params=None):
+        super(CacheOnlyFeature, self).__init__(data, params)

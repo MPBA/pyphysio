@@ -227,7 +227,7 @@ class DiffsSV(SupportValue):
 
     def add(self, new_value):
         SupportValue.add(self, None)
-        self._v.insert(0, (new_value - self._last) if not self._last is None else 0)
+        self._v.insert(0, (new_value - self._last) if self._last is not None else 0)
         self._last = new_value
 
     def sub(self, old_value=None):
@@ -244,7 +244,7 @@ class MedianSV(SupportValue):
     Support value: VECTOR of the DIFFERENCES between adjacent VALUES
     """
 
-    # noinspection PyUnusedLocal
+    # noinspection PyUnusedLocal sv_collection
     def __init__(self, sv_collection):
         SupportValue.__init__(self)
         self._hist = {}

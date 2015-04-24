@@ -42,3 +42,4 @@ Things
         - The computation of several kind of features, for example some Frequency Domain (FD) Features, needs vary time-taking steps such as Power Spectrum Density estimations or other transformations on the entire data-set. If our pipeline needs to compute more than one feature that requires the same sub-step we have that it will compute the same thing with the same inputs (and so with the same outputs) more than once, wasting cpu time.
         - So the cache controls this computation redundancy and conserves the computed intermediate data to reuse it for the next demands.
         - The cache data is hidden inside the data-set object, allowing a transparent usage with a high degree of freedom using any kind of data structures.
+    

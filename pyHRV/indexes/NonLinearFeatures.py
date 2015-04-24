@@ -37,12 +37,12 @@ class ApproxEntropy(NonLinearFeature):
             cmr_m_apen = np.zeros(card_elem_m)
             for i in xrange(card_elem_m):
                 vector = d_m[i]
-                cmr_m_apen[i] = float((vector <= r).sum()) / card_elem_m
+                cmr_m_apen[i] = float(sum(1 for i in vector if i <= r)) / card_elem_m
 
             cmr_m1_apen = np.zeros(card_elem_m1)
             for i in xrange(card_elem_m1):
                 vector = d_m1[i]
-                cmr_m1_apen[i] = float((vector <= r).sum()) / card_elem_m1
+                cmr_m1_apen[i] = float(sum(1 for i in vector if i <= r)) / card_elem_m1
 
             phi_m = np.sum(np.log(cmr_m_apen)) / card_elem_m
             phi_m1 = np.sum(np.log(cmr_m1_apen)) / card_elem_m1
@@ -74,12 +74,12 @@ class SampleEntropy(NonLinearFeature):
             cmr_m_samp_en = np.zeros(num_elem_m)
             for i in xrange(num_elem_m):
                 vector = d_m[i]
-                cmr_m_samp_en[i] = float((vector <= r).sum() - 1) / (num_elem_m - 1)
+                cmr_m_samp_en[i] = float(sum(1 for i in vector if i <= r) - 1) / (num_elem_m - 1)
 
             cmr_m1_samp_en = np.zeros(num_elem_m1)
             for i in xrange(num_elem_m1):
                 vector = d_m1[i]
-                cmr_m1_samp_en[i] = float((vector <= r).sum() - 1) / (num_elem_m1 - 1)
+                cmr_m1_samp_en[i] = float(sum(1 for i in vector if i <= r) - 1) / (num_elem_m1 - 1)
 
             cm = np.sum(cmr_m_samp_en) / num_elem_m
             cm1 = np.sum(cmr_m1_samp_en) / num_elem_m1
@@ -108,8 +108,8 @@ class FractalDimension(NonLinearFeature):
             ra = rr[0]
             rb = rr[1]
 
-            cmr_a = float((mutual_distance <= ra).sum()) / num_elem
-            cmr_b = float((mutual_distance <= rb).sum()) / num_elem
+            cmr_a = float(sum(1 for i in mutual_distance if i <= ra)) / num_elem
+            cmr_b = float(sum(1 for i in mutual_distance if i <= rb)) / num_elem
 
             self._value = (np.log(cmr_b) - np.log(cmr_a)) / (np.log(rb) - np.log(ra))
 
@@ -171,7 +171,7 @@ class CorrelationDim(NonLinearFeature):
             for r in r_vector:
                 for i in xrange(num_elem):
                     vector = dj[i]
-                    n[i] = float((vector <= r).sum()) / num_elem
+                    n[i] = float(sum(1 for i in vector if i <= r)) / num_elem
                 c[jj] = np.sum(n) / num_elem
                 jj += 1
 

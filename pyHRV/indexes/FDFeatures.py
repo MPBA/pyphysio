@@ -10,24 +10,26 @@ from pyHRV.PyHRVSettings import MainSettings as Sett
 
 
 class InBand(FDFeature):
-    def __init__(self, freq_min, freq_max, interp_freq=Sett.default_interpolation_freq, data=None):
-        super(InBand, self).__init__(interp_freq, data)
-        self._freq_min = freq_min
-        self._freq_max = freq_max
+    def __init__(self, data, params):
+        super(InBand, self).__init__(data, params)
+
+        assert params is not None
+        assert 'freq_min' in params
+        assert 'freq_max' in params
 
         freq, spec, total = Sett.psd_algorithm.get(self._data, {'interp_freq': self._interp_freq})
 
-        self._freq_band = [freq[i] for i in xrange(len(freq)) if freq_min <= freq[i] < freq_max]
-        self._spec_band = [spec[i] for i in xrange(len(spec)) if freq_min <= freq[i] < freq_max]
+        self._freq_band = [freq[i] for i in xrange(len(freq)) if params['freq_min'] <= freq[i] < params['freq_max']]
+        self._spec_band = [spec[i] for i in xrange(len(spec)) if params['freq_min'] <= freq[i] < params['freq_max']]
         self._total_band = total
 
 
 class PowerInBand(InBand):
-    def __init__(self, freq_min, freq_max, data=None, interp_freq=Sett.default_interpolation_freq):
-        super(PowerInBand, self).__init__(freq_min, freq_max, interp_freq, data)
+    def __init__(self, data, params=None):
+        super(PowerInBand, self).__init__(data, params)
 
     @classmethod
-    def _calculate_data(cls, self, params):
+    def _compute(cls, self, params):
         """
         Calculates the data to cache using an InBand FDFeature instance as data.
         @param self: The InBand FDFeature instance as data.
@@ -39,57 +41,15 @@ class PowerInBand(InBand):
 
 
 class PowerInBandNormal(InBand):
-    def __init__(self, freq_min, freq_max, data=None, interp_freq=Sett.default_interpolation_freq):
-        super(PowerInBandNormal, self).__init__(freq_min, freq_max, interp_freq, data)
+    def __init__(self, data, params):
+        super(PowerInBandNormal, self).__init__(data, params)
         self._value = (np.sum(self._spec_band) / len(self._freq_band)) / self._total_band
 
 
 class PeakInBand(InBand):
-    def __init__(self, freq_min, freq_max, data=None, interp_freq=Sett.default_interpolation_freq):
-        super(PeakInBand, self).__init__(freq_min, freq_max, interp_freq, data=data)
+    def __init__(self, data, params):
+        super(PeakInBand, self).__init__(data, params)
         self._value = self._freq_band[np.argmax(self._spec_band)]
-
-
-class VLF(PowerInBand):
-    """
-    Calculates the power in the VLF band (parametrized in the settings).
-    """
-
-    def __init__(self, data):
-        """
-        Calculates the power in the VLF band (parametrized in the settings).
-        """
-        super(VLF, self).__init__(Sett.vlf_band_lower_bound, Sett.vlf_band_upper_bound, data)
-        self._value = VLF.get(self)
-
-
-class LF(PowerInBand):
-    """
-    Calculates the power in the LF band (parametrized in the settings).
-    """
-
-    def __init__(self, data):
-        """
-        Calculates the power in the LF band (parametrized in the settings).
-        """
-        super(LF, self).__init__(Sett.vlf_band_upper_bound, Sett.lf_band_upper_bound, data)
-        # .get(..) called on LF only for the .cid() in the cache. The actually important example_data is self._freq_band
-        # that has been calculated by PowerInBand.__init__(..)
-        self._value = LF.get(self)
-
-
-class HF(PowerInBand):
-    """
-    Calculates the power in the HF band (parametrized in the settings).
-    """
-
-    def __init__(self, data):
-        """
-        Calculates the power in the HF band (parametrized in the settings).
-        """
-        super(HF, self).__init__(Sett.lf_band_upper_bound, Sett.hf_band_upper_bound, data)
-        # Here as in LF
-        self._value = HF.get(self)
 
 
 class Total(PowerInBand):
@@ -101,10 +61,10 @@ class Total(PowerInBand):
         """
         Calculates the power of the whole spectrum.
         """
-        super(Total, self).__init__(Sett.vlf_band_lower_bound, Sett.lf_band_upper_bound, data)
+        super(Total, self).__init__(Sett.vlf_band_lower_bound, Sett.lf_band_upper_bound, data) # TODO: WAT? Total = vlf-lf?
         # Used _calculate_data(..) (here as in other indexes) as a substitute of the ex 'calculate' to bypass the
         # cache system
-        self._value = Total._calculate_data(self, {})
+        self._value = Total._compute(self, {})
 
 
 class VLFPeak(PeakInBand):
