@@ -3,7 +3,7 @@ from __future__ import division
 __author__ = 'AleB'
 __all__ = ['PowerInBand', 'PowerInBandNormal', 'LFHF', 'NormalizedHF', 'NormalizedLF']
 
-import numpy as np
+from numpy import argmax, sum
 from pyHRV.indexes.BaseFeatures import FDFeature
 from pyHRV.PyHRVSettings import MainSettings as Sett
 
@@ -34,7 +34,7 @@ class InBand(FDFeature):
 class PowerInBand(InBand):
     def __init__(self, data, params):
         super(PowerInBand, self).__init__(data, params)
-        self._power_in_band = self._value = np.sum(self._spec_band) / len(self._freq_band)
+        self._power_in_band = self._value = sum(self._spec_band) / len(self._freq_band)
 
 
 class PowerInBandNormal(PowerInBand):
@@ -47,7 +47,7 @@ class PowerInBandNormal(PowerInBand):
 class PeakInBand(InBand):
     def __init__(self, data, params):
         super(PeakInBand, self).__init__(data, params)
-        self._value = self._freq_band[np.argmax(self._spec_band)]
+        self._value = self._freq_band[argmax(self._spec_band)]
 
 
 class LFHF(FDFeature):
