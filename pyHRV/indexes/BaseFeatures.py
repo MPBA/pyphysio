@@ -59,6 +59,8 @@ class Feature(object):
         assert type(use_cache) is bool
         if params is None:
             params = kwargs
+        else:
+            params.update(kwargs)
         if use_cache:
             if not Cache.cache_check(data, cls, params):
                 Cache.cache_comp_and_save(data, cls, params)
@@ -81,11 +83,11 @@ class Feature(object):
         This class is abstract.
         @return: The hash of the parameters used by the cache feature.
         """
-        return self._utility_hash([params[i] for i in self._get_used_params() if i in params] +
+        return self._utility_hash([params[i] for i in self.get_used_params() if i in params] +
                                   [self.__class__.__name__, "_cn"])
 
     @staticmethod
-    def _get_used_params():
+    def get_used_params():
         """
         Placeholder for the subclasses
         @raise NotImplementedError: Ever
@@ -126,7 +128,7 @@ class FDFeature(Feature):
             raise TypeError("Not enough samples to perform a cube-spline interpolation.")
 
     @staticmethod
-    def _get_used_params():
+    def get_used_params():
         return ['interp_freq', 'psd_method']
 
 

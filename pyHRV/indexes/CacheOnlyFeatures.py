@@ -38,7 +38,7 @@ class FFTCalc(CacheOnlyFeature):
         return bands, powers
 
     @staticmethod
-    def _get_used_params():
+    def get_used_params():
         return ['interp_freq']
 
 
@@ -72,7 +72,7 @@ class PSDLombscargleCalc(CacheOnlyFeature):
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 
     @staticmethod
-    def _get_used_params():
+    def get_used_params():
         return ['lombscargle_stop']
 
 
@@ -103,7 +103,7 @@ class PSDFFTCalc(CacheOnlyFeature):
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 
     @staticmethod
-    def _get_used_params():
+    def get_used_params():
         return ['interp_freq']
 
 
@@ -128,7 +128,7 @@ class PSDWelchLinspaceCalc(CacheOnlyFeature):
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 
     @staticmethod
-    def _get_used_params():
+    def get_used_params():
         return ['interp_freq']
 
 
@@ -151,7 +151,7 @@ class PSDWelchLibCalc(CacheOnlyFeature):
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 
     @staticmethod
-    def _get_used_params():
+    def get_used_params():
         return ['interp_freq']
 
 
@@ -180,7 +180,7 @@ class PSDAr1Calc(CacheOnlyFeature):
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 
     @staticmethod
-    def _get_used_params():
+    def get_used_params():
         return ['interp_freq']
 
 
@@ -220,7 +220,7 @@ class PSDAr2Calc(CacheOnlyFeature):
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 
     @staticmethod
-    def _get_used_params():
+    def get_used_params():
         return ['interp_freq']
 
 
@@ -240,7 +240,7 @@ class Histogram(CacheOnlyFeature):
         return np.histogram(data, params['histogram_bins'])
 
     @staticmethod
-    def _get_used_params():
+    def get_used_params():
         return ['histogram_bins']
 
 
@@ -259,7 +259,7 @@ class HistogramMax(CacheOnlyFeature):
         return np.max(h)  # TODO 2 Andrea: max h or b(max h)??
 
     @staticmethod
-    def _get_used_params():
+    def get_used_params():
         return ['histogram_bins']
 
 
@@ -277,7 +277,7 @@ class Diff(CacheOnlyFeature):
         return np.diff(np.array(data))
 
     @staticmethod
-    def _get_used_params():
+    def get_used_params():
         return []
 
 
@@ -295,7 +295,7 @@ class StandardDeviation(CacheOnlyFeature):
         return np.std(np.array(data))
 
     @staticmethod
-    def _get_used_params():
+    def get_used_params():
         return []
 
 
@@ -313,7 +313,7 @@ class OrderedSubsets(CacheOnlyFeature):
         return ordered_subsets(data, params['subset_size'])
 
     @staticmethod
-    def _get_used_params():
+    def get_used_params():
         return ['subsets_size']
 
 
@@ -334,5 +334,5 @@ class PoincareSD(CacheOnlyFeature):
         return sd1, sd2
 
     @staticmethod
-    def _get_used_params():
+    def get_used_params():
         return []
