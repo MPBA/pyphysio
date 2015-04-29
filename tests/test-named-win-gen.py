@@ -4,12 +4,12 @@ import os
 
 import pandas as pd
 
-from pyHRV.Files import *
-from pyHRV.windowing import NamedWinGen, WindowsIterator
-from pyHRV import Cache
-import pyHRV.indexes.TDFeatures
-import pyHRV.indexes.FDFeatures
-from pyHRV.PyHRVSettings import MainSettings as Ps
+from pyPhysio.Files import *
+from pyPhysio.windowing import NamedWinGen, WindowsIterator
+from pyPhysio import Cache
+import pyPhysio.indexes.TDFeatures
+import pyPhysio.indexes.FDFeatures
+from pyPhysio.PyHRVSettings import MainSettings as Ps
 
 
 def test(f):
@@ -20,7 +20,7 @@ def test(f):
     ds = Cache(ibi, labels=lab)
     ws = NamedWinGen(ds, include_baseline_name="baseline")
 
-    mm = WindowsIterator(ds, ws, pyHRV.indexes.TDFeatures.__all__ + pyHRV.indexes.FDFeatures.__all__)
+    mm = WindowsIterator(ds, ws, pyPhysio.indexes.TDFeatures.__all__ + pyPhysio.indexes.FDFeatures.__all__)
     mm.compute_all()
     df = pd.DataFrame(mm.results)
     df.columns = mm.labels

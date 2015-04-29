@@ -1,6 +1,6 @@
 __author__ = 'AleB'
-from pyHRV.Files import *
-from pyHRV import Cache, data_series_from_bvp, data_series_from_ecg
+from pyPhysio.Files import *
+from pyPhysio import Cache, data_series_from_bvp, data_series_from_ecg
 
 data = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 ecg_val = [1, 2, 3, 4, 5, 4, 3, 2, 1]

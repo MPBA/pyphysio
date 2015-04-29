@@ -1,6 +1,6 @@
 __author__ = 'AleB'
-from pyHRV.windowing import *
-from pyHRV import Cache
+from pyPhysio.windowing import *
+from pyPhysio import Cache
 
 data = Cache()
 
@@ -22,7 +22,7 @@ w = [Window(1, 2), Window(2, 5)]
 wins5 = CollectionWinGen(win_list=w, data=data)
 wins6 = CollectionWinGen(w, data)
 # or faster (see Snippets/LoadingData.py)
-from pyHRV.Files import load_windows_gen_from_csv
+from pyPhysio.Files import load_windows_gen_from_csv
 
 wins7 = load_windows_gen_from_csv("my_saved_windows.csv")
 

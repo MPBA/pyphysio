@@ -1,9 +1,9 @@
-from pyHRV.galaxy.GalaxyHRVAnalysis import *
-from pyHRV.galaxy.GalaxyLoadRR import *
-from pyHRV.galaxy.GalaxyFilter import *
-from pyHRV.galaxy.GalaxyNormalizeRR import *
-from pyHRV.galaxy.GalaxyLinearTimeWindows import *
-from pyHRV.indexes import get_available_indexes
+from pyPhysio.galaxy.GalaxyHRVAnalysis import *
+from pyPhysio.galaxy.GalaxyLoadRR import *
+from pyPhysio.galaxy.GalaxyFilter import *
+from pyPhysio.galaxy.GalaxyNormalizeRR import *
+from pyPhysio.galaxy.GalaxyLinearTimeWindows import *
+from pyPhysio.indexes import get_available_indexes
 
 hrv_list = get_available_indexes()
 in_file = "../z_data/A05.txt"

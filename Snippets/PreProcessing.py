@@ -1,7 +1,7 @@
 __author__ = 'AleB'
-from pyHRV.Files import *
-from pyHRV.Filters import *
-from pyHRV import Cache
+from pyPhysio.Files import *
+from pyPhysio.Filters import *
+from pyPhysio import Cache
 
 data = Cache()
 

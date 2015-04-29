@@ -22,7 +22,7 @@ cl = ['Intended Audience :: Science/Research', 'License :: OSI Approved :: GNU G
                                                              "Development Status :: 4 - Beta",
                                                              "Development Status :: 5 - Production/Stable",
                                                              "Development Status :: 6 - Mature"][
-      int(version.split(".")[2])]]
+          int(version.split(".")[2])]]
 setup(
     name='PyHRV',
     version=version,
@@ -42,6 +42,6 @@ setup(
         'spectrum'
     ],
 
-    package_dir={'pyHRV': 'pyHRV'},
-    packages=['pyHRV', 'pyHRV.indexes', 'pyHRV.windowing', 'pyHRV.galaxy', 'pyHRV.example_data']
+    package_dir={'pyPhysio': 'pyPhysio'},
+    packages=['pyPhysio', 'pyPhysio.indexes', 'pyPhysio.windowing', 'pyPhysio.galaxy', 'pyPhysio.example_data']
 )

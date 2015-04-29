@@ -1,9 +1,9 @@
 __author__ = 'AleB'
 from time import time
 
-from pyHRV.galaxy.GalaxyHRVAnalysis import *
-from pyHRV.Files import load_ds_from_csv_column
-from pyHRV.indexes import get_available_indexes
+from pyPhysio.galaxy.GalaxyHRVAnalysis import *
+from pyPhysio.Files import load_ds_from_csv_column
+from pyPhysio.indexes import get_available_indexes
 
 
 inp = "../z_data/A05.txt"

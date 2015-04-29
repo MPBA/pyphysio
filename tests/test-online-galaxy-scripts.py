@@ -1,10 +1,10 @@
-from pyHRV.galaxy.GalaxyOnLineHRVAnalysis import GalaxyOnLineHRVAnalysis
+from pyPhysio.galaxy.GalaxyOnLineHRVAnalysis import GalaxyOnLineHRVAnalysis
 
 __author__ = 'AleB'
 
-from pyHRV.Files import load_ds_from_csv_column
-from pyHRV.indexes import get_available_online_indexes
-from pyHRV.indexes.SupportValuesCollection import SupportValuesCollection
+from pyPhysio.Files import load_ds_from_csv_column
+from pyPhysio.indexes import get_available_online_indexes
+from pyPhysio.indexes.SupportValuesCollection import SupportValuesCollection
 
 print(get_available_online_indexes())
 

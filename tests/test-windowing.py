@@ -1,8 +1,8 @@
 __author__ = 'AleB'
 
-from pyHRV.windowing import *
-from pyHRV.Files import *
-from pyHRV.indexes import TDFeatures as Td
+from pyPhysio.windowing import *
+from pyPhysio.Files import *
+from pyPhysio.indexes import TDFeatures as Td
 
 
 def main():

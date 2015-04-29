@@ -1,8 +1,8 @@
-from pyHRV import Cache
-from pyHRV.indexes.TDFeatures import Mean, SD
-from pyHRV.windowing.WindowsBase import Window
-from pyHRV.windowing.WindowsGenerators import LinearWinGen
-from pyHRV.windowing.WindowsIterator import WindowsIterator
+from pyPhysio import Cache
+from pyPhysio.indexes.TDFeatures import Mean, SD
+from pyPhysio.windowing.WindowsBase import Window
+from pyPhysio.windowing.WindowsGenerators import LinearWinGen
+from pyPhysio.windowing.WindowsIterator import WindowsIterator
 
 __author__ = 'AleB'
 

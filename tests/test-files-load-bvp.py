@@ -1,6 +1,6 @@
-from pyHRV.indexes.TDFeatures import TINN, Triang
-from pyHRV.Files import load_ibi_from_bvp
-from pyHRV.Filters import Filters
+from pyPhysio.indexes.TDFeatures import TINN, Triang
+from pyPhysio.Files import load_ibi_from_bvp
+from pyPhysio.Filters import Filters
 
 
 if __name__ == '__main__':
