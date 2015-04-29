@@ -1,3 +1,5 @@
+from __future__ import division
+
 __author__ = 'AleB'
 __all__ = ['Mean', 'Median', 'SD', 'SDSD', 'NNx', 'PNNx', 'NN10', 'NN25', 'NN50', 'PNN10', 'PNN25', 'PNN50', 'RMSSD',
            "Triang", "TINN"]

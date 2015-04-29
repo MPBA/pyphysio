@@ -1,3 +1,5 @@
+from __future__ import division
+
 __author__ = 'AleB'
 
 from pyHRV.Utility import template_interpolation

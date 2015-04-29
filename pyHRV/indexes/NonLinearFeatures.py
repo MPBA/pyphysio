@@ -1,4 +1,6 @@
 # coding=utf-8
+from __future__ import division
+
 __author__ = 'AleB'
 __all__ = ['ApproxEntropy', 'CorrelationDim', 'Fisher', 'FractalDimension', 'DFALongTerm', 'DFAShortTerm', 'Hurst',
            'PetrosianFracDim', 'PoinEll', 'PoinSD1', 'PoinSD12', 'PoinSD2', 'SVDEntropy', 'SampleEntropy']
@@ -74,12 +76,12 @@ class SampleEntropy(NonLinearFeature):
             cmr_m_samp_en = np.zeros(num_elem_m)
             for i in xrange(num_elem_m):
                 vector = d_m[i]
-                cmr_m_samp_en[i] = float(sum(1 for i in vector if i <= r) - 1) / (num_elem_m - 1)
+                cmr_m_samp_en[i] = (sum(1 for i in vector if i <= r) - 1) / (num_elem_m - 1)
 
             cmr_m1_samp_en = np.zeros(num_elem_m1)
             for i in xrange(num_elem_m1):
                 vector = d_m1[i]
-                cmr_m1_samp_en[i] = float(sum(1 for i in vector if i <= r) - 1) / (num_elem_m1 - 1)
+                cmr_m1_samp_en[i] = (sum(1 for i in vector if i <= r) - 1) / (num_elem_m1 - 1)
 
             cm = np.sum(cmr_m_samp_en) / num_elem_m
             cm1 = np.sum(cmr_m1_samp_en) / num_elem_m1
@@ -108,8 +110,8 @@ class FractalDimension(NonLinearFeature):
             ra = rr[0]
             rb = rr[1]
 
-            cmr_a = float(sum(1 for i in mutual_distance if i <= ra)) / num_elem
-            cmr_b = float(sum(1 for i in mutual_distance if i <= rb)) / num_elem
+            cmr_a = (sum(1 for i in mutual_distance if i <= ra)) / num_elem
+            cmr_b = (sum(1 for i in mutual_distance if i <= rb)) / num_elem
 
             self._value = (np.log(cmr_b) - np.log(cmr_a)) / (np.log(rb) - np.log(ra))
 
