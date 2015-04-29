@@ -142,9 +142,9 @@ class LinearTimeWinGen(TimeWinGen):
         self._begin = begin
         self._end = end
         self._bt, self._bi = self._t, self._i
-        if not self._begin is None:
+        if self._begin is not None:
             self._bt, self._bi = self._next_sample(self._begin)
-        if not self._end is None:
+        if self._end is not None:
             et = np.sum(self._data)
             while self._end < et:
                 self._ei -= 1

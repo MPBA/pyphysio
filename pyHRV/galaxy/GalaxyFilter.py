@@ -1,6 +1,6 @@
 from pyHRV.galaxy.ParamExecClass import ParamExecClass
 from pyHRV.Files import load_ds_from_csv_column, save_ds_to_csv
-from pyHRV.Filters import IBIFilters
+from pyHRV.Filters import Filters
 
 __author__ = 'AleB'
 
@@ -15,4 +15,4 @@ class GalaxyFilter(ParamExecClass):
     def execute(self):
         inp = self._kwargs['input']
         out = self._kwargs['output']
-        save_ds_to_csv(IBIFilters.filter_outliers(load_ds_from_csv_column(inp)), out)
+        save_ds_to_csv(Filters.filter_outliers(load_ds_from_csv_column(inp)), out)

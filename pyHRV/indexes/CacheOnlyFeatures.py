@@ -9,7 +9,6 @@ import numpy as np
 from scipy import signal
 
 from pyHRV.Utility import ordered_subsets, interpolate_ibi
-from pyHRV.DataSeries import DataSeries
 from pyHRV.indexes.BaseFeatures import CacheOnlyFeature
 from pyHRV.PyHRVSettings import MainSettings as Sett
 

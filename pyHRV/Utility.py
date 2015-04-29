@@ -1,9 +1,8 @@
 __author__ = 'Andrea'
 import numpy as np
 from scipy import interpolate
-
+from pandas import TimeSeries
 from pyHRV.PyHRVSettings import MainSettings as Sett
-from pyHRV.DataSeries import DataSeries
 
 
 def data_series_from_bvp(bvp, bvp_time, delta_ratio=Sett.import_bvp_delta_max_min_numerator,
@@ -22,7 +21,7 @@ def data_series_from_bvp(bvp, bvp_time, delta_ratio=Sett.import_bvp_delta_max_mi
     """
     delta = (max(bvp) - min(bvp)) / delta_ratio
     max_i, ii, iii, iv = peak_detection(bvp, delta, bvp_time)
-    s = DataSeries(np.diff(max_i) * 1000)
+    s = TimeSeries(np.diff(max_i) * 1000)
     for f in filters:
         s = f(s)
     s.meta_tag['from_type'] = "data_time-bvp"
@@ -46,7 +45,7 @@ def data_series_from_ecg(ecg, ecg_time, delta=Sett.import_ecg_delta, filters=Set
     """
     # TODO: explain delta
     max_tab, min_tab, ii, iii = peak_detection(ecg, delta, ecg_time)
-    s = DataSeries(np.diff(max_tab))
+    s = TimeSeries(np.diff(max_tab))
     for f in filters:
         s = f(s)
     s.meta_tag['from_type'] = "data_time-ecg"

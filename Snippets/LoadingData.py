@@ -1,6 +1,6 @@
 __author__ = 'AleB'
 from pyHRV.Files import *
-from pyHRV import DataSeries, data_series_from_bvp, data_series_from_ecg
+from pyHRV import Cache, data_series_from_bvp, data_series_from_ecg
 
 data = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 ecg_val = [1, 2, 3, 4, 5, 4, 3, 2, 1]
@@ -10,7 +10,7 @@ bvp_time = [0, 1, 2, 3, 4, 5, 6, 7, 8]
 
 ## Generating a DataSeries: Constructor
 # Passing an iterable object (list, array, ndarray etc)
-data_series = DataSeries(data)
+data_series = Cache(data)
 ## Generating a DataSeries: Aux functions
 # From bvp or ecg value-time example_data through the internal peak detection algorithm
 data_series_ecg = data_series_from_ecg(ecg_val, ecg_time)

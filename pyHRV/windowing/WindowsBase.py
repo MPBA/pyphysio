@@ -1,7 +1,6 @@
-from pyHRV.DataSeries import DataSeries
-
 __author__ = 'AleB'
 __all__ = ['WindowError', 'Window', 'WindowsGenerator']
+from pandas import TimeSeries
 
 
 class WindowError(Exception):
@@ -43,7 +42,7 @@ class Window(object):
         return None
 
     def extract_data(self):
-        return DataSeries(self._data[self._begin: self._end])
+        return TimeSeries(self._data[self._begin: self._end])
 
     def __repr__(self):
         return '%d:%d' % (self.begin, self.end)

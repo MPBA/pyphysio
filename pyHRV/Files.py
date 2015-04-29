@@ -1,9 +1,10 @@
+
 __all__ = ['load_pd_from_excel_column', 'load_ds_from_csv_column', 'load_windows_gen_from_csv', 'save_ds_to_csv',
            'load_ibi_from_bvp', 'load_ibi_from_ecg']
 
 import pandas as pd
 
-from pyHRV.DataSeries import DataSeries, data_series_from_ecg, data_series_from_bvp
+from pyHRV.Utility import data_series_from_bvp, data_series_from_ecg
 from pyHRV.PyHRVSettings import MainSettings as Sett
 from pyHRV.windowing.WindowsBase import Window
 from pyHRV.windowing.WindowsGenerators import CollectionWinGen
@@ -44,9 +45,9 @@ def load_ds_from_csv_column(path, column=Sett.load_rr_column_name, sep=Sett.load
     @rtype: DataSeries
     """
     d = pd.read_csv(path, sep)
-    if not column in d.columns:
+    if column not in d.columns:
         column = d.columns[0]
-    inst = DataSeries(d[column])
+    inst = pd.TimeSeries(d[column])
     inst.name = column
     return inst
 

@@ -8,25 +8,21 @@ Files: Scripts for loading data from and saving to files in various formats (CSV
 """
 
 __author__ = "AleB"
+import indexes
+import windowing
 import Files
 import Filters
 import PyHRVSettings
-import indexes
-import windowing
-import DataSeries as _Ds
 
 __all__ = ['Files', 'PyHRVSettings', 'windowing', 'indexes', 'Filters']
-__all__.extend(_Ds.__all__)
 __all__.extend(Filters.__all__)
 __all__.extend(Files.__all__)
+
 __all__.extend(indexes.__all__)
 __all__.extend(windowing.__all__)
 
-from DataSeries import *
 from Files import *
+from Filters import *
 from PyHRVSettings import *
 from indexes import *
 from windowing import *
-from Filters import *
-
-del _Ds

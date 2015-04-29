@@ -1,8 +1,8 @@
 __author__ = 'AleB'
 from pyHRV.windowing import *
-from pyHRV import DataSeries
+from pyHRV import Cache
 
-data = DataSeries()
+data = Cache()
 
 ## Linear Windows Generator
 # Generates a linear-index set of windows (b+i*s, b+i*s+w).

@@ -1,4 +1,4 @@
-from pyHRV import DataSeries
+from pyHRV import Cache
 from pyHRV.indexes.TDFeatures import Mean, SD
 from pyHRV.windowing.WindowsBase import Window
 from pyHRV.windowing.WindowsGenerators import LinearWinGen
@@ -6,7 +6,7 @@ from pyHRV.windowing.WindowsIterator import WindowsIterator
 
 __author__ = 'AleB'
 
-data = DataSeries([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+data = Cache([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
 ## Index class usage
 # This is the simplest way to extract an index

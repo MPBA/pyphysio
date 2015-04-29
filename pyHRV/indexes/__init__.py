@@ -13,17 +13,16 @@ __author__ = 'AleB'
 import TDFeatures
 import FDFeatures
 import NonLinearFeatures
-import BaseFeatures
+import CacheOnlyFeatures
 from TDFeatures import *
 from FDFeatures import *
 from NonLinearFeatures import *
-import pyHRV
 
 __all_indexes__ = []
 __all_indexes__.extend(TDFeatures.__all__)
 __all_indexes__.extend(FDFeatures.__all__)
 __all_indexes__.extend(NonLinearFeatures.__all__)
-__all__ = ['TDFeatures', 'FDFeatures', 'NonLinearFeatures']
+__all__ = ['TDFeatures', 'FDFeatures', 'NonLinearFeatures', 'CacheOnlyFeatures']
 __all__.extend(__all_indexes__)
 
 
@@ -32,4 +31,5 @@ def get_available_indexes():
 
 
 def get_available_online_indexes():
+    import pyHRV
     return filter(lambda x: hasattr(getattr(pyHRV, x), "required_sv"), get_available_indexes())
