@@ -8,15 +8,17 @@ class Feature(object):
     the resulting value will be available through the 'value' property. This class is abstract.
     """
 
-    def __init__(self, data=None, params=None):  # TODO 3: add parameter params to the hierarchy
+    def __init__(self, data, params):
         """
         Initializes the index. This class is abstract.
         @param data: DataSeries from where extract the index.
         @type data: DataSeries
         """
         assert self.__class__ != Feature, "Class is abstract."
+        assert params is None or params or isinstance(params, dict),\
+            "Parameters must be passed as a dict ( {'name1': value1, 'name2': value2} )"
         self._value = None
-        self._params = params
+        self._params = params if params is dict else {}
         self._data = data
 
     @property
@@ -53,7 +55,7 @@ class Feature(object):
         @param use_cache: Weather to use the cache memory or not
         @return: The final data
         """
-        assert type(use_cache) is bool
+        assert type(use_cache) is bool, "Need a boolean here."
         if params is None:
             params = kwargs
         else:
@@ -73,27 +75,28 @@ class Feature(object):
         """
         raise TypeError(cls.__name__ + " is not available as a cache feature.")
 
-    def cache_hash(self, params):
+    @classmethod
+    def cache_hash(cls, params):
         """
         This method gives an hash to use as a part of the key in the cache starting from the parameters used by the
         feature. The method _utility_hash([par1,...parN])
         This class is abstract.
         @return: The hash of the parameters used by the cache feature.
         """
-        return self._utility_hash([params[i] for i in self.get_used_params() if i in params] +
-                                  [self.__class__.__name__, "_cn"])
+        print params, cls.get_used_params(), cls
+        return cls._utility_hash([params[i] for i in cls.get_used_params() if i in params] +
+                                 [cls.__name__, "_cn"])
 
     @staticmethod
     def get_used_params():
         """
         Placeholder for the subclasses
-        @raise NotImplementedError: Ever
         """
-        raise TypeError(Feature.__name__ + " is not available as a cache feature.")
+        return []
 
     @staticmethod
     def _utility_hash(x):
-        assert isinstance(x, list)
+        assert isinstance(x, list), "Need a list of values, not a " + str(type(x))
         concatenation = "this is random salt "  # this is random salt
         for y in x:
             concatenation += str(y)
@@ -121,11 +124,9 @@ class Cache(object):
         """
         Checks the presence in the cache of the specified calculator's data.
         @param calculator: Cacheable data calculator
-        @type calculator: CacheableDataCalc
         @return: Presence in the cache
         @rtype: Boolean
         """
-        assert isinstance(calculator, Feature)
         if not hasattr(self, "_cache"):
             setattr(self, "_cache", {})
             return False
@@ -139,7 +140,6 @@ class Cache(object):
         """
         Invalidates the specified calculator's cached data if any.
         @param calculator: Cacheable data calculator
-        @type calculator: CacheableDataCalc
         """
         if self.cache_check(calculator, params):
             del self._cache[calculator.cache_hash(params)]
@@ -149,9 +149,7 @@ class Cache(object):
         """
         Calculates data and caches it
         @param calculator: Cacheable data calculator
-        @type calculator: CacheableDataCalc
         """
-        assert isinstance(calculator, Feature)
         self._cache[calculator.cache_hash(params)] = calculator.get(self, params, use_cache=False)
         return self._cache[calculator.cache_hash(params)]
 
@@ -164,7 +162,7 @@ class Cache(object):
         @return: The data or None
         @rtype: DataSeries or None
         """
-        if self.cache_check(calculator, params):
+        if Cache.cache_check(self, calculator, params):
             return self._cache[calculator.cache_hash(params)]
         else:
             return None

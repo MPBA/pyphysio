@@ -8,7 +8,6 @@ import numpy as np
 
 from pyPhysio.indexes.CacheOnlyFeatures import Diff, Histogram, HistogramMax
 from pyPhysio.indexes.BaseFeatures import TDFeature
-from pyPhysio.PyHRVSettings import MainSettings as Sett
 from pyPhysio.indexes.SupportValues import SumSV, LengthSV, DiffsSV, MedianSV
 
 
@@ -73,19 +72,20 @@ class SD(TDFeature):
 
 class PNNx(TDFeature):
     """
-    Calculates the presence proportion (0.0-1.0) of pairs of consecutive IBIs in the data series
+    Calculates the relative frequency (0.0-1.0) of pairs of consecutive IBIs in the data series
     where the difference between the two values is greater than the parameter (threshold).
     """
 
     def __init__(self, data=None, params=None):
         super(PNNx, self).__init__(data, params)
-        self._xth = self._params['threshold'] \
-            if self.__class__ != PNNx and self._params is not None and 'threshold' in self._params else self.threshold()
-        self._value = NNx(data, self._xth).value / float(len(data))
+        if self.__class__ == PNNx:
+            self._value = NNx(data, params).value / float(len(data))
+        else:
+            self._value = NNx(data, {'threshold': self.threshold()}).value / float(len(data))
 
     @staticmethod
     def threshold():
-        return Sett.nnx_default_threshold
+        raise NotImplementedError()
 
     @classmethod
     def required_sv(cls):
@@ -104,14 +104,17 @@ class NNx(TDFeature):
 
     def __init__(self, data=None, params=None):
         super(NNx, self).__init__(data, params)
-        self._xth = self._params['threshold'] \
-            if self.__class__ != PNNx and self._params is not None and 'threshold' in self._params else self.threshold()
+        if self.__class__ == NNx:
+            assert 'threshold' in params, "Need the parameter 'threshold'."
+            self._xth = self._params['threshold']
+        else:
+            self._xth = self.threshold()
         diff = Diff.get(self._data)
         self._value = sum(1.0 for x in diff if x > self._xth)
 
     @staticmethod
     def threshold():
-        return Sett.nnx_default_threshold
+        raise NotImplementedError()
 
     @classmethod
     def required_sv(cls):
@@ -121,7 +124,6 @@ class NNx(TDFeature):
     def calculate_on(cls, state, threshold=None):
         if threshold is None:
             threshold = cls.threshold()
-
         return sum(1 for x in state[DiffsSV].value if x > threshold)
 
 
