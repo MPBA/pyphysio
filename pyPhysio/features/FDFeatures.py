@@ -1,7 +1,7 @@
 from __future__ import division
 
 __author__ = 'AleB'
-__all__ = ['PowerInBand', 'PowerInBandNormal', 'LFHF', 'NormalizedHF', 'NormalizedLF']
+__all__ = ['PowerInBand', 'PeakInBand', 'PowerInBandNormal', 'LFHF', 'NormalizedHF', 'NormalizedLF']
 
 from numpy import argmax, sum
 from pyPhysio.features.BaseFeatures import FDFeature
