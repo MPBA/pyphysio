@@ -7,8 +7,8 @@ import pandas as pd
 from pyPhysio.Files import *
 from pyPhysio.windowing import NamedWinGen, WindowsIterator
 from pyPhysio import Cache
-import pyPhysio.indexes.TDFeatures
-import pyPhysio.indexes.FDFeatures
+import pyPhysio.features.TDFeatures
+import pyPhysio.features.FDFeatures
 from pyPhysio.PyHRVSettings import MainSettings as Ps
 
 
@@ -20,7 +20,7 @@ def test(f):
     ds = Cache(ibi, labels=lab)
     ws = NamedWinGen(ds, include_baseline_name="baseline")
 
-    mm = WindowsIterator(ds, ws, pyPhysio.indexes.TDFeatures.__all__ + pyPhysio.indexes.FDFeatures.__all__)
+    mm = WindowsIterator(ds, ws, pyPhysio.features.TDFeatures.__all__ + pyPhysio.features.FDFeatures.__all__)
     mm.compute_all()
     df = pd.DataFrame(mm.results)
     df.columns = mm.labels

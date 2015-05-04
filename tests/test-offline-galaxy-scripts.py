@@ -3,12 +3,12 @@ from pyPhysio.galaxy.GalaxyLoadRR import *
 from pyPhysio.galaxy.GalaxyFilter import *
 from pyPhysio.galaxy.GalaxyNormalizeRR import *
 from pyPhysio.galaxy.GalaxyLinearTimeWindows import *
-from pyPhysio.indexes import get_available_indexes
+from pyPhysio.features import get_available_indexes
 
 hrv_list = get_available_indexes()
 in_file = "../z_data/A05.txt"
 rr_file = "rr.ibi"
-out_file = "indexes.csv"
+out_file = "features.csv"
 win_file = "wins.win"
 GalaxyLoadRR(input=in_file, output=rr_file, data_type='rr').execute()
 GalaxyFilter(input=rr_file, output=rr_file).execute()

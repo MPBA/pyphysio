@@ -7,14 +7,14 @@ import pyPhysio
 
 class SupportValuesCollection(object):
     """
-    This container-class helps the management of a set of support values required to calculate the needed indexes in the
+    This container-class helps the management of a set of support values required to calculate the needed features in the
     on-line mode.
     """
 
     def __init__(self, indexes, win_size=50):
         """
         Initializes the management system.
-        @param indexes: List of indexes needed.
+        @param indexes: List of features needed.
         @param win_size: Size in samples of the on-line window.
         """
         self._win_size = win_size
@@ -43,7 +43,7 @@ class SupportValuesCollection(object):
     @property
     def ready(self):
         """
-        Indicates weather the collection has enough data to calculate the indexes in the window.
+        Indicates weather the collection has enough data to calculate the features in the window.
         @rtype: bool
         """
         return len(self._supp[VectorSV].value) >= self._win_size

@@ -43,5 +43,5 @@ setup(
     ],
 
     package_dir={'pyPhysio': 'pyPhysio'},
-    packages=['pyPhysio', 'pyPhysio.indexes', 'pyPhysio.windowing', 'pyPhysio.galaxy', 'pyPhysio.example_data']
+    packages=['pyPhysio', 'pyPhysio.features', 'pyPhysio.windowing', 'pyPhysio.galaxy', 'pyPhysio.example_data']
 )

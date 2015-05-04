@@ -4,7 +4,7 @@ __all__ = ["Filters"]
 import numpy as np
 
 from pandas import TimeSeries
-from pyPhysio.indexes.TDFeatures import Mean, SD
+from pyPhysio.features.TDFeatures import Mean, SD
 
 
 class Filters(object):
@@ -63,7 +63,7 @@ class Filters(object):
     @staticmethod
     def normalize_custom(series, par1, par2):
         """
-        Normalizes the series considering two factors ((IBI-par1)/par2)
+        Normalizes the series considering two factors ((val-par1)/par2)
         @param par1: a scale for each sample
         @param par2: second parameter: average calm-state expected bpm
         @return: Filtered TimeSeries

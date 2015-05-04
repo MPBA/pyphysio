@@ -1,8 +1,8 @@
 import time
 
 from pyPhysio.Files import *
-from pyPhysio.indexes import TDFeatures as TDIn
-from pyPhysio.indexes import FDFeatures as FDIn
+from pyPhysio.features import TDFeatures as TDIn
+from pyPhysio.features import FDFeatures as FDIn
 
 
 _debug_time = 0

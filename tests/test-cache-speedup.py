@@ -3,7 +3,7 @@ from time import time
 
 from pyPhysio.galaxy.GalaxyHRVAnalysis import *
 from pyPhysio.Files import load_ds_from_csv_column
-from pyPhysio.indexes import get_available_indexes
+from pyPhysio.features import get_available_indexes
 
 
 inp = "../z_data/A05.txt"

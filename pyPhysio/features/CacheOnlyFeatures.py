@@ -9,7 +9,7 @@ import numpy as np
 from scipy import signal
 
 from pyPhysio.Utility import ordered_subsets, interpolate_ibi
-from pyPhysio.indexes.BaseFeatures import CacheOnlyFeature
+from pyPhysio.features.BaseFeatures import CacheOnlyFeature
 from pyPhysio.PyHRVSettings import MainSettings as Sett
 
 
@@ -144,8 +144,7 @@ class PSDWelchLibCalc(CacheOnlyFeature):
         @return: Data to cache: (bands, powers, total_power)
         @rtype: (array, array, float)
         """
-        if 'interp_freq' not in params or params['interp_freq'] is None:
-            params['interp_freq'] = Sett.default_interpolation_freq
+        assert not ('interp_freq' not in params or params['interp_freq'] is None), "Need 'interp_freq' parameter."
         rr_interp, bt_interp = interpolate_ibi(data, params['interp_freq'])  # TODO 6: change interp. type
         bands, powers = signal.welch(rr_interp, params['interp_freq'], nfft=max(128, len(rr_interp)))
         powers = np.sqrt(powers)

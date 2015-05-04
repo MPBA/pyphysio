@@ -2,7 +2,7 @@ __author__ = 'AleB'
 
 from pyPhysio.windowing import *
 from pyPhysio.Files import *
-from pyPhysio.indexes import TDFeatures as Td
+from pyPhysio.features import TDFeatures as Td
 
 
 def main():

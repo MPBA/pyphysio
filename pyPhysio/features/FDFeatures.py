@@ -4,7 +4,7 @@ __author__ = 'AleB'
 __all__ = ['PowerInBand', 'PowerInBandNormal', 'LFHF', 'NormalizedHF', 'NormalizedLF']
 
 from numpy import argmax, sum
-from pyPhysio.indexes.BaseFeatures import FDFeature
+from pyPhysio.features.BaseFeatures import FDFeature
 from CacheOnlyFeatures import PSDWelchLibCalc
 
 

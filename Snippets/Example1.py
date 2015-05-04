@@ -13,9 +13,9 @@ windows = pyPhysio.LinearTimeWinGen(step=20000, width=40000, data=Test1.data_ser
 mapper = pyPhysio.WindowsIterator(
     Test1.data_series,
     windows,
-    pyPhysio.indexes.TDFeatures.__all__ +
-    pyPhysio.indexes.FDFeatures.__all__ +
-    pyPhysio.indexes.NonLinearFeatures.__all__)
+    pyPhysio.features.TDFeatures.__all__ +
+    pyPhysio.features.FDFeatures.__all__ +
+    pyPhysio.features.NonLinearFeatures.__all__)
 mapper.compute_all()
 # We convert the results to a example_data frame
 data_frame = pandas.DataFrame(mapper.results)

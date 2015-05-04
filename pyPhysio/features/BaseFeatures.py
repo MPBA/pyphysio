@@ -83,7 +83,6 @@ class Feature(object):
         This class is abstract.
         @return: The hash of the parameters used by the cache feature.
         """
-        print params, cls.get_used_params(), cls
         return cls._utility_hash([params[i] for i in cls.get_used_params() if i in params] +
                                  [cls.__name__, "_cn"])
 
@@ -150,8 +149,9 @@ class Cache(object):
         Calculates data and caches it
         @param calculator: Cacheable data calculator
         """
-        self._cache[calculator.cache_hash(params)] = calculator.get(self, params, use_cache=False)
-        return self._cache[calculator.cache_hash(params)]
+        h = calculator.cache_hash(params)
+        self._cache[h] = calculator.get(self, params, use_cache=False)
+        return self._cache[h]
 
     @staticmethod
     def cache_get_data(self, calculator, params):

@@ -1,11 +1,11 @@
 # coding=utf-8
 """
-indexes package:
+features package:
 Contains classes with 43 of the main algorithms for the HRV analysis.
 They are divided by:
 TDIndexes:          Time domain indices,
 FDIndexes:          Frequency domain indices,
-NonLinearIndexes:   Like e.g. entropy indexes and Poincaré indexes.
+NonLinearIndexes:   Like e.g. entropy features and Poincaré features.
 """
 
 __author__ = 'AleB'

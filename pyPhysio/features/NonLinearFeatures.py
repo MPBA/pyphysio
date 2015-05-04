@@ -9,9 +9,9 @@ from scipy.spatial.distance import cdist, pdist
 from scipy.stats.mstats import mquantiles
 import numpy as np
 
-from pyPhysio.indexes.CacheOnlyFeatures import Diff, OrderedSubsets, PoincareSD, StandardDeviation
-from pyPhysio.indexes.BaseFeatures import NonLinearFeature
-from pyPhysio.indexes.TDFeatures import Mean
+from pyPhysio.features.CacheOnlyFeatures import Diff, OrderedSubsets, PoincareSD, StandardDeviation
+from pyPhysio.features.BaseFeatures import NonLinearFeature
+from pyPhysio.features.TDFeatures import Mean
 from pyPhysio.Utility import ordered_subsets
 from pyPhysio.PyHRVSettings import MainSettings as Sett
 
@@ -207,7 +207,7 @@ class PoinSD2(NonLinearFeature):
 
 class PoinSD12(NonLinearFeature):
     """
-    Calculates the ratio between SD1 and SD2 Poincaré indexes of the data series.
+    Calculates the ratio between SD1 and SD2 Poincaré features of the data series.
     """
 
     def __init__(self, data=None):

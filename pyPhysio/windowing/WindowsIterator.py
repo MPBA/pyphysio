@@ -2,6 +2,7 @@ from __builtin__ import property
 
 import pyPhysio
 from pyPhysio.windowing.WindowsBase import WindowsGeneratorIterator
+from pandas import DataFrame
 
 
 __author__ = 'AleB'
@@ -10,15 +11,15 @@ __all__ = ['WindowsIterator']
 
 class WindowsIterator(object):
     """
-    Takes some indexes and calculates them on the given set of windows.
-    Allows the iteration of the computation of a list of indexes over a WindowsGenerator.
+    Takes some features and calculates them on the given set of windows.
+    Allows the iteration of the computation of a list of features over a WindowsGenerator.
     Use compute_all to execute the computation.
     """
 
-    def __init__(self, data, win_gen, indexes):
+    def __init__(self, data, win_gen, indexes, params):
         """
         Initializes
-        @param data: data on which compute windowed indexes
+        @param data: data on which compute windowed features
         @param win_gen: the windows generator
         @param indexes: list of classes as CLASS(DATA).value() ==> index value
         """
@@ -28,6 +29,7 @@ class WindowsIterator(object):
         self._win_iter = win_gen.__iter__()
         self._index = indexes
         self._winn = -1
+        self._params = params
 
     def __iter__(self):
         return WindowsGeneratorIterator(self)
@@ -38,7 +40,7 @@ class WindowsIterator(object):
         for index in self._index:
             if isinstance(index, str) | isinstance(index, unicode):
                 index = getattr(pyPhysio, index)
-            ret.append(index(data=win_ds).value)
+            ret.append(index(data=win_ds, params=self._params).value)
         self._winn += 1
         return [self._winn if win.label is None else win.label, win.begin, win.end] + ret
 
@@ -47,13 +49,16 @@ class WindowsIterator(object):
 
     def compute_all(self):
         """
-        Executes the indexes computation (mapping with the windows).
+        Executes the features computation (mapping with the windows).
         """
         self._map = []
         for w in self._wing:
             if pyPhysio.MainSettings.ind_iter_verbose:
                 print "Processing", w
             self._map.append(self._comp_one(w))
+        df = DataFrame(self._map)
+        df.columns = self.labels
+        return df
 
     @property
     def labels(self):

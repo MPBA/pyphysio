@@ -1,4 +1,4 @@
-from pyPhysio.indexes.TDFeatures import TINN, Triang
+from pyPhysio.features.TDFeatures import TINN, Triang
 from pyPhysio.Files import load_ibi_from_bvp
 from pyPhysio.Filters import Filters
 

@@ -6,9 +6,9 @@ __all__ = ['Mean', 'Median', 'SD', 'SDSD', 'NNx', 'PNNx', 'NN10', 'NN25', 'NN50'
 
 import numpy as np
 
-from pyPhysio.indexes.CacheOnlyFeatures import Diff, Histogram, HistogramMax
-from pyPhysio.indexes.BaseFeatures import TDFeature
-from pyPhysio.indexes.SupportValues import SumSV, LengthSV, DiffsSV, MedianSV
+from pyPhysio.features.CacheOnlyFeatures import Diff, Histogram, HistogramMax
+from pyPhysio.features.BaseFeatures import TDFeature
+from pyPhysio.features.SupportValues import SumSV, LengthSV, DiffsSV, MedianSV
 
 
 class Mean(TDFeature):
@@ -17,7 +17,7 @@ class Mean(TDFeature):
     """
     # TODO: WA a weighted average using the time spans?
 
-    def __init__(self, data=None):
+    def __init__(self, data, params=None):
         super(Mean, self).__init__(data)
         self._value = Mean.get(self._data)
 
@@ -39,7 +39,7 @@ class Median(TDFeature):
     Calculates the median of the data series.
     """
 
-    def __init__(self, data=None):
+    def __init__(self, data=None, params=None):
         super(Median, self).__init__(data)
         self._value = Median.get(self._data)
 
@@ -61,7 +61,7 @@ class SD(TDFeature):
     Calculates the standard deviation of the data series.
     """
 
-    def __init__(self, data=None):
+    def __init__(self, data=None, params=None):
         super(SD, self).__init__(data)
         self._value = SD.get(self._data)
 
@@ -227,7 +227,7 @@ class Triang(TDFeature):
 
 # TODO: fix documentation
 class TINN(TDFeature):
-    """Calculates the difference between two histogram-related indexes."""
+    """Calculates the difference between two histogram-related features."""
 
     def __init__(self, data=None, params=None):
         super(TINN, self).__init__(data, params)
