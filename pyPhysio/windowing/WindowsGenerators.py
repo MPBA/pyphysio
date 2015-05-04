@@ -18,7 +18,7 @@ class IBIWindow(Window):
         """
         Window.__init__(self, begin, end, data)
         self._data = data
-        l, i, t = self._data.get_labels()
+        l, i, t = (None, None, None)  # self._data.get_labels()
         if l is None:
             self._label = None
         else:
@@ -207,7 +207,7 @@ class NamedWinGen(WindowsGenerator):
         self._ibn = include_baseline_name
         if not self._data.has_labels():
             raise TypeError("Data has no labels.")
-        l, self._is, t = self._data.get_labels()
+        l, self._is, t = (None, None, None)  # self._data.get_labels()
 
     def step_windowing(self):
         self._i += 1
