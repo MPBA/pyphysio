@@ -21,7 +21,7 @@ class ApproxEntropy(NonLinearFeature):
     Calculates the approx entropy of the data series.
     """
 
-    def __init__(self, data=None):
+    def __init__(self, data=None, params=None):
         super(ApproxEntropy, self).__init__(data)
         if len(data) < 3:
             self._value = np.nan
@@ -57,7 +57,7 @@ class SampleEntropy(NonLinearFeature):
     Calculates the sample entropy of the data series.
     """
 
-    def __init__(self, data=None):
+    def __init__(self, data=None, params=None):
         super(SampleEntropy, self).__init__(data)
         if len(data) < 4:
             self._value = np.nan
@@ -94,7 +94,7 @@ class FractalDimension(NonLinearFeature):
     Calculates the fractal dimension of the data series.
     """
 
-    def __init__(self, data=None):
+    def __init__(self, data=None, params=None):
         super(FractalDimension, self).__init__(data)
         if len(data) < 3:
             self._value = np.nan
@@ -121,7 +121,7 @@ class SVDEntropy(NonLinearFeature):
     Calculates the SVD entropy of the data series.
     """
 
-    def __init__(self, data=None):
+    def __init__(self, data=None, params=None):
         super(SVDEntropy, self).__init__(data)
         if len(data) < 2:
             self._value = np.nan
@@ -137,7 +137,7 @@ class Fisher(NonLinearFeature):
     Calculates the Fisher index of the data series.
     """
 
-    def __init__(self, data=None):
+    def __init__(self, data=None, params=None):
         super(Fisher, self).__init__(data)
         if len(data) < 2:
             self._value = np.nan
@@ -157,7 +157,7 @@ class CorrelationDim(NonLinearFeature):
     Calculates the correlation dimension of the data series.
     """
 
-    def __init__(self, data=None):
+    def __init__(self, data=None, params=None):
         super(CorrelationDim, self).__init__(data)
         if len(self._data) < Sett.correlation_dimension_len:
             self._value = np.nan
@@ -188,7 +188,7 @@ class PoinSD1(NonLinearFeature):
     Calculates the SD1 Poincaré index of the data series.
     """
 
-    def __init__(self, data=None):
+    def __init__(self, data=None, params=None):
         super(PoinSD1, self).__init__(data)
         sd1, sd2 = PoincareSD.get(self._data)
         self._value = sd1
@@ -199,7 +199,7 @@ class PoinSD2(NonLinearFeature):
     Calculates the SD2 Poincaré index of the data series.
     """
 
-    def __init__(self, data=None):
+    def __init__(self, data=None, params=None):
         super(PoinSD2, self).__init__(data)
         sd1, sd2 = PoincareSD.get(self._data)
         self._value = sd2
@@ -210,7 +210,7 @@ class PoinSD12(NonLinearFeature):
     Calculates the ratio between SD1 and SD2 Poincaré features of the data series.
     """
 
-    def __init__(self, data=None):
+    def __init__(self, data=None, params=None):
         super(PoinSD12, self).__init__(data)
         sd1, sd2 = PoincareSD.get(self._data)
         self._value = sd1 / sd2
@@ -221,7 +221,7 @@ class PoinEll(NonLinearFeature):
     Calculates the Poincaré Ell. index of the data series.
     """
 
-    def __init__(self, data=None):
+    def __init__(self, data=None, params=None):
         super(PoinEll, self).__init__(data)
         sd1, sd2 = PoincareSD.get(self._data)
         self._value = sd1 * sd2 * np.pi
@@ -232,7 +232,7 @@ class Hurst(NonLinearFeature):
     Calculates the Hurst HRV index of the data series.
     """
 
-    def __init__(self, data=None):
+    def __init__(self, data=None, params=None):
         super(Hurst, self).__init__(data)
         n = len(self._data)
         if n < 2:
@@ -261,7 +261,7 @@ class PetrosianFracDim(NonLinearFeature):
     Calculates the petrosian's fractal dimension of the data series.
     """
 
-    def __init__(self, data=None):
+    def __init__(self, data=None, params=None):
         super(PetrosianFracDim, self).__init__(data)
         d = Diff.get(self._data)
         n_delta = 0  # number of sign changes in derivative of the signal
@@ -277,7 +277,7 @@ class DFAShortTerm(NonLinearFeature):
     Calculate the alpha1 (short term) component index of the De-trended Fluctuation Analysis.
     """
 
-    def __init__(self, data=None):
+    def __init__(self, data=None, params=None):
         super(DFAShortTerm, self).__init__(data)
         # calculates De-trended Fluctuation Analysis: alpha1 (short term) component
         x = self._data
@@ -307,7 +307,7 @@ class DFALongTerm(NonLinearFeature):
     Calculate the alpha2 (long term) component index of the De-trended Fluctuation Analysis.
     """
 
-    def __init__(self, data=None):
+    def __init__(self, data=None, params=None):
         super(DFALongTerm, self).__init__(data)
         # calculates De-trended Fluctuation Analysis: alpha2 (long term) component
         x = self._data
