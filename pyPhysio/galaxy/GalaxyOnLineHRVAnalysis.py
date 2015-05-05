@@ -31,6 +31,6 @@ class GalaxyOnLineHRVAnalysis(ParamExecClass):
         else:
             state.update(value)
 
-            values = map(lambda x: getattr(pyPhysio, x).calculate_on(state), indexes)
+            values = map(lambda x: getattr(pyPhysio, x).compute_on(state), indexes)
 
         return values, state

@@ -16,7 +16,7 @@ class InBand(FDFeature):
         self._value = self._total_band
 
     @classmethod
-    def _compute(cls, data, params):
+    def raw_compute(cls, data, params):
         assert 'freq_min' in params, "Need the parameter 'freq_min' as the lower bound of the band."
         assert 'freq_max' in params, "Need the parameter 'freq_max' as the higher bound of the band."
 

@@ -1,37 +1,35 @@
 from __future__ import division
 
 __author__ = 'AleB'
-__all__ = ['Mean', 'Median', 'SD', 'SDSD', 'NNx', 'PNNx', 'NN10', 'NN25', 'NN50', 'PNN10', 'PNN25', 'PNN50', 'RMSSD',
+__all__ = ['Mean', 'Median', 'SD', 'DiffSD', 'NNx', 'PNNx', 'NN10', 'NN25', 'NN50', 'PNN10', 'PNN25', 'PNN50', 'RMSSD',
            "Triang", "TINN"]
 
 import numpy as np
 
-from pyPhysio.features.CacheOnlyFeatures import Diff, Histogram, HistogramMax
 from pyPhysio.features.BaseFeatures import TDFeature
 from pyPhysio.features.SupportValues import SumSV, LengthSV, DiffsSV, MedianSV
+from pyPhysio.features.CacheOnlyFeatures import Diff, Histogram, HistogramMax
 
 
 class Mean(TDFeature):
     """
     Calculates the average value of the data.
     """
-    # TODO: WA a weighted average using the time spans?
 
-    def __init__(self, data, params=None):
-        super(Mean, self).__init__(data)
-        self._value = Mean.get(self._data)
+    def __init__(self, params=None, **kwargs):
+        super(self.__class__, self).__init__(params, kwargs)
 
     @classmethod
-    def _compute(cls, data, params):
+    def raw_compute(cls, data, params):
         return np.mean(data)
+
+    @classmethod
+    def compute_on(cls, state):
+        return state[SumSV].value / float(state[LengthSV].value)
 
     @classmethod
     def required_sv(cls):
         return [SumSV, LengthSV]
-
-    @classmethod
-    def calculate_on(cls, state):
-        return state[SumSV].value / float(state[LengthSV].value)
 
 
 class Median(TDFeature):
@@ -39,12 +37,11 @@ class Median(TDFeature):
     Calculates the median of the data series.
     """
 
-    def __init__(self, data=None, params=None):
-        super(Median, self).__init__(data)
-        self._value = Median.get(self._data)
+    def __init__(self, params=None, **kwargs):
+        super(self.__class__, self).__init__(params, kwargs)
 
     @classmethod
-    def _compute(cls, data, params):
+    def raw_compute(cls, data, params):
         return np.median(data)
 
     @classmethod
@@ -52,7 +49,7 @@ class Median(TDFeature):
         return [MedianSV]
 
     @classmethod
-    def calculate_on(cls, state):
+    def compute_on(cls, state):
         return state[MedianSV].value
 
 
@@ -61,12 +58,11 @@ class SD(TDFeature):
     Calculates the standard deviation of the data series.
     """
 
-    def __init__(self, data=None, params=None):
-        super(SD, self).__init__(data)
-        self._value = SD.get(self._data)
+    def __init__(self, params=None, **kwargs):
+        super(self.__class__, self).__init__(params, kwargs)
 
     @classmethod
-    def _compute(cls, data, params):
+    def raw_compute(cls, data, params):
         return np.std(data)
 
 
@@ -76,12 +72,17 @@ class PNNx(TDFeature):
     where the difference between the two values is greater than the parameter (threshold).
     """
 
-    def __init__(self, data=None, params=None):
-        super(PNNx, self).__init__(data, params)
-        if self.__class__ == PNNx:
-            self._value = NNx(data, params).value / float(len(data))
+    def __init__(self, params=None, **kwargs):
+        super(self.__class__, self).__init__(params, kwargs)
+
+    @classmethod
+    def raw_compute(cls, data, params):
+        if cls == PNNx:
+            assert 'threshold' in params, "Need the parameter 'threshold'."
+            px = params
         else:
-            self._value = NNx(data, {'threshold': self.threshold()}).value / float(len(data))
+            px = params.copy().update({'threshold': cls.threshold()})
+        return NNx.raw_compute(data, px) / float(len(data))
 
     @staticmethod
     def threshold():
@@ -92,8 +93,8 @@ class PNNx(TDFeature):
         return NNx.required_sv()
 
     @classmethod
-    def calculate_on(cls, state):
-        return NNx.calculate_on(state, cls.threshold()) / state[LengthSV].value
+    def compute_on(cls, state):
+        return NNx.compute_on(state, cls.threshold()) / state[LengthSV].value
 
 
 class NNx(TDFeature):
@@ -102,15 +103,18 @@ class NNx(TDFeature):
     parameter (threshold).
     """
 
-    def __init__(self, data=None, params=None):
-        super(NNx, self).__init__(data, params)
-        if self.__class__ == NNx:
+    def __init__(self, params=None, **kwargs):
+        super(self.__class__, self).__init__(params, kwargs)
+
+    @classmethod
+    def raw_compute(cls, data, params):
+        if cls == NNx:
             assert 'threshold' in params, "Need the parameter 'threshold'."
-            self._xth = self._params['threshold']
+            th = params['threshold']
         else:
-            self._xth = self.threshold()
-        diff = Diff.get(self._data)
-        self._value = sum(1.0 for x in diff if x > self._xth)
+            th = cls.threshold()
+        diff = Diff.get(data)
+        return sum(1.0 for x in diff if x > th)
 
     @staticmethod
     def threshold():
@@ -121,7 +125,7 @@ class NNx(TDFeature):
         return [DiffsSV]
 
     @classmethod
-    def calculate_on(cls, state, threshold=None):
+    def compute_on(cls, state, threshold=None):
         if threshold is None:
             threshold = cls.threshold()
         return sum(1 for x in state[DiffsSV].value if x > threshold)
@@ -132,6 +136,9 @@ class PNN10(PNNx):
     Calculates the relative frequency (0.0-1.0) of the pairs of consecutive values in the data where the difference is
     greater than 10.
     """
+
+    def __init__(self, params=None, **kwargs):
+        super(self.__class__, self).__init__(params, kwargs)
 
     @staticmethod
     def threshold():
@@ -144,6 +151,9 @@ class PNN25(PNNx):
     greater than 25.
     """
 
+    def __init__(self, params=None, **kwargs):
+        super(self.__class__, self).__init__(params, kwargs)
+
     @staticmethod
     def threshold():
         return 25
@@ -155,6 +165,9 @@ class PNN50(PNNx):
     greater than 50.
     """
 
+    def __init__(self, params=None, **kwargs):
+        super(self.__class__, self).__init__(params, kwargs)
+
     @staticmethod
     def threshold():
         return 50
@@ -164,6 +177,9 @@ class NN10(NNx):
     """
     Calculates number of pairs of consecutive values in the data where the difference between is greater than 10.
     """
+
+    def __init__(self, params=None, **kwargs):
+        super(self.__class__, self).__init__(params, kwargs)
 
     @staticmethod
     def threshold():
@@ -175,6 +191,9 @@ class NN25(NNx):
     Calculates number of pairs of consecutive values in the data where the difference between is greater than 25.
     """
 
+    def __init__(self, params=None, **kwargs):
+        super(self.__class__, self).__init__(params, kwargs)
+
     @staticmethod
     def threshold():
         return 25
@@ -184,6 +203,9 @@ class NN50(NNx):
     """
     Calculates number of pairs of consecutive values in the data where the difference between is greater than 50.
     """
+
+    def __init__(self, params=None, **kwargs):
+        super(self.__class__, self).__init__(params, kwargs)
 
     @staticmethod
     def threshold():
@@ -195,44 +217,52 @@ class RMSSD(TDFeature):
     Calculates the square root of the mean of the squared differences.
     """
 
-    def __init__(self, data=None, params=None):
-        super(RMSSD, self).__init__(data, params)
-        if len(data) < 2:
-            print self.__class__.__name__ + " Warning: not enough samples (" + str(len(data)) + " < 2). " + \
-                "To calculate the differences between consecutive values at least 2 samples are needed."
-            self._value = np.nan
-        else:
-            diff = Diff.get(self._data)
-            self._value = np.sqrt(sum(diff ** 2) / len(diff))
+    def __init__(self, params=None, **kwargs):
+        super(self.__class__, self).__init__(params, kwargs)
+
+    @classmethod
+    def raw_compute(cls, data, params):
+        diff = Diff.get(data)
+        return np.sqrt(sum(diff ** 2) / len(diff))
 
 
-class SDSD(TDFeature):
+class DiffSD(TDFeature):
     """Calculates the standard deviation of the differences between each value and its next."""
 
-    def __init__(self, data=None, params=None):
-        super(SDSD, self).__init__(data, params)
-        diff = Diff.get(self._data)
-        self._value = np.std(diff)
+    def __init__(self, params=None, **kwargs):
+        super(self.__class__, self).__init__(params, kwargs)
+
+    @classmethod
+    def raw_compute(cls, data, params):
+        diff = Diff.get(data)
+        return np.std(diff)
 
 
 # TODO: fix documentation
 class Triang(TDFeature):
-    """Calculates the Triangular index."""
+    """Calculates the Triangular index that is the ratio between the number of samples and the number of samples in the
+    highest histogram bin of the data."""
 
-    def __init__(self, data=None, params=None):
-        super(Triang, self).__init__(data, params)
-        h, b = Histogram.get(self._data)
-        self._value = len(self._data) / np.max(h)
+    def __init__(self, params=None, **kwargs):
+        super(self.__class__, self).__init__(params, kwargs)
+
+    @classmethod
+    def raw_compute(cls, data, params):
+        h, b = Histogram.get(data)
+        return len(data) / np.max(h)
 
 
 # TODO: fix documentation
 class TINN(TDFeature):
     """Calculates the difference between two histogram-related features."""
 
-    def __init__(self, data=None, params=None):
-        super(TINN, self).__init__(data, params)
-        hist, bins = Histogram.get(self._data)
-        max_x = HistogramMax.get(self._data)
+    def __init__(self, params=None, **kwargs):
+        super(self.__class__, self).__init__(params, kwargs)
+
+    @classmethod
+    def raw_compute(cls, data, params):
+        hist, bins = Histogram.get(data)
+        max_x = HistogramMax.get(data)
         hist_left = np.array(hist[0:np.argmax(hist)])
         ll = len(hist_left)
         hist_right = np.array(hist[np.argmax(hist):-1])
@@ -265,4 +295,4 @@ class TINN(TDFeature):
 
         m = bins[np.argmax(hist) + pos + 1]
 
-        self._value = m - n
+        return m - n

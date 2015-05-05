@@ -1,5 +1,7 @@
 __author__ = 'AleB'
 
+from pandas import TimeSeries
+
 
 class Feature(object):
     """
@@ -8,43 +10,23 @@ class Feature(object):
     the resulting value will be available through the 'value' property. This class is abstract.
     """
 
-    def __init__(self, data, params):
+    def __init__(self, params=None, _kwargs=None, **kwargs):
         """
         Initializes the index. This class is abstract.
         @param data: DataSeries from where extract the index.
         @type data: DataSeries
         """
         assert self.__class__ != Feature, "Class is abstract."
-        assert params is None or params or isinstance(params, dict),\
-            "Parameters must be passed as a dict ( {'name1': value1, 'name2': value2} )"
-        self._value = None
-        self._params = params if params is dict else {}
-        self._data = data
+        if type(params) is not dict:
+            self._params = kwargs
+        else:
+            self._params = params.copy()
+        self._params.update(kwargs)
+        if type(_kwargs) is dict:
+            self._params.update(_kwargs)
 
-    @property
-    def value(self):
-        """
-        Returns the value of the index, calculated during the instantiation.
-        @rtype: float
-        """
-        return self._value
-
-    @classmethod
-    def required_sv(cls):
-        """
-        Returns the list of the support values that the computation of this index requires.
-        @rtype: list
-        """
-        return []
-
-    @classmethod
-    def calculate_on(cls, state):
-        """
-        For on-line mode.
-        @param state: Support values
-        @raise NotImplementedError: Ever here.
-        """
-        raise TypeError(cls.__name__ + " is not available as an on-line feature.")
+    def __call__(self, data):
+        return self.__class__.get(data, self._params)
 
     @classmethod
     def get(cls, data, params=None, use_cache=True, **kwargs):
@@ -55,6 +37,7 @@ class Feature(object):
         @param use_cache: Weather to use the cache memory or not
         @return: The final data
         """
+        assert type(data) is TimeSeries, "The data must be a pandas TimeSeries."
         assert type(use_cache) is bool, "Need a boolean here."
         if params is None:
             params = kwargs
@@ -65,15 +48,15 @@ class Feature(object):
                 Cache.cache_comp_and_save(data, cls, params)
             return Cache.cache_get_data(data, cls, params)
         else:
-            return cls._compute(data, params)
+            return cls.raw_compute(data, params)
 
     @classmethod
-    def _compute(cls, data, params):
+    def raw_compute(cls, data, params):
         """
         Placeholder for the subclasses
         @raise NotImplementedError: Ever
         """
-        raise TypeError(cls.__name__ + " is not available as a cache feature.")
+        raise NotImplementedError(cls.__name__ + " is not implemented.")
 
     @classmethod
     def cache_hash(cls, params):
@@ -101,6 +84,23 @@ class Feature(object):
             concatenation += str(y)
         concatenation += " adding bias"
         return concatenation.__hash__() % (2 ** 32)
+
+    @classmethod
+    def compute_on(cls, state):
+        """
+        For on-line mode.
+        @param state: Support values
+        @raise NotImplementedError: Ever here.
+        """
+        raise TypeError(cls.__name__ + " is not available as an on-line feature.")
+
+    @classmethod
+    def required_sv(cls):
+        """
+        Returns the list of the support values that the computation of this index requires.
+        @rtype: list
+        """
+        return []
 
 
 class Cache(object):

@@ -26,7 +26,7 @@ def test(rr_series):
     print "PNN50: ", TDIn.PNN50(rr_series).value
     print "NN50: ", TDIn.NN50(rr_series).value
     print "RMSSD: ", TDIn.RMSSD(rr_series).value
-    print "SDSD: ", TDIn.SDSD(rr_series).value
+    print "SDSD: ", TDIn.DiffSD(rr_series).value
     t1 = delay()
     print "*Cached:"
     print "HRMean: ", TDIn.HRMean(rr_series).value
