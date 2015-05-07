@@ -255,7 +255,7 @@ class HistogramMax(CacheOnlyFeature):
         @return: Data to cache: (hist, bin_edges)
         @rtype: (array, array)
         """
-        h, b = Histogram.get(data, params['histogram_bins'])
+        h, b = Histogram.get(data, params)
         return np.max(h)  # TODO 2 Andrea: max h or b(max h)??
 
     @staticmethod
