@@ -10,6 +10,8 @@ Things
         - Why not Settings? Because of the eventual parallelism, anything static
         - A dictionary with some defaults would be a good choice, but what if we want to compute the same feature with diverse parameters?
             Instead of using a type class instance we can use a wrapper, a decorator containing the parameters and the type information.
+            WRONG!
+                - Abandoned this way, static method raw_compute contains the algorithm, instances of the class are used to store different sets of parameters
     
 - General compute function: we can use a DataFrame instead of a list of Series as parameter, but it is better to have a list because of performance issues
 
@@ -42,3 +44,5 @@ Things
         - The cache data is hidden inside the data-set object, allowing a transparent usage with a high degree of freedom using any kind of data structures.
     
 - Used __future__.division in the files
+
+- The algorithms work with rr in ms, have to transform to TimeSeries in s

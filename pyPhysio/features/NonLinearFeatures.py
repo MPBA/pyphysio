@@ -9,9 +9,9 @@ from scipy.spatial.distance import cdist, pdist
 from scipy.stats.mstats import mquantiles
 import numpy as np
 
-from pyPhysio.features.CacheOnlyFeatures import Diff, OrderedSubsets, PoincareSD
-from pyPhysio.features.BaseFeatures import NonLinearFeature
-from pyPhysio.features.TDFeatures import Mean, SD
+from CacheOnlyFeatures import Diff, OrderedSubsets, PoincareSD
+from BaseFeatures import NonLinearFeature
+from TDFeatures import Mean, SD
 
 
 class ApproxEntropy(NonLinearFeature):
