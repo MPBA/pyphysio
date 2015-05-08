@@ -179,8 +179,6 @@ class FDFeature(Feature):
 
     def __init__(self, params=None, _kwargs=None):
         super(FDFeature, self).__init__(params, _kwargs)
-        assert 'interp_freq' in self._params, "This feature needs 'interp_freq'."
-        self._interp_freq = self._params['interp_freq']
 
     @staticmethod
     def get_used_params():

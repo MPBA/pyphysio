@@ -9,11 +9,9 @@ from scipy.spatial.distance import cdist, pdist
 from scipy.stats.mstats import mquantiles
 import numpy as np
 
-from pyPhysio.features.CacheOnlyFeatures import Diff, OrderedSubsets, PoincareSD, StandardDeviation
+from pyPhysio.features.CacheOnlyFeatures import Diff, OrderedSubsets, PoincareSD
 from pyPhysio.features.BaseFeatures import NonLinearFeature
-from pyPhysio.features.TDFeatures import Mean
-from pyPhysio.Utility import ordered_subsets
-from pyPhysio.PyHRVSettings import MainSettings as Sett
+from pyPhysio.features.TDFeatures import Mean, SD
 
 
 class ApproxEntropy(NonLinearFeature):
@@ -21,35 +19,39 @@ class ApproxEntropy(NonLinearFeature):
     Calculates the approx entropy of the data series.
     """
 
-    def __init__(self, data=None, params=None):
-        super(ApproxEntropy, self).__init__(data)
+    def __init__(self, params=None, **kwargs):
+        super(ApproxEntropy, self).__init__(params, kwargs)
+
+    @classmethod
+    def raw_compute(cls, data, params):
+        assert 'approx_entropy_r' in params, "This feature needs the parameter 'approx_entropy_r'."
         if len(data) < 3:
-            self._value = np.nan
+            return np.nan
         else:
-            r = Sett.approx_entropy_r
-            uj_m = OrderedSubsets.get(self._data, subset_size=2)
-            uj_m1 = OrderedSubsets.get(self._data, subset_size=3)
+            r = params['approx_entropy_r']
+            uj_m = OrderedSubsets.get(data, subset_size=2)
+            uj_m1 = OrderedSubsets.get(data, subset_size=3)
             card_elem_m = uj_m.shape[0]
             card_elem_m1 = uj_m1.shape[0]
 
-            r = r * np.std(self._data)
-            d_m = cdist(uj_m, uj_m, 'chebyshev')
-            d_m1 = cdist(uj_m1, uj_m1, 'chebyshev')
+            r = r * np.std(data)
+            d_m = cdist(uj_m, uj_m, 'che'+'bys'+'hev')
+            d_m1 = cdist(uj_m1, uj_m1, 'che'+'bys'+'hev')
 
-            cmr_m_apen = np.zeros(card_elem_m)
+            cmr_m_ap_en = np.zeros(card_elem_m)
             for i in xrange(card_elem_m):
                 vector = d_m[i]
-                cmr_m_apen[i] = float(sum(1 for i in vector if i <= r)) / card_elem_m
+                cmr_m_ap_en[i] = float(sum(1 for i in vector if i <= r)) / card_elem_m
 
-            cmr_m1_apen = np.zeros(card_elem_m1)
+            cmr_m1_ap_en = np.zeros(card_elem_m1)
             for i in xrange(card_elem_m1):
                 vector = d_m1[i]
-                cmr_m1_apen[i] = float(sum(1 for i in vector if i <= r)) / card_elem_m1
+                cmr_m1_ap_en[i] = float(sum(1 for i in vector if i <= r)) / card_elem_m1
 
-            phi_m = np.sum(np.log(cmr_m_apen)) / card_elem_m
-            phi_m1 = np.sum(np.log(cmr_m1_apen)) / card_elem_m1
+            phi_m = np.sum(np.log(cmr_m_ap_en)) / card_elem_m
+            phi_m1 = np.sum(np.log(cmr_m1_ap_en)) / card_elem_m1
 
-            self._value = phi_m - phi_m1
+            return phi_m - phi_m1
 
 
 class SampleEntropy(NonLinearFeature):
@@ -57,36 +59,40 @@ class SampleEntropy(NonLinearFeature):
     Calculates the sample entropy of the data series.
     """
 
-    def __init__(self, data=None, params=None):
-        super(SampleEntropy, self).__init__(data)
+    def __init__(self, params=None, **kwargs):
+        super(SampleEntropy, self).__init__(params, kwargs)
+
+    @classmethod
+    def raw_compute(cls, data, params):
+        assert 'sample_entropy_r' in params, "This feature needs the parameter 'sample_entropy_r'."
         if len(data) < 4:
-            self._value = np.nan
+            return np.nan
         else:
-            r = Sett.sample_entropy_r
-            uj_m = OrderedSubsets.get(self._data, subset_size=2)
-            uj_m1 = OrderedSubsets.get(self._data, subset_size=3)
+            r = params['sample_entropy_r']
+            uj_m = OrderedSubsets.get(data, subset_size=2)
+            uj_m1 = OrderedSubsets.get(data, subset_size=3)
 
             num_elem_m = uj_m.shape[0]
             num_elem_m1 = uj_m1.shape[0]
 
-            r = r * StandardDeviation.get(self._data)
-            d_m = cdist(uj_m, uj_m, 'chebyshev')
-            d_m1 = cdist(uj_m1, uj_m1, 'chebyshev')
+            r = r * SD.get(data)
+            d_m = cdist(uj_m, uj_m, 'che'+'bys'+'hev')
+            d_m1 = cdist(uj_m1, uj_m1, 'che'+'bys'+'hev')
 
-            cmr_m_samp_en = np.zeros(num_elem_m)
+            cmr_m_sa_mp_en = np.zeros(num_elem_m)
             for i in xrange(num_elem_m):
                 vector = d_m[i]
-                cmr_m_samp_en[i] = (sum(1 for i in vector if i <= r) - 1) / (num_elem_m - 1)
+                cmr_m_sa_mp_en[i] = (sum(1 for i in vector if i <= r) - 1) / (num_elem_m - 1)
 
-            cmr_m1_samp_en = np.zeros(num_elem_m1)
+            cmr_m1_sa_mp_en = np.zeros(num_elem_m1)
             for i in xrange(num_elem_m1):
                 vector = d_m1[i]
-                cmr_m1_samp_en[i] = (sum(1 for i in vector if i <= r) - 1) / (num_elem_m1 - 1)
+                cmr_m1_sa_mp_en[i] = (sum(1 for i in vector if i <= r) - 1) / (num_elem_m1 - 1)
 
-            cm = np.sum(cmr_m_samp_en) / num_elem_m
-            cm1 = np.sum(cmr_m1_samp_en) / num_elem_m1
+            cm = np.sum(cmr_m_sa_mp_en) / num_elem_m
+            cm1 = np.sum(cmr_m1_sa_mp_en) / num_elem_m1
 
-            self._value = np.log(cm / cm1)
+            return np.log(cm / cm1)
 
 
 class FractalDimension(NonLinearFeature):
@@ -94,15 +100,20 @@ class FractalDimension(NonLinearFeature):
     Calculates the fractal dimension of the data series.
     """
 
-    def __init__(self, data=None, params=None):
-        super(FractalDimension, self).__init__(data)
+    def __init__(self, params=None, **kwargs):
+        super(FractalDimension, self).__init__(params, kwargs)
+
+    @classmethod
+    def raw_compute(cls, data, params):
+        assert 'cra' in params, "This feature needs the parameter 'cra'."
+        assert 'crb' in params, "This feature needs the parameter 'crb'."
         if len(data) < 3:
-            self._value = np.nan
+            return np.nan
         else:
-            uj_m = OrderedSubsets.get(self._data, subset_size=2)
-            cra = Sett.fractal_dimension_cra
-            crb = Sett.fractal_dimension_crb
-            mutual_distance = pdist(uj_m, 'chebyshev')
+            uj_m = OrderedSubsets.get(data, subset_size=2)
+            cra = params['cra']
+            crb = params['crb']
+            mutual_distance = pdist(uj_m, 'che'+'bys'+'hev')
 
             num_elem = len(mutual_distance)
 
@@ -113,7 +124,7 @@ class FractalDimension(NonLinearFeature):
             cmr_a = (sum(1 for i in mutual_distance if i <= ra)) / num_elem
             cmr_b = (sum(1 for i in mutual_distance if i <= rb)) / num_elem
 
-            self._value = (np.log(cmr_b) - np.log(cmr_a)) / (np.log(rb) - np.log(ra))
+            return (np.log(cmr_b) - np.log(cmr_a)) / (np.log(rb) - np.log(ra))
 
 
 class SVDEntropy(NonLinearFeature):
@@ -121,15 +132,18 @@ class SVDEntropy(NonLinearFeature):
     Calculates the SVD entropy of the data series.
     """
 
-    def __init__(self, data=None, params=None):
-        super(SVDEntropy, self).__init__(data)
+    def __init__(self, params=None, **kwargs):
+        super(SVDEntropy, self).__init__(params, kwargs)
+
+    @classmethod
+    def raw_compute(cls, data, params):
         if len(data) < 2:
-            self._value = np.nan
+            return np.nan
         else:
-            uj_m = OrderedSubsets.get(self._data, subset_size=2)
+            uj_m = OrderedSubsets.get(data, subset_size=2)
             w = np.linalg.svd(uj_m, compute_uv=False)
             w /= sum(w)
-            self._value = -1 * sum(w * np.log(w))
+            return -1 * sum(w * np.log(w))
 
 
 class Fisher(NonLinearFeature):
@@ -137,19 +151,22 @@ class Fisher(NonLinearFeature):
     Calculates the Fisher index of the data series.
     """
 
-    def __init__(self, data=None, params=None):
-        super(Fisher, self).__init__(data)
+    def __init__(self, params=None, **kwargs):
+        super(Fisher, self).__init__(params, kwargs)
+
+    @classmethod
+    def raw_compute(cls, data, params):
         if len(data) < 2:
-            self._value = np.nan
+            return np.nan
         else:
-            uj_m = OrderedSubsets.get(self._data, subset_size=2)
+            uj_m = OrderedSubsets.get(data, subset_size=2)
             w = np.linalg.svd(uj_m, compute_uv=False)
             w /= sum(w)
             fi = 0
             for i in xrange(0, len(w) - 1):  # from Test1 to M
                 fi += ((w[i + 1] - w[i]) ** 2) / (w[i])
 
-            self._value = fi
+            return fi
 
 
 class CorrelationDim(NonLinearFeature):
@@ -157,13 +174,17 @@ class CorrelationDim(NonLinearFeature):
     Calculates the correlation dimension of the data series.
     """
 
-    def __init__(self, data=None, params=None):
-        super(CorrelationDim, self).__init__(data)
-        if len(self._data) < Sett.correlation_dimension_len:
-            self._value = np.nan
+    def __init__(self, params=None, **kwargs):
+        super(CorrelationDim, self).__init__(params, kwargs)
+
+    @classmethod
+    def raw_compute(cls, data, params):
+        assert 'corr_dim_len' in params, "This feature needs the parameter 'corr_dim_len'."
+        if len(data) < params['corr_dim_len']:
+            return np.nan
         else:
-            rr = self._data / 1000  # rr in seconds
-            uj = ordered_subsets(rr, Sett.correlation_dimension_len)
+            rr = data / 1000  # rr in seconds TODO: wut? semplificabile??
+            uj = OrderedSubsets.get(rr, dict(subset_size=params['corr_dim_len']))
             num_elem = uj.shape[0]
             r_vector = np.arange(0.3, 0.46, 0.02)  # settings
             c = np.zeros(len(r_vector))
@@ -180,7 +201,7 @@ class CorrelationDim(NonLinearFeature):
             log_c = np.log(c)
             log_r = np.log(r_vector)
 
-            self._value = (log_c[-1] - log_c[0]) / (log_r[-1] - log_r[0])
+            return (log_c[-1] - log_c[0]) / (log_r[-1] - log_r[0])
 
 
 class PoinSD1(NonLinearFeature):
@@ -188,10 +209,13 @@ class PoinSD1(NonLinearFeature):
     Calculates the SD1 Poincaré index of the data series.
     """
 
-    def __init__(self, data=None, params=None):
-        super(PoinSD1, self).__init__(data)
-        sd1, sd2 = PoincareSD.get(self._data)
-        self._value = sd1
+    def __init__(self, params=None, **kwargs):
+        super(PoinSD1, self).__init__(params, kwargs)
+
+    @classmethod
+    def raw_compute(cls, data, params):
+        sd1, sd2 = PoincareSD.get(data)
+        return sd1
 
 
 class PoinSD2(NonLinearFeature):
@@ -199,10 +223,13 @@ class PoinSD2(NonLinearFeature):
     Calculates the SD2 Poincaré index of the data series.
     """
 
-    def __init__(self, data=None, params=None):
-        super(PoinSD2, self).__init__(data)
-        sd1, sd2 = PoincareSD.get(self._data)
-        self._value = sd2
+    def __init__(self, params=None, **kwargs):
+        super(PoinSD2, self).__init__(params, kwargs)
+
+    @classmethod
+    def raw_compute(cls, data, params):
+        sd1, sd2 = PoincareSD.get(data)
+        return sd2
 
 
 class PoinSD12(NonLinearFeature):
@@ -210,10 +237,13 @@ class PoinSD12(NonLinearFeature):
     Calculates the ratio between SD1 and SD2 Poincaré features of the data series.
     """
 
-    def __init__(self, data=None, params=None):
-        super(PoinSD12, self).__init__(data)
-        sd1, sd2 = PoincareSD.get(self._data)
-        self._value = sd1 / sd2
+    def __init__(self, params=None, **kwargs):
+        super(PoinSD12, self).__init__(params, kwargs)
+
+    @classmethod
+    def raw_compute(cls, data, params):
+        sd1, sd2 = PoincareSD.get(data)
+        return sd1 / sd2
 
 
 class PoinEll(NonLinearFeature):
@@ -221,10 +251,13 @@ class PoinEll(NonLinearFeature):
     Calculates the Poincaré Ell. index of the data series.
     """
 
-    def __init__(self, data=None, params=None):
-        super(PoinEll, self).__init__(data)
-        sd1, sd2 = PoincareSD.get(self._data)
-        self._value = sd1 * sd2 * np.pi
+    def __init__(self, params=None, **kwargs):
+        super(PoinEll, self).__init__(params, kwargs)
+
+    @classmethod
+    def raw_compute(cls, data, params):
+        sd1, sd2 = PoincareSD.get(data)
+        return sd1 * sd2 * np.pi
 
 
 class Hurst(NonLinearFeature):
@@ -232,20 +265,23 @@ class Hurst(NonLinearFeature):
     Calculates the Hurst HRV index of the data series.
     """
 
-    def __init__(self, data=None, params=None):
-        super(Hurst, self).__init__(data)
-        n = len(self._data)
+    def __init__(self, params=None, **kwargs):
+        super(Hurst, self).__init__(params, kwargs)
+
+    @classmethod
+    def raw_compute(cls, data, params):
+        n = len(data)
         if n < 2:
-            self._value = np.nan
+            return np.nan
         else:
             t = np.arange(1.0, n + 1)
-            y = np.cumsum(self._data)
+            y = np.cumsum(data)
             ave_t = np.array(y / t)
 
             s_t = np.zeros(n)
             r_t = np.zeros(n)
             for i in xrange(n):
-                s_t[i] = np.std(self._data[:i + 1])
+                s_t[i] = np.std(data[:i + 1])
                 x_t = y - t * ave_t[i]
                 r_t[i] = np.max(x_t[:i + 1]) - np.min(x_t[:i + 1])
 
@@ -253,7 +289,7 @@ class Hurst(NonLinearFeature):
             r_s = np.log(r_s)
             n = np.log(t).reshape(n, 1)
             h = np.linalg.lstsq(n[1:], r_s[1:])[0]
-            self._value = h[0]
+            return h[0]
 
 
 class PetrosianFracDim(NonLinearFeature):
@@ -261,15 +297,18 @@ class PetrosianFracDim(NonLinearFeature):
     Calculates the petrosian's fractal dimension of the data series.
     """
 
-    def __init__(self, data=None, params=None):
-        super(PetrosianFracDim, self).__init__(data)
-        d = Diff.get(self._data)
+    def __init__(self, params=None, **kwargs):
+        super(PetrosianFracDim, self).__init__(params, kwargs)
+
+    @classmethod
+    def raw_compute(cls, data, params):
+        d = Diff.get(data)
         n_delta = 0  # number of sign changes in derivative of the signal
         for i in xrange(1, len(d)):
             if d[i] * d[i - 1] < 0:
                 n_delta += 1
-        n = len(self._data)
-        self._value = np.float(np.log10(n) / (np.log10(n) + np.log10(n / n + 0.4 * n_delta)))
+        n = len(data)
+        return np.float(np.log10(n) / (np.log10(n) + np.log10(n / n + 0.4 * n_delta)))
 
 
 class DFAShortTerm(NonLinearFeature):
@@ -277,11 +316,16 @@ class DFAShortTerm(NonLinearFeature):
     Calculate the alpha1 (short term) component index of the De-trended Fluctuation Analysis.
     """
 
-    def __init__(self, data=None, params=None):
-        super(DFAShortTerm, self).__init__(data)
+    def __init__(self, params=None, **kwargs):
+        super(DFAShortTerm, self).__init__(params, kwargs)
+
+    @classmethod
+    def raw_compute(cls, data, params):
         # calculates De-trended Fluctuation Analysis: alpha1 (short term) component
-        x = self._data
-        if len(self._data) >= 16:
+        x = data
+        if len(x) < 16:
+            return np.nan
+        else:
             ave = Mean.get(x)
             y = np.cumsum(x)
             y -= ave
@@ -297,9 +341,7 @@ class DFAShortTerm(NonLinearFeature):
                         f[i] += np.linalg.lstsq(c, z)[1]  # add residue in this box
                 f[i] /= ((len(x) / n) * n)
             f = np.sqrt(f)
-            self._value = np.linalg.lstsq(np.vstack([np.log(l), np.ones(len(l))]).T, np.log(f))[0][0]
-        else:
-            self._value = np.nan
+            return np.linalg.lstsq(np.vstack([np.log(l), np.ones(len(l))]).T, np.log(f))[0][0]
 
 
 class DFALongTerm(NonLinearFeature):
@@ -307,11 +349,16 @@ class DFALongTerm(NonLinearFeature):
     Calculate the alpha2 (long term) component index of the De-trended Fluctuation Analysis.
     """
 
-    def __init__(self, data=None, params=None):
-        super(DFALongTerm, self).__init__(data)
+    def __init__(self, params=None, **kwargs):
+        super(DFALongTerm, self).__init__(params, kwargs)
+
+    @classmethod
+    def raw_compute(cls, data, params):
         # calculates De-trended Fluctuation Analysis: alpha2 (long term) component
-        x = self._data
-        if len(self._data) >= 16:
+        x = data
+        if len(x) < 16:
+            return np.nan
+        else:
             ave = Mean.get(x)
             y = np.cumsum(x)
             y -= ave
@@ -329,6 +376,4 @@ class DFALongTerm(NonLinearFeature):
                 f[i] /= ((len(x) / n) * n)
             f = np.sqrt(f)
 
-            self._value = np.linalg.lstsq(np.vstack([np.log(l), np.ones(len(l))]).T, np.log(f))[0][0]
-        else:
-            self._value = np.nan
+            return np.linalg.lstsq(np.vstack([np.log(l), np.ones(len(l))]).T, np.log(f))[0][0]

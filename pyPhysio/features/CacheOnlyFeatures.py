@@ -8,24 +8,15 @@ __author__ = 'AleB'
 import numpy as np
 from scipy import signal
 
-from pyPhysio.Utility import ordered_subsets, interpolate_ibi
-from pyPhysio.features.BaseFeatures import CacheOnlyFeature
-from pyPhysio.PyHRVSettings import MainSettings as Sett
+from ..Utility import interpolate_ibi
+from BaseFeatures import CacheOnlyFeature
+from TDFeatures import Mean
 
 
 class FFTCalc(CacheOnlyFeature):
     @classmethod
     def raw_compute(cls, data, params):
-        """
-        Calculates the FFT data to cache
-        @param data: DataSeries object
-        @type data: DataSeries
-        @param params: Dict containing interp_freq: Frequency for the interpolation before the pow. spec. estimation.
-        @return: Data to cache: (bands, powers)
-        @rtype: (array, array)
-        """
-        if 'interp_freq' not in params or params['interp_freq'] is None:
-            params['interp_freq'] = Sett.default_interpolation_freq
+        assert 'interp_freq' in params, "This feature needs the parameter 'interp_freq' [1/time_unit]."
         rr_interp, ignored = interpolate_ibi(data.series, params['interp_freq'])  # TODO 2 Andrea: change interp. type
         interp_freq = params['interp_freq']
         hw = np.hamming(len(rr_interp))
@@ -48,19 +39,17 @@ class PSDLombscargleCalc(CacheOnlyFeature):
     def raw_compute(cls, data, params):
         """
         Calculates the PSD data to cache using the Lombscargle algorithm
-        @param data: DataSeries object
-        @type data: DataSeries
-        @param params: Dict containing interp_freq Frequency for the interpolation before the pow. spec. estimation.
-        @return: Data to cache: (bands, powers, total_power)
+        @return: (bands, powers, total_power)
         @rtype: (array, array, float)
         """
-        if 'lombscargle_stop' not in params or params['lombscargle_stop'] is None:
-            params['lombscargle_stop'] = Sett.default_interpolation_freq
-        if Sett.remove_mean:
-            data = data - np.mean(data)
+        # TODO 5 Andrea: is it an interpolation frequency?
+        assert 'lombscargle_stop' in params, "This feature needs the parameter 'lombscargle_stop'."
+        if 'remove_mean' not in params:
+            params['remove_mean'] = False
+        if params['remove_mean']:
+            data = data - Mean.get(data)
         t = np.cumsum(data)
 
-        # TODO 5 Andrea: is it an interpolation frequency?
         # stop : scalar
         #     The end value of the sequence, unless endpoint is set to False. In that case, the sequence consists of
         #     all but the last of num + 1 evenly spaced samples, so that stop is excluded. Note that the step size
@@ -74,7 +63,7 @@ class PSDLombscargleCalc(CacheOnlyFeature):
 
     @staticmethod
     def get_used_params():
-        return ['lombscargle_stop']
+        return ['lombscargle_stop', 'remove_mean']
 
 
 class PSDFFTCalc(CacheOnlyFeature):
@@ -82,17 +71,16 @@ class PSDFFTCalc(CacheOnlyFeature):
     def raw_compute(cls, data, params):
         """
         Calculates the PSD data to cache using the fft algorithm
-        @param data: DataSeries object
-        @type data: DataSeries
-        @param params: Dict containing interp_freq Frequency for the interpolation before the pow. spec. estimation.
-        @return: Data to cache: (bands, powers, total_power)
+        @return: (bands, powers, total_power)
         @rtype: (array, array, float)
         """
-        if 'interp_freq' not in params or params['interp_freq'] is None:
-            params['interp_freq'] = Sett.default_interpolation_freq
+        assert 'interp_freq' in params, "This feature needs the parameter 'interp_freq' [1/time_unit]."
+        if 'remove_mean' not in params:
+            params['remove_mean'] = False
+        if params['remove_mean']:
+            data = data - Mean.get(data)
         data_interp, t_interp = interpolate_ibi(data, params['interp_freq'])  # TODO 6: change interp. type
-        if Sett.remove_mean:
-            data_interp = data_interp - np.mean(data_interp)
+        # TODO Andrea: remove_mean WAS after interp, is it ok?
 
         hw = np.hamming(len(data_interp))
         frame = data_interp * hw
@@ -105,32 +93,31 @@ class PSDFFTCalc(CacheOnlyFeature):
 
     @staticmethod
     def get_used_params():
-        return ['interp_freq']
+        return ['interp_freq', 'remove_mean']
 
 
 class PSDWelchLinspaceCalc(CacheOnlyFeature):
     @classmethod
     def raw_compute(cls, data, params):
         """
-        Calculates the PSD data to cache using the welch algorithm, uses linspace bands distribution
-        @param data: DataSeries object
-        @type data: DataSeries
-        @param params: Dict containing interp_freq Frequency for the interpolation before the pow. spec. estimation.
-        @return: Data to cache: (bands, powers, total_power)
+        Calculates the PSD data to cache using the welch algorithm, uses 'linspace' bands distribution
+        @return: (bands, powers, total_power)
         @rtype: (array, array, float)
         """
-        if 'interp_freq' not in params or params['interp_freq'] is None:
-            params['interp_freq'] = Sett.default_interpolation_freq
+        assert 'interp_freq' in params, "This feature needs the parameter 'interp_freq' [1/time_unit]."
+        if 'remove_mean' not in params:
+            params['remove_mean'] = False
+        if params['remove_mean']:
+            data = data - Mean.get(data)
         data_interp, t_interp = interpolate_ibi(data, params['interp_freq'])  # TODO 6: change interp. type
-        if Sett.remove_mean:
-            data_interp = data_interp - np.mean(data_interp)
+        # TODO Andrea: remove_mean WAS after interp, is it ok?
         bands_w, powers = signal.welch(data_interp, params['interp_freq'], nfft=max(128, len(data_interp)))
         bands = np.linspace(start=0, stop=params['interp_freq'] / 2, num=len(powers), endpoint=True)
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 
     @staticmethod
     def get_used_params():
-        return ['interp_freq']
+        return ['interp_freq', 'remove_mean']
 
 
 class PSDWelchLibCalc(CacheOnlyFeature):
@@ -138,13 +125,10 @@ class PSDWelchLibCalc(CacheOnlyFeature):
     def raw_compute(cls, data, params):
         """
         Calculates the PSDWelch data to cache, uses algorithms bands distribution
-        @param data: DataSeries object
-        @type data: DataSeries
-        @param params: Dict containing interp_freq Frequency for the interpolation before the pow. spec. estimation.
-        @return: Data to cache: (bands, powers, total_power)
+        @return: (bands, powers, total_power)
         @rtype: (array, array, float)
         """
-        assert not ('interp_freq' not in params or params['interp_freq'] is None), "Need 'interp_freq' parameter."
+        assert 'interp_freq' in params, "This feature needs the parameter 'interp_freq' [1/time_unit]."
         rr_interp, bt_interp = interpolate_ibi(data, params['interp_freq'])  # TODO 6: change interp. type
         bands, powers = signal.welch(rr_interp, params['interp_freq'], nfft=max(128, len(rr_interp)))
         powers = np.sqrt(powers)
@@ -160,17 +144,16 @@ class PSDAr1Calc(CacheOnlyFeature):
     def raw_compute(cls, data, params):
         """
         Calculates the PSD data to cache using the ar_1 algorithm
-        @param data: DataSeries object
-        @type data: DataSeries
-        @param params: Dict containing interp_freq Frequency for the interpolation before the pow. spec. estimation.
         @return: Data to cache: (bands, powers, total_power)
         @rtype: (array, array, float)
         """
-        if 'interp_freq' not in params or params['interp_freq'] is None:
-            params['interp_freq'] = Sett.default_interpolation_freq
+        assert 'interp_freq' in params, "This feature needs the parameter 'interp_freq' [1/time_unit]."
+        if 'remove_mean' not in params:
+            params['remove_mean'] = False
+        if params['remove_mean']:
+            data = data - Mean.get(data)
         data_interp, t_interp = interpolate_ibi(data, params['interp_freq'])  # TODO 6: change interp. type
-        if Sett.remove_mean:
-            data_interp = data_interp - np.mean(data_interp)
+        # TODO Andrea: remove_mean WAS after interp, is it ok?
 
         p = spectrum.Periodogram(data_interp, sampling=params['interp_freq'], NFFT=max(128, len(data_interp)))
         p()
@@ -181,7 +164,7 @@ class PSDAr1Calc(CacheOnlyFeature):
 
     @staticmethod
     def get_used_params():
-        return ['interp_freq']
+        return ['interp_freq', 'remove_mean']
 
 
 class PSDAr2Calc(CacheOnlyFeature):
@@ -189,21 +172,18 @@ class PSDAr2Calc(CacheOnlyFeature):
     def raw_compute(cls, data, params):
         """
         Calculates the PSD data to cache using the ar_2 algorithm
-        @param data: DataSeries object
-        @type data: DataSeries
-        @param params: Dict containing interp_freq Frequency for the interpolation before the pow. spec. estimation.
-        @return: Data to cache: (bands, powers, total_power)
+        @return: (bands, powers, total_power)
         @rtype: (array, array, float)
         """
-        if 'interp_freq' not in params or params['interp_freq'] is None:
-            params['interp_freq'] = Sett.default_interpolation_freq
+        assert 'interp_freq' in params, "This feature needs the parameter 'interp_freq' [1/time_unit]."
+        assert 'ar_2_max_order' in params, "This feature needs the parameter 'ar_2_max_order'."
+        if 'remove_mean' in params and params['remove_mean']:
+            data = data - Mean.get(data)
+        data_interp, t_interp = interpolate_ibi(data, params['interp_freq'])  # TODO 6: change interp. type
+        # TODO Andrea: remove_mean WAS after interp, is it ok?
         powers = []
 
-        data_interp, t_interp = interpolate_ibi(data, params['interp_freq'])  # TODO 6: change interp. type
-        if Sett.remove_mean:
-            data_interp = data_interp - np.mean(data_interp)
-
-        orders = range(1, Sett.ar_2_max_order + 1)
+        orders = range(1, params['ar_2_max_order'] + 1)
         for order in orders:
             try:
                 ar, p, k = spectrum.aryule(data_interp, order=order, norm='biased')
@@ -221,7 +201,7 @@ class PSDAr2Calc(CacheOnlyFeature):
 
     @staticmethod
     def get_used_params():
-        return ['interp_freq']
+        return ['interp_freq', 'ar_2_max_order', 'remove_mean']
 
 
 class Histogram(CacheOnlyFeature):
@@ -229,14 +209,11 @@ class Histogram(CacheOnlyFeature):
     def raw_compute(cls, data, params):
         """
         Calculates the Histogram data to cache
-        @param data: DataSeries object
-        @type data: DataSeries
-        @param params: Dict containing histogram_bins
-        @return: Data to cache: (hist, bin_edges)
+        @return: (values, bins)
         @rtype: (array, array)
         """
         if 'histogram_bins' not in params or params['histogram_bins'] is None:
-            params['histogram_bins'] = Sett.cache_histogram_bins
+            params['histogram_bins'] = 100
         return np.histogram(data, params['histogram_bins'])
 
     @staticmethod
@@ -249,10 +226,7 @@ class HistogramMax(CacheOnlyFeature):
     def raw_compute(cls, data, params):
         """
         Calculates the Histogram's max value
-        @param data: DataSeries object
-        @type data: DataSeries
-        @param params: Dict containing histogram_bins
-        @return: Data to cache: (hist, bin_edges)
+        @return: (values, bins)
         @rtype: (array, array)
         """
         h, b = Histogram.get(data, params)
@@ -260,7 +234,7 @@ class HistogramMax(CacheOnlyFeature):
 
     @staticmethod
     def get_used_params():
-        return ['histogram_bins']
+        return Histogram.get_used_params()
 
 
 class Diff(CacheOnlyFeature):
@@ -268,49 +242,30 @@ class Diff(CacheOnlyFeature):
     def raw_compute(cls, data, params):
         """
         Calculates the differences between consecutive values
-        @param data: DataSeries object
-        @type data: DataSeries
-        @param params: Unused
-        @return: Data to cache: diff
+        @return: Differences
         @rtype: array
         """
         return np.diff(np.array(data))
-
-    @staticmethod
-    def get_used_params():
-        return []
-
-
-class StandardDeviation(CacheOnlyFeature):
-    @classmethod
-    def raw_compute(cls, data, params):
-        """
-        Calculates the standard deviation data
-        @param data: DataSeries object
-        @type data: DataSeries
-        @param params: Unused
-        @return: Data to cache: st. dev.
-        @rtype: array
-        """
-        return np.std(np.array(data))
-
-    @staticmethod
-    def get_used_params():
-        return []
 
 
 class OrderedSubsets(CacheOnlyFeature):
     @classmethod
     def raw_compute(cls, data, params):
         """
-        Calculates the the vector of the sequences of length 2 of the data
-        @param data: DataSeries object
-        @type data: DataSeries
-        @param params: Dict containing subset_size
-        @return: Data to cache: ndarray with shape (l - n + 1, n) having l=len(data) and n=subset_size
+        Calculates the the vector of the sequences of length 'subset_size' of the data
+        @return: Data array with shape (l - n + 1, n) having l=len(data) and n=subset_size
         @rtype: array
         """
-        return ordered_subsets(data, params['subset_size'])
+        assert 'subset_size' in params, "This feature needs the parameter 'subset_size'."
+        n = params['subset_size']
+        num = len(data) - n + 1
+        if num > 0:
+            emb = np.zeros([num, n])
+            for i in xrange(num):
+                emb[i, :] = data[i:i + n]
+            return emb
+        else:
+            return []
 
     @staticmethod
     def get_used_params():
@@ -322,10 +277,7 @@ class PoincareSD(CacheOnlyFeature):
     def raw_compute(cls, data, params):
         """
         Calculates Poincare SD 1 and 2
-        @param data: DataSeries object
-        @type data: DataSeries
-        @param params: Unused
-        @return: Data to cache: (SD1, SD2)
+        @return: (SD1, SD2)
         @rtype: (array, array)
         """
         xd, yd = np.array(list(data[:-1])), np.array(list(data[1:]))
@@ -333,6 +285,3 @@ class PoincareSD(CacheOnlyFeature):
         sd2 = np.std((xd + yd) / np.sqrt(2.0))
         return sd1, sd2
 
-    @staticmethod
-    def get_used_params():
-        return []
