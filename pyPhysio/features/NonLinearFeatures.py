@@ -5,12 +5,13 @@ __author__ = 'AleB'
 __all__ = ['ApproxEntropy', 'CorrelationDim', 'Fisher', 'FractalDimension', 'DFALongTerm', 'DFAShortTerm', 'Hurst',
            'PetrosianFracDim', 'PoinEll', 'PoinSD1', 'PoinSD12', 'PoinSD2', 'SVDEntropy', 'SampleEntropy']
 
-import numpy as np
 from scipy.spatial.distance import cdist, pdist
 from scipy.stats.mstats import mquantiles
+import numpy as np
 
-from CacheOnlyFeatures import Diff, OrderedSubsets, PoincareSD
-from BaseFeatures import NonLinearFeature
+from pyPhysio.features.CacheOnlyFeatures import Diff, OrderedSubsets, PoincareSD
+from pyPhysio.features.BaseFeatures import NonLinearFeature
+from pyPhysio.features.TDFeatures import Mean, SD
 
 
 class ApproxEntropy(NonLinearFeature):
@@ -74,7 +75,7 @@ class SampleEntropy(NonLinearFeature):
             num_elem_m = uj_m.shape[0]
             num_elem_m1 = uj_m1.shape[0]
 
-            r = r * np.std(data)
+            r = r * SD.get(data)
             d_m = cdist(uj_m, uj_m, 'che'+'bys'+'hev')
             d_m1 = cdist(uj_m1, uj_m1, 'che'+'bys'+'hev')
 
@@ -325,7 +326,7 @@ class DFAShortTerm(NonLinearFeature):
         if len(x) < 16:
             return np.nan
         else:
-            ave = np.mean(x)
+            ave = Mean.get(x)
             y = np.cumsum(x)
             y -= ave
             l = np.arange(4, 17, 4)
@@ -358,7 +359,7 @@ class DFALongTerm(NonLinearFeature):
         if len(x) < 16:
             return np.nan
         else:
-            ave = np.mean(x)
+            ave = Mean.get(x)
             y = np.cumsum(x)
             y -= ave
             l_max = np.min([64, len(x)])
