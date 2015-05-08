@@ -79,8 +79,9 @@ class Feature(object):
         This class is abstract.
         @return: The hash of the parameters used by the feature.
         """
-        return cls._utility_hash([i + "=" + (str(params[i]) if i in params else '') for i in cls.get_used_params()] +
-                                 [cls.__name__])
+        p = params.copy()
+        p.update({'': str(cls)})
+        return cls._utility_hash(p)
 
     @staticmethod
     def get_used_params():
@@ -91,7 +92,7 @@ class Feature(object):
 
     @staticmethod
     def _utility_hash(x):
-        return str(x).__hash__()
+        return str(x).replace('\'', '')
 
     @classmethod
     def compute_on(cls, state):
