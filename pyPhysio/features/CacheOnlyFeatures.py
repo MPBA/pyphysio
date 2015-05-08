@@ -10,7 +10,6 @@ from scipy import signal
 
 from ..Utility import interpolate_ibi
 from BaseFeatures import CacheOnlyFeature
-from TDFeatures import Mean
 
 
 class FFTCalc(CacheOnlyFeature):
@@ -47,7 +46,7 @@ class PSDLombscargleCalc(CacheOnlyFeature):
         if 'remove_mean' not in params:
             params['remove_mean'] = False
         if params['remove_mean']:
-            data = data - Mean.get(data)
+            data = data - np.mean(data)
         t = np.cumsum(data)
 
         # stop : scalar
@@ -77,10 +76,9 @@ class PSDFFTCalc(CacheOnlyFeature):
         assert 'interp_freq' in params, "This feature needs the parameter 'interp_freq' [1/time_unit]."
         if 'remove_mean' not in params:
             params['remove_mean'] = False
-        if params['remove_mean']:
-            data = data - Mean.get(data)
         data_interp, t_interp = interpolate_ibi(data, params['interp_freq'])  # TODO 6: change interp. type
-        # TODO Andrea: remove_mean WAS after interp, is it ok?
+        if params['remove_mean']:
+            data_interp = data_interp - np.mean(data_interp)
 
         hw = np.hamming(len(data_interp))
         frame = data_interp * hw
@@ -107,10 +105,9 @@ class PSDWelchLinspaceCalc(CacheOnlyFeature):
         assert 'interp_freq' in params, "This feature needs the parameter 'interp_freq' [1/time_unit]."
         if 'remove_mean' not in params:
             params['remove_mean'] = False
-        if params['remove_mean']:
-            data = data - Mean.get(data)
         data_interp, t_interp = interpolate_ibi(data, params['interp_freq'])  # TODO 6: change interp. type
-        # TODO Andrea: remove_mean WAS after interp, is it ok?
+        if params['remove_mean']:
+            data_interp = data_interp - np.mean(data_interp)
         bands_w, powers = signal.welch(data_interp, params['interp_freq'], nfft=max(128, len(data_interp)))
         bands = np.linspace(start=0, stop=params['interp_freq'] / 2, num=len(powers), endpoint=True)
         return bands, powers / np.max(powers), sum(powers) / len(powers)
@@ -150,10 +147,10 @@ class PSDAr1Calc(CacheOnlyFeature):
         assert 'interp_freq' in params, "This feature needs the parameter 'interp_freq' [1/time_unit]."
         if 'remove_mean' not in params:
             params['remove_mean'] = False
-        if params['remove_mean']:
-            data = data - Mean.get(data)
         data_interp, t_interp = interpolate_ibi(data, params['interp_freq'])  # TODO 6: change interp. type
         # TODO Andrea: remove_mean WAS after interp, is it ok?
+        if params['remove_mean']:
+            data_interp = data_interp - np.mean(data_interp)
 
         p = spectrum.Periodogram(data_interp, sampling=params['interp_freq'], NFFT=max(128, len(data_interp)))
         p()
@@ -177,10 +174,11 @@ class PSDAr2Calc(CacheOnlyFeature):
         """
         assert 'interp_freq' in params, "This feature needs the parameter 'interp_freq' [1/time_unit]."
         assert 'ar_2_max_order' in params, "This feature needs the parameter 'ar_2_max_order'."
-        if 'remove_mean' in params and params['remove_mean']:
-            data = data - Mean.get(data)
+        if 'remove_mean' not in params:
+            params['remove_mean'] = False
         data_interp, t_interp = interpolate_ibi(data, params['interp_freq'])  # TODO 6: change interp. type
-        # TODO Andrea: remove_mean WAS after interp, is it ok?
+        if params['remove_mean']:
+            data_interp = data_interp - np.mean(data_interp)
         powers = []
 
         orders = range(1, params['ar_2_max_order'] + 1)
