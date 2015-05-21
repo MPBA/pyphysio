@@ -12,8 +12,8 @@ wins2 = LinearWinGen(0, 20, 40)
 ## Linear Time Windows Generator
 # Generates a linearly-timed set of Time windows (b+i*s, b+i*s+w).
 # The arguments are time values
-wins3 = LinearTimeWinGen(begin=0, step=20, width=40, data=data, end=100)
-wins4 = LinearTimeWinGen(0, 20, 40, data)
+wins3 = LinearTimeWindows(begin=0, step=20, width=40, data=data, end=100)
+wins4 = LinearTimeWindows(0, 20, 40, data)
 
 ## Collection Windows Generator
 # Wraps a windows collections, creates a windows generator with that windows

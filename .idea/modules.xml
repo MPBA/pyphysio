@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/../pyphysio/.idea/pyPhysio.iml" filepath="$PROJECT_DIR$/../pyphysio/.idea/pyPhysio.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/pyHRV.iml" filepath="$PROJECT_DIR$/.idea/pyHRV.iml" />
     </modules>
   </component>
 </project>

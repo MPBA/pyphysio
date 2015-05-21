@@ -1,63 +1,14 @@
 __author__ = 'AleB'
-__all__ = ['NamedWinGen', 'LinearWinGen', 'LinearTimeWinGen', 'CollectionWinGen']
+__all__ = ['NamedWinGen', 'LinearWinGen', 'LinearTimeWindows', 'CollectionWinGen']
 import numpy as np
 
 from WindowsBase import WindowsGenerator, Window
-from pyPhysio.PyHRVSettings import MainSettings as Sett
+from pandas import Series
 
 
-class IBIWindow(Window):
-    """Base IBI Window, a begin-end pair that provides the duration computation."""
-
-    def __init__(self, begin, end, data):
-        """
-        Creates a time Window
-        @param begin: Begin sample index
-        @param end: End sample index
-        @param data: IBI data from where to calculate the duration
-        """
-        Window.__init__(self, begin, end, data)
-        self._data = data
-        l, i, t = (None, None, None)  # self._data.get_labels()
-        if l is None:
-            self._label = None
-        else:
-            p = 0
-            while p < len(i) and self._begin >= i[p]:
-                p += 1
-            p -= 1
-            self._label = l[p]
-            while p + 1 < len(l) and i[p + 1] < self._end:
-                if Sett.win_name_mixed is None:
-                    self._label += "|" + l[p]
-                    p += 1
-                else:
-                    self._label = Sett.win_name_mixed
-                    break
-
-    @property
-    def duration(self):
-        """
-        Time duration of the window (sum of IBIs)
-        @rtype: float
-        """
-        return sum(self._data[self._begin: self._end])
-
-    @property
-    def label(self):
-        return self._label
-
-    @property
-    def data(self):
-        return self._data
-
-    def __repr__(self):
-        return "%d:%d:%dms:%s" % (self.begin, self.end, self.duration, self.label)
-
-
-class TimeWinGen(WindowsGenerator):
+class TimeWindower(WindowsGenerator):
     """
-    Generates a timed set of Time windows (b+i*s, b+i*s+w).
+    Base class
     """
 
     def __init__(self, data):
@@ -65,10 +16,11 @@ class TimeWinGen(WindowsGenerator):
         Initializes the win generator
         @param data: Data (mandatory) for the time computations
         """
-        super(TimeWinGen, self).__init__(data)
+        super(TimeWindower, self).__init__()
         self._i = 0
         self._t = 0
         self._ei = len(data)
+        self._data = data
 
     def _next_sample(self, plus):
         tt = self._t
@@ -80,50 +32,33 @@ class TimeWinGen(WindowsGenerator):
         return tt, ii
 
 
-class LinearWinGen(WindowsGenerator):
-    """
-    Generates a linear-index set of windows (b+i*s, b+i*s+w).
-    """
-
-    def __init__(self, begin, step, width, data=None, end=None):
-        """
-        Initializes the win generator
-        @param begin: Start index
-        @param step: Step samples
-        @param width: Width of the window
-        @param data: Data of the windows point
-        @param end: End index or None for the end of the data specified
-        @raise ValueError: When no data and no end are specified
-        """
-        super(LinearWinGen, self).__init__(data)
-        if data is None and end is None:
-            raise ValueError("Don't know where to find the length: data or end parameter must be not None.")
-        self._begin = begin
-        if end is None:
+class TimeWindows(TimeWindower):
+    def __init__(self, step, width, data=None, length=None, begin_time=0):
+        assert data is not None or length is not None, "Either data or length must be not None"
+        assert data is None or isinstance(data, Series)
+        super(TimeWindows, self).__init__(data)
+        if length is None:
             self._end = len(data)
         else:
-            self._end = end
+            self._end = length
+        self._begin = begin_time
         self._step = step
         self._width = width
-        self._begin = begin
-        self._pos = None
-        self._init()
+        self._pos = self._begin
 
-    def _init(self):
+    def init_windowing(self):
         self._pos = self._begin
 
     def step_windowing(self):
         b, e = (self._pos, self._pos + self._width)
         if e > self._end:
-            self._pos = self._begin
-            self._init()
             raise StopIteration
         else:
             self._pos += self._step
             return Window(b, e, self._data)
 
 
-class LinearTimeWinGen(TimeWinGen):
+class LinearTimeWindows(TimeWindows):
     """
     Generates a linear-timed set of Time windows (b+i*s, b+i*s+w).
     """
@@ -136,7 +71,7 @@ class LinearTimeWinGen(TimeWinGen):
         @param data: Data of the windows point
         @param end: End index or None for the end of the data specified
         """
-        super(LinearTimeWinGen, self).__init__(data)
+        super(LinearTimeWindows, self).__init__(data)
         self._step_t = step
         self._width_t = width
         self._begin = begin

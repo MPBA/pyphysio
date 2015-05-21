@@ -7,7 +7,7 @@ import pandas
 from pyPhysio.example_data import Test1
 # and the windows collection with the linear time windows generator with windows of 40s every 20s.
 # This windows generator uses only IBI data from the data series.
-windows = pyPhysio.LinearTimeWinGen(step=20000, width=40000, data=Test1.data_series)
+windows = pyPhysio.LinearTimeWindows(step=20000, width=40000, data=Test1.data_series)
 # The windows mapper will do all the rest of the work, we just need to put
 # there every Time (TD) and Frequency (FD) Domain and every Non Linear Index
 mapper = pyPhysio.WindowsIterator(
