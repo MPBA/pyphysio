@@ -45,4 +45,6 @@ Things
     
 - Used __future__.division in the files
 
-- The algorithms work with rr in ms, have to transform to TimeSeries in s
+- The algorithms work with rr in ms, have to transform to Series in s
+
+- I will add a function to validate a Series for working with the library

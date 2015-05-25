@@ -19,8 +19,8 @@ wins4 = LinearTimeWindows(0, 20, 40, data)
 # Wraps a windows collections, creates a windows generator with that windows
 # Here the example_data is needed due to the time-offsets determination.
 w = [Window(1, 2), Window(2, 5)]
-wins5 = CollectionWinGen(win_list=w, data=data)
-wins6 = CollectionWinGen(w, data)
+wins5 = CollectionWindows(win_list=w, data=data)
+wins6 = CollectionWindows(w, data)
 # or faster (see Snippets/LoadingData.py)
 from pyPhysio.Files import load_windows_gen_from_csv
 
@@ -34,4 +34,4 @@ wins7 = load_windows_gen_from_csv("my_saved_windows.csv")
 labels = ["Red", "Red", "Red", "Idle", "Idle", "Idle", "Blue", "Blue", "Blue", "Idle", "Idle"]
 # with include_baseline_names="Idle" is computed as two windows:  [0:5:"Red", 6:10:"Blue"]
 # with include_baseline_names=None   is computed as four windows: [0:2:"Red", 3:5:"Idle", 6:10:"Blue", 9:10:"Idle"]
-wins8 = NamedWinGen(data, labels)
+wins8 = LabeledWindows(data, labels)

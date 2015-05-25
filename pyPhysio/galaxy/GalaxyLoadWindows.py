@@ -4,7 +4,7 @@ __author__ = 'AleB'
 
 from pandas import Series
 
-from pyPhysio.windowing import NamedWinGen, CollectionWinGen, Window
+from pyPhysio.windowing import LabeledWindows, CollectionWindows, Window
 from pyPhysio.Files import *
 
 
@@ -26,11 +26,11 @@ class GalaxyLoadWindows(ParamExecClass):
             c = load_ds_from_csv_column(self._kwargs['input'], self._kwargs['column'])
 
         if self._kwargs['windows_type'] == 'labels_sequences':
-            w = NamedWinGen(None, c)
+            w = LabeledWindows(None, c)
         else:
             if self._kwargs['windows_type'] == 'begin_values':
                 w = map(self.__class__.map_end_window, c)[1:]
-                w = CollectionWinGen(None, w)
+                w = CollectionWindows(None, w)
             else:
                 raise NotImplemented("Not implemented windowing mode: %s" % self._kwargs['windows_type'])
         Series(w).save(output_file)

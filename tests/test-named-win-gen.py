@@ -5,7 +5,7 @@ import os
 import pandas as pd
 
 from pyPhysio.Files import *
-from pyPhysio.windowing import NamedWinGen, WindowsIterator
+from pyPhysio.windowing import LabeledWindows, WindowsIterator
 from pyPhysio import Cache
 import pyPhysio.features.TDFeatures
 import pyPhysio.features.FDFeatures
@@ -18,7 +18,7 @@ def test(f):
     lab, ibi = load_pd_from_excel_column(f, 2, 3)
 
     ds = Cache(ibi, labels=lab)
-    ws = NamedWinGen(ds, include_baseline_name="baseline")
+    ws = LabeledWindows(ds, include_baseline_name="baseline")
 
     mm = WindowsIterator(ds, ws, pyPhysio.features.TDFeatures.__all__ + pyPhysio.features.FDFeatures.__all__)
     mm.compute_all()

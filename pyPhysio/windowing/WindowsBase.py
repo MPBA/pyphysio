@@ -16,7 +16,7 @@ class Window(object):
     Base Window, a begin-end pair.
     """
 
-    def __init__(self, begin, end, data=None):
+    def __init__(self, begin, end, label):
         """
         Creates a base Window
         @param begin: Begin sample/time index
@@ -24,7 +24,7 @@ class Window(object):
         """
         self._begin = begin
         self._end = end
-        self._data = data
+        self._label = label
 
     @property
     def begin(self):
@@ -35,25 +35,31 @@ class Window(object):
         return self._end
 
     @property
-    def samples(self):
+    def duration(self):
         return self._end - self._begin
 
-    @property
-    def duration(self):
-        if self._data is None:
-            return None
-        else:
-            return self._data.iget(self._end) - self._data.iget(self._begin)
+    # @property
+    # def duration(self):
+    #     if self._data is None:
+    #         return None
+    #     else:
+    #         return self._data.iget(self._end) - self._data.iget(self._begin)
 
     @property
     def label(self):
         return None
 
-    def slice_data(self):
-        return Series(self._data[self._begin: self._end])
+    def __call__(self, data):
+        return data.between_time(self._begin, self._end)
+
+    def islice(self, data, include_partial=False):
+        if (include_partial or self._end <= data.index[-1]) and self._begin < data.index[-1]:
+            return self(data)
+        else:
+            raise StopIteration()
 
     def __repr__(self):
-        return '%d:%d' % (self.begin, self.end)
+        return '%d:%d:%s' % (self.begin, self.end, self._label)
 
 
 class WindowsGeneratorIterator(object):
@@ -78,15 +84,9 @@ class WindowsGenerator(object):
     def __iter__(self):
         return WindowsGeneratorIterator(self)
 
-    def init_windowing(self):
-        """
-        Initializes the windowing generator
-        """
-        raise NotImplementedError()
-
     def step_windowing(self):
         """
         Executes a windowing step.
         @raise StopIteration: End of the iteration
         """
-        raise StopIteration
+        raise StopIteration()
