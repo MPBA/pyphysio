@@ -1,5 +1,5 @@
 __author__ = 'AleB'
-__all__ = ['TimeWindows', 'LabeledWindows', 'CollectionWindows']
+__all__ = ['TimeWindows', 'LabeledWindows', 'ExistingWindows']
 
 from WindowsBase import WindowsGenerator, Window
 
@@ -17,7 +17,7 @@ class TimeWindows(WindowsGenerator):
         return Window(o, o + self._width, '')
 
 
-class CollectionWindows(WindowsGenerator):
+class ExistingWindows(WindowsGenerator):
     """
     Wraps a list of windows from an existing collection.
     """
@@ -27,7 +27,7 @@ class CollectionWindows(WindowsGenerator):
         Initializes the win generator
         @param win_list: List of Windows to consider
         """
-        super(CollectionWindows, self).__init__()
+        super(ExistingWindows, self).__init__()
 
         self._wins = win_list
         self._ind = 0

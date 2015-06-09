@@ -19,8 +19,8 @@ wins4 = LinearTimeWindows(0, 20, 40, data)
 # Wraps a windows collections, creates a windows generator with that windows
 # Here the example_data is needed due to the time-offsets determination.
 w = [Window(1, 2), Window(2, 5)]
-wins5 = CollectionWindows(win_list=w, data=data)
-wins6 = CollectionWindows(w, data)
+wins5 = ExistingWindows(win_list=w, data=data)
+wins6 = ExistingWindows(w, data)
 # or faster (see Snippets/LoadingData.py)
 from pyPhysio.Files import load_windows_gen_from_csv
 

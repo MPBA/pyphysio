@@ -1,6 +1,5 @@
 __author__ = 'AleB'
 __all__ = ['WindowError', 'Window', 'WindowsGenerator']
-from pandas import Series
 from copy import copy as cpy
 
 
@@ -37,13 +36,6 @@ class Window(object):
     @property
     def duration(self):
         return self._end - self._begin
-
-    # @property
-    # def duration(self):
-    #     if self._data is None:
-    #         return None
-    #     else:
-    #         return self._data.iget(self._end) - self._data.iget(self._begin)
 
     @property
     def label(self):

@@ -4,7 +4,7 @@ __author__ = 'AleB'
 
 from pandas import Series
 
-from pyPhysio.windowing import LabeledWindows, CollectionWindows, Window
+from pyPhysio.windowing import LabeledWindows, ExistingWindows, Window
 from pyPhysio.Files import *
 
 
@@ -30,7 +30,7 @@ class GalaxyLoadWindows(ParamExecClass):
         else:
             if self._kwargs['windows_type'] == 'begin_values':
                 w = map(self.__class__.map_end_window, c)[1:]
-                w = CollectionWindows(None, w)
+                w = ExistingWindows(None, w)
             else:
                 raise NotImplemented("Not implemented windowing mode: %s" % self._kwargs['windows_type'])
         Series(w).save(output_file)

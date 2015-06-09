@@ -16,6 +16,8 @@ class WindowsIterator(object):
     Use compute_all to execute the computation.
     """
 
+    verbose = True
+
     def __init__(self, data, win_gen, indexes, params):
         """
         Initializes
@@ -53,7 +55,7 @@ class WindowsIterator(object):
         """
         self._map = []
         for w in self._wing:
-            if pyPhysio.MainSettings.ind_iter_verbose:
+            if WindowsIterator.verbose:
                 print "Processing", w
             self._map.append(self._comp_one(w))
         df = DataFrame(self._map)
