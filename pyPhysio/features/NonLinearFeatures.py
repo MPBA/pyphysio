@@ -23,7 +23,7 @@ class ApproxEntropy(NonLinearFeature):
         super(ApproxEntropy, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         assert 'approx_entropy_r' in params, "This feature needs the parameter 'approx_entropy_r'."
         if len(data) < 3:
             return np.nan
@@ -63,7 +63,7 @@ class SampleEntropy(NonLinearFeature):
         super(SampleEntropy, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         assert 'sample_entropy_r' in params, "This feature needs the parameter 'sample_entropy_r'."
         if len(data) < 4:
             return np.nan
@@ -104,7 +104,7 @@ class FractalDimension(NonLinearFeature):
         super(FractalDimension, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         assert 'cra' in params, "This feature needs the parameter 'cra'."
         assert 'crb' in params, "This feature needs the parameter 'crb'."
         if len(data) < 3:
@@ -136,7 +136,7 @@ class SVDEntropy(NonLinearFeature):
         super(SVDEntropy, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         if len(data) < 2:
             return np.nan
         else:
@@ -155,7 +155,7 @@ class Fisher(NonLinearFeature):
         super(Fisher, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         if len(data) < 2:
             return np.nan
         else:
@@ -178,7 +178,7 @@ class CorrelationDim(NonLinearFeature):
         super(CorrelationDim, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         assert 'corr_dim_len' in params, "This feature needs the parameter 'corr_dim_len'."
         if len(data) < params['corr_dim_len']:
             return np.nan
@@ -213,7 +213,7 @@ class PoinSD1(NonLinearFeature):
         super(PoinSD1, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         sd1, sd2 = PoincareSD.get(data)
         return sd1
 
@@ -227,7 +227,7 @@ class PoinSD2(NonLinearFeature):
         super(PoinSD2, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         sd1, sd2 = PoincareSD.get(data)
         return sd2
 
@@ -241,7 +241,7 @@ class PoinSD12(NonLinearFeature):
         super(PoinSD12, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         sd1, sd2 = PoincareSD.get(data)
         return sd1 / sd2
 
@@ -255,7 +255,7 @@ class PoinEll(NonLinearFeature):
         super(PoinEll, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         sd1, sd2 = PoincareSD.get(data)
         return sd1 * sd2 * np.pi
 
@@ -269,7 +269,7 @@ class Hurst(NonLinearFeature):
         super(Hurst, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         n = len(data)
         if n < 2:
             return np.nan
@@ -301,7 +301,7 @@ class PetrosianFracDim(NonLinearFeature):
         super(PetrosianFracDim, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         d = Diff.get(data)
         n_delta = 0  # number of sign changes in derivative of the signal
         for i in xrange(1, len(d)):
@@ -320,7 +320,7 @@ class DFAShortTerm(NonLinearFeature):
         super(DFAShortTerm, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         # calculates De-trended Fluctuation Analysis: alpha1 (short term) component
         x = data
         if len(x) < 16:
@@ -353,7 +353,7 @@ class DFALongTerm(NonLinearFeature):
         super(DFALongTerm, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         # calculates De-trended Fluctuation Analysis: alpha2 (long term) component
         x = data
         if len(x) < 16:

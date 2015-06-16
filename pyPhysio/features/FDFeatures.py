@@ -14,7 +14,7 @@ class InBand(FDFeature):
         super(InBand, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         assert 'freq_min' in params, "Need the parameter 'freq_min' as the lower bound of the band."
         assert 'freq_max' in params, "Need the parameter 'freq_max' as the higher bound of the band."
 
@@ -38,7 +38,7 @@ class PowerInBand(FDFeature):
         super(PowerInBand, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         ignore, _pow_band, ignored = InBand.get(data, params)
         return sum(_pow_band) / len(_pow_band)
 
@@ -53,7 +53,7 @@ class PowerInBandNormal(FDFeature):
         super(PowerInBandNormal, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         ignored, _pow_band, _pow_total = InBand.get(data, params)
         return sum(_pow_band) / len(_pow_band) / _pow_total
 
@@ -68,7 +68,7 @@ class PeakInBand(FDFeature):
         super(PeakInBand, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         _freq_band, _pow_band, ignored = InBand.get(data, params)
         return _freq_band[argmax(_pow_band)]
 
@@ -83,7 +83,7 @@ class LFHF(FDFeature):
         super(LFHF, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         assert 'freq_mid' in params, "Need the parameter 'freq_mid' as the separator between LF and HF."
         par_lf = params.copy().update({'freq_max': params['freq_mid']})
         par_hf = params.copy().update({'freq_min': params['freq_mid']})
@@ -103,7 +103,7 @@ class NormalizedLF(FDFeature):
         super(NormalizedLF, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         assert 'freq_mid' in params, "Need the parameter 'freq_mid' as the separator between LF and HF."
         par_lf = params.copy().update({'freq_max': params['freq_mid']})
         par_hf = params.copy().update({'freq_min': params['freq_mid']})
@@ -123,7 +123,7 @@ class NormalizedHF(FDFeature):
         super(NormalizedHF, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         return 1 - NormalizedLF.get(data, params)
 
     @staticmethod

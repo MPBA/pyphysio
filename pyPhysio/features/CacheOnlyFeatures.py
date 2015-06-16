@@ -14,7 +14,7 @@ from BaseFeatures import CacheOnlyFeature
 
 class FFTCalc(CacheOnlyFeature):
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         assert 'interp_freq' in params, "This feature needs the parameter 'interp_freq' [1/time_unit]."
         rr_interp, ignored = interpolate_ibi(data.series, params['interp_freq'])  # TODO 2 Andrea: change interp. type
         interp_freq = params['interp_freq']
@@ -35,7 +35,7 @@ class FFTCalc(CacheOnlyFeature):
 
 class PSDLombscargleCalc(CacheOnlyFeature):
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         """
         Calculates the PSD data to cache using the Lombscargle algorithm
         @return: (bands, powers, total_power)
@@ -67,7 +67,7 @@ class PSDLombscargleCalc(CacheOnlyFeature):
 
 class PSDFFTCalc(CacheOnlyFeature):
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         """
         Calculates the PSD data to cache using the fft algorithm
         @return: (bands, powers, total_power)
@@ -96,7 +96,7 @@ class PSDFFTCalc(CacheOnlyFeature):
 
 class PSDWelchLinspaceCalc(CacheOnlyFeature):
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         """
         Calculates the PSD data to cache using the welch algorithm, uses 'linspace' bands distribution
         @return: (bands, powers, total_power)
@@ -119,7 +119,7 @@ class PSDWelchLinspaceCalc(CacheOnlyFeature):
 
 class PSDWelchLibCalc(CacheOnlyFeature):
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         """
         Calculates the PSDWelch data to cache, uses algorithms bands distribution
         @return: (bands, powers, total_power)
@@ -138,7 +138,7 @@ class PSDWelchLibCalc(CacheOnlyFeature):
 
 class PSDAr1Calc(CacheOnlyFeature):
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         """
         Calculates the PSD data to cache using the ar_1 algorithm
         @return: Data to cache: (bands, powers, total_power)
@@ -166,7 +166,7 @@ class PSDAr1Calc(CacheOnlyFeature):
 
 class PSDAr2Calc(CacheOnlyFeature):
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         """
         Calculates the PSD data to cache using the ar_2 algorithm
         @return: (bands, powers, total_power)
@@ -204,7 +204,7 @@ class PSDAr2Calc(CacheOnlyFeature):
 
 class Histogram(CacheOnlyFeature):
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         """
         Calculates the Histogram data to cache
         @return: (values, bins)
@@ -221,7 +221,7 @@ class Histogram(CacheOnlyFeature):
 
 class HistogramMax(CacheOnlyFeature):
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         """
         Calculates the Histogram's max value
         @return: (values, bins)
@@ -237,7 +237,7 @@ class HistogramMax(CacheOnlyFeature):
 
 class Diff(CacheOnlyFeature):
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         """
         Calculates the differences between consecutive values
         @return: Differences
@@ -248,7 +248,7 @@ class Diff(CacheOnlyFeature):
 
 class OrderedSubsets(CacheOnlyFeature):
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         """
         Calculates the the vector of the sequences of length 'subset_size' of the data
         @return: Data array with shape (l - n + 1, n) having l=len(data) and n=subset_size
@@ -272,7 +272,7 @@ class OrderedSubsets(CacheOnlyFeature):
 
 class PoincareSD(CacheOnlyFeature):
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         """
         Calculates Poincare SD 1 and 2
         @return: (SD1, SD2)

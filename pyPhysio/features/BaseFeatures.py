@@ -61,10 +61,10 @@ class Feature(object):
             Cache.cache_check(data)
             return Cache.cache_get_data(data, cls, kwargs)
         else:
-            return cls.raw_compute(data, kwargs)
+            return cls.algorithm(data, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         """
         Placeholder for the subclasses
         @raise NotImplementedError: Ever
@@ -156,7 +156,7 @@ class Cache(object):
         """
         hh = calculator.cache_hash(params)
         if hh not in self._cache:
-            self._cache[hh] = calculator.raw_compute(self, params)
+            self._cache[hh] = calculator.algorithm(self, params)
         return self._cache[hh]
 
 

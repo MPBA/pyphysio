@@ -20,7 +20,7 @@ class Mean(TDFeature):
         super(Mean, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         return np.mean(data)
 
     @classmethod
@@ -41,7 +41,7 @@ class Median(TDFeature):
         super(Median, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         return np.median(data)
 
     @classmethod
@@ -62,7 +62,7 @@ class SD(TDFeature):
         super(SD, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         return np.std(data)
 
 
@@ -78,14 +78,14 @@ class PNNx(TDFeature):
         super(PNNx, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         if cls == PNNx:
             assert 'threshold' in params, "Need the parameter 'threshold'."
             px = params
         else:
             px = params.copy()
             px.update({'threshold': cls.threshold()})
-        return NNx.raw_compute(data, px) / float(len(data))
+        return NNx.algorithm(data, px) / float(len(data))
 
     @staticmethod
     def threshold():
@@ -112,7 +112,7 @@ class NNx(TDFeature):
         super(NNx, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         if cls == NNx:
             assert 'threshold' in params, "Need the parameter 'threshold'."
             th = params['threshold']
@@ -230,7 +230,7 @@ class RMSSD(TDFeature):
         super(RMSSD, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         diff = Diff.get(data)
         return np.sqrt(sum(diff ** 2) / len(diff))
 
@@ -242,7 +242,7 @@ class DiffSD(TDFeature):
         super(DiffSD, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         diff = Diff.get(data)
         return np.std(diff)
 
@@ -256,7 +256,7 @@ class Triang(TDFeature):
         super(Triang, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         h, b = HistogramMax.get(data, histogram_bins=100)
         return len(data) / np.max(h)  # TODO: check if the formula is the right one or use the HistogramMax
 
@@ -269,7 +269,7 @@ class TINN(TDFeature):
         super(TINN, self).__init__(params, kwargs)
 
     @classmethod
-    def raw_compute(cls, data, params):
+    def algorithm(cls, data, params):
         hist, bins = Histogram.get(data, histogram_bins=100)
         max_x = HistogramMax.get(data)
         hist_left = np.array(hist[0:np.argmax(hist)])
