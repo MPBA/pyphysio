@@ -9,7 +9,24 @@ import numpy as np
 from scipy import signal
 
 from ..Utility import interpolate_ibi
-from BaseFeatures import CacheOnlyFeature
+from pyPhysio.features.BaseFeature import Feature
+
+
+class CacheOnlyFeature(Feature):
+    """
+    This is the base class for the generic features.
+    """
+
+    def __init__(self, params=None, _kwargs=None):
+        super(CacheOnlyFeature, self).__init__(params, _kwargs)
+
+    @classmethod
+    def algorithm(cls, data, params):
+        """
+        Placeholder for the subclasses
+        @raise NotImplementedError: Ever
+        """
+        raise NotImplementedError(cls.__name__ + " is a CacheOnlyFeature but it is not implemented.")
 
 
 class FFTCalc(CacheOnlyFeature):
@@ -28,8 +45,8 @@ class FFTCalc(CacheOnlyFeature):
         bands = np.linspace(start=0, stop=interp_freq / 2, num=len(powers), endpoint=True)  # frequencies vector
         return bands, powers
 
-    @staticmethod
-    def get_used_params():
+    @classmethod
+    def get_used_params(cls):
         return ['interp_freq']
 
 
@@ -60,8 +77,8 @@ class PSDLombscargleCalc(CacheOnlyFeature):
 
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 
-    @staticmethod
-    def get_used_params():
+    @classmethod
+    def get_used_params(cls):
         return ['lombscargle_stop', 'remove_mean']
 
 
@@ -89,8 +106,8 @@ class PSDFFTCalc(CacheOnlyFeature):
 
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 
-    @staticmethod
-    def get_used_params():
+    @classmethod
+    def get_used_params(cls):
         return ['interp_freq', 'remove_mean']
 
 
@@ -112,8 +129,8 @@ class PSDWelchLinspaceCalc(CacheOnlyFeature):
         bands = np.linspace(start=0, stop=params['interp_freq'] / 2, num=len(powers), endpoint=True)
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 
-    @staticmethod
-    def get_used_params():
+    @classmethod
+    def get_used_params(cls):
         return ['interp_freq', 'remove_mean']
 
 
@@ -131,8 +148,8 @@ class PSDWelchLibCalc(CacheOnlyFeature):
         powers = np.sqrt(powers)
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 
-    @staticmethod
-    def get_used_params():
+    @classmethod
+    def get_used_params(cls):
         return ['interp_freq']
 
 
@@ -159,8 +176,8 @@ class PSDAr1Calc(CacheOnlyFeature):
 
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 
-    @staticmethod
-    def get_used_params():
+    @classmethod
+    def get_used_params(cls):
         return ['interp_freq', 'remove_mean']
 
 
@@ -197,8 +214,8 @@ class PSDAr2Calc(CacheOnlyFeature):
 
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 
-    @staticmethod
-    def get_used_params():
+    @classmethod
+    def get_used_params(cls):
         return ['interp_freq', 'ar_2_max_order', 'remove_mean']
 
 
@@ -214,8 +231,8 @@ class Histogram(CacheOnlyFeature):
             params['histogram_bins'] = 100
         return np.histogram(data, params['histogram_bins'])
 
-    @staticmethod
-    def get_used_params():
+    @classmethod
+    def get_used_params(cls):
         return ['histogram_bins']
 
 
@@ -230,8 +247,8 @@ class HistogramMax(CacheOnlyFeature):
         h, b = Histogram.get(data, params)
         return np.max(h)  # TODO 2 Andrea: max h or b(max h)??
 
-    @staticmethod
-    def get_used_params():
+    @classmethod
+    def get_used_params(cls):
         return Histogram.get_used_params()
 
 
@@ -265,8 +282,8 @@ class OrderedSubsets(CacheOnlyFeature):
         else:
             return []
 
-    @staticmethod
-    def get_used_params():
+    @classmethod
+    def get_used_params(cls):
         return ['subsets_size']
 
 

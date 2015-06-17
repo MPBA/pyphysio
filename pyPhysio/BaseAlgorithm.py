@@ -3,9 +3,9 @@ __author__ = 'AleB'
 from pandas import TimeSeries
 
 
-class Feature(object):
+class Algorithm(object):
     """
-    This is the feature extractor super class. It should be used only to be extended.
+    This is the algorithm container super class. It should be used only to be extended.
     """
 
     def __init__(self, params=None, _kwargs=None, **kwargs):
@@ -17,9 +17,8 @@ class Feature(object):
         @type _kwargs: dict
         @param kwargs: kwargs parameters to pass to the feature extractor.
         @type kwargs: dict
-        @return: The callable instance.
         """
-        assert self.__class__ != Feature, "This class is abstract and must be extended to be used."
+        assert self.__class__ != Algorithm, "This class is abstract and must be extended to be used."
         assert params is None or type(params) is dict
         assert type(_kwargs) is dict or _kwargs is None
         if params is None:
@@ -32,10 +31,10 @@ class Feature(object):
 
     def __call__(self, data):
         """
-        Computes the feature using the parameters saved by the constructor.
-        @param data: The data where to extract the features.
+        Executes the algorithm using the parameters saved by the constructor.
+        @param data: The data where to work.
         @type data: TimeSeries
-        @return: The value of the feature.
+        @return: The result.
         """
         return self.get(data, self._params)
 
@@ -64,14 +63,6 @@ class Feature(object):
             return cls.algorithm(data, kwargs)
 
     @classmethod
-    def algorithm(cls, data, params):
-        """
-        Placeholder for the subclasses
-        @raise NotImplementedError: Ever
-        """
-        raise NotImplementedError(cls.__name__ + " is not implemented.")
-
-    @classmethod
     def cache_hash(cls, params):
         """
         This method gives an hash to use as a part of the key in the cache starting from the parameters used by the
@@ -84,32 +75,31 @@ class Feature(object):
         return cls._utility_hash(p)
 
     @staticmethod
-    def get_used_params():
-        """
-        Placeholder for the subclasses, if not overridden the feature should not use any parameter.
-        """
-        return []
-
-    @staticmethod
     def _utility_hash(x):
         return str(x).replace('\'', '')
 
     @classmethod
-    def compute_on(cls, state):
+    def algorithm(cls, data, params):
         """
-        For on-line mode.
-        @param state: Support values
-        @raise NotImplementedError: Ever here.
+        Placeholder for the subclasses
+        @raise NotImplementedError: Ever
         """
-        raise TypeError(cls.__name__ + " is not available as an on-line feature.")
+        raise NotImplementedError(cls.__name__ + " is not implemented.")
 
     @classmethod
-    def required_sv(cls):
+    def get_used_params(cls):
         """
-        Returns the list of the support values that the computation of this index requires.
-        @rtype: list
+        Placeholder for the subclasses
+        @raise NotImplementedError: Ever
         """
-        return []
+        raise NotImplementedError(cls.__name__ + " is not implemented.")
+
+    def get_params(self):
+        """
+        Placeholder for the subclasses
+        @return
+        """
+        return self._params
 
 
 class Cache(object):
@@ -141,7 +131,7 @@ class Cache(object):
     def cache_invalidate(self, calculator, params):
         """
         Invalidates the specified calculator's cached data if any.
-        @type calculator: Feature
+        @type calculator: Algorithm
         """
         hh = calculator.cache_hash(params)
         if hh in self._cache:
@@ -151,57 +141,10 @@ class Cache(object):
     def cache_get_data(self, calculator, params):
         """
         Gets data from the cache if valid
-        @type calculator: Feature
+        @type calculator: Algorithm
         @return: The data or None
         """
         hh = calculator.cache_hash(params)
         if hh not in self._cache:
             self._cache[hh] = calculator.algorithm(self, params)
         return self._cache[hh]
-
-
-# noinspection PyAbstractClass
-class TDFeature(Feature):
-    """
-    This is the base class for the Time Domain Indexes.
-    """
-
-    def __init__(self, params=None, _kwargs=None):
-        super(TDFeature, self).__init__(params, _kwargs)
-
-
-# noinspection PyAbstractClass
-class FDFeature(Feature):
-    """
-    This is the base class for the Frequency Domain Features.
-    It uses the interpolation frequency parameter interp_freq.
-    """
-
-    def __init__(self, params=None, _kwargs=None):
-        super(FDFeature, self).__init__(params, _kwargs)
-        assert 'interp_freq' in self._params, "This feature needs 'interp_freq'."
-        self._interp_freq = self._params['interp_freq']
-
-    @staticmethod
-    def get_used_params():
-        return ['interp_freq', 'psd_method']
-
-
-# noinspection PyAbstractClass
-class NonLinearFeature(Feature):
-    """
-    This is the base class for the Non Linear Features.
-    """
-
-    def __init__(self, params=None, _kwargs=None):
-        super(NonLinearFeature, self).__init__(params, _kwargs)
-
-
-# noinspection PyAbstractClass
-class CacheOnlyFeature(Feature):
-    """
-    This is the base class for the generic features.
-    """
-
-    def __init__(self, params=None, _kwargs=None):
-        super(CacheOnlyFeature, self).__init__(params, _kwargs)

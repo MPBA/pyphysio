@@ -39,19 +39,26 @@ class Window(object):
 
     @property
     def label(self):
-        return None
+        return self._label
+
+    from datetime import datetime as dt, MAXYEAR
+    _mdt = dt(MAXYEAR, 12, 31, 23, 59, 59, 999999)
 
     def __call__(self, data):
-        return data.between_time(self._begin, self._end)
+        if self._end is None:
+            return data.between_time(self._begin, Window._mdt)
+        else:
+            return data.between_time(self._begin, self._end)
 
     def islice(self, data, include_partial=False):
+        print(data)
         if (include_partial or self._end <= data.index[-1]) and self._begin < data.index[-1]:
             return self(data)
         else:
             raise StopIteration()
 
     def __repr__(self):
-        return '%d:%d:%s' % (self.begin, self.end, self._label)
+        return '%s:%s:%s' % (str(self.begin), str(self.end), self._label)
 
 
 class WindowsGeneratorIterator(object):
@@ -82,3 +89,10 @@ class WindowsGenerator(object):
         @raise StopIteration: End of the iteration
         """
         raise StopIteration()
+
+    def init_windowing(self):
+        """
+        Executes a windowing step.
+        @raise StopIteration: End of the iteration
+        """
+        raise NotImplementedError()

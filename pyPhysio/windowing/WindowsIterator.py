@@ -38,11 +38,13 @@ class WindowsIterator(object):
 
     def _comp_one(self, win):
         ret = []
-        win_ds = win.extract_data()
-        for index in self._index:
-            if isinstance(index, str) | isinstance(index, unicode):
-                index = getattr(pyPhysio, index)
-            ret.append(index(data=win_ds, params=self._params).value)
+        win_ds = win(self._data)
+        for algorithm in self._index:
+            if isinstance(algorithm, str) or isinstance(algorithm, unicode):
+                algorithm = getattr(pyPhysio, algorithm)
+            if type(algorithm) is type:
+                algorithm = algorithm(self._params)
+            ret.append(algorithm(win_ds))
         self._winn += 1
         return [self._winn if win.label is None else win.label, win.begin, win.end] + ret
 
@@ -56,7 +58,7 @@ class WindowsIterator(object):
         self._map = []
         for w in self._wing:
             if WindowsIterator.verbose:
-                print "Processing", w
+                print("Processing " + str(w))
             self._map.append(self._comp_one(w))
         df = DataFrame(self._map)
         df.columns = self.labels
@@ -73,7 +75,10 @@ class WindowsIterator(object):
         for index in self._index:
             if isinstance(index, str) | isinstance(index, unicode):
                 index = getattr(pyPhysio, index)
-            ret.append(index.__name__)
+            if isinstance(index, type):
+                ret.append(index.__name__)
+            else:
+                ret.append(index.__repr__())
         return ret
 
     @property

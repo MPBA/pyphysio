@@ -10,8 +10,25 @@ from scipy.stats.mstats import mquantiles
 import numpy as np
 
 from CacheOnlyFeatures import Diff, OrderedSubsets, PoincareSD
-from BaseFeatures import NonLinearFeature
+from pyPhysio.features.BaseFeature import Feature
 from TDFeatures import Mean, SD
+
+
+class NonLinearFeature(Feature):
+    """
+    This is the base class for the Non Linear Features.
+    """
+
+    def __init__(self, params=None, _kwargs=None):
+        super(NonLinearFeature, self).__init__(params, _kwargs)
+
+    @classmethod
+    def algorithm(cls, data, params):
+        """
+        Placeholder for the subclasses
+        @raise NotImplementedError: Ever
+        """
+        raise NotImplementedError(cls.__name__ + " is a NonLinearFeature but it is not implemented.")
 
 
 class ApproxEntropy(NonLinearFeature):
@@ -184,6 +201,7 @@ class CorrelationDim(NonLinearFeature):
             return np.nan
         else:
             rr = data / 1000  # rr in seconds TODO: wut? semplificabile??
+            # Check also the other features to work with seconds!
             uj = OrderedSubsets.get(rr, dict(subset_size=params['corr_dim_len']))
             num_elem = uj.shape[0]
             r_vector = np.arange(0.3, 0.46, 0.02)  # settings

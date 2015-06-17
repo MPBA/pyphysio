@@ -5,6 +5,7 @@ from WindowsBase import WindowsGenerator, Window
 
 
 class TimeWindows(WindowsGenerator):
+
     def __init__(self, step, width=0, start=0):
         super(TimeWindows, self).__init__()
         self._step = step
@@ -15,6 +16,9 @@ class TimeWindows(WindowsGenerator):
         o = self._i
         self._i += self._step
         return Window(o, o + self._width, '')
+
+    def init_windowing(self):
+        pass
 
 
 class ExistingWindows(WindowsGenerator):
@@ -41,6 +45,9 @@ class ExistingWindows(WindowsGenerator):
             assert isinstance(self._wins[self._ind - 1], Window), "%d is not a Window" % self._wins[self._ind - 1]
             return self._wins[self._ind - 1]
 
+    def init_windowing(self):
+        pass
+
 
 class LabeledWindows(WindowsGenerator):
     """
@@ -59,10 +66,13 @@ class LabeledWindows(WindowsGenerator):
 
     def step_windowing(self):
         if self._i < len(self._labels) - 1:
-            w = Window(self._labels.index[self._i], self._labels.index[self._i + 1], self._labels[self._i])
+            w = Window(self._labels.index[self._i], self._labels.index[self._i + 1], self._labels.values[self._i])
         elif self._i < len(self._labels):
-            from datetime import datetime as dt, MAXYEAR
-            w = Window(self._labels.index[self._i], dt(MAXYEAR, 12, 31, 23, 59, 59, 999999999), self._labels[self._i])
+            w = Window(self._labels.index[self._i], None, self._labels.values[self._i])
         else:
             raise StopIteration()
+        self._i += 1
         return w
+
+    def init_windowing(self):
+        pass

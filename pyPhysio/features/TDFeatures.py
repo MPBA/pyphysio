@@ -6,9 +6,26 @@ __all__ = ['Mean', 'Median', 'SD', 'DiffSD', 'NNx', 'PNNx', 'NN10', 'NN25', 'NN5
 
 import numpy as np
 
-from pyPhysio.features.BaseFeatures import TDFeature
+from pyPhysio.features.BaseFeature import Feature
 from pyPhysio.features.SupportValues import SumSV, LengthSV, DiffsSV, MedianSV
 from pyPhysio.features.CacheOnlyFeatures import Diff, Histogram, HistogramMax
+
+
+class TDFeature(Feature):
+    """
+    This is the base class for the Time Domain Indexes.
+    """
+
+    def __init__(self, params=None, _kwargs=None):
+        super(TDFeature, self).__init__(params, _kwargs)
+
+    @classmethod
+    def algorithm(cls, data, params):
+        """
+        Placeholder for the subclasses
+        @raise NotImplementedError: Ever
+        """
+        raise NotImplementedError(cls.__name__ + " is a TDFeature but it is not implemented.")
 
 
 class Mean(TDFeature):

@@ -27,7 +27,11 @@ def create_series(data, time_bias_in_seconds=0, time_scale_to_seconds=1.0, index
     from pandas import Series, Int64Index, Float64Index
     from numpy import cumsum, array
 
-    if not hasattr(data, "__len__"):
+    if isinstance(data, Series):
+        py_physio_log("data is already a Series, pass your_series.values as the data parameter or it is useless to use "
+                      "this function.")
+        return data
+    elif not hasattr(data, "__len__"):
         py_physio_log("data must have a length, its type is %s instead." % type(data))
     elif not (index is None) and not hasattr(index, "__len__"):
         py_physio_log("index must have a length, its type is %s instead." % type(index))
@@ -44,7 +48,8 @@ def create_series(data, time_bias_in_seconds=0, time_scale_to_seconds=1.0, index
             data = array(data)
             if index is None:
                 py_physio_log("assuming data values as intervals.", 'Warning', 33)
-                py_physio_log("Use time_scale_to_seconds and time_bias_in_seconds to better convert them.", col=35)
+                py_physio_log("Use time_scale_to_seconds and time_bias_in_seconds parameters to better convert them.",
+                              col=35)
                 ret = Series(data * time_scale_to_seconds, cumsum(data))
             else:
                 ret = Series(data, index)
@@ -67,21 +72,25 @@ def create_series(data, time_bias_in_seconds=0, time_scale_to_seconds=1.0, index
 
 
 def create_labels_series(times_or_data_series=None, labels=None, time_bias_in_seconds=0, time_scale_to_seconds=1,
-                         is_polling=True):
+                         is_polling=None):
     from pandas import Series
     if times_or_data_series is None:
         py_physio_log("The first parameter must be a list of times [s] or the Series of the data "
                       "with the times which the labels are related to.")
     elif labels is None:
         py_physio_log("The second parameter must be a list/array of labels names/info.")
-    elif isinstance(times_or_data_series, Series):
-        py_physio_log("Taking times from a Series.", col=35)
-        i_create_labels_series(times_or_data_series.index, labels, time_bias_in_seconds=time_bias_in_seconds,
-                               time_scale_to_seconds=time_scale_to_seconds, is_polling=is_polling)
     else:
-        py_physio_log("Taking times from a %s." % type(times_or_data_series), col=35)
-        i_create_labels_series(times_or_data_series, labels, time_bias_in_seconds=time_bias_in_seconds,
-                               time_scale_to_seconds=time_scale_to_seconds, is_polling=is_polling)
+        if is_polling is None:
+            is_polling = len(labels) == len(times_or_data_series)
+        py_physio_log("Assuming label mode polling.", col=35)
+        if isinstance(times_or_data_series, Series):
+            py_physio_log("Taking times from a Series.", col=35)
+            return i_create_labels_series(times_or_data_series.index, labels, time_bias_in_seconds=time_bias_in_seconds,
+                                          time_scale_to_seconds=time_scale_to_seconds, is_polling=is_polling)
+        else:
+            py_physio_log("Taking times from a %s." % type(times_or_data_series), col=35)
+            return i_create_labels_series(times_or_data_series, labels, time_bias_in_seconds=time_bias_in_seconds,
+                                          time_scale_to_seconds=time_scale_to_seconds, is_polling=is_polling)
 
 
 def i_create_labels_series(times, labels, time_bias_in_seconds=0, time_scale_to_seconds=1, is_polling=True):
@@ -103,17 +112,21 @@ def i_create_labels_series(times, labels, time_bias_in_seconds=0, time_scale_to_
 
 def compute(data=None, features_list=None, params=None, windows=None):
     from pandas import Series
+    from pyPhysio.features.BaseFeature import Feature
 
     if data is None or not isinstance(data, Series):
         py_physio_log("The first parameter must be a pandas.Series containing the data to analyze.")
-    elif features_list is None or len(features_list) == 0:
-        py_physio_log("The second parameter must be a list containing the features to extract e.g. [" +
-                      Mean.__name__ + ", " + SD.__name__ + ", " + NN50.__name__ + "].")
     else:
-        if windows is None:
-            if len(features_list) == 1:  # one feature manually
-                return features_list[0](data, params).value
-            else:  # auto-create win
-                windows = ExistingWindows([windowing.Window(0, len(data), data)])  # TODO 3: test with the new windowing
-                # use iterator
-        return WindowsIterator(data, windows, features_list, params).compute_all()
+        if type(features_list) is type or isinstance(features_list, Feature):
+            features_list = [features_list]
+        if type(features_list) is not list or len(features_list) == 0:
+            py_physio_log("The second parameter must be a list containing the features to extract e.g. [" +
+                          Mean.__name__ + ", " + SD.__name__ + ", " + NN50.__name__ + "].")
+        else:
+            if windows is None:
+                if len(features_list) == 1:  # one feature manually
+                    return features_list[0](data, params).value
+                else:  # auto-create win
+                    windows = ExistingWindows([windowing.Window(0, len(data), data)])  # TODO 3: test with the new windowing
+                    # use iterator
+            return WindowsIterator(data, windows, features_list, params).compute_all()

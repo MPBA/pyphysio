@@ -4,8 +4,32 @@ __author__ = 'AleB'
 __all__ = ['PowerInBand', 'PeakInBand', 'PowerInBandNormal', 'LFHF', 'NormalizedHF', 'NormalizedLF']
 
 from numpy import argmax, sum
-from pyPhysio.features.BaseFeatures import FDFeature
+from pyPhysio.features.BaseFeature import Feature
 from CacheOnlyFeatures import PSDWelchLibCalc
+
+
+class FDFeature(Feature):
+    """
+    This is the base class for the Frequency Domain Features.
+    It uses the interpolation frequency parameter interp_freq.
+    """
+
+    def __init__(self, params=None, _kwargs=None):
+        super(FDFeature, self).__init__(params, _kwargs)
+        assert 'interp_freq' in self._params, "This feature needs 'interp_freq'."
+        self._interp_freq = self._params['interp_freq']
+
+    @classmethod
+    def algorithm(cls, data, params):
+        """
+        Placeholder for the subclasses
+        @raise NotImplementedError: Ever
+        """
+        raise NotImplementedError(cls.__name__ + " is an FDFeature but it is not implemented.")
+
+    @classmethod
+    def get_used_params(cls):
+        return ['interp_freq', 'psd_method']
 
 
 class InBand(FDFeature):
@@ -27,8 +51,8 @@ class InBand(FDFeature):
                 [spec[i] for i in xrange(len(spec)) if params['freq_min'] <= freq[i] < params['freq_max']],
                 total)
 
-    @staticmethod
-    def get_used_params():
+    @classmethod
+    def get_used_params(cls):
         return ['freq_max', 'freq_min'] + PSDWelchLibCalc.get_used_params()
 
 
@@ -42,8 +66,8 @@ class PowerInBand(FDFeature):
         ignore, _pow_band, ignored = InBand.get(data, params)
         return sum(_pow_band) / len(_pow_band)
 
-    @staticmethod
-    def get_used_params():
+    @classmethod
+    def get_used_params(cls):
         return InBand.get_used_params()
 
 
@@ -57,8 +81,8 @@ class PowerInBandNormal(FDFeature):
         ignored, _pow_band, _pow_total = InBand.get(data, params)
         return sum(_pow_band) / len(_pow_band) / _pow_total
 
-    @staticmethod
-    def get_used_params():
+    @classmethod
+    def get_used_params(cls):
         return InBand.get_used_params()
 
 
@@ -72,8 +96,8 @@ class PeakInBand(FDFeature):
         _freq_band, _pow_band, ignored = InBand.get(data, params)
         return _freq_band[argmax(_pow_band)]
 
-    @staticmethod
-    def get_used_params():
+    @classmethod
+    def get_used_params(cls):
         return InBand.get_used_params()
 
 
@@ -89,8 +113,8 @@ class LFHF(FDFeature):
         par_hf = params.copy().update({'freq_min': params['freq_mid']})
         return PowerInBand.get(data, par_lf) / PowerInBand.get(data, par_hf)
 
-    @staticmethod
-    def get_used_params():
+    @classmethod
+    def get_used_params(cls):
         return PowerInBand.get_used_params()
 
 
@@ -109,8 +133,8 @@ class NormalizedLF(FDFeature):
         par_hf = params.copy().update({'freq_min': params['freq_mid']})
         return PowerInBand.get(data, par_lf) / (PowerInBand.get(data, par_hf) + PowerInBand.get(data, par_lf))
 
-    @staticmethod
-    def get_used_params():
+    @classmethod
+    def get_used_params(cls):
         return PowerInBand.get_used_params() + ['freq_mid']
 
 
@@ -126,6 +150,6 @@ class NormalizedHF(FDFeature):
     def algorithm(cls, data, params):
         return 1 - NormalizedLF.get(data, params)
 
-    @staticmethod
-    def get_used_params():
+    @classmethod
+    def get_used_params(cls):
         return NormalizedLF.get_used_params()
