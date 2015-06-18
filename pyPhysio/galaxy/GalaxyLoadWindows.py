@@ -4,7 +4,7 @@ __author__ = 'AleB'
 
 from pandas import Series
 
-from pyPhysio.windowing import LabeledWindows, ExistingWindows, Window
+from pyPhysio.segmentation import LabeledSegments, ExistingSegments, Segment
 from pyPhysio.Files import *
 
 
@@ -26,17 +26,17 @@ class GalaxyLoadWindows(ParamExecClass):
             c = load_ds_from_csv_column(self._kwargs['input'], self._kwargs['column'])
 
         if self._kwargs['windows_type'] == 'labels_sequences':
-            w = LabeledWindows(None, c)
+            w = LabeledSegments(None, c)
         else:
             if self._kwargs['windows_type'] == 'begin_values':
                 w = map(self.__class__.map_end_window, c)[1:]
-                w = ExistingWindows(None, w)
+                w = ExistingSegments(None, w)
             else:
-                raise NotImplemented("Not implemented windowing mode: %s" % self._kwargs['windows_type'])
+                raise NotImplemented("Not implemented segmentation mode: %s" % self._kwargs['windows_type'])
         Series(w).save(output_file)
 
     def map_end_window(self, end):
         if self.__s is None:
             self.__s = end
         else:
-            return Window(self.__s, end)
+            return Segment(self.__s, end)

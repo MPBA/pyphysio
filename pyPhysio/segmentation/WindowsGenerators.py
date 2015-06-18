@@ -1,27 +1,27 @@
 __author__ = 'AleB'
-__all__ = ['TimeWindows', 'LabeledWindows', 'ExistingWindows']
+__all__ = ['TimeSegments', 'LabeledSegments', 'ExistingSegments']
 
-from WindowsBase import WindowsGenerator, Window
+from WindowsBase import SegmentsGenerator, Segment
 
 
-class TimeWindows(WindowsGenerator):
+class TimeSegments(SegmentsGenerator):
 
     def __init__(self, step, width=0, start=0):
-        super(TimeWindows, self).__init__()
+        super(TimeSegments, self).__init__()
         self._step = step
         self._width = step if width == 0 else width
         self._i = start
 
-    def step_windowing(self):
+    def next_segment(self):
         o = self._i
         self._i += self._step
-        return Window(o, o + self._width, '')
+        return Segment(o, o + self._width, '')
 
-    def init_windowing(self):
+    def init_segmentation(self):
         pass
 
 
-class ExistingWindows(WindowsGenerator):
+class ExistingSegments(SegmentsGenerator):
     """
     Wraps a list of windows from an existing collection.
     """
@@ -31,25 +31,25 @@ class ExistingWindows(WindowsGenerator):
         Initializes the win generator
         @param win_list: List of Windows to consider
         """
-        super(ExistingWindows, self).__init__()
+        super(ExistingSegments, self).__init__()
 
         self._wins = win_list
         self._ind = 0
 
-    def step_windowing(self):
+    def next_segment(self):
         if self._ind >= len(self._wins):
             self._ind = 0
             raise StopIteration
         else:
             self._ind += 1
-            assert isinstance(self._wins[self._ind - 1], Window), "%d is not a Window" % self._wins[self._ind - 1]
+            assert isinstance(self._wins[self._ind - 1], Segment), "%d is not a Window" % self._wins[self._ind - 1]
             return self._wins[self._ind - 1]
 
-    def init_windowing(self):
+    def init_segmentation(self):
         pass
 
 
-class LabeledWindows(WindowsGenerator):
+class LabeledSegments(SegmentsGenerator):
     """
     Generates a list of windows from a labels list.
     """
@@ -59,20 +59,20 @@ class LabeledWindows(WindowsGenerator):
         Initializes the win generator
         @param labels: Labels time series
         """
-        super(LabeledWindows, self).__init__()
+        super(LabeledSegments, self).__init__()
         self._i = 0
         self._ibn = include_baseline_name
         self._labels = labels
 
-    def step_windowing(self):
+    def next_segment(self):
         if self._i < len(self._labels) - 1:
-            w = Window(self._labels.index[self._i], self._labels.index[self._i + 1], self._labels.values[self._i])
+            w = Segment(self._labels.index[self._i], self._labels.index[self._i + 1], self._labels.values[self._i])
         elif self._i < len(self._labels):
-            w = Window(self._labels.index[self._i], None, self._labels.values[self._i])
+            w = Segment(self._labels.index[self._i], None, self._labels.values[self._i])
         else:
             raise StopIteration()
         self._i += 1
         return w
 
-    def init_windowing(self):
+    def init_segmentation(self):
         pass

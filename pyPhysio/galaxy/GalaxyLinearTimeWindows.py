@@ -4,7 +4,7 @@ __author__ = 'AleB'
 
 from pandas import DataFrame
 
-from pyPhysio.windowing import LinearTimeWindows
+from pyPhysio.segmentation import LinearTimeWindows
 from pyPhysio.Files import *
 from pyPhysio.PyHRVSettings import MainSettings as Sett
 

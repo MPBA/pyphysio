@@ -1,6 +1,6 @@
 __author__ = 'AleB'
 
-from pyPhysio.windowing import *
+from pyPhysio.segmentation import *
 from pyPhysio.Files import *
 from pyPhysio.features import TDFeatures as Td
 

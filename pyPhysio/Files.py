@@ -6,8 +6,8 @@ import pandas as pd
 
 from pyPhysio.Utility import data_series_from_bvp, data_series_from_ecg
 from pyPhysio.PyHRVSettings import MainSettings as Sett
-from pyPhysio.windowing.WindowsBase import Window
-from pyPhysio.windowing.WindowsGenerators import ExistingWindows
+from pyPhysio.segmentation.WindowsBase import Segment
+from pyPhysio.segmentation.WindowsGenerators import ExistingSegments
 
 
 def load_pd_from_excel_column(path, column, column_b=None, sheet_name=0):
@@ -66,7 +66,7 @@ def load_windows_gen_from_csv(path, column_begin=Sett.load_windows_col_begin, co
     @type sep: str or unicode or char
     """
     d = pd.read_csv(path, sep=sep)
-    return ExistingWindows(map((lambda x, y: Window(x, y, None)), d[column_begin], d[column_end]))
+    return ExistingSegments(map((lambda x, y: Segment(x, y, None)), d[column_begin], d[column_end]))
 
 
 def save_ds_to_csv(data_series, path, name=Sett.load_rr_column_name, sep=Sett.load_csv_separator, header=True):

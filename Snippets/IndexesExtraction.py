@@ -1,8 +1,8 @@
 from pyPhysio import Cache
 from pyPhysio.features.TDFeatures import Mean, SD
-from pyPhysio.windowing.WindowsBase import Window
-from pyPhysio.windowing.WindowsGenerators import LinearWinGen
-from pyPhysio.windowing.WindowsIterator import WindowsIterator
+from pyPhysio.segmentation.WindowsBase import Segment
+from pyPhysio.segmentation.WindowsGenerators import LinearWinGen
+from pyPhysio.segmentation.WindowsIterator import WindowsIterator
 
 __author__ = 'AleB'
 
@@ -14,7 +14,7 @@ value1 = Mean(data).value
 
 ## Index class usage with a window
 # This is the simplest way to calculate an index on a window
-win = Window(1, 5, data)
+win = Segment(1, 5, data)
 value2 = Mean(win.extract_data()).value
 
 ## WindowsIterator usage

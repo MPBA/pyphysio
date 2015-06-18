@@ -1,7 +1,7 @@
 from __builtin__ import property
 
 import pyPhysio
-from pyPhysio.windowing.WindowsBase import WindowsGeneratorIterator
+from pyPhysio.segmentation.WindowsBase import SegmentationIterator
 from pandas import DataFrame
 
 
@@ -34,7 +34,7 @@ class WindowsIterator(object):
         self._params = params
 
     def __iter__(self):
-        return WindowsGeneratorIterator(self)
+        return SegmentationIterator(self)
 
     def _comp_one(self, win):
         ret = []

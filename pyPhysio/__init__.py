@@ -1,7 +1,7 @@
 from __future__ import division
 __author__ = "AleB"
 import features
-import windowing
+import segmentation
 import Files
 import Filters
 
@@ -10,13 +10,13 @@ __all__.extend(Filters.__all__)
 __all__.extend(Files.__all__)
 
 __all__.extend(features.__all__)
-__all__.extend(windowing.__all__)
+__all__.extend(segmentation.__all__)
 
 from Files import *
 from Filters import *
 from PyHRVSettings import *
 from features import *
-from windowing import *
+from segmentation import *
 
 
 def py_physio_log(mex, lev='', col=31):
@@ -127,6 +127,6 @@ def compute(data=None, features_list=None, params=None, windows=None):
                 if len(features_list) == 1:  # one feature manually
                     return features_list[0](data, params).value
                 else:  # auto-create win
-                    windows = ExistingWindows([windowing.Window(0, len(data), data)])  # TODO 3: test with the new windowing
+                    windows = ExistingSegments([segmentation.Segment(0, len(data), data)])  # TODO 3: test with the new segmentation
                     # use iterator
             return WindowsIterator(data, windows, features_list, params).compute_all()

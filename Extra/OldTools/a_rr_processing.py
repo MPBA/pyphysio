@@ -110,7 +110,7 @@ def massimi2RR(timesMax, winlength=50, minbpm=24,maxbpm=198):
         meanRR=np.mean(RRvect[-winlength:]) # aggiorno RRmedia
     return RR,  timeRR
 
-def windowRR(RR, WINDSIZE=30, OVERLAP=0): #windowing di un vettore RR
+def windowRR(RR, WINDSIZE=30, OVERLAP=0): #segmentation di un vettore RR
     BT=np.cumsum(RR)
     
     if OVERLAP==0:
