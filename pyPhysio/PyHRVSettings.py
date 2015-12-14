@@ -1,3 +1,4 @@
+# coding=utf-8
 __author__ = "AleB"
 __all__ = ['PyHRVSettings', 'MainSettings']
 

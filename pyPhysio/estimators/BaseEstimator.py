@@ -4,7 +4,7 @@ __author__ = 'aleb'
 from pyPhysio.BaseAlgorithm import Algorithm
 
 
-class Filter(Algorithm):
+class Estimator(Algorithm):
 
     @classmethod
     def algorithm(cls, data, params):

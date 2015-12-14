@@ -14,6 +14,7 @@ Things
                 - Abandoned this way, static method raw_compute contains the algorithm, instances of the class are used to store different sets of parameters
     
 - General compute function: we can use a DataFrame instead of a list of Series as parameter, but it is better to have a list because of performance issues
+    # TODO Remove pandas
 
 - I remove the HR variants of Mean Median etc as they are redundant and make no sense in a general context
 
@@ -21,17 +22,19 @@ Things
     - It can be a signal's value
     - It is not a numeric value
     YES so TODoneO: convert+join them
+    It is an estimator
     
 - I begin converting the default series from intervals (IBI) to a generic time series
     - Which kind of value??
         - Maybe anyone and then checked inside the tool, inside the feature computation
             - Tool, nice name
-    - Always a pandas Series!
+    - Always a pandas Series! Nope
     - Excluded:
         *Snippets
         *tests
         *example_data
         *galaxy
+    # TODO New type signal
 
 - Changed the CDC parameter with a kwargs parameter, this is uncomfortable i fix... semantically changed kwargs to params
     - and added a system that computes an additional hash-key from the used parameters
@@ -39,12 +42,12 @@ Things
 
 - FOR Biz
     - Why a cache system?
-        - The computation of several kind of features, for example some Frequency Domain (FD) Features, needs vary time-taking steps such as Power Spectrum Density estimations or other transformations on the entire data-set. If our pipeline needs to compute more than one feature that requires the same sub-step we have that it will compute the same thing with the same inputs (and so with the same outputs) more than once, wasting cpu time.
+        - The computation of several kind of features, for example some Frequency Domain (FD) Features, needs several time-taking steps such as Power Spectrum Density estimations or other transformations on the entire data-set. If our pipeline needs to compute more than one feature that requires the same sub-step we have that it will compute the same thing with the same inputs (and so with the same outputs) more than once, wasting cpu time.
         - So the cache controls this computation redundancy and conserves the computed intermediate data to reuse it for the next demands.
         - The cache data is hidden inside the data-set object, allowing a transparent usage with a high degree of freedom using any kind of data structures.
     
 - Used __future__.division in the files
 
+# TODO check after this
 - The algorithms work with rr in ms, have to transform to Series in s
-
 - I will add a function to validate a Series for working with the library

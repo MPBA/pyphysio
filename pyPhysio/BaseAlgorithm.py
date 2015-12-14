@@ -1,6 +1,5 @@
+# coding=utf-8
 __author__ = 'AleB'
-
-from pandas import TimeSeries
 
 
 class Algorithm(object):
@@ -32,7 +31,7 @@ class Algorithm(object):
     def __call__(self, data):
         """
         Executes the algorithm using the parameters saved by the constructor.
-        @param data: The data where to work.
+        @param data: The data.
         @type data: TimeSeries
         @return: The result.
         """

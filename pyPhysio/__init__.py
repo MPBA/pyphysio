@@ -1,3 +1,4 @@
+# coding=utf-8
 from __future__ import division
 __author__ = "AleB"
 import features
@@ -5,7 +6,7 @@ import segmentation
 import Files
 import Filters
 
-__all__ = ['Files', 'PyHRVSettings', 'windowing', 'features', 'Filters']
+__all__ = ['Files', 'PyHRVSettings', 'segmentation', 'features', 'Filters']
 __all__.extend(Filters.__all__)
 __all__.extend(Files.__all__)
 
@@ -23,6 +24,7 @@ def py_physio_log(mex, lev='', col=31):
     print(">%s\x1b[%dm%s\x1b[39m" % ("%s: " % lev if lev != '' else lev, col, mex))
 
 
+# TODO uses pandas
 def create_series(data, time_bias_in_seconds=0, time_scale_to_seconds=1.0, index=None, metadata=None):
     from pandas import Series, Int64Index, Float64Index
     from numpy import cumsum, array
@@ -71,6 +73,7 @@ def create_series(data, time_bias_in_seconds=0, time_scale_to_seconds=1.0, index
     return None
 
 
+# TODO uses pandas
 def create_labels_series(times_or_data_series=None, labels=None, time_bias_in_seconds=0, time_scale_to_seconds=1,
                          is_polling=None):
     from pandas import Series
@@ -93,6 +96,7 @@ def create_labels_series(times_or_data_series=None, labels=None, time_bias_in_se
                                           time_scale_to_seconds=time_scale_to_seconds, is_polling=is_polling)
 
 
+# TODO uses pandas
 def i_create_labels_series(times, labels, time_bias_in_seconds=0, time_scale_to_seconds=1, is_polling=True):
     x = create_series(labels, time_bias_in_seconds, time_scale_to_seconds, times)
     if is_polling:
@@ -110,6 +114,7 @@ def i_create_labels_series(times, labels, time_bias_in_seconds=0, time_scale_to_
         return create_series(labels, time_bias_in_seconds, time_scale_to_seconds, times)
 
 
+# TODO uses pandas
 def compute(data=None, features_list=None, params=None, windows=None):
     from pandas import Series
     from pyPhysio.features.BaseFeature import Feature

@@ -1,3 +1,4 @@
+# coding=utf-8
 __author__ = 'AleB'
 import numpy as np
 from scipy import interpolate

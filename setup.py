@@ -10,7 +10,7 @@ description = ''.join(lines[:3])
 long_description = ''.join(lines[:4])
 rm.close()
 
-vh = open('version', 'r')
+vh = open('version')
 lines = vh.readlines()
 version = lines[-1].rstrip('\n').rstrip('\r')
 vh.close()
