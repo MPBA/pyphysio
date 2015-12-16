@@ -1,5 +1,5 @@
 # coding=utf-8
-from numpy import array, float64
+from numpy import array, float64, searchsorted
 
 __author__ = 'AleB'
 
@@ -28,6 +28,9 @@ class Signal(object):
     def __repr__(self):
         return "<" + self.signal_nature + " signal from:" + self.start_time + ">"
 
+    def getslice(self, f, l):
+        assert False, "Abstract"
+
 
 class KFreqSignal(Signal):
     def __init__(self, p_object, sampling_freq, signal_nature, start_time):
@@ -46,6 +49,16 @@ class KFreqSignal(Signal):
     def __repr__(self):
         return Signal.__repr__(self)[:-1] + " freq:" + self.sampling_freq + "Hz>" + self.data.__repr__()
 
+    def getslice(self, f, l):
+        # find base_signal's indexes
+        f = (f - self.start_time) / self.sampling_freq
+        l = (l - self.start_time) / self.sampling_freq
+        # clip the end
+        # [:] has exclusive end
+        if l > len(self.data):
+            l = len(self.data)
+        return KFreqSignal(self.data[f:l], self.sampling_freq, self.signal_nature, f)
+
 
 class IntervalSeries(Signal):
     def __init__(self, intervals, indexes, base_signal):
@@ -59,16 +72,33 @@ class IntervalSeries(Signal):
         return self._intervals
 
     @property
-    def values(self):
+    def indexes(self):
         return self._indexes
 
     @property
+    def base_signal(self):
+        return self._base_signal
+
+    @property
     def signal_nature(self):
-        return self._base_signal.signal_nature + "interval"
+        return self.base_signal.signal_nature + "interval"
 
     @property
     def start_time(self):
-        return self._base_signal.start_time
+        return self.base_signal.start_time
+
+    def getslice(self, f, l):
+        # find base_signal's indexes
+        f = (f - self.start_time) / self.base_signal.sampling_freq
+        l = (l - self.start_time) / self.base_signal.sampling_freq
+        # clip the end
+        # [:] has exclusive end
+        if l > len(self.base_signal.data):
+            l = len(self.base_signal.data)
+        # find f & l indexes of indexes
+        f = searchsorted(self.indexes, f)
+        l = searchsorted(self.indexes, l)
+        return IntervalSeries(self.times[f:l], self.indexes[f:l], self.base_signal)
 
 
 class EventsSignal(Signal):
@@ -87,3 +117,9 @@ class EventsSignal(Signal):
 
     def __repr__(self):
         return Signal.__repr__(self) + self.values.__repr__()
+
+    def getslice(self, f, l):
+        # find f & l indexes of indexes
+        f = searchsorted(self.times, f)
+        l = searchsorted(self.times, l)
+        return EventsSignal(self.times[f:l], self.values[f:l])
