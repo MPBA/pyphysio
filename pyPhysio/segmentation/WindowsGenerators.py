@@ -1,11 +1,14 @@
 __author__ = 'AleB'
 __all__ = ['TimeSegments', 'LabeledSegments', 'ExistingSegments']
 
-from WindowsBase import SegmentsGenerator, Segment
+from .. import PhUI
+from ..SegmentationBase import SegmentsGenerator, Segment
 
 
 class TimeSegments(SegmentsGenerator):
-
+    """
+    Linear-timed segments
+    """
     def __init__(self, step, width=0, start=0):
         super(TimeSegments, self).__init__()
         self._step = step
@@ -42,7 +45,7 @@ class ExistingSegments(SegmentsGenerator):
             raise StopIteration
         else:
             self._ind += 1
-            assert isinstance(self._wins[self._ind - 1], Segment), "%d is not a Window" % self._wins[self._ind - 1]
+            PhUI.a(isinstance(self._wins[self._ind - 1], Segment), "%d is not a Segment" % self._wins[self._ind - 1])
             return self._wins[self._ind - 1]
 
     def init_segmentation(self):

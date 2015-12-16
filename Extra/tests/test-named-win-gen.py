@@ -1,7 +1,6 @@
 __author__ = 'AleB'
 
 import os
-
 import pandas as pd
 
 from pyPhysio.Files import *
@@ -9,7 +8,7 @@ from pyPhysio.segmentation import LabeledSegments, WindowsIterator
 from pyPhysio import Cache
 import pyPhysio.features.TDFeatures
 import pyPhysio.features.FDFeatures
-from pyPhysio.PyHRVSettings import MainSettings as Ps
+from Extra.PyHRVSettings import MainSettings as Ps
 
 
 def test(f):

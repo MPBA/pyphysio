@@ -6,7 +6,7 @@ __all__ = ['Mean', 'Median', 'SD', 'DiffSD', 'NNx', 'PNNx', 'NN10', 'NN25', 'NN5
 
 import numpy as np
 
-from pyPhysio.features.BaseFeature import Feature
+from pyPhysio.BaseFeature import Feature
 from pyPhysio.features.SupportValues import SumSV, LengthSV, DiffsSV, MedianSV
 from pyPhysio.features.CacheOnlyFeatures import Diff, Histogram, HistogramMax
 

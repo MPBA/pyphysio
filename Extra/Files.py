@@ -5,8 +5,8 @@ __all__ = ['load_pd_from_excel_column', 'load_ds_from_csv_column', 'load_windows
 import pandas as pd
 
 from pyPhysio.Utility import data_series_from_bvp, data_series_from_ecg
-from pyPhysio.PyHRVSettings import MainSettings as Sett
-from pyPhysio.segmentation.WindowsBase import Segment
+from Extra.PyHRVSettings import MainSettings as Sett
+from pyPhysio.SegmentationBase import Segment
 from pyPhysio.segmentation.WindowsGenerators import ExistingSegments
 
 

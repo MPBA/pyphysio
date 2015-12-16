@@ -6,7 +6,7 @@ from pandas import DataFrame
 
 from pyPhysio.segmentation import LinearTimeWindows
 from pyPhysio.Files import *
-from pyPhysio.PyHRVSettings import MainSettings as Sett
+from Extra.PyHRVSettings import MainSettings as Sett
 
 
 class GalaxyLinearTimeWindows(ParamExecClass):

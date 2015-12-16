@@ -1,8 +1,8 @@
 from pyPhysio import Cache
 from pyPhysio.features.TDFeatures import Mean, SD
-from pyPhysio.segmentation.WindowsBase import Segment
+from pyPhysio.SegmentationBase import Segment
 from pyPhysio.segmentation.WindowsGenerators import LinearWinGen
-from pyPhysio.segmentation.WindowsIterator import WindowsIterator
+from pyPhysio.WindowsIterator import WindowsIterator
 
 __author__ = 'AleB'
 

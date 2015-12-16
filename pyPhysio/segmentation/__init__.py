@@ -1,10 +1,8 @@
 __author__ = 'AleB'
 
-from WindowsBase import *
 import WindowsGenerators
 from WindowsGenerators import *
-import WindowsIterator as Wm
-from WindowsIterator import *
+from pyPhysio import WindowsIterator as Wm
 
 __all__ = WindowsGenerators.__all__
 __all__.extend(Wm.__all__)

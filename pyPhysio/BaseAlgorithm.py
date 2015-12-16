@@ -4,7 +4,7 @@ __author__ = 'AleB'
 
 class Algorithm(object):
     """
-    This is the algorithm container super class. It should be used only to be extended.
+    This is the algorithm container super class. It (is abstract) should be used only to be extended.
     """
 
     def __init__(self, params=None, _kwargs=None, **kwargs):
@@ -64,7 +64,7 @@ class Algorithm(object):
     @classmethod
     def cache_hash(cls, params):
         """
-        This method gives an hash to use as a part of the key in the cache starting from the parameters used by the
+        This method computes an hash to use as a part of the key in the cache starting from the parameters used by the
         feature. Uses the method _utility_hash([par1,...parN])
         This class is abstract.
         @return: The hash of the parameters used by the feature.
@@ -76,6 +76,13 @@ class Algorithm(object):
     @staticmethod
     def _utility_hash(x):
         return str(x).replace('\'', '')
+
+    def get_params(self):
+        """
+        Placeholder for the subclasses
+        @return
+        """
+        return self._params
 
     @classmethod
     def algorithm(cls, data, params):
@@ -92,13 +99,6 @@ class Algorithm(object):
         @raise NotImplementedError: Ever
         """
         raise NotImplementedError(cls.__name__ + " is not implemented.")
-
-    def get_params(self):
-        """
-        Placeholder for the subclasses
-        @return
-        """
-        return self._params
 
 
 class Cache(object):

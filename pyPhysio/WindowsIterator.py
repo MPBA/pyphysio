@@ -1,8 +1,7 @@
-from __builtin__ import property
-
 import pyPhysio
-from pyPhysio.segmentation.WindowsBase import SegmentationIterator
 from pandas import DataFrame
+from SegmentationBase import SegmentationIterator
+from . import PhUI
 
 
 __author__ = 'AleB'
@@ -29,7 +28,7 @@ class WindowsIterator(object):
         self._map = None
         self._wing = win_gen
         self._win_iter = win_gen.__iter__()
-        self._index = indexes
+        self._feats = indexes
         self._winn = -1
         self._params = params
 
@@ -39,12 +38,15 @@ class WindowsIterator(object):
     def _comp_one(self, win):
         ret = []
         win_ds = win(self._data)
-        for algorithm in self._index:
+        for algorithm in self._feats:
             if isinstance(algorithm, str) or isinstance(algorithm, unicode):
-                algorithm = getattr(pyPhysio, algorithm)
-            if type(algorithm) is type:
-                algorithm = algorithm(self._params)
-            ret.append(algorithm(win_ds))
+                p = getattr(pyPhysio, algorithm)
+                ret.append(p(win_ds))
+            elif type(algorithm) is type:
+                p = algorithm(self._params)
+                ret.append(p(win_ds))
+            else:
+                PhUI.w("The specified algorithm '%s' is not an algorithm nor a PyPhysio algorithm name." % algorithm)
         self._winn += 1
         return [self._winn if win.label is None else win.label, win.begin, win.end] + ret
 
@@ -58,21 +60,19 @@ class WindowsIterator(object):
         self._map = []
         for w in self._wing:
             if WindowsIterator.verbose:
-                print("Processing " + str(w))
+                PhUI.i("Processing " + str(w))
             self._map.append(self._comp_one(w))
         df = DataFrame(self._map)
-        df.columns = self.labels
+        df.columns = self.labels()
         return df
 
-    @property
     def labels(self):
         """
         Gets the labels of the table returned from the results property after the compute_all call.
         @rtype : list
         """
-        ret = ['w_name', pyPhysio.MainSettings.load_windows_col_begin,
-               pyPhysio.MainSettings.load_windows_col_end]
-        for index in self._index:
+        ret = ['w_name', 'w_begin', 'w_end']
+        for index in self._feats:
             if isinstance(index, str) | isinstance(index, unicode):
                 index = getattr(pyPhysio, index)
             if isinstance(index, type):
@@ -81,7 +81,6 @@ class WindowsIterator(object):
                 ret.append(index.__repr__())
         return ret
 
-    @property
     def results(self):
         """
         Returns the results table calculated in the compute_all call.

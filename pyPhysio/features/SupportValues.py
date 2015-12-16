@@ -3,7 +3,7 @@ from __future__ import division
 __author__ = 'AleB'
 
 from pyPhysio.Utility import template_interpolation
-from pyPhysio.PyHRVSettings import MainSettings as Ps
+from Extra.PyHRVSettings import MainSettings as Ps
 
 
 class SupportValue(object):

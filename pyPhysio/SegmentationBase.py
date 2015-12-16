@@ -3,27 +3,6 @@ __all__ = ['SegmentationError', 'Segment', 'SegmentsGenerator']
 from copy import copy as cpy
 
 
-class SegmentationError(Exception):
-    """
-    Generic Windowing error.
-    """
-    pass
-
-
-class SegmentationIterator(object):
-    """
-    A generic iterator that is called from each WindowGenerator from the __iter__ method.
-    """
-
-    def __init__(self, win):
-        assert isinstance(win, SegmentsGenerator)
-        self._win = cpy(win)
-        self._win.init_segmentation()
-
-    def next(self):
-        return self._win.next_segment()
-
-
 class Segment(object):
     """
     Base Window, a begin-end pair.
@@ -95,3 +74,24 @@ class SegmentsGenerator(object):
         @raise StopIteration: End of the iteration
         """
         raise NotImplementedError()
+
+
+class SegmentationIterator(object):
+    """
+    A generic iterator that is called from each WindowGenerator from the __iter__ method.
+    """
+
+    def __init__(self, win):
+        assert isinstance(win, SegmentsGenerator)
+        self._win = cpy(win)
+        self._win.init_segmentation()
+
+    def next(self):
+        return self._win.next_segment()
+
+
+class SegmentationError(Exception):
+    """
+    Generic "Windowing" error.
+    """
+    pass

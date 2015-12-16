@@ -9,7 +9,7 @@ import numpy as np
 from scipy import signal
 
 from ..Utility import interpolate_ibi
-from pyPhysio.features.BaseFeature import Feature
+from pyPhysio.BaseFeature import Feature
 
 
 class CacheOnlyFeature(Feature):

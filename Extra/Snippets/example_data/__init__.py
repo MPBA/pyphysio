@@ -12,6 +12,5 @@ def load_example(f):
     d, r = Cache(data=uu["IBI"], labels=uu["label"]), read_csv(join(n, "results.csv"), sep="\t")
     return d, r
 
-import Test1
-import Test2
-import Test3
+
+from Extra.Snippets.example_data import Test3
