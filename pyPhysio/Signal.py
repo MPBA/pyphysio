@@ -1,4 +1,5 @@
 # coding=utf-8
+from __future__ import division
 from numpy import array, float64, searchsorted
 
 __author__ = 'AleB'
@@ -7,11 +8,12 @@ __author__ = 'AleB'
 class Signal(object):
     NP_TIME_T = float64
 
-    def __init__(self, signal_nature, start_time):
+    def __init__(self, signal_nature, start_time, name=None, meta=None):
         assert self.__class__ != Signal.__class__, "Abstract"
         self._signal_type = signal_nature
         self._start_time = start_time
-        self._metadata = {}
+        self._name = name
+        self._metadata = meta if meta is not None else {}
 
     @property
     def signal_nature(self):
@@ -22,6 +24,11 @@ class Signal(object):
         return self._start_time
 
     @property
+    def duration(self):
+        assert self.__class__ != Signal.__class__, "Abstract"
+        return None
+
+    @property
     def metadata(self):
         return self._metadata
 
@@ -29,7 +36,7 @@ class Signal(object):
         return "<" + self.signal_nature + " signal from:" + self.start_time + ">"
 
     def getslice(self, f, l):
-        assert False, "Abstract"
+        assert self.__class__ != Signal.__class__, "Abstract"
 
 
 class KFreqSignal(Signal):
@@ -37,6 +44,11 @@ class KFreqSignal(Signal):
         Signal.__init__(self, signal_nature, start_time)
         self._sampling_freq = sampling_freq
         self._data = array(p_object, order="C", ndmin=1)
+
+    @property
+    def duration(self):
+        # Uses future division
+        return self.data / self.sampling_freq
 
     @property
     def sampling_freq(self):
@@ -66,6 +78,10 @@ class IntervalSeries(Signal):
         self._intervals = array(intervals, dtype=self.NP_TIME_T, ndmin=1)
         self._indexes = array(indexes, ndmin=1)
         self._base_signal = base_signal
+
+    @property
+    def duration(self):
+        return self.base_signal.duration
 
     @property
     def times(self):
@@ -106,6 +122,10 @@ class EventsSignal(Signal):
         Signal.__init__(self, "events", times[0])
         self._times = array(times, dtype=Signal.NP_TIME_T, ndmin=1)
         self._values = array(values, ndmin=1)
+
+    @property
+    def duration(self):
+        return self.times[-1]
 
     @property
     def times(self):

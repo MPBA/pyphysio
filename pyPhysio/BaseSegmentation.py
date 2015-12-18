@@ -5,18 +5,19 @@ from copy import copy as cpy
 
 class Segment(object):
     """
-    Base Window, a begin-end pair.
+    Base Segment, a begin-end pair with a reference to the base signal and a name.
     """
 
-    def __init__(self, begin, end, label):
+    def __init__(self, begin, end, label, signal):
         """
         Creates a base Window
-        @param begin: Begin sample/time index
-        @param end: End sample/time index
+        @param begin: Begin sample index
+        @param end: End sample index
         """
         self._begin = begin
         self._end = end
         self._label = label
+        self._signal = signal
 
     @property
     def begin(self):
@@ -24,6 +25,14 @@ class Segment(object):
 
     @property
     def end(self):
+        return self._end
+
+    @property
+    def start_time(self):
+        return None  # TODO: return it and add prop base signal
+
+    @property
+    def end_time(self):
         return self._end
 
     @property
