@@ -1,3 +1,4 @@
+# coding=utf-8
 from __future__ import division
 
 # coding=utf-8
@@ -9,7 +10,7 @@ import numpy as np
 from scipy import signal
 
 from ..Utility import interpolate_ibi
-from pyPhysio.BaseFeature import Feature
+from ..BaseFeature import Feature
 
 
 class CacheOnlyFeature(Feature):

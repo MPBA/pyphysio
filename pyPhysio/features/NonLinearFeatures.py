@@ -10,7 +10,7 @@ from scipy.stats.mstats import mquantiles
 import numpy as np
 
 from CacheOnlyFeatures import Diff, OrderedSubsets, PoincareSD
-from pyPhysio.BaseFeature import Feature
+from ..BaseFeature import Feature
 from TDFeatures import Mean, SD
 
 

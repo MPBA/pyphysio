@@ -1,10 +1,11 @@
+# coding=utf-8
 from __future__ import division
 
 __author__ = 'AleB'
 __all__ = ['PowerInBand', 'PeakInBand', 'PowerInBandNormal', 'LFHF', 'NormalizedHF', 'NormalizedLF']
 
 from numpy import argmax, sum
-from pyPhysio.BaseFeature import Feature
+from ..BaseFeature import Feature
 from CacheOnlyFeatures import PSDWelchLibCalc
 
 

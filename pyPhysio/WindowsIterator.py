@@ -1,6 +1,6 @@
 # coding=utf-8
 from BaseSegmentation import SegmentationIterator
-from . import PhUI
+from PhUI import PhUI
 
 
 __author__ = 'AleB'

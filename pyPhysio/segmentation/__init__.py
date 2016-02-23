@@ -1,10 +1,11 @@
+# coding=utf-8
 __author__ = 'AleB'
 
 import WindowsGenerators
 from WindowsGenerators import *
-from pyPhysio import WindowsIterator as Wm
+#from WindowsIterator import __all__ as wiall
 
 __all__ = WindowsGenerators.__all__
-__all__.extend(Wm.__all__)
+#__all__.extend(wiall)
 
-del Wm
+#del wiall

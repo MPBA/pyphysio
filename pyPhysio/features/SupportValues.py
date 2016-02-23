@@ -1,9 +1,9 @@
+# coding=utf-8
 from __future__ import division
 
 __author__ = 'AleB'
 
-from pyPhysio.Utility import template_interpolation
-from Extra.PyHRVSettings import MainSettings as Ps
+from ..Utility import template_interpolation
 
 
 class SupportValue(object):
@@ -181,7 +181,7 @@ class InterpolationSV(SupportValue):
     Support value: INTERPOLATION of the VALUES in (x O y ~ seconds O bpm) [O != 0]
     """
 
-    def __init__(self, sv_collection):
+    def __init__(self, sv_collection, interp_freq=20):
         SupportValue.__init__(self)
         self.sv_collection = sv_collection
         self._v = []
@@ -189,6 +189,7 @@ class InterpolationSV(SupportValue):
         self._ly = None
         self._fx = 0
         self._fy = None
+        self._interp_freq = interp_freq
 
     def add(self, new_value):
         SupportValue.add(self, None)
@@ -199,7 +200,7 @@ class InterpolationSV(SupportValue):
             self._fx = self._lx = 0.0  # NO TIME-TOLERANCE ERRORS!
         hr, t = template_interpolation([self._ly, y],
                                        [self._lx, x],
-                                       Ps.default_interpolation_freq)
+                                       self._interp_freq)
         print ([self._ly, y], [self._lx, x]), hr
         self._v.extend(hr)
         self._lx = x  # NO TIME-TOLERANCE ERRORS!

@@ -1,8 +1,9 @@
+# coding=utf-8
 __author__ = 'AleB'
 __all__ = ['TimeSegments', 'LabeledSegments', 'ExistingSegments']
 
-from .. import PhUI
-from ..SegmentationBase import SegmentsGenerator, Segment
+from ..BaseSegmentation import SegmentsGenerator, Segment
+from ..PhUI import PhUI
 
 
 class TimeSegments(SegmentsGenerator):
@@ -18,7 +19,7 @@ class TimeSegments(SegmentsGenerator):
     def next_segment(self):
         o = self._i
         self._i += self._step
-        return Segment(o, o + self._width, '')
+        return Segment(o, o + self._width, '', None)  # TODO: where does it come from?
 
     def init_segmentation(self):
         pass
@@ -69,9 +70,11 @@ class LabeledSegments(SegmentsGenerator):
 
     def next_segment(self):
         if self._i < len(self._labels) - 1:
-            w = Segment(self._labels.index[self._i], self._labels.index[self._i + 1], self._labels.values[self._i])
+            w = Segment(self._labels.index[self._i], self._labels.index[self._i + 1], self._labels.values[self._i],
+                        None)  # TODO: where does it come from?
         elif self._i < len(self._labels):
-            w = Segment(self._labels.index[self._i], None, self._labels.values[self._i])
+            w = Segment(self._labels.index[self._i], None, self._labels.values[self._i],
+                        None)  # TODO: where does it come from?
         else:
             raise StopIteration()
         self._i += 1

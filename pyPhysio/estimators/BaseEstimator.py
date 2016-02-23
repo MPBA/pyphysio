@@ -1,7 +1,7 @@
 # coding=utf-8
 __author__ = 'aleb'
 
-from pyPhysio.BaseAlgorithm import Algorithm
+from BaseAlgorithm import Algorithm
 
 
 class Estimator(Algorithm):

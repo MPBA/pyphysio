@@ -6,7 +6,7 @@ import numpy as np
 
 from ..BaseFilter import Filter
 
-from .. import PhUI
+from pyphysio.pyPhysio.PhUI import PhUI
 from ..features.TDFeatures import Mean, SD
 
 

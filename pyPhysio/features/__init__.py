@@ -31,5 +31,4 @@ def get_available_indexes():
 
 
 def get_available_online_indexes():
-    import pyPhysio
-    return filter(lambda x: hasattr(getattr(pyPhysio, x), "required_sv"), get_available_indexes())
+    return filter(lambda x: hasattr(x in vars(), "required_sv"), get_available_indexes())

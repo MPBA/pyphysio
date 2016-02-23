@@ -1,14 +1,14 @@
+# coding=utf-8
 __author__ = 'AleB'
 __all__ = ['SupportValuesCollection']
 
-from SupportValues import VectorSV
-import pyPhysio
+from ..features.SupportValues import VectorSV
 
 
 class SupportValuesCollection(object):
     """
-    This container-class helps the management of a set of support values required to calculate the needed features in the
-    on-line mode.
+    This container-class helps the management of a set of support values required to calculate the needed features
+    in the on-line mode.
     """
 
     def __init__(self, indexes, win_size=50):
@@ -21,7 +21,7 @@ class SupportValuesCollection(object):
         self._supp = None
         self._supp = {VectorSV: VectorSV(self._supp)}
         for i in indexes:
-            for r in getattr(pyPhysio, i).required_sv():
+            for r in vars()[i].required_sv():
                 if r not in self._supp:
                     self._supp[r] = r(self._supp)
 

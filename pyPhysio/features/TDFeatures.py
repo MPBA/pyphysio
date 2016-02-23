@@ -1,3 +1,4 @@
+# coding=utf-8
 from __future__ import division
 
 __author__ = 'AleB'
@@ -6,9 +7,9 @@ __all__ = ['Mean', 'Median', 'SD', 'DiffSD', 'NNx', 'PNNx', 'NN10', 'NN25', 'NN5
 
 import numpy as np
 
-from pyPhysio.BaseFeature import Feature
-from pyPhysio.features.SupportValues import SumSV, LengthSV, DiffsSV, MedianSV
-from pyPhysio.features.CacheOnlyFeatures import Diff, Histogram, HistogramMax
+from ..BaseFeature import Feature
+from ..features.SupportValues import SumSV, LengthSV, DiffsSV, MedianSV
+from ..features.CacheOnlyFeatures import Diff, Histogram, HistogramMax
 
 
 class TDFeature(Feature):
@@ -139,7 +140,7 @@ class NNx(TDFeature):
         return sum(1.0 for x in diff if x > th)
 
     @staticmethod
-    def get_used_params():
+    def get_used_params(**kwargs):
         return ['threshold']
 
     @staticmethod
