@@ -8,3 +8,4 @@ from filters import *
 from segmentation import *
 from BaseSegmentation import Segment
 from WindowsIterator import WindowsIterator
+from Signal import *

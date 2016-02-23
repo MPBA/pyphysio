@@ -13,6 +13,7 @@ class Signal(object):
         self._signal_type = signal_nature
         self._start_time = start_time
         self._metadata = meta if meta is not None else {}
+        self._data = None
 
     @property
     def signal_nature(self):
@@ -37,8 +38,19 @@ class Signal(object):
 
     @property
     def values(self):
+        return self.get_values()
+
+    @values.setter
+    def values(self, values):
+        self.set_values(values)
+
+    def get_values(self):
         assert self.__class__ != Signal.__class__, "Abstract"
-        return None
+        return self._data
+
+    def set_values(self, values):
+        assert self.__class__ != Signal.__class__, "Abstract"
+        self._data = array(values, order="C", ndmin=1)
 
     @property
     def times(self):
@@ -46,7 +58,7 @@ class Signal(object):
         return None
 
     def __repr__(self):
-        return "<signal: " + self.signal_nature + ", start_time: " + self.start_time + ">"
+        return "<signal: " + self.signal_nature + ", start_time: " + str(self.start_time) + ">"
 
     def getslice(self, f, l):
         assert self.__class__ != Signal.__class__, "Abstract"
@@ -56,21 +68,17 @@ class EvenlySignal(Signal):
     def __init__(self, values, sampling_freq, signal_nature, start_time, meta=None):
         Signal.__init__(self, signal_nature, start_time, meta)
         self._sampling_freq = sampling_freq
-        self._data = array(values, order="C", ndmin=1)
+        self.set_values(values)
 
     @property
     def duration(self):
         # Uses future division
         # TODO time_unit: time_unit vs frequency_unit
-        return len(self.values) / self.sampling_freq
+        return len(self.get_values()) / self.sampling_freq
 
     @property
     def sampling_freq(self):
         return self._sampling_freq
-
-    @property
-    def values(self):
-        return self._data
 
     @property
     def times(self):
@@ -80,7 +88,7 @@ class EvenlySignal(Signal):
         return arange(self.start_time, self.end_time, tmp_step)
 
     def __repr__(self):
-        return Signal.__repr__(self)[:-1] + " freq:" + self.sampling_freq + "Hz>" + self.values.__repr__()
+        return Signal.__repr__(self)[:-1] + " freq:" + str(self.sampling_freq) + "Hz>" + self.get_values().__repr__()
 
     # Works with timestamps
     def getslice(self, f, l):
@@ -91,9 +99,9 @@ class EvenlySignal(Signal):
         l = (l - self.start_time) / self.sampling_freq
         # clip the end
         # [:] has exclusive end
-        if l > len(self.values):
-            l = len(self.values)
-        return EvenlySignal(self.values[f:l], self.sampling_freq, self.signal_nature, f)
+        if l > len(self.get_values()):
+            l = len(self.get_values())
+        return EvenlySignal(self.get_values()[f:l], self.sampling_freq, self.signal_nature, f)
 
 
 class UnevenlyPointersSignal(Signal):
@@ -147,25 +155,21 @@ class UnevenlySignal(Signal):
         # TODO check: useful O(n) monotonicity check?
         assert not checks or all(times[i] <= times[i+1] for i in xrange(len(times)-1))
         self._times = array(times, dtype=self.NP_TIME_T, ndmin=1)
-        self._values = array(values, ndmin=1)
-
-    @property
-    def values(self):
-        return self._values
+        self.set_values(values)
 
     @property
     def times(self):
         return self._times
 
     def __repr__(self):
-        return Signal.__repr__(self) + self.values.__repr__()
+        return Signal.__repr__(self) + self.get_values.__repr__()
 
     # Works with timestamps
     def getslice(self, f, l):
         # find f & l indexes of indexes
         f = searchsorted(self._times, f)
         l = searchsorted(self._times, l)
-        return UnevenlySignal(self.times[f:l], self.values[f:l], self.signal_nature, checks=False)
+        return UnevenlySignal(self.times[f:l], self.get_values[f:l], self.signal_nature, checks=False)
 
 
 class EventsSignal(UnevenlySignal):
@@ -177,4 +181,4 @@ class EventsSignal(UnevenlySignal):
         # find f & l indexes of indexes
         f = searchsorted(self.times, f)
         l = searchsorted(self.times, l)
-        return EventsSignal(self.times[f:l], self.values[f:l], checks=False)
+        return EventsSignal(self.times[f:l], self.get_values[f:l], checks=False)

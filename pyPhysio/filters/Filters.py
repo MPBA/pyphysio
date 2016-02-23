@@ -1,13 +1,19 @@
 # coding=utf-8
+
 __author__ = 'AleB'
 __all__ = ["Filters"]
 
 import numpy as np
 
 from ..BaseFilter import Filter
-
-from pyphysio.pyPhysio.PhUI import PhUI
+from ..PhUI import PhUI
+from .. import Signal
 from ..features.TDFeatures import Mean, SD
+
+
+"""
+Filters are blocks that take as input a SIGNAL and gives as output another SIGNAL of the SAME NATURE.
+"""
 
 
 class Normalize(Filter):
@@ -26,25 +32,25 @@ class Normalize(Filter):
         Custom = 4
 
     @classmethod
-    def algorithm(cls, series, params):
+    def algorithm(cls, data, params):
         if 'norm_type' in params:
             if params['norm_type'] == Normalize.Types.Mean:
-                return Normalize._mean(series)
+                return Normalize._mean(data)
             elif params['norm_type'] == Normalize.Types.MeanSd:
-                return Normalize._mean_sd(series)
+                return Normalize._mean_sd(data)
             elif params['norm_type'] == Normalize.Types.Min:
-                return Normalize._min(series)
+                return Normalize._min(data)
             elif params['norm_type'] == Normalize.Types.MaxMin:
-                return Normalize._max_min(series)
+                return Normalize._max_min(data)
             elif params['norm_type'] == Normalize.Types.Custom:
                 assert 'norm_bias' in params, "For the custom normalization the parameter norm_bias is needed."
                 assert 'norm_factor' in params, "For the custom normalization the parameter norm_factor is needed."
-                return Normalize._custom(series, params['norm_bias'], params['norm_factor'])
+                return Normalize._custom(data, params['norm_bias'], params['norm_factor'])
             else:
                 PhUI.w("Unrecognized normalization type in 'norm_type'.")
         else:
             PhUI.i("Assuming Mean normalization.")
-        return Normalize._mean(series)
+        return Normalize._mean(data)
 
     @staticmethod
     def _mean(series):
@@ -55,7 +61,8 @@ class Normalize(Filter):
         @return: Filtered TimeSeries
         @rtype: TimeSeries
         """
-        return TimeSeries(series - Mean.get(series))
+        assert isinstance(series, Signal)
+        return series.val
 
     @staticmethod
     def _mean_sd(series):
@@ -156,74 +163,3 @@ class Outliers(Filter):
             else:
                 new_series = np.delete(new_series, index)
         return TimeSeries(new_series)
-
-
-class PeakDetection(Filter):
-    @classmethod
-    def algorithm(cls, data, params):
-        PhUI.a('pkd_delta' in params, "The parameter 'pkd_delta is needed in order to perform a peak detection.")
-        try:
-            return PeakDetection._peak_detection(data, params['pkd_delta'], params['pkd_times'])
-        except ValueError as e:
-            PhUI.a(False, e.message)
-
-    @staticmethod
-    def _peak_detection(data, delta, times=None):
-        """
-        Detects peaks in the signal assuming the specified delta.
-        @param data: Array of the values.
-        @param delta: Differential threshold.
-        @param times: Array of the times.
-        @return: Tuple of lists: (max_t, min_t, max_v, min_v)
-        @rtype: (list, list, list, list)
-        @raise ValueError:
-        """
-        max_i = []
-        min_i = []
-        max_v = []
-        min_v = []
-
-        if times is None:
-            times = np.arange(len(data))
-
-        data = np.asarray(data)
-
-        if len(data) != len(times):
-            raise ValueError('Input vectors v and x must have same length')
-
-        if not np.isscalar(delta):
-            raise ValueError('Input argument delta must be a scalar')
-
-        if delta <= 0:
-            raise ValueError('Input argument delta must be positive')
-
-        mn, mx = np.Inf, -np.Inf
-        mn_pos, mx_pos = np.NaN, np.NaN
-
-        look_for_max = True
-
-        for i in np.arange(len(data)):
-            this = data[i]
-            if this > mx:
-                mx = this
-                mx_pos = times[i]
-            if this < mn:
-                mn = this
-                mn_pos = times[i]
-
-            if look_for_max:
-                if this < mx - delta:
-                    max_v.append(mx)
-                    max_i.append(mx_pos)
-                    mn = this
-                    mn_pos = times[i]
-                    look_for_max = False
-            else:
-                if this > mn + delta:
-                    min_v.append(mn)
-                    min_i.append(mn_pos)
-                    mx = this
-                    mx_pos = times[i]
-                    look_for_max = True
-
-        return max_i, min_i, max_v, min_v
