@@ -1,5 +1,6 @@
 # coding=utf-8
 __author__ = 'AleB'
+from Signal import Signal
 
 
 class Algorithm(object):
@@ -52,7 +53,7 @@ class Algorithm(object):
         @type use_cache: bool
         @return: The value of the feature.
         """
-        assert type(data) is TimeSeries, "The data must be a pandas TimeSeries."
+        assert type(data) is Signal, "The data must be a Signal."
         if type(params) is dict:
             kwargs.update(params)
         if use_cache is True:

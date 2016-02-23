@@ -1,6 +1,5 @@
-import pyPhysio
-from pandas import DataFrame
-from SegmentationBase import SegmentationIterator
+# coding=utf-8
+from BaseSegmentation import SegmentationIterator
 from . import PhUI
 
 
@@ -40,9 +39,10 @@ class WindowsIterator(object):
         win_ds = win(self._data)
         for algorithm in self._feats:
             if isinstance(algorithm, str) or isinstance(algorithm, unicode):
-                p = getattr(pyPhysio, algorithm)
-                ret.append(p(win_ds))
-            elif type(algorithm) is type:
+                assert False, "The string addressing is temporarily not supported"
+                # p = getattr(dir(), algorithm) TODO not working
+                # ret.append(p(win_ds))
+            elif type(algorithm) is type:  # TODO bug: improve this check
                 p = algorithm(self._params)
                 ret.append(p(win_ds))
             else:
@@ -62,7 +62,8 @@ class WindowsIterator(object):
             if WindowsIterator.verbose:
                 PhUI.i("Processing " + str(w))
             self._map.append(self._comp_one(w))
-        df = DataFrame(self._map)
+        df = self._map
+        # TODO test: is this functional?
         df.columns = self.labels()
         return df
 
@@ -74,7 +75,8 @@ class WindowsIterator(object):
         ret = ['w_name', 'w_begin', 'w_end']
         for index in self._feats:
             if isinstance(index, str) | isinstance(index, unicode):
-                index = getattr(pyPhysio, index)
+                assert False, "The string addressing is temporarily not supported"
+                # index = getattr(pyPhysio, index)
             if isinstance(index, type):
                 ret.append(index.__name__)
             else:

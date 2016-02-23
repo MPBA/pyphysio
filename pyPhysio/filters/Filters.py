@@ -1,13 +1,14 @@
+# coding=utf-8
 __author__ = 'AleB'
 __all__ = ["Filters"]
 
 import numpy as np
 
-from pandas import TimeSeries
 from ..BaseFilter import Filter
 
-from pyPhysio import PhUI
-from pyPhysio.features.TDFeatures import Mean, SD
+from .. import PhUI
+from ..features.TDFeatures import Mean, SD
+
 
 class Normalize(Filter):
     """
@@ -108,10 +109,10 @@ class Normalize(Filter):
 class Outliers(Filter):
     # TODO: Only works with RR-series
 
-    def get_used_params(cls):
+    def get_used_params(self):
         return ['outliers_last', 'outliers_min', 'outliers_max', 'outliers_win_len']
 
-    def algorithm(cls, data, params):
+    def algorithm(self, data, params):
         return Outliers._filter_outliers(data, params['outliers_last'], params['outliers_min'], params['outliers_max'],
                                          params['outliers_win_len'])
 

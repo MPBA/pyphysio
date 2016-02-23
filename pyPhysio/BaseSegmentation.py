@@ -1,3 +1,4 @@
+# coding=utf-8
 __author__ = 'AleB'
 __all__ = ['SegmentationError', 'Segment', 'SegmentsGenerator']
 from copy import copy as cpy
@@ -29,15 +30,15 @@ class Segment(object):
 
     @property
     def start_time(self):
-        return None  # TODO: return it and add prop base signal
+        return self._signal.times[self.begin]  # TODO: add prop to base signal to avoid arange computation?
 
     @property
     def end_time(self):
-        return self._end
+        return self._signal.times[self.end] if self.end is not None else None
 
     @property
     def duration(self):
-        return self._end - self._begin
+        return (self.end_time - self.start_time) if self.end is not None else None
 
     @property
     def label(self):

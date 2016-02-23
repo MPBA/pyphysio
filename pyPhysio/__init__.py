@@ -6,7 +6,7 @@ __author__ = "AleB"
 from features import *
 from filters import *
 from segmentation import *
-from SegmentationBase import Segment
+from BaseSegmentation import Segment
 from WindowsIterator import WindowsIterator
 
 
@@ -128,7 +128,7 @@ def i_create_labels_series(times, labels, time_bias_in_seconds=0, time_scale_to_
 # TODO uses pandas
 def compute(data=None, features_list=None, params=None, windows=None):
     from pandas import Series
-    from pyPhysio.BaseFeature import Feature
+    from BaseFeature import Feature
 
     if data is None or not isinstance(data, Series):
         PhUI.o("The first parameter must be a pandas.Series containing the data to analyze.")

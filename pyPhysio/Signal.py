@@ -1,6 +1,6 @@
 # coding=utf-8
 from __future__ import division
-from numpy import array, float64, searchsorted
+from numpy import array, float64, searchsorted, arange
 
 __author__ = 'AleB'
 
@@ -8,11 +8,10 @@ __author__ = 'AleB'
 class Signal(object):
     NP_TIME_T = float64
 
-    def __init__(self, signal_nature, start_time, name=None, meta=None):
+    def __init__(self, signal_nature, start_time, meta=None):
         assert self.__class__ != Signal.__class__, "Abstract"
         self._signal_type = signal_nature
         self._start_time = start_time
-        self._name = name
         self._metadata = meta if meta is not None else {}
 
     @property
@@ -24,6 +23,10 @@ class Signal(object):
         return self._start_time
 
     @property
+    def end_time(self):
+        return self._start_time + self.duration
+
+    @property
     def duration(self):
         assert self.__class__ != Signal.__class__, "Abstract"
         return None
@@ -32,47 +35,68 @@ class Signal(object):
     def metadata(self):
         return self._metadata
 
+    @property
+    def values(self):
+        assert self.__class__ != Signal.__class__, "Abstract"
+        return None
+
+    @property
+    def times(self):
+        assert self.__class__ != Signal.__class__, "Abstract"
+        return None
+
     def __repr__(self):
-        return "<" + self.signal_nature + " signal from:" + self.start_time + ">"
+        return "<signal: " + self.signal_nature + ", start_time: " + self.start_time + ">"
 
     def getslice(self, f, l):
         assert self.__class__ != Signal.__class__, "Abstract"
 
 
-class KFreqSignal(Signal):
-    def __init__(self, p_object, sampling_freq, signal_nature, start_time):
-        Signal.__init__(self, signal_nature, start_time)
+class EvenlySignal(Signal):
+    def __init__(self, values, sampling_freq, signal_nature, start_time, meta=None):
+        Signal.__init__(self, signal_nature, start_time, meta)
         self._sampling_freq = sampling_freq
-        self._data = array(p_object, order="C", ndmin=1)
+        self._data = array(values, order="C", ndmin=1)
 
     @property
     def duration(self):
         # Uses future division
-        return self.data / self.sampling_freq
+        # TODO time_unit: time_unit vs frequency_unit
+        return len(self.values) / self.sampling_freq
 
     @property
     def sampling_freq(self):
         return self._sampling_freq
 
     @property
-    def data(self):
+    def values(self):
         return self._data
 
-    def __repr__(self):
-        return Signal.__repr__(self)[:-1] + " freq:" + self.sampling_freq + "Hz>" + self.data.__repr__()
+    @property
+    def times(self):
+        # Using future division
+        # TODO time_unit: time_unit vs frequency_unit
+        tmp_step = 1. / self.sampling_freq
+        return arange(self.start_time, self.end_time, tmp_step)
 
+    def __repr__(self):
+        return Signal.__repr__(self)[:-1] + " freq:" + self.sampling_freq + "Hz>" + self.values.__repr__()
+
+    # Works with timestamps
     def getslice(self, f, l):
+        # Using future division
+        # TODO time_unit: time_unit vs frequency_unit
         # find base_signal's indexes
         f = (f - self.start_time) / self.sampling_freq
         l = (l - self.start_time) / self.sampling_freq
         # clip the end
         # [:] has exclusive end
-        if l > len(self.data):
-            l = len(self.data)
-        return KFreqSignal(self.data[f:l], self.sampling_freq, self.signal_nature, f)
+        if l > len(self.values):
+            l = len(self.values)
+        return EvenlySignal(self.values[f:l], self.sampling_freq, self.signal_nature, f)
 
 
-class IntervalSeries(Signal):
+class UnevenlyPointersSignal(Signal):
     def __init__(self, intervals, indexes, base_signal):
         Signal.__init__(self, None, None)
         self._intervals = array(intervals, dtype=self.NP_TIME_T, ndmin=1)
@@ -114,32 +138,43 @@ class IntervalSeries(Signal):
         # find f & l indexes of indexes
         f = searchsorted(self.indexes, f)
         l = searchsorted(self.indexes, l)
-        return IntervalSeries(self.times[f:l], self.indexes[f:l], self.base_signal)
+        return UnevenlySignal(self.times[f:l], self.indexes[f:l], self.base_signal)
 
 
-class EventsSignal(Signal):
-    def __init__(self, times, values):
-        Signal.__init__(self, "events", times[0])
-        self._times = array(times, dtype=Signal.NP_TIME_T, ndmin=1)
+class UnevenlySignal(Signal):
+    def __init__(self, times, values, signal_nature, meta=None, checks=True):
+        Signal.__init__(self, signal_nature, times[0], meta)
+        # TODO check: useful O(n) monotonicity check?
+        assert not checks or all(times[i] <= times[i+1] for i in xrange(len(times)-1))
+        self._times = array(times, dtype=self.NP_TIME_T, ndmin=1)
         self._values = array(values, ndmin=1)
-
-    @property
-    def duration(self):
-        return self.times[-1]
-
-    @property
-    def times(self):
-        return self._times
 
     @property
     def values(self):
         return self._values
 
+    @property
+    def times(self):
+        return self._times
+
     def __repr__(self):
         return Signal.__repr__(self) + self.values.__repr__()
 
+    # Works with timestamps
+    def getslice(self, f, l):
+        # find f & l indexes of indexes
+        f = searchsorted(self._times, f)
+        l = searchsorted(self._times, l)
+        return UnevenlySignal(self.times[f:l], self.values[f:l], self.signal_nature, checks=False)
+
+
+class EventsSignal(UnevenlySignal):
+    def __init__(self, times, values, meta=None, checks=True):
+        UnevenlySignal.__init__(self, times, values, "events", meta, checks)
+
+    # Works with timestamps
     def getslice(self, f, l):
         # find f & l indexes of indexes
         f = searchsorted(self.times, f)
         l = searchsorted(self.times, l)
-        return EventsSignal(self.times[f:l], self.values[f:l])
+        return EventsSignal(self.times[f:l], self.values[f:l], checks=False)
