@@ -19,7 +19,7 @@ class Algorithm(object):
         @type kwargs: dict
         """
         assert self.__class__ != Algorithm, "This class is abstract and must be extended to be used."
-        assert params is None or type(params) is dict
+        assert params is None or type(params) is dict, "The syntax is algorithm([params])(signal)"
         assert type(_kwargs) is dict or _kwargs is None
         if params is None:
             self._params = {}
@@ -53,7 +53,8 @@ class Algorithm(object):
         @type use_cache: bool
         @return: The value of the feature.
         """
-        assert type(data) is Signal, "The data must be a Signal."
+        assert isinstance(data, Signal), "The data must be a Signal."
+        # TODO HOT: temporary workaround to give directly the data to the algorithms
         if type(params) is dict:
             kwargs.update(params)
         if use_cache is True:
@@ -115,7 +116,8 @@ class Cache(object):
         """
         Clears the cache and frees memory (GC?)
         """
-        setattr(self, "_cache", {})
+        self._cache = {}
+        # setattr(self, "_cache", {})
 
     @staticmethod
     def cache_check(self):

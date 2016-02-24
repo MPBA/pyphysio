@@ -9,7 +9,8 @@ from scipy.spatial.distance import cdist, pdist
 from scipy.stats.mstats import mquantiles
 import numpy as np
 
-from CacheOnlyFeatures import Diff, OrderedSubsets, PoincareSD
+from CacheOnlyFeatures import OrderedSubsets, PoincareSD
+from pyphysio.pyPhysio.filters.Filters import Diff
 from ..BaseFeature import Feature
 from TDFeatures import Mean, SD
 

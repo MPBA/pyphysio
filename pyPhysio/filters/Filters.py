@@ -1,5 +1,6 @@
 # coding=utf-8
 from pyphysio.pyPhysio.BaseAlgorithm import Cache
+from pyphysio.pyPhysio.features.CacheOnlyFeatures import CacheOnlyFeature
 
 __author__ = 'AleB'
 __all__ = ["Filters"]
@@ -110,3 +111,17 @@ class Normalize(Filter):
         series.set_values((series.get_values() - bias) / normalization_range)
         Cache.cache_clear(series)
         return series
+
+
+class Diff(CacheOnlyFeature):
+    # TODO filter?
+    @classmethod
+    def algorithm(cls, data, params):
+        """
+        Calculates the differences between consecutive values
+        @return: Differences
+        @rtype: array
+        """
+        data.set_values(np.diff(data.get_values()))
+        Cache.cache_clear(data)
+        return data

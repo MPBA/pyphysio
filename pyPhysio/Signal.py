@@ -65,7 +65,7 @@ class Signal(object):
 
 
 class EvenlySignal(Signal):
-    def __init__(self, values, sampling_freq, signal_nature, start_time, meta=None):
+    def __init__(self, values, sampling_freq, signal_nature="", start_time=0, meta=None):
         Signal.__init__(self, signal_nature, start_time, meta)
         self._sampling_freq = sampling_freq
         self.set_values(values)
@@ -88,7 +88,7 @@ class EvenlySignal(Signal):
         return arange(self.start_time, self.end_time, tmp_step)
 
     def __repr__(self):
-        return Signal.__repr__(self)[:-1] + " freq:" + str(self.sampling_freq) + "Hz>" + self.get_values().__repr__()
+        return Signal.__repr__(self)[:-1] + " freq:" + str(self.sampling_freq) + "Hz>\n" + self.get_values().__repr__()
 
     # Works with timestamps
     def getslice(self, f, l):
@@ -162,7 +162,7 @@ class UnevenlySignal(Signal):
         return self._times
 
     def __repr__(self):
-        return Signal.__repr__(self) + self.get_values.__repr__()
+        return Signal.__repr__(self) + "\n" + self.get_values.__repr__()
 
     # Works with timestamps
     def getslice(self, f, l):

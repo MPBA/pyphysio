@@ -253,17 +253,6 @@ class HistogramMax(CacheOnlyFeature):
         return Histogram.get_used_params()
 
 
-class Diff(CacheOnlyFeature):
-    @classmethod
-    def algorithm(cls, data, params):
-        """
-        Calculates the differences between consecutive values
-        @return: Differences
-        @rtype: array
-        """
-        return np.diff(np.array(data))
-
-
 class OrderedSubsets(CacheOnlyFeature):
     @classmethod
     def algorithm(cls, data, params):

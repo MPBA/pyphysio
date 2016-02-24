@@ -9,7 +9,8 @@ import numpy as np
 
 from ..BaseFeature import Feature
 from ..features.SupportValues import SumSV, LengthSV, DiffsSV, MedianSV
-from ..features.CacheOnlyFeatures import Diff, Histogram, HistogramMax
+from ..features.CacheOnlyFeatures import Histogram, HistogramMax
+from pyphysio.pyPhysio.filters.Filters import Diff
 
 
 class TDFeature(Feature):
@@ -103,7 +104,7 @@ class PNNx(TDFeature):
         else:
             px = params.copy()
             px.update({'threshold': cls.threshold()})
-        return NNx.algorithm(data, px) / float(len(data))
+        return NNx.algorithm(data, px) / float(len(data.get_values()))
 
     @staticmethod
     def threshold():
@@ -137,7 +138,7 @@ class NNx(TDFeature):
         else:
             th = cls.threshold()
         diff = Diff.get(data)
-        return sum(1.0 for x in diff if x > th)
+        return sum(1.0 for x in diff.get_values() if x > th)
 
     @staticmethod
     def get_used_params(**kwargs):
