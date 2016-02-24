@@ -43,7 +43,7 @@ class FFTCalc(CacheOnlyFeature):
 
         spec_tmp = np.absolute(np.fft.fft(frame)) ** 2  # FFT
         powers = spec_tmp[0:(np.ceil(len(spec_tmp) / 2))]  # Only positive half of spectrum
-        bands = np.linspace(start=0, stop=interp_freq / 2, num=len(powers), endpoint=True)  # frequencies vector
+        bands = np.linspace(start=0, stop=interp_freq / 2, num=len(powers))  # frequencies vector
         return bands, powers
 
     @classmethod
@@ -72,7 +72,7 @@ class PSDLombscargleCalc(CacheOnlyFeature):
         #     all but the last of num + 1 evenly spaced samples, so that stop is excluded. Note that the step size
         #     changes when endpoint is False.
 
-        bands = np.linspace(start=0, stop=params['lombscargle_stop'] / 2, num=max(128, len(data)), endpoint=True)
+        bands = np.linspace(start=0, stop=params['lombscargle_stop'] / 2, num=max(128, len(data)))
         bands = bands[1:]
         powers = np.sqrt(4 * (signal.lombscargle(t, data, bands) / len(data)))
 
@@ -103,7 +103,7 @@ class PSDFFTCalc(CacheOnlyFeature):
         spec_tmp = np.absolute(np.fft.fft(frame)) ** 2  # FFT
         powers = spec_tmp[0:(np.ceil(len(spec_tmp) / 2))]
 
-        bands = np.linspace(start=0, stop=params['interp_freq'] / 2, num=len(powers), endpoint=True)
+        bands = np.linspace(start=0, stop=params['interp_freq'] / 2, num=len(powers))
 
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 
@@ -127,7 +127,7 @@ class PSDWelchLinspaceCalc(CacheOnlyFeature):
         if params['remove_mean']:
             data_interp = data_interp - np.mean(data_interp)
         bands_w, powers = signal.welch(data_interp, params['interp_freq'], nfft=max(128, len(data_interp)))
-        bands = np.linspace(start=0, stop=params['interp_freq'] / 2, num=len(powers), endpoint=True)
+        bands = np.linspace(start=0, stop=params['interp_freq'] / 2, num=len(powers))
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 
     @classmethod
@@ -173,7 +173,7 @@ class PSDAr1Calc(CacheOnlyFeature):
         p = spectrum.Periodogram(data_interp, sampling=params['interp_freq'], NFFT=max(128, len(data_interp)))
         p()
         powers = p.get_converted_psd('onesided')
-        bands = np.linspace(start=0, stop=params['interp_freq'] / 2, num=len(powers), endpoint=True)
+        bands = np.linspace(start=0, stop=params['interp_freq'] / 2, num=len(powers))
 
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 
@@ -202,7 +202,7 @@ class PSDAr2Calc(CacheOnlyFeature):
         orders = range(1, params['ar_2_max_order'] + 1)
         for order in orders:
             try:
-                ar, p, k = spectrum.aryule(data_interp, order=order, norm='biased')
+                ar, p, k = spectrum.aryule(data_interp, order=order)
             except AssertionError:
                 ar = 1
                 print("Error in ar_2 psd ayrule, assumed ar=1")
@@ -211,7 +211,7 @@ class PSDAr2Calc(CacheOnlyFeature):
         else:
             print("Error in ar_2 psd, orders=0, empty powers")
 
-        bands = np.linspace(start=0, stop=params['interp_freq'] / 2, num=len(powers), endpoint=True)
+        bands = np.linspace(start=0, stop=params['interp_freq'] / 2, num=len(powers))
 
         return bands, powers / np.max(powers), sum(powers) / len(powers)
 

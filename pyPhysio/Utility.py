@@ -73,6 +73,6 @@ def template_interpolation(x, t, step, template=None):
 
     t_output = np.arange(t[0], t[-1], step)
 
-    f = interpolate.interp1d(t_out, x_out, 'linear')
+    f = interpolate.interp1d(t_out, x_out)
     x_output = f(t_output)
     return x_output, t_output

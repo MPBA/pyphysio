@@ -1,5 +1,7 @@
+# coding=utf-8
 import numpy as np
-from pyphysio.pyPhysio.PhUI import PhUI
+from ..BaseEstimator import Estimator
+from ..PhUI import PhUI
 
 __author__ = 'aleb'
 

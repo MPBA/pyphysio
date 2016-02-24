@@ -208,7 +208,7 @@ class CorrelationDim(NonLinearFeature):
             c = np.zeros(len(r_vector))
             jj = 0
             n = np.zeros(num_elem)
-            dj = cdist(uj, uj, 'euclidean')
+            dj = cdist(uj, uj)
             for r in r_vector:
                 for i in xrange(num_elem):
                     vector = dj[i]
