@@ -1,31 +1,48 @@
 # coding=utf-8
 from __future__ import division
-from numpy import array, float64, searchsorted, arange
+from numpy import ndarray, float64, searchsorted, arange, asarray
 
 __author__ = 'AleB'
 
 
-class Signal(object):
+class Signal(ndarray):
     NP_TIME_T = float64
 
-    def __init__(self, signal_nature, start_time, meta=None):
-        assert self.__class__ != Signal.__class__, "Abstract"
-        self._signal_type = signal_nature
-        self._start_time = start_time
-        self._metadata = meta if meta is not None else {}
-        self._data = None
+    def __new__(cls, input_array, signal_nature="", start_time=0, meta=None):
+        # noinspection PyNoneFunctionAssignment
+        obj = asarray(input_array).view(cls)
+        obj._pyphysio = {
+            "signal_nature": signal_nature,
+            "start_time": start_time,
+            "metadata": meta if meta is not None else {}
+        }
+        return obj
+
+    def __array_finalize__(self, obj):
+        # __new__ called if obj is None
+        if obj is not None:
+            self._pyphysio = getattr(obj, '_pyphysio', None)
+
+    def __array_wrap__(self, out_arr, context=None):
+        # Just call the parent's
+        # noinspection PyArgumentList
+        return ndarray.__array_wrap__(self, out_arr, context)
+
+    @property
+    def ph(self):
+        return self._pyphysio
 
     @property
     def signal_nature(self):
-        return self._signal_type
+        return self.ph['signal_nature']
 
     @property
     def start_time(self):
-        return self._start_time
+        return self.ph['start_time']
 
     @property
-    def end_time(self):
-        return self._start_time + self.duration
+    def metadata(self):
+        return self.ph["metadata"]
 
     @property
     def duration(self):
@@ -33,27 +50,10 @@ class Signal(object):
         return None
 
     @property
-    def metadata(self):
-        return self._metadata
+    def end_time(self):
+        return self.start_time + self.duration
 
-    @property
-    def values(self):
-        return self.get_values()
-
-    @values.setter
-    def values(self, values):
-        self.set_values(values)
-
-    def get_values(self):
-        assert self.__class__ != Signal.__class__, "Abstract"
-        return self._data
-
-    def set_values(self, values):
-        assert self.__class__ != Signal.__class__, "Abstract"
-        self._data = array(values, order="C", ndmin=1)
-
-    @property
-    def times(self):
+    def get_times(self):
         assert self.__class__ != Signal.__class__, "Abstract"
         return None
 
@@ -65,23 +65,22 @@ class Signal(object):
 
 
 class EvenlySignal(Signal):
-    def __init__(self, values, sampling_freq, signal_nature="", start_time=0, meta=None):
-        Signal.__init__(self, signal_nature, start_time, meta)
-        self._sampling_freq = sampling_freq
-        self.set_values(values)
+    def __new__(cls, input_array, sampling_freq, signal_nature="", start_time=0, meta=None):
+        obj = Signal(input_array, signal_nature, start_time, meta).view(cls)
+        obj.ph["sampling_freq"] = sampling_freq
+        return obj
 
     @property
     def duration(self):
         # Uses future division
         # TODO time_unit: time_unit vs frequency_unit
-        return len(self.get_values()) / self.sampling_freq
+        return len(self) / self.sampling_freq
 
     @property
     def sampling_freq(self):
-        return self._sampling_freq
+        return self.ph["sampling_freq"]
 
-    @property
-    def times(self):
+    def get_times(self):
         # Using future division
         # TODO time_unit: time_unit vs frequency_unit
         tmp_step = 1. / self.sampling_freq
@@ -102,6 +101,44 @@ class EvenlySignal(Signal):
         if l > len(self.get_values()):
             l = len(self.get_values())
         return EvenlySignal(self.get_values()[f:l], self.sampling_freq, self.signal_nature, f)
+
+
+class UnevenlySignal(Signal):
+    def __new__(cls, input_array, times_array, signal_nature="", start_time=0, meta=None, check=True):
+        # TODO check: useful O(n) monotonicity check?
+        assert not check or len(input_array) == len(times_array),\
+            "Length mismatch (%d vs. %d)" % (len(input_array), len(times_array))
+        assert not all(times_array[i] <= times_array[i+1] for i in xrange(len(times_array)-1)),\
+            "Time is not monotonic"
+        obj = Signal(input_array, signal_nature, start_time, meta).view(cls)
+        obj.ph["times"] = times_array
+        return obj
+
+    def get_times(self):
+        return self.ph["times"]
+
+    def __repr__(self):
+        return Signal.__repr__(self)\
+            + "\ntimes-" + self.get_times().__repr__() + "\nvalues-" + self.get_values().__repr__()
+
+    # Works with timestamps
+    def getslice(self, f, l):
+        # find f & l indexes of indexes
+        f = searchsorted(self._times, f)
+        l = searchsorted(self._times, l)
+        return UnevenlySignal(self.get_values[f:l], self.times[f:l], self.signal_nature, check=False)
+
+
+class EventsSignal(UnevenlySignal):
+    def __new__(cls, events, times, meta=None, checks=True):
+        return UnevenlySignal(events, times, "events", meta, checks)
+
+    # Works with timestamps
+    def getslice(self, f, l):
+        # find f & l indexes of indexes
+        f = searchsorted(self.times, f)
+        l = searchsorted(self.times, l)
+        return EventsSignal(self.times[f:l], self.get_values[f:l], checks=False)
 
 
 class UnevenlyPointersSignal(Signal):
@@ -147,38 +184,3 @@ class UnevenlyPointersSignal(Signal):
         f = searchsorted(self.indexes, f)
         l = searchsorted(self.indexes, l)
         return UnevenlySignal(self.times[f:l], self.indexes[f:l], self.base_signal)
-
-
-class UnevenlySignal(Signal):
-    def __init__(self, times, values, signal_nature, meta=None, checks=True):
-        Signal.__init__(self, signal_nature, times[0], meta)
-        # TODO check: useful O(n) monotonicity check?
-        assert not checks or all(times[i] <= times[i+1] for i in xrange(len(times)-1))
-        self._times = array(times, dtype=self.NP_TIME_T, ndmin=1)
-        self.set_values(values)
-
-    @property
-    def times(self):
-        return self._times
-
-    def __repr__(self):
-        return Signal.__repr__(self) + "\n" + self.get_values.__repr__()
-
-    # Works with timestamps
-    def getslice(self, f, l):
-        # find f & l indexes of indexes
-        f = searchsorted(self._times, f)
-        l = searchsorted(self._times, l)
-        return UnevenlySignal(self.times[f:l], self.get_values[f:l], self.signal_nature, checks=False)
-
-
-class EventsSignal(UnevenlySignal):
-    def __init__(self, times, values, meta=None, checks=True):
-        UnevenlySignal.__init__(self, times, values, "events", meta, checks)
-
-    # Works with timestamps
-    def getslice(self, f, l):
-        # find f & l indexes of indexes
-        f = searchsorted(self.times, f)
-        l = searchsorted(self.times, l)
-        return EventsSignal(self.times[f:l], self.get_values[f:l], checks=False)

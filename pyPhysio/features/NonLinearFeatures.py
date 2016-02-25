@@ -2,20 +2,18 @@
 from __future__ import division
 
 __author__ = 'AleB'
-__all__ = ['ApproxEntropy', 'CorrelationDim', 'Fisher', 'FractalDimension', 'DFALongTerm', 'DFAShortTerm', 'Hurst',
-           'PetrosianFracDim', 'PoinEll', 'PoinSD1', 'PoinSD12', 'PoinSD2', 'SVDEntropy', 'SampleEntropy']
 
-from scipy.spatial.distance import cdist, pdist
-from scipy.stats.mstats import mquantiles
-import numpy as np
+from scipy.spatial.distance import cdist as _cd, pdist as _pd
+from scipy.stats.mstats import mquantiles as _mq
+import numpy as _np
 
 from CacheOnlyFeatures import OrderedSubsets, PoincareSD
-from pyphysio.pyPhysio.filters.Filters import Diff
-from ..BaseFeature import Feature
-from TDFeatures import Mean, SD
+from ..filters.Filters import Diff as _Diff
+from ..BaseFeature import Feature as _Feature
+from TDFeatures import Mean as _Mean, SD as _SD
 
 
-class NonLinearFeature(Feature):
+class NonLinearFeature(_Feature):
     """
     This is the base class for the Non Linear Features.
     """
@@ -44,7 +42,7 @@ class ApproxEntropy(NonLinearFeature):
     def algorithm(cls, data, params):
         assert 'approx_entropy_r' in params, "This feature needs the parameter 'approx_entropy_r'."
         if len(data) < 3:
-            return np.nan
+            return _np.nan
         else:
             r = params['approx_entropy_r']
             uj_m = OrderedSubsets.get(data, subset_size=2)
@@ -52,22 +50,22 @@ class ApproxEntropy(NonLinearFeature):
             card_elem_m = uj_m.shape[0]
             card_elem_m1 = uj_m1.shape[0]
 
-            r = r * np.std(data)
-            d_m = cdist(uj_m, uj_m, 'che'+'bys'+'hev')
-            d_m1 = cdist(uj_m1, uj_m1, 'che'+'bys'+'hev')
+            r = r * _np.std(data)
+            d_m = _cd(uj_m, uj_m, 'chebyshev')
+            d_m1 = _cd(uj_m1, uj_m1, 'chebyshev')
 
-            cmr_m_ap_en = np.zeros(card_elem_m)
+            cmr_m_ap_en = _np.zeros(card_elem_m)
             for i in xrange(card_elem_m):
                 vector = d_m[i]
                 cmr_m_ap_en[i] = float(sum(1 for i in vector if i <= r)) / card_elem_m
 
-            cmr_m1_ap_en = np.zeros(card_elem_m1)
+            cmr_m1_ap_en = _np.zeros(card_elem_m1)
             for i in xrange(card_elem_m1):
                 vector = d_m1[i]
                 cmr_m1_ap_en[i] = float(sum(1 for i in vector if i <= r)) / card_elem_m1
 
-            phi_m = np.sum(np.log(cmr_m_ap_en)) / card_elem_m
-            phi_m1 = np.sum(np.log(cmr_m1_ap_en)) / card_elem_m1
+            phi_m = _np.sum(_np.log(cmr_m_ap_en)) / card_elem_m
+            phi_m1 = _np.sum(_np.log(cmr_m1_ap_en)) / card_elem_m1
 
             return phi_m - phi_m1
 
@@ -84,7 +82,7 @@ class SampleEntropy(NonLinearFeature):
     def algorithm(cls, data, params):
         assert 'sample_entropy_r' in params, "This feature needs the parameter 'sample_entropy_r'."
         if len(data) < 4:
-            return np.nan
+            return _np.nan
         else:
             r = params['sample_entropy_r']
             uj_m = OrderedSubsets.get(data, subset_size=2)
@@ -93,24 +91,24 @@ class SampleEntropy(NonLinearFeature):
             num_elem_m = uj_m.shape[0]
             num_elem_m1 = uj_m1.shape[0]
 
-            r = r * SD.get(data)
-            d_m = cdist(uj_m, uj_m, 'che'+'bys'+'hev')
-            d_m1 = cdist(uj_m1, uj_m1, 'che'+'bys'+'hev')
+            r = r * _SD.get(data)
+            d_m = _cd(uj_m, uj_m, 'che'+'bys'+'hev')
+            d_m1 = _cd(uj_m1, uj_m1, 'che'+'bys'+'hev')
 
-            cmr_m_sa_mp_en = np.zeros(num_elem_m)
+            cmr_m_sa_mp_en = _np.zeros(num_elem_m)
             for i in xrange(num_elem_m):
                 vector = d_m[i]
                 cmr_m_sa_mp_en[i] = (sum(1 for i in vector if i <= r) - 1) / (num_elem_m - 1)
 
-            cmr_m1_sa_mp_en = np.zeros(num_elem_m1)
+            cmr_m1_sa_mp_en = _np.zeros(num_elem_m1)
             for i in xrange(num_elem_m1):
                 vector = d_m1[i]
                 cmr_m1_sa_mp_en[i] = (sum(1 for i in vector if i <= r) - 1) / (num_elem_m1 - 1)
 
-            cm = np.sum(cmr_m_sa_mp_en) / num_elem_m
-            cm1 = np.sum(cmr_m1_sa_mp_en) / num_elem_m1
+            cm = _np.sum(cmr_m_sa_mp_en) / num_elem_m
+            cm1 = _np.sum(cmr_m1_sa_mp_en) / num_elem_m1
 
-            return np.log(cm / cm1)
+            return _np.log(cm / cm1)
 
 
 class FractalDimension(NonLinearFeature):
@@ -126,23 +124,23 @@ class FractalDimension(NonLinearFeature):
         assert 'cra' in params, "This feature needs the parameter 'cra'."
         assert 'crb' in params, "This feature needs the parameter 'crb'."
         if len(data) < 3:
-            return np.nan
+            return _np.nan
         else:
             uj_m = OrderedSubsets.get(data, subset_size=2)
             cra = params['cra']
             crb = params['crb']
-            mutual_distance = pdist(uj_m, 'che'+'bys'+'hev')
+            mutual_distance = _pd(uj_m, 'che'+'bys'+'hev')
 
             num_elem = len(mutual_distance)
 
-            rr = mquantiles(mutual_distance, prob=[cra, crb])
+            rr = _mq(mutual_distance, prob=[cra, crb])
             ra = rr[0]
             rb = rr[1]
 
             cmr_a = (sum(1 for i in mutual_distance if i <= ra)) / num_elem
             cmr_b = (sum(1 for i in mutual_distance if i <= rb)) / num_elem
 
-            return (np.log(cmr_b) - np.log(cmr_a)) / (np.log(rb) - np.log(ra))
+            return (_np.log(cmr_b) - _np.log(cmr_a)) / (_np.log(rb) - _np.log(ra))
 
 
 class SVDEntropy(NonLinearFeature):
@@ -156,12 +154,12 @@ class SVDEntropy(NonLinearFeature):
     @classmethod
     def algorithm(cls, data, params):
         if len(data) < 2:
-            return np.nan
+            return _np.nan
         else:
             uj_m = OrderedSubsets.get(data, subset_size=2)
-            w = np.linalg.svd(uj_m, compute_uv=False)
+            w = _np.linalg.svd(uj_m, compute_uv=False)
             w /= sum(w)
-            return -1 * sum(w * np.log(w))
+            return -1 * sum(w * _np.log(w))
 
 
 class Fisher(NonLinearFeature):
@@ -175,10 +173,10 @@ class Fisher(NonLinearFeature):
     @classmethod
     def algorithm(cls, data, params):
         if len(data) < 2:
-            return np.nan
+            return _np.nan
         else:
             uj_m = OrderedSubsets.get(data, subset_size=2)
-            w = np.linalg.svd(uj_m, compute_uv=False)
+            w = _np.linalg.svd(uj_m, compute_uv=False)
             w /= sum(w)
             fi = 0
             for i in xrange(0, len(w) - 1):  # from Test1 to M
@@ -199,26 +197,26 @@ class CorrelationDim(NonLinearFeature):
     def algorithm(cls, data, params):
         assert 'corr_dim_len' in params, "This feature needs the parameter 'corr_dim_len'."
         if len(data) < params['corr_dim_len']:
-            return np.nan
+            return _np.nan
         else:
             rr = data / 1000  # rr in seconds TODO: wut? semplificabile??
             # Check also the other features to work with seconds!
             uj = OrderedSubsets.get(rr, dict(subset_size=params['corr_dim_len']))
             num_elem = uj.shape[0]
-            r_vector = np.arange(0.3, 0.46, 0.02)  # settings
-            c = np.zeros(len(r_vector))
+            r_vector = _np.arange(0.3, 0.46, 0.02)  # settings
+            c = _np.zeros(len(r_vector))
             jj = 0
-            n = np.zeros(num_elem)
-            dj = cdist(uj, uj)
+            n = _np.zeros(num_elem)
+            dj = _cd(uj, uj)
             for r in r_vector:
                 for i in xrange(num_elem):
                     vector = dj[i]
                     n[i] = float(sum(1 for i in vector if i <= r)) / num_elem
-                c[jj] = np.sum(n) / num_elem
+                c[jj] = _np.sum(n) / num_elem
                 jj += 1
 
-            log_c = np.log(c)
-            log_r = np.log(r_vector)
+            log_c = _np.log(c)
+            log_r = _np.log(r_vector)
 
             return (log_c[-1] - log_c[0]) / (log_r[-1] - log_r[0])
 
@@ -276,7 +274,7 @@ class PoinEll(NonLinearFeature):
     @classmethod
     def algorithm(cls, data, params):
         sd1, sd2 = PoincareSD.get(data)
-        return sd1 * sd2 * np.pi
+        return sd1 * sd2 * _np.pi
 
 
 class Hurst(NonLinearFeature):
@@ -291,23 +289,23 @@ class Hurst(NonLinearFeature):
     def algorithm(cls, data, params):
         n = len(data)
         if n < 2:
-            return np.nan
+            return _np.nan
         else:
-            t = np.arange(1.0, n + 1)
-            y = np.cumsum(data)
-            ave_t = np.array(y / t)
+            t = _np.arange(1.0, n + 1)
+            y = _np.cumsum(data)
+            ave_t = _np.array(y / t)
 
-            s_t = np.zeros(n)
-            r_t = np.zeros(n)
+            s_t = _np.zeros(n)
+            r_t = _np.zeros(n)
             for i in xrange(n):
-                s_t[i] = np.std(data[:i + 1])
+                s_t[i] = _np.std(data[:i + 1])
                 x_t = y - t * ave_t[i]
-                r_t[i] = np.max(x_t[:i + 1]) - np.min(x_t[:i + 1])
+                r_t[i] = _np.max(x_t[:i + 1]) - _np.min(x_t[:i + 1])
 
             r_s = r_t / s_t
-            r_s = np.log(r_s)
-            n = np.log(t).reshape(n, 1)
-            h = np.linalg.lstsq(n[1:], r_s[1:])[0]
+            r_s = _np.log(r_s)
+            n = _np.log(t).reshape(n, 1)
+            h = _np.linalg.lstsq(n[1:], r_s[1:])[0]
             return h[0]
 
 
@@ -321,13 +319,13 @@ class PetrosianFracDim(NonLinearFeature):
 
     @classmethod
     def algorithm(cls, data, params):
-        d = Diff.get(data)
+        d = _Diff.get(data)
         n_delta = 0  # number of sign changes in derivative of the signal
         for i in xrange(1, len(d)):
             if d[i] * d[i - 1] < 0:
                 n_delta += 1
         n = len(data)
-        return np.float(np.log10(n) / (np.log10(n) + np.log10(n / n + 0.4 * n_delta)))
+        return _np.float(_np.log10(n) / (_np.log10(n) + _np.log10(n / n + 0.4 * n_delta)))
 
 
 class DFAShortTerm(NonLinearFeature):
@@ -343,24 +341,24 @@ class DFAShortTerm(NonLinearFeature):
         # calculates De-trended Fluctuation Analysis: alpha1 (short term) component
         x = data
         if len(x) < 16:
-            return np.nan
+            return _np.nan
         else:
-            ave = Mean.get(x)
-            y = np.cumsum(x)
+            ave = _Mean.get(x)
+            y = _np.cumsum(x)
             y -= ave
-            l = np.arange(4, 17, 4)
-            f = np.zeros(len(l))  # f(n) of different given box length n
+            l = _np.arange(4, 17, 4)
+            f = _np.zeros(len(l))  # f(n) of different given box length n
             for i in xrange(0, len(l)):
                 n = int(l[i])  # for each box length l[i]
                 for j in xrange(0, len(x), n):  # for each box
                     if j + n < len(x):
                         c = range(j, j + n)
-                        c = np.vstack([c, np.ones(n)]).T  # coordinates of time in the box
+                        c = _np.vstack([c, _np.ones(n)]).T  # coordinates of time in the box
                         z = y[j:j + n]  # the value of example_data in the box
-                        f[i] += np.linalg.lstsq(c, z)[1]  # add residue in this box
+                        f[i] += _np.linalg.lstsq(c, z)[1]  # add residue in this box
                 f[i] /= ((len(x) / n) * n)
-            f = np.sqrt(f)
-            return np.linalg.lstsq(np.vstack([np.log(l), np.ones(len(l))]).T, np.log(f))[0][0]
+            f = _np.sqrt(f)
+            return _np.linalg.lstsq(_np.vstack([_np.log(l), _np.ones(len(l))]).T, _np.log(f))[0][0]
 
 
 class DFALongTerm(NonLinearFeature):
@@ -376,23 +374,23 @@ class DFALongTerm(NonLinearFeature):
         # calculates De-trended Fluctuation Analysis: alpha2 (long term) component
         x = data
         if len(x) < 16:
-            return np.nan
+            return _np.nan
         else:
-            ave = Mean.get(x)
-            y = np.cumsum(x)
+            ave = _Mean.get(x)
+            y = _np.cumsum(x)
             y -= ave
-            l_max = np.min([64, len(x)])
-            l = np.arange(16, l_max + 1, 4)
-            f = np.zeros(len(l))  # f(n) of different given box length n
+            l_max = _np.min([64, len(x)])
+            l = _np.arange(16, l_max + 1, 4)
+            f = _np.zeros(len(l))  # f(n) of different given box length n
             for i in xrange(0, len(l)):
                 n = int(l[i])  # for each box length l[i]
                 for j in xrange(0, len(x), n):  # for each box
                     if j + n < len(x):
                         c = range(j, j + n)
-                        c = np.vstack([c, np.ones(n)]).T  # coordinates of time in the box
+                        c = _np.vstack([c, _np.ones(n)]).T  # coordinates of time in the box
                         z = y[j:j + n]  # the value of example_data in the box
-                        f[i] += np.linalg.lstsq(c, z)[1]  # add residue in this box
+                        f[i] += _np.linalg.lstsq(c, z)[1]  # add residue in this box
                 f[i] /= ((len(x) / n) * n)
-            f = np.sqrt(f)
+            f = _np.sqrt(f)
 
-            return np.linalg.lstsq(np.vstack([np.log(l), np.ones(len(l))]).T, np.log(f))[0][0]
+            return _np.linalg.lstsq(_np.vstack([_np.log(l), _np.ones(len(l))]).T, _np.log(f))[0][0]

@@ -1,8 +1,7 @@
 # coding=utf-8
 __author__ = 'AleB'
-__all__ = ['SupportValuesCollection']
 
-from ..features.SupportValues import VectorSV
+from ..features.SupportValues import VectorSV as _VectorSV
 
 
 class SupportValuesCollection(object):
@@ -19,7 +18,7 @@ class SupportValuesCollection(object):
         """
         self._win_size = win_size
         self._supp = None
-        self._supp = {VectorSV: VectorSV(self._supp)}
+        self._supp = {_VectorSV: _VectorSV(self._supp)}
         for i in indexes:
             for r in vars()[i].required_sv():
                 if r not in self._supp:
@@ -46,7 +45,7 @@ class SupportValuesCollection(object):
         Indicates weather the collection has enough data to calculate the features in the window.
         @rtype: bool
         """
-        return len(self._supp[VectorSV].value) >= self._win_size
+        return len(self._supp[_VectorSV].value) >= self._win_size
 
     def update(self, new_value):
         """
@@ -57,6 +56,6 @@ class SupportValuesCollection(object):
         for s in self._supp.values():
             s.add(new_value)
         if self.ready:
-            old_value = self._supp[VectorSV].value[-1]
+            old_value = self._supp[_VectorSV].value[-1]
             for s in self._supp.values():
                 s.sub(old_value)

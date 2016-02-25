@@ -1,6 +1,4 @@
 # coding=utf-8
-from pyphysio.pyPhysio.BaseAlgorithm import Cache
-from pyphysio.pyPhysio.features.CacheOnlyFeatures import CacheOnlyFeature
 
 __author__ = 'AleB'
 __all__ = ["Filters"]
@@ -9,8 +7,10 @@ import numpy as np
 
 from ..BaseFilter import Filter
 from ..PhUI import PhUI
-from .. import Signal
+from ..Signal import Signal
+from ..BaseAlgorithm import Cache
 from ..features.TDFeatures import Mean, SD
+from ..features.CacheOnlyFeatures import CacheOnlyFeature
 
 
 """

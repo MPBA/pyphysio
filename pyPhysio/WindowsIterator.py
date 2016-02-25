@@ -1,10 +1,8 @@
 # coding=utf-8
-from BaseSegmentation import SegmentationIterator
-from PhUI import PhUI
-
+from BaseSegmentation import SegmentationIterator as _SegmentationIterator
+from PhUI import PhUI as _PhUI
 
 __author__ = 'AleB'
-__all__ = ['WindowsIterator']
 
 
 class WindowsIterator(object):
@@ -32,7 +30,7 @@ class WindowsIterator(object):
         self._params = params
 
     def __iter__(self):
-        return SegmentationIterator(self)
+        return _SegmentationIterator(self)
 
     def _comp_one(self, win):
         ret = []
@@ -46,7 +44,7 @@ class WindowsIterator(object):
                 p = algorithm(self._params)
                 ret.append(p(win_ds))
             else:
-                PhUI.w("The specified algorithm '%s' is not an algorithm nor a PyPhysio algorithm name." % algorithm)
+                _PhUI.w("The specified algorithm '%s' is not an algorithm nor a PyPhysio algorithm name." % algorithm)
         self._winn += 1
         return [self._winn if win.label is None else win.label, win.begin, win.end] + ret
 
@@ -60,7 +58,7 @@ class WindowsIterator(object):
         self._map = []
         for w in self._wing:
             if WindowsIterator.verbose:
-                PhUI.i("Processing " + str(w))
+                _PhUI.i("Processing " + str(w))
             self._map.append(self._comp_one(w))
         df = self._map
         # TODO test: is this functional?

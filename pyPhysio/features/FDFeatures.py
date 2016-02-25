@@ -2,9 +2,8 @@
 from __future__ import division
 
 __author__ = 'AleB'
-__all__ = ['PowerInBand', 'PeakInBand', 'PowerInBandNormal', 'LFHF', 'NormalizedHF', 'NormalizedLF']
 
-from numpy import argmax, sum
+from numpy import argmax as _argmax
 from ..BaseFeature import Feature
 from CacheOnlyFeatures import PSDWelchLibCalc
 
@@ -95,7 +94,7 @@ class PeakInBand(FDFeature):
     @classmethod
     def algorithm(cls, data, params):
         _freq_band, _pow_band, ignored = InBand.get(data, params)
-        return _freq_band[argmax(_pow_band)]
+        return _freq_band[_argmax(_pow_band)]
 
     @classmethod
     def get_used_params(cls):

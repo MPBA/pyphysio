@@ -2,18 +2,15 @@
 from __future__ import division
 
 __author__ = 'AleB'
-__all__ = ['Mean', 'Median', 'SD', 'DiffSD', 'NNx', 'PNNx', 'NN10', 'NN25', 'NN50', 'PNN10', 'PNN25', 'PNN50', 'RMSSD',
-           "Triang", "TINN"]
 
-import numpy as np
+import numpy as _np
 
-from ..BaseFeature import Feature
-from ..features.SupportValues import SumSV, LengthSV, DiffsSV, MedianSV
-from ..features.CacheOnlyFeatures import Histogram, HistogramMax
-from pyphysio.pyPhysio.filters.Filters import Diff
+from ..BaseFeature import Feature as _Feature
+from ..features.SupportValues import SumSV as _SumSV, LengthSV as _LengthSV, DiffsSV as _DiffsSV, MedianSV as _MedianSV
+from ..features.CacheOnlyFeatures import Histogram as _Histogram, HistogramMax as _HistogramMax
 
 
-class TDFeature(Feature):
+class TDFeature(_Feature):
     """
     This is the base class for the Time Domain Indexes.
     """
@@ -40,15 +37,15 @@ class Mean(TDFeature):
 
     @classmethod
     def algorithm(cls, data, params):
-        return np.mean(data)
+        return _np.mean(data)
 
     @classmethod
     def compute_on(cls, state):
-        return state[SumSV].value / float(state[LengthSV].value)
+        return state[_SumSV].value / float(state[_LengthSV].value)
 
     @classmethod
     def required_sv(cls):
-        return [SumSV, LengthSV]
+        return [_SumSV, _LengthSV]
 
 
 class Median(TDFeature):
@@ -61,15 +58,15 @@ class Median(TDFeature):
 
     @classmethod
     def algorithm(cls, data, params):
-        return np.median(data)
+        return _np.median(data)
 
     @classmethod
     def required_sv(cls):
-        return [MedianSV]
+        return [_MedianSV]
 
     @classmethod
     def compute_on(cls, state):
-        return state[MedianSV].value
+        return state[_MedianSV].value
 
 
 class SD(TDFeature):
@@ -82,7 +79,7 @@ class SD(TDFeature):
 
     @classmethod
     def algorithm(cls, data, params):
-        return np.std(data)
+        return _np.std(data)
 
 
 class PNNx(TDFeature):
@@ -116,7 +113,9 @@ class PNNx(TDFeature):
 
     @classmethod
     def compute_on(cls, state):
-        return NNx.compute_on(state, cls.threshold()) / state[LengthSV].value
+        return NNx.compute_on(state, cls.threshold()) / state[_LengthSV].value
+
+from ..filters.Filters import Diff
 
 
 class NNx(TDFeature):
@@ -150,13 +149,13 @@ class NNx(TDFeature):
 
     @classmethod
     def required_sv(cls):
-        return [DiffsSV]
+        return [_DiffsSV]
 
     @classmethod
     def compute_on(cls, state, threshold=None):
         if threshold is None:
             threshold = cls.threshold()
-        return sum(1 for x in state[DiffsSV].value if x > threshold)
+        return sum(1 for x in state[_DiffsSV].value if x > threshold)
 
 
 class PNN10(PNNx):
@@ -276,7 +275,7 @@ class Triang(TDFeature):
 
     @classmethod
     def algorithm(cls, data, params):
-        h, b = HistogramMax.get(data, histogram_bins=100)
+        h, b = _HistogramMax.get(data, histogram_bins=100)
         return len(data) / np.max(h)  # TODO: check if the formula is the right one or use the HistogramMax
 
 
@@ -289,8 +288,8 @@ class TINN(TDFeature):
 
     @classmethod
     def algorithm(cls, data, params):
-        hist, bins = Histogram.get(data, histogram_bins=100)
-        max_x = HistogramMax.get(data)
+        hist, bins = _Histogram.get(data, histogram_bins=100)
+        max_x = _HistogramMax.get(data)
         hist_left = np.array(hist[0:np.argmax(hist)])
         ll = len(hist_left)
         hist_right = np.array(hist[np.argmax(hist):-1])

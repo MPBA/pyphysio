@@ -1,12 +1,4 @@
 # coding=utf-8
-"""
-features package:
-Contains classes with 43 of the main algorithms for the HRV analysis.
-They are divided by:
-TDIndexes:          Time domain indices,
-FDIndexes:          Frequency domain indices,
-NonLinearIndexes:   Like e.g. entropy features and Poincaré features.
-"""
 
 __author__ = 'AleB'
 
@@ -19,11 +11,9 @@ from FDFeatures import *
 from NonLinearFeatures import *
 
 __all_indexes__ = []
-__all_indexes__.extend(TDFeatures.__all__)
-__all_indexes__.extend(FDFeatures.__all__)
-__all_indexes__.extend(NonLinearFeatures.__all__)
-__all__ = ['TDFeatures', 'FDFeatures', 'NonLinearFeatures', 'CacheOnlyFeatures']
-__all__.extend(__all_indexes__)
+__all_indexes__.extend(filter(lambda x: x[0] != '_', dir(TDFeatures)))
+__all_indexes__.extend(filter(lambda x: x[0] != '_', dir(FDFeatures)))
+__all_indexes__.extend(filter(lambda x: x[0] != '_', dir(NonLinearFeatures)))
 
 
 def get_available_indexes():

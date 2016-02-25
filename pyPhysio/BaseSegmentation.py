@@ -1,7 +1,6 @@
 # coding=utf-8
 __author__ = 'AleB'
-__all__ = ['SegmentationError', 'Segment', 'SegmentsGenerator']
-from copy import copy as cpy
+from copy import copy as _cpy
 
 
 class Segment(object):
@@ -93,7 +92,7 @@ class SegmentationIterator(object):
 
     def __init__(self, win):
         assert isinstance(win, SegmentsGenerator)
-        self._win = cpy(win)
+        self._win = _cpy(win)
         self._win.init_segmentation()
 
     def next(self):

@@ -3,7 +3,7 @@ from __future__ import division
 
 __author__ = 'AleB'
 
-from ..Utility import template_interpolation
+from ..Utility import template_interpolation as _template_interpolation
 
 
 class SupportValue(object):
@@ -198,9 +198,9 @@ class InterpolationSV(SupportValue):
         if self._ly is None:  # with the first IBI I get the hr of the first (t=x=0) beat and of the second (t=x=IBI)
             self._fy = self._ly = y
             self._fx = self._lx = 0.0  # NO TIME-TOLERANCE ERRORS!
-        hr, t = template_interpolation([self._ly, y],
-                                       [self._lx, x],
-                                       self._interp_freq)
+        hr, t = _template_interpolation([self._ly, y],
+                                        [self._lx, x],
+                                        self._interp_freq)
         print ([self._ly, y], [self._lx, x]), hr
         self._v.extend(hr)
         self._lx = x  # NO TIME-TOLERANCE ERRORS!

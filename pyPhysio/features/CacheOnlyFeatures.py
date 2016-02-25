@@ -9,11 +9,11 @@ __author__ = 'AleB'
 import numpy as np
 from scipy import signal
 
-from ..Utility import interpolate_ibi
-from ..BaseFeature import Feature
+from ..Utility import interpolate_ibi as _interpolate_ibi
+from ..BaseFeature import Feature as _Feature
 
 
-class CacheOnlyFeature(Feature):
+class CacheOnlyFeature(_Feature):
     """
     This is the base class for the generic features.
     """
@@ -34,7 +34,7 @@ class FFTCalc(CacheOnlyFeature):
     @classmethod
     def algorithm(cls, data, params):
         assert 'interp_freq' in params, "This feature needs the parameter 'interp_freq' [1/time_unit]."
-        rr_interp, ignored = interpolate_ibi(data.series, params['interp_freq'])  # TODO 2 Andrea: change interp. type
+        rr_interp, ignored = _interpolate_ibi(data.series, params['interp_freq'])  # TODO 2 Andrea: change interp. type
         interp_freq = params['interp_freq']
         hw = np.hamming(len(rr_interp))
 
@@ -94,7 +94,7 @@ class PSDFFTCalc(CacheOnlyFeature):
         assert 'interp_freq' in params, "This feature needs the parameter 'interp_freq' [1/time_unit]."
         if 'remove_mean' not in params:
             params['remove_mean'] = False
-        data_interp, t_interp = interpolate_ibi(data, params['interp_freq'])  # TODO 6: change interp. type
+        data_interp, t_interp = _interpolate_ibi(data, params['interp_freq'])  # TODO 6: change interp. type
         if params['remove_mean']:
             data_interp = data_interp - np.mean(data_interp)
 
@@ -123,7 +123,7 @@ class PSDWelchLinspaceCalc(CacheOnlyFeature):
         assert 'interp_freq' in params, "This feature needs the parameter 'interp_freq' [1/time_unit]."
         if 'remove_mean' not in params:
             params['remove_mean'] = False
-        data_interp, t_interp = interpolate_ibi(data, params['interp_freq'])  # TODO 6: change interp. type
+        data_interp, t_interp = _interpolate_ibi(data, params['interp_freq'])  # TODO 6: change interp. type
         if params['remove_mean']:
             data_interp = data_interp - np.mean(data_interp)
         bands_w, powers = signal.welch(data_interp, params['interp_freq'], nfft=max(128, len(data_interp)))
@@ -144,7 +144,7 @@ class PSDWelchLibCalc(CacheOnlyFeature):
         @rtype: (array, array, float)
         """
         assert 'interp_freq' in params, "This feature needs the parameter 'interp_freq' [1/time_unit]."
-        rr_interp, bt_interp = interpolate_ibi(data, params['interp_freq'])  # TODO 6: change interp. type
+        rr_interp, bt_interp = _interpolate_ibi(data, params['interp_freq'])  # TODO 6: change interp. type
         bands, powers = signal.welch(rr_interp, params['interp_freq'], nfft=max(128, len(rr_interp)))
         powers = np.sqrt(powers)
         return bands, powers / np.max(powers), sum(powers) / len(powers)
@@ -165,7 +165,7 @@ class PSDAr1Calc(CacheOnlyFeature):
         assert 'interp_freq' in params, "This feature needs the parameter 'interp_freq' [1/time_unit]."
         if 'remove_mean' not in params:
             params['remove_mean'] = False
-        data_interp, t_interp = interpolate_ibi(data, params['interp_freq'])  # TODO 6: change interp. type
+        data_interp, t_interp = _interpolate_ibi(data, params['interp_freq'])  # TODO 6: change interp. type
         # TODO Andrea: remove_mean WAS after interp, is it ok?
         if params['remove_mean']:
             data_interp = data_interp - np.mean(data_interp)
@@ -194,7 +194,7 @@ class PSDAr2Calc(CacheOnlyFeature):
         assert 'ar_2_max_order' in params, "This feature needs the parameter 'ar_2_max_order'."
         if 'remove_mean' not in params:
             params['remove_mean'] = False
-        data_interp, t_interp = interpolate_ibi(data, params['interp_freq'])  # TODO 6: change interp. type
+        data_interp, t_interp = _interpolate_ibi(data, params['interp_freq'])  # TODO 6: change interp. type
         if params['remove_mean']:
             data_interp = data_interp - np.mean(data_interp)
         powers = []
