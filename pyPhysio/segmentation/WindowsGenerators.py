@@ -1,9 +1,7 @@
 # coding=utf-8
-__author__ = 'AleB'
-__all__ = ['TimeSegments', 'LabeledSegments', 'ExistingSegments']
-
-from ..BaseSegmentation import SegmentsGenerator, Segment
 from ..PhUI import PhUI
+from ..BaseSegmentation import SegmentsGenerator, Segment
+__author__ = 'AleB'
 
 
 class TimeSegments(SegmentsGenerator):
@@ -19,7 +17,7 @@ class TimeSegments(SegmentsGenerator):
     def next_segment(self):
         o = self._i
         self._i += self._step
-        return Segment(o, o + self._width, '', None)  # TODO: where does it come from?
+        return Segment(o, o + self._width, '', None)  # TODO: where does it come from? (Signal is None)
 
     def init_segmentation(self):
         pass

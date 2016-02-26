@@ -1,16 +1,13 @@
 # coding=utf-8
 from __future__ import division
 
-# coding=utf-8
 import spectrum
-
-__author__ = 'AleB'
-
 import numpy as np
 from scipy import signal
-
 from ..Utility import interpolate_ibi as _interpolate_ibi
 from ..BaseFeature import Feature as _Feature
+
+__author__ = 'AleB'
 
 
 class CacheOnlyFeature(_Feature):
@@ -26,6 +23,8 @@ class CacheOnlyFeature(_Feature):
         """
         Placeholder for the subclasses
         @raise NotImplementedError: Ever
+        :param params:
+        :param data:
         """
         raise NotImplementedError(cls.__name__ + " is a CacheOnlyFeature but it is not implemented.")
 
@@ -40,10 +39,11 @@ class FFTCalc(CacheOnlyFeature):
 
         frame = rr_interp * hw
         frame = frame - np.mean(frame)
-
-        spec_tmp = np.absolute(np.fft.fft(frame)) ** 2  # FFT
-        powers = spec_tmp[0:(np.ceil(len(spec_tmp) / 2))]  # Only positive half of spectrum
-        bands = np.linspace(start=0, stop=interp_freq / 2, num=len(powers))  # frequencies vector
+        f_fft = np.fft.fft(frame)
+        spec_tmp = np.absolute(f_fft) ** 2  # FFT
+        p_half = np.ceil(len(f_fft) / 2)
+        powers = spec_tmp[0:p_half]  # Only positive half of spectrum
+        bands = np.linspace(start=0, stop=interp_freq / 2, num=len(p_half))  # frequencies vector
         return bands, powers
 
     @classmethod
@@ -58,6 +58,8 @@ class PSDLombscargleCalc(CacheOnlyFeature):
         Calculates the PSD data to cache using the Lombscargle algorithm
         @return: (bands, powers, total_power)
         @rtype: (array, array, float)
+        :param params:
+        :param data:
         """
         # TODO 5 Andrea: is it an interpolation frequency?
         assert 'lombscargle_stop' in params, "This feature needs the parameter 'lombscargle_stop'."
@@ -90,6 +92,8 @@ class PSDFFTCalc(CacheOnlyFeature):
         Calculates the PSD data to cache using the fft algorithm
         @return: (bands, powers, total_power)
         @rtype: (array, array, float)
+        :param params:
+        :param data:
         """
         assert 'interp_freq' in params, "This feature needs the parameter 'interp_freq' [1/time_unit]."
         if 'remove_mean' not in params:
@@ -119,6 +123,8 @@ class PSDWelchLinspaceCalc(CacheOnlyFeature):
         Calculates the PSD data to cache using the welch algorithm, uses 'linspace' bands distribution
         @return: (bands, powers, total_power)
         @rtype: (array, array, float)
+        :param params:
+        :param data:
         """
         assert 'interp_freq' in params, "This feature needs the parameter 'interp_freq' [1/time_unit]."
         if 'remove_mean' not in params:

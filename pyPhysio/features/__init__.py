@@ -1,7 +1,4 @@
 # coding=utf-8
-
-__author__ = 'AleB'
-
 import TDFeatures
 import FDFeatures
 import NonLinearFeatures
@@ -9,6 +6,7 @@ import CacheOnlyFeatures
 from TDFeatures import *
 from FDFeatures import *
 from NonLinearFeatures import *
+__author__ = 'AleB'
 
 __all_indexes__ = []
 __all_indexes__.extend(filter(lambda x: x[0] != '_', dir(TDFeatures)))

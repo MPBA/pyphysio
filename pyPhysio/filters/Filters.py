@@ -1,17 +1,13 @@
 # coding=utf-8
 
+import numpy as np
+from ..BaseFilter import Filter as Filter
+from ..PhUI import PhUI as _PhUI
+from ..features.TDFeatures import Mean as _Mean, SD as _SD
+from ..features.CacheOnlyFeatures import CacheOnlyFeature as _CacheOnlyFeature
+
 __author__ = 'AleB'
 __all__ = ["Filters"]
-
-import numpy as np
-
-from ..BaseFilter import Filter
-from ..PhUI import PhUI
-from ..Signal import Signal
-from ..BaseAlgorithm import Cache
-from ..features.TDFeatures import Mean, SD
-from ..features.CacheOnlyFeatures import CacheOnlyFeature
-
 
 """
 Filters are blocks that take as input a SIGNAL and gives as output another SIGNAL of the SAME NATURE.
@@ -36,7 +32,7 @@ class Normalize(Filter):
     @classmethod
     def algorithm(cls, data, params):
         if 'norm_type' not in params:
-            PhUI.i("Assuming Mean normalization.")
+            _PhUI.i("Assuming Mean normalization.")
             return Normalize._mean(data)
         else:
             if params['norm_type'] == Normalize.Types.Mean:
@@ -52,27 +48,21 @@ class Normalize(Filter):
                 assert 'norm_range' in params, "For the custom normalization the parameter norm_range is needed."
                 return Normalize._custom(data, params['norm_bias'], params['norm_range'])
             else:
-                PhUI.w("Unrecognized normalization type in 'norm_type'.")
+                _PhUI.w("Unrecognized normalization type in 'norm_type'.")
 
     @staticmethod
     def _mean(series):
         """
         Normalizes the series removing the mean (val-mean)
         """
-        assert isinstance(series, Signal)
-        series.set_values(series.get_values() - Mean.get(series))
-        Cache.cache_clear(series)
-        return series
+        return series - _Mean.get(series)
 
     @staticmethod
     def _mean_sd(series):
         """
         Normalizes the series removing the mean and dividing by the standard deviation (val-mean)/sd
         """
-        assert isinstance(series, Signal)
-        series.set_values(series.get_values() - Mean.get(series) / SD.get(series))
-        Cache.cache_clear(series)
-        return series
+        return series - _Mean.get(series) / _SD.get(series)
 
     @staticmethod
     def _min(series):
@@ -83,10 +73,7 @@ class Normalize(Filter):
         @return: Filtered TimeSeries
         @rtype: TimeSeries
         """
-        assert isinstance(series, Signal)
-        series.set_values(series.get_values() - np.min(series.get_values()))
-        Cache.cache_clear(series)
-        return series
+        return series - np.min(series)
 
     @staticmethod
     def _max_min(series):
@@ -97,31 +84,22 @@ class Normalize(Filter):
         @return: Filtered TimeSeries
         @rtype: TimeSeries
         """
-        assert isinstance(series, Signal)
-        series.set_values(series.get_values() / (np.max(series.get_values()) - np.min(series.get_values())))
-        Cache.cache_clear(series)
-        return series
+        return series / (np.max(series) - np.min(series))
 
     @staticmethod
     def _custom(series, bias, normalization_range):
         """
         Normalizes the series considering two factors ((val-par1)/par2)
         """
-        assert isinstance(series, Signal)
-        series.set_values((series.get_values() - bias) / normalization_range)
-        Cache.cache_clear(series)
-        return series
+        return (series - bias) / normalization_range
 
 
-class Diff(CacheOnlyFeature):
-    # TODO filter?
+class Diff(_CacheOnlyFeature):
     @classmethod
     def algorithm(cls, data, params):
         """
         Calculates the differences between consecutive values
-        @return: Differences
-        @rtype: array
+        :param params:
+        :param data:
         """
-        data.set_values(np.diff(data.get_values()))
-        Cache.cache_clear(data)
-        return data
+        return np.diff(data)

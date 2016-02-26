@@ -1,6 +1,6 @@
 # coding=utf-8
-__author__ = 'AleB'
 from Signal import Signal
+__author__ = 'AleB'
 
 
 class Algorithm(object):
@@ -54,11 +54,11 @@ class Algorithm(object):
         @return: The value of the feature.
         """
         assert isinstance(data, Signal), "The data must be a Signal."
-        # TODO HOT: temporary workaround to give directly the data to the algorithms
         if type(params) is dict:
             kwargs.update(params)
         if use_cache is True:
             Cache.cache_check(data)
+            # noinspection PyTypeChecker
             return Cache.cache_get_data(data, cls, kwargs)
         else:
             return cls.algorithm(data, kwargs)
@@ -70,6 +70,8 @@ class Algorithm(object):
         feature. Uses the method _utility_hash([par1,...parN])
         This class is abstract.
         @return: The hash of the parameters used by the feature.
+        :param params:
+        :param params:
         """
         p = params.copy()
         p.update({'': str(cls)})
@@ -91,6 +93,8 @@ class Algorithm(object):
         """
         Placeholder for the subclasses
         @raise NotImplementedError: Ever
+        :param params:
+        :param data:
         """
         raise NotImplementedError(cls.__name__ + " is not implemented.")
 
@@ -115,6 +119,7 @@ class Cache(object):
     def cache_clear(self):
         """
         Clears the cache and frees memory (GC?)
+        :param self:
         """
         self._cache = {}
         # setattr(self, "_cache", {})
@@ -123,6 +128,7 @@ class Cache(object):
     def cache_check(self):
         """
         Checks the presence of the cache structure.
+        :param self:
         """
         if not hasattr(self, "_cache"):
             Cache.cache_clear(self)

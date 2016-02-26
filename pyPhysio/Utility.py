@@ -1,7 +1,7 @@
 # coding=utf-8
-__author__ = 'AleB'
-import numpy as np
 from scipy import interpolate
+import numpy as np
+__author__ = 'AleB'
 
 
 def derive(data, labels):
@@ -23,6 +23,10 @@ def derive(data, labels):
 def power(spec, freq, min_freq, max_freq):
     """
     Returns the power calculated in the specified band of the spec-freq spectrum
+    :param max_freq:
+    :param min_freq:
+    :param freq:
+    :param spec:
     """
     band = np.array([spec[i] for i in range(len(spec)) if min_freq <= freq[i] < max_freq])
     return np.sum(band) / len(spec)
@@ -31,6 +35,8 @@ def power(spec, freq, min_freq, max_freq):
 def interpolate_ibi(rr, interp_freq):
     """
     Returns as a tuple the interpolated RR and BT arrays
+    :param interp_freq:
+    :param rr:
     """
     step = 1.0 / interp_freq
     rr /= 1000

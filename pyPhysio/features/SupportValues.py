@@ -1,9 +1,7 @@
 # coding=utf-8
 from __future__ import division
-
-__author__ = 'AleB'
-
 from ..Utility import template_interpolation as _template_interpolation
+__author__ = 'AleB'
 
 
 class SupportValue(object):
@@ -17,12 +15,14 @@ class SupportValue(object):
     def add(self, new_value):
         """
         Updates each support-value with the new enqueued value.
+        :param new_value:
         """
         self._state += 1
 
     def sub(self, old_value):
         """
         Updates each support-value with the just dequeued value.
+        :param old_value:
         """
         pass
 

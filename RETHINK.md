@@ -14,7 +14,7 @@ Things
                 - Abandoned this way, static method raw_compute contains the algorithm, instances of the class are used to store different sets of parameters
     
 - General compute function: we can use a DataFrame instead of a list of Series as parameter, but it is better to have a list because of performance issues
-    # TODO Remove pandas
+    # TOkDO Remove pandas
 
 - I remove the HR variants of Mean Median etc as they are redundant and make no sense in a general context
 
@@ -34,7 +34,7 @@ Things
         *tests
         *example_data
         *galaxy
-    # TODO New type signal
+    # TOkDO New type signal
 
 - Changed the CDC parameter with a kwargs parameter, this is uncomfortable i fix... semantically changed kwargs to params
     - and added a system that computes an additional hash-key from the used parameters
@@ -48,6 +48,6 @@ Things
     
 - Used __future__.division in the files
 
-# TODO check after this
+# TOxDO check after this
 - The algorithms work with rr in ms, have to transform to Series in s
 - I will add a function to validate a Series for working with the library

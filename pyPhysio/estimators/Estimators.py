@@ -3,7 +3,7 @@ import numpy as np
 from ..BaseEstimator import Estimator
 from ..PhUI import PhUI
 
-__author__ = 'aleb'
+__author__ = 'AleB'
 
 
 class PeakDetection(Estimator):

@@ -1,7 +1,6 @@
 # coding=utf-8
-__author__ = 'AleB'
-
 from ..features.SupportValues import VectorSV as _VectorSV
+__author__ = 'AleB'
 
 
 class SupportValuesCollection(object):

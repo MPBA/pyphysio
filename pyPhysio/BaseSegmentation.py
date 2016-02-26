@@ -1,6 +1,6 @@
 # coding=utf-8
-__author__ = 'AleB'
 from copy import copy as _cpy
+__author__ = 'AleB'
 
 
 class Segment(object):
@@ -29,7 +29,7 @@ class Segment(object):
 
     @property
     def start_time(self):
-        return self._signal.times[self.begin]  # TODO: add prop to base signal to avoid arange computation?
+        return self._signal.start_time + self._signal.get_times(self._begin)  # TODO this does not work
 
     @property
     def end_time(self):

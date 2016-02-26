@@ -1,11 +1,9 @@
 # coding=utf-8
 from __future__ import division
-
-__author__ = 'AleB'
-
-from numpy import argmax as _argmax
+from numpy import argmax as _arg_max
 from ..BaseFeature import Feature
 from CacheOnlyFeatures import PSDWelchLibCalc
+__author__ = 'AleB'
 
 
 class FDFeature(Feature):
@@ -23,7 +21,9 @@ class FDFeature(Feature):
     def algorithm(cls, data, params):
         """
         Placeholder for the subclasses
-        @raise NotImplementedError: Ever
+        :raise NotImplementedError: Ever
+        :param params:
+        :param data:
         """
         raise NotImplementedError(cls.__name__ + " is an FDFeature but it is not implemented.")
 
@@ -94,7 +94,7 @@ class PeakInBand(FDFeature):
     @classmethod
     def algorithm(cls, data, params):
         _freq_band, _pow_band, ignored = InBand.get(data, params)
-        return _freq_band[_argmax(_pow_band)]
+        return _freq_band[_arg_max(_pow_band)]
 
     @classmethod
     def get_used_params(cls):

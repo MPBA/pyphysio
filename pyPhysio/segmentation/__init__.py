@@ -1,11 +1,10 @@
 # coding=utf-8
-__author__ = 'AleB'
-
 import WindowsGenerators
 from WindowsGenerators import *
-# from WindowsIterator import __all__ as wiall
+# from WindowsIterator import __all__ as _wi_all
+__author__ = 'AleB'
 
 __all__ = WindowsGenerators.__all__
-# __all__.extend(wiall)
+# __all__.extend(_wi_all)
 
-# del wiall
+# del _wi_all

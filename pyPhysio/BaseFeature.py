@@ -1,7 +1,6 @@
 # coding=utf-8
-__author__ = 'aleb'
-
 from BaseAlgorithm import Algorithm
+__author__ = 'AleB'
 
 
 class Feature(Algorithm):
@@ -14,6 +13,8 @@ class Feature(Algorithm):
         """
         Placeholder for the subclasses
         @raise NotImplementedError: Ever
+        :param params:
+        :param data:
         """
         raise NotImplementedError(cls.__name__ + " is a Feature but it is not implemented.")
 

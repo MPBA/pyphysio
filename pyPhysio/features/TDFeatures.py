@@ -1,13 +1,11 @@
 # coding=utf-8
 from __future__ import division
-
-__author__ = 'AleB'
-
-import numpy as _np
-
 from ..BaseFeature import Feature as _Feature
 from ..features.SupportValues import SumSV as _SumSV, LengthSV as _LengthSV, DiffsSV as _DiffsSV, MedianSV as _MedianSV
 from ..features.CacheOnlyFeatures import Histogram as _Histogram, HistogramMax as _HistogramMax
+import numpy as _np
+
+__author__ = 'AleB'
 
 
 class TDFeature(_Feature):
@@ -23,6 +21,8 @@ class TDFeature(_Feature):
         """
         Placeholder for the subclasses
         @raise NotImplementedError: Ever
+        :param params:
+        :param data:
         """
         raise NotImplementedError(cls.__name__ + " is a TDFeature but it is not implemented.")
 
@@ -114,6 +114,7 @@ class PNNx(TDFeature):
     @classmethod
     def compute_on(cls, state):
         return NNx.compute_on(state, cls.threshold()) / state[_LengthSV].value
+
 
 from ..filters.Filters import Diff
 
@@ -250,7 +251,7 @@ class RMSSD(TDFeature):
     @classmethod
     def algorithm(cls, data, params):
         diff = Diff.get(data)
-        return np.sqrt(sum(diff ** 2) / len(diff))
+        return _np.sqrt(sum(diff ** 2) / len(diff))
 
 
 class DiffSD(TDFeature):
@@ -262,7 +263,7 @@ class DiffSD(TDFeature):
     @classmethod
     def algorithm(cls, data, params):
         diff = Diff.get(data)
-        return np.std(diff)
+        return _np.std(diff)
 
 
 # TODO: fix documentation
@@ -276,7 +277,7 @@ class Triang(TDFeature):
     @classmethod
     def algorithm(cls, data, params):
         h, b = _HistogramMax.get(data, histogram_bins=100)
-        return len(data) / np.max(h)  # TODO: check if the formula is the right one or use the HistogramMax
+        return len(data) / _np.max(h)  # TODO: check if the formula is the right one or use the HistogramMax
 
 
 # TODO: fix documentation
@@ -290,36 +291,36 @@ class TINN(TDFeature):
     def algorithm(cls, data, params):
         hist, bins = _Histogram.get(data, histogram_bins=100)
         max_x = _HistogramMax.get(data)
-        hist_left = np.array(hist[0:np.argmax(hist)])
+        hist_left = _np.array(hist[0:_np.argmax(hist)])
         ll = len(hist_left)
-        hist_right = np.array(hist[np.argmax(hist):-1])
+        hist_right = _np.array(hist[_np.argmax(hist):-1])
         rl = len(hist_right)
 
-        y_left = np.array(np.linspace(0, max_x, ll))
+        y_left = _np.array(_np.linspace(0, max_x, ll))
 
-        minx = np.Inf
+        minx = _np.Inf
         pos = 0
         for i in range(len(hist_left) - 1):
-            curr_min = np.sum((hist_left - y_left) ** 2)
+            curr_min = _np.sum((hist_left - y_left) ** 2)
             if curr_min < minx:
                 minx = curr_min
                 pos = i
             y_left[i] = 0
-            y_left[i + 1:] = np.linspace(0, max_x, ll - i - 1)
+            y_left[i + 1:] = _np.linspace(0, max_x, ll - i - 1)
 
         n = bins[pos - 1]
 
-        y_right = np.array(np.linspace(max_x, 0, rl))
-        minx = np.Inf
+        y_right = _np.array(_np.linspace(max_x, 0, rl))
+        minx = _np.Inf
         pos = 0
         for i in range(rl, 1, -1):
-            curr_min = np.sum((hist_right - y_right) ** 2)
+            curr_min = _np.sum((hist_right - y_right) ** 2)
             if curr_min < minx:
                 minx = curr_min
                 pos = i
             y_right[i - 1] = 0
-            y_right[0:i - 2] = np.linspace(max_x, 0, i - 2)
+            y_right[0:i - 2] = _np.linspace(max_x, 0, i - 2)
 
-        m = bins[np.argmax(hist) + pos + 1]
+        m = bins[_np.argmax(hist) + pos + 1]
 
         return m - n

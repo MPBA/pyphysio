@@ -1,16 +1,17 @@
 # coding=utf-8
 from __future__ import division
 
-__author__ = 'AleB'
-
-from scipy.spatial.distance import cdist as _cd, pdist as _pd
-from scipy.stats.mstats import mquantiles as _mq
-import numpy as _np
-
 from CacheOnlyFeatures import OrderedSubsets, PoincareSD
 from ..filters.Filters import Diff as _Diff
 from ..BaseFeature import Feature as _Feature
 from TDFeatures import Mean as _Mean, SD as _SD
+
+import numpy as _np
+from scipy.spatial.distance import cdist as _cd, pdist as _pd
+from scipy.stats.mstats import mquantiles as _mq
+
+
+__author__ = 'AleB'
 
 
 class NonLinearFeature(_Feature):
@@ -26,6 +27,8 @@ class NonLinearFeature(_Feature):
         """
         Placeholder for the subclasses
         @raise NotImplementedError: Ever
+        :param params:
+        :param data:
         """
         raise NotImplementedError(cls.__name__ + " is a NonLinearFeature but it is not implemented.")
 
@@ -199,7 +202,7 @@ class CorrelationDim(NonLinearFeature):
         if len(data) < params['corr_dim_len']:
             return _np.nan
         else:
-            rr = data / 1000  # rr in seconds TODO: wut? semplificabile??
+            rr = data  # rr in seconds
             # Check also the other features to work with seconds!
             uj = OrderedSubsets.get(rr, dict(subset_size=params['corr_dim_len']))
             num_elem = uj.shape[0]

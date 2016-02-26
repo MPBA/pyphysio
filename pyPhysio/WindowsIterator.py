@@ -1,6 +1,7 @@
 # coding=utf-8
 from BaseSegmentation import SegmentationIterator as _SegmentationIterator
 from PhUI import PhUI as _PhUI
+from BaseAlgorithm import Algorithm
 
 __author__ = 'AleB'
 
@@ -37,10 +38,9 @@ class WindowsIterator(object):
         win_ds = win(self._data)
         for algorithm in self._feats:
             if isinstance(algorithm, str) or isinstance(algorithm, unicode):
-                assert False, "The string addressing is temporarily not supported"
-                # p = getattr(dir(), algorithm) TODO not working
-                # ret.append(p(win_ds))
-            elif type(algorithm) is type:  # TODO bug: improve this check
+                p = vars()["algorithm"]
+                ret.append(p(win_ds))
+            elif isinstance(algorithm, Algorithm):
                 p = algorithm(self._params)
                 ret.append(p(win_ds))
             else:
@@ -61,8 +61,7 @@ class WindowsIterator(object):
                 _PhUI.i("Processing " + str(w))
             self._map.append(self._comp_one(w))
         df = self._map
-        # TODO test: is this functional?
-        df.columns = self.labels()
+        df.columns = self.labels()  # TODO: improve-me
         return df
 
     def labels(self):

@@ -1,7 +1,6 @@
 # coding=utf-8
-__author__ = 'aleb'
-
 from BaseAlgorithm import Algorithm
+__author__ = 'AleB'
 
 
 class Filter(Algorithm):
@@ -11,6 +10,8 @@ class Filter(Algorithm):
         """
         Placeholder for the subclasses
         @raise NotImplementedError: Ever
+        :param params:
+        :param data:
         """
         raise NotImplementedError(cls.__name__ + " is not implemented.")
 
