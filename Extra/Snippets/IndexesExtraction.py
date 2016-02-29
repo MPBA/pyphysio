@@ -18,7 +18,7 @@ win = Segment(1, 5, data)
 value2 = Mean(win.extract_data()).value
 
 ## WindowsIterator usage
-# This is the minimal structure of the code needed to calculate the features on each window
+# This is the minimal structure of the code needed to calculate the indicators on each window
 # Creating the windows (the example_data parameter is needed to know the total length)
 win_gen = LinearWinGen(0, 2, 4, data)
 # The mapper initialization (it will compute the mean and the standard deviation of each window

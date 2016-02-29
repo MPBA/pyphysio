@@ -55,7 +55,7 @@ class PyHRVSettings(object):
 
         # Local:
         self.indexes_not_found = \
-            "Some of the features requested are not implemented:" \
+            "Some of the indicators requested are not implemented:" \
             "maybe the name is incorrect or pyPhysio version is old.\n" \
             "Indexes names: {:s}"
 

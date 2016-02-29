@@ -8,8 +8,8 @@ __author__ = 'AleB'
 
 class WindowsIterator(object):
     """
-    Takes some features and calculates them on the given set of windows.
-    Allows the iteration of the computation of a list of features over a WindowsGenerator.
+    Takes some indicators and calculates them on the given set of windows.
+    Allows the iteration of the computation of a list of indicators over a WindowsGenerator.
     Use compute_all to execute the computation.
     """
 
@@ -18,7 +18,7 @@ class WindowsIterator(object):
     def __init__(self, data, win_gen, indexes, params):
         """
         Initializes
-        @param data: data on which compute windowed features
+        @param data: data on which compute windowed indicators
         @param win_gen: the windows generator
         @param indexes: list of classes as CLASS(DATA).value() ==> index value
         """
@@ -53,7 +53,7 @@ class WindowsIterator(object):
 
     def compute_all(self):
         """
-        Executes the features computation (mapping with the windows).
+        Executes the indicators computation (mapping with the windows).
         """
         self._map = []
         for w in self._wing:

@@ -1,18 +1,18 @@
 # coding=utf-8
-from ..features.SupportValues import VectorSV as _VectorSV
+from ..indicators.SupportValues import VectorSV as _VectorSV
 __author__ = 'AleB'
 
 
 class SupportValuesCollection(object):
     """
-    This container-class helps the management of a set of support values required to calculate the needed features
+    This container-class helps the management of a set of support values required to calculate the needed indicators
     in the on-line mode.
     """
 
     def __init__(self, indexes, win_size=50):
         """
         Initializes the management system.
-        @param indexes: List of features needed.
+        @param indexes: List of indicators needed.
         @param win_size: Size in samples of the on-line window.
         """
         self._win_size = win_size
@@ -41,7 +41,7 @@ class SupportValuesCollection(object):
     @property
     def ready(self):
         """
-        Indicates weather the collection has enough data to calculate the features in the window.
+        Indicates weather the collection has enough data to calculate the indicators in the window.
         @rtype: bool
         """
         return len(self._supp[_VectorSV].value) >= self._win_size

@@ -3,8 +3,7 @@
 import numpy as np
 from ..BaseFilter import Filter as _Filter
 from ..PhUI import PhUI as _PhUI
-from ..features.TDFeatures import Mean as _Mean, SD as _SD
-from ..features.CacheOnlyFeatures import CacheOnlyFeature as _CacheOnlyFeature
+from ..indicators.Indicators import Mean as _Mean, SD as _SD
 
 __author__ = 'AleB'
 
@@ -93,12 +92,11 @@ class Normalize(_Filter):
         return (series - bias) / normalization_range
 
 
-class Diff(_CacheOnlyFeature):
+class Diff(_Filter):
     @classmethod
     def algorithm(cls, data, params):
         """
         Calculates the differences between consecutive values
-        :param params:
         :param data:
         """
         return np.diff(data)

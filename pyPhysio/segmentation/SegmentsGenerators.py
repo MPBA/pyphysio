@@ -4,9 +4,35 @@ from ..BaseSegmentation import SegmentsGenerator, Segment
 __author__ = 'AleB'
 
 
+class LengthSegments(SegmentsGenerator):
+    """
+    Constant length (samples number) segments
+    __init__(self, step, width=0, start=0)
+    """
+    def __init__(self, step, width=0, start=0):
+        super(LengthSegments, self).__init__()
+        self._step = step
+        self._width = step if width == 0 else width
+        self._i = start
+
+    def next_segment(self):
+        o = self._i
+        self._i += self._step
+        s = Segment(o, o + self._width, '', self._signal)
+        if s.is_empty():
+            raise StopIteration()
+        return s
+
+    def init_segmentation(self):
+        if self._signal is None:
+            raise ValueError("Can't preview the segments without a signal here. Use the syntax "
+                             + LengthSegments.__name__ + "(p[params])(signal)")
+
+
 class TimeSegments(SegmentsGenerator):
     """
-    Linear-timed segments
+    Constant length (time) segments
+    __init__(self, step, width=0, start=0)
     """
     def __init__(self, step, width=0, start=0):
         super(TimeSegments, self).__init__()
@@ -17,10 +43,15 @@ class TimeSegments(SegmentsGenerator):
     def next_segment(self):
         o = self._i
         self._i += self._step
-        return Segment(o, o + self._width, '', None)  # TODO: where does it come from? (Signal is None)
+        s = Segment(o, o + self._width, '', self._signal)
+        if s.is_empty():
+            raise StopIteration()
+        return s
 
     def init_segmentation(self):
-        pass
+        if self._signal is None:
+            raise ValueError("Can't preview the segments without a signal here. Use the syntax "
+                             + LengthSegments.__name__ + "(p[params])(signal)")
 
 
 class ExistingSegments(SegmentsGenerator):
@@ -67,12 +98,13 @@ class LabeledSegments(SegmentsGenerator):
         self._labels = labels
 
     def next_segment(self):
+        # TODO limit also using the signal length
         if self._i < len(self._labels) - 1:
             w = Segment(self._labels.index[self._i], self._labels.index[self._i + 1], self._labels.values[self._i],
-                        None)  # TODO: where does it come from?
+                        self._signal)
         elif self._i < len(self._labels):
             w = Segment(self._labels.index[self._i], None, self._labels.values[self._i],
-                        None)  # TODO: where does it come from?
+                        self._signal)
         else:
             raise StopIteration()
         self._i += 1

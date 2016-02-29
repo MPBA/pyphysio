@@ -7,15 +7,15 @@ import pyPhysio
 
 class GalaxyOnLineHRVAnalysis(ParamExecClass):
     """
-    kwargs['value'] ------> features to calculate
-    kwargs['features'] ----> new value not None
+    kwargs['value'] ------> indicators to calculate
+    kwargs['indicators'] ----> new value not None
     kwargs['state'] ------> last support values class not None
     return:
     last_value, updated_state
     """
 
     def execute(self):
-        indexes = self._kwargs['features']
+        indexes = self._kwargs['indicators']
         state = self._kwargs['state']
         value = self._kwargs['value']
         errors = list()

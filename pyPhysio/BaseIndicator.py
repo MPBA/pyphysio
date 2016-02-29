@@ -3,11 +3,16 @@ from BaseAlgorithm import Algorithm
 __author__ = 'AleB'
 
 
-class Feature(Algorithm):
+class Indicator(Algorithm):
     """
     Defines a class of algorithms that extracts a single time tuple, only one time-value pair, that has specific data as
     value.
     """
+
+    @classmethod
+    def is_nature_supported(cls, nature):
+        return True
+
     @classmethod
     def algorithm(cls, data, params):
         """

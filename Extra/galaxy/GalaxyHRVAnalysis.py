@@ -12,7 +12,7 @@ class GalaxyHRVAnalysis(ParamExecClass):
     kwargs['input_w'] --> None or windows input file
     kwargs['input'] ----> input file
     kwargs['output'] ---> output file
-    kwargs['features'] --> features list (names)
+    kwargs['indicators'] --> indicators list (names)
     """
 
     @staticmethod
@@ -41,7 +41,7 @@ class GalaxyHRVAnalysis(ParamExecClass):
         data = pyPhysio.Files.load_ds_from_csv_column(self._kwargs['input'])
         wins = load_windows_gen_from_csv(self._kwargs['input_w']) if 'input_w' in self._kwargs else None
 
-        indexes = self._kwargs['features']
+        indexes = self._kwargs['indicators']
 
         values = self.calculate_indexes(data, indexes, wins)
         values.to_csv(self._kwargs['output'], sep=pyPhysio.MainSettings.load_csv_separator)

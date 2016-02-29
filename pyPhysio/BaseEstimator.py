@@ -6,6 +6,10 @@ __author__ = 'AleB'
 class Estimator(Algorithm):
 
     @classmethod
+    def is_nature_supported(cls, nature):
+        return True
+
+    @classmethod
     def algorithm(cls, data, params):
         """
         Placeholder for the subclasses

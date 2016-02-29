@@ -1,8 +1,11 @@
 # coding=utf-8
 from __future__ import division
-from features import *
-from filters import *
-from segmentation import *
+import indicators.Indicators
+import filters.Filters
+from indicators.Indicators import *
+from filters.Filters import *
+from segmentation.SegmentsGenerators import *
+import segmentation.SegmentsGenerators
 from BaseSegmentation import Segment
 from WindowsIterator import WindowsIterator
 from Signal import *

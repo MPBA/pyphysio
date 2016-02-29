@@ -44,5 +44,5 @@ setup(
     ],
 
     package_dir={'pyPhysio': 'pyPhysio'},
-    packages=['pyPhysio', 'pyPhysio.features', 'pyPhysio.segmentation', 'pyPhysio.galaxy', 'pyPhysio.example_data']
+    packages=['pyPhysio', 'pyPhysio.indicators', 'pyPhysio.segmentation', 'pyPhysio.galaxy', 'pyPhysio.example_data']
 )

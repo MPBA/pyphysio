@@ -97,7 +97,8 @@ class EvenlySignal(Signal):
             return self.start_time + tmp_step * just_one
 
     def __repr__(self):
-        return Signal.__repr__(self)[:-1] + " freq:" + str(self.sampling_freq) + "Hz>\n" + _np.ndarray.__repr__(self)
+        return Signal.__repr__(self)[:-1] + " freq:" + str(self.sampling_freq) + "Hz>\n"\
+            + self.view(_np.ndarray).__repr__()
 
     # Works with timestamps
     def getslice(self, f, l):
@@ -133,7 +134,7 @@ class UnevenlySignal(Signal):
 
     def __repr__(self):
         return Signal.__repr__(self)\
-            + "\ntimes-" + self.get_times().__repr__() + "\nvalues-" + _np.ndarray.__repr__(self)
+            + "\ntimes-" + self.get_times().__repr__() + "\nvalues-" + self.view(_np.ndarray).__repr__()
 
     # Works with timestamps
     def getslice(self, f, l):

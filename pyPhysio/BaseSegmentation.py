@@ -43,6 +43,9 @@ class Segment(object):
     def label(self):
         return self._label
 
+    def is_empty(self):
+        return self._signal is None or self._begin > len(self._signal)
+
     from datetime import datetime as dt, MAXYEAR
     _mdt = dt(MAXYEAR, 12, 31, 23, 59, 59, 999999)
 
@@ -59,16 +62,26 @@ class Segment(object):
             raise StopIteration()
 
     def __repr__(self):
-        return '%s:%s:%s' % (str(self.begin), str(self.end), self._label)
+        return '%s:%s' % (str(self.begin), str(self.end)) + (":%s" % self._label) if self._label is not None else ""
 
 
 class SegmentsGenerator(object):
     """
     Base and abstract class for the windows computation.
     """
+    def __init__(self):
+        assert self.__class__ != SegmentsGenerator.__class__, "This class is abstract."
+        self._signal = None
 
     def __iter__(self):
         return SegmentationIterator(self)
+
+    def __call__(self, signal=None):
+        # TODO Simplify
+        self._signal = signal
+        d = [x for x in self]
+        self._signal = None
+        return d
 
     def next_segment(self):
         """
@@ -101,6 +114,6 @@ class SegmentationIterator(object):
 
 class SegmentationError(Exception):
     """
-    Generic "Windowing" error.
+    Generic Segmentation error.
     """
     pass
