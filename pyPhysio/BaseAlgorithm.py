@@ -89,6 +89,15 @@ class Algorithm(object):
         return self._params
 
     @classmethod
+    def is_nature_supported(cls, nature):
+        """
+        Placeholder for the subclasses
+        :returns: Weather nature is compatible or not
+        @raise NotImplementedError: Ever
+        """
+        raise NotImplementedError(cls.__name__ + " is not implemented.")
+
+    @classmethod
     def algorithm(cls, data, params):
         """
         Placeholder for the subclasses

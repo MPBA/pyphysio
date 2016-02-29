@@ -101,7 +101,7 @@ class PNNx(TDFeature):
         else:
             px = params.copy()
             px.update({'threshold': cls.threshold()})
-        return NNx.algorithm(data, px) / float(len(data.get_values()))
+        return NNx.algorithm(data, px) / float(len(data))
 
     @staticmethod
     def threshold():
@@ -138,7 +138,7 @@ class NNx(TDFeature):
         else:
             th = cls.threshold()
         diff = Diff.get(data)
-        return sum(1.0 for x in diff.get_values() if x > th)
+        return sum(1.0 for x in diff if x > th)
 
     @staticmethod
     def get_used_params(**kwargs):

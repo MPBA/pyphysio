@@ -102,15 +102,16 @@ class PeakInBand(FDFeature):
 
 
 class LFHF(FDFeature):
-
     def __init__(self, params=None, **kwargs):
         super(LFHF, self).__init__(params, kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
         assert 'freq_mid' in params, "Need the parameter 'freq_mid' as the separator between LF and HF."
-        par_lf = params.copy().update({'freq_max': params['freq_mid']})
-        par_hf = params.copy().update({'freq_min': params['freq_mid']})
+        par_lf = params.copy()
+        par_hf = params.copy()
+        par_lf.update({'freq_max': params['freq_mid']})
+        par_hf.update({'freq_min': params['freq_mid']})
         return PowerInBand.get(data, par_lf) / PowerInBand.get(data, par_hf)
 
     @classmethod

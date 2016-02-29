@@ -8,22 +8,27 @@ __author__ = 'AleB'
 
 
 class Signal(_np.ndarray):
-    NP_TIME_T = _np.float64
+    _NP_TIME_T = _np.float64
+    _MT_NATURE = "signal_nature"
+    _MT_START_TIME = "start_time"
+    _MT_META_DICT = "metadata"
+    _MT_INFO_ATTR = "_pyphysio"
 
     def __new__(cls, input_array, signal_nature="", start_time=0, meta=None):
         # noinspection PyNoneFunctionAssignment
         obj = _np.asarray(input_array).view(cls)
         obj._pyphysio = {
-            "signal_nature": signal_nature,
-            "start_time": start_time,
-            "metadata": meta if meta is not None else {}
+            cls._MT_NATURE: signal_nature,
+            cls._MT_START_TIME: start_time,
+            cls._MT_META_DICT: meta if meta is not None else {}
         }
         return obj
 
     def __array_finalize__(self, obj):
         # __new__ called if obj is None
-        if obj is not None:
-            self._pyphysio = getattr(obj, '_pyphysio', None)
+        if obj is not None and hasattr(obj, self._MT_INFO_ATTR):
+            # The cache is not in MT_INFO_ATTR
+            self._pyphysio = getattr(obj, self._MT_INFO_ATTR)
 
     def __array_wrap__(self, out_arr, context=None):
         # Just call the parent's
@@ -36,15 +41,15 @@ class Signal(_np.ndarray):
 
     @property
     def signal_nature(self):
-        return self.ph['signal_nature']
+        return self.ph[self._MT_NATURE]
 
     @property
     def start_time(self):
-        return self.ph['start_time']
+        return self.ph[self._MT_START_TIME]
 
     @property
     def metadata(self):
-        return self.ph["metadata"]
+        return self.ph[self._MT_META_DICT]
 
     @property
     def duration(self):
@@ -67,9 +72,11 @@ class Signal(_np.ndarray):
 
 
 class EvenlySignal(Signal):
+    _MT_SAMPLING_FREQ = "sampling_freq"
+
     def __new__(cls, input_array, sampling_freq, signal_nature="", start_time=0, meta=None):
         obj = Signal(input_array, signal_nature, start_time, meta).view(cls)
-        obj.ph["sampling_freq"] = sampling_freq
+        obj.ph[cls._MT_SAMPLING_FREQ] = sampling_freq
         return obj
 
     @property
@@ -79,7 +86,7 @@ class EvenlySignal(Signal):
 
     @property
     def sampling_freq(self):
-        return self.ph["sampling_freq"]
+        return self.ph[self._MT_SAMPLING_FREQ]
 
     def get_times(self, just_one=None):
         # Using future division
@@ -90,7 +97,7 @@ class EvenlySignal(Signal):
             return self.start_time + tmp_step * just_one
 
     def __repr__(self):
-        return Signal.__repr__(self)[:-1] + " freq:" + str(self.sampling_freq) + "Hz>\n" + self.__repr__()
+        return Signal.__repr__(self)[:-1] + " freq:" + str(self.sampling_freq) + "Hz>\n" + _np.ndarray.__repr__(self)
 
     # Works with timestamps
     def getslice(self, f, l):
@@ -106,6 +113,8 @@ class EvenlySignal(Signal):
 
 
 class UnevenlySignal(Signal):
+    _MT_TIMES = "times"
+
     def __new__(cls, input_array, times_array, signal_nature="", start_time=0, meta=None, check=True):
         # TODO check: useful O(n) monotonicity check?
         assert not check or len(input_array) == len(times_array),\
@@ -113,18 +122,18 @@ class UnevenlySignal(Signal):
         assert not all(times_array[i] <= times_array[i+1] for i in xrange(len(times_array)-1)),\
             "Time is not monotonic"
         obj = Signal(input_array, signal_nature, start_time, meta).view(cls)
-        obj.ph["times"] = times_array
+        obj.ph[cls._MT_TIMES] = times_array
         return obj
 
     def get_times(self, just_one=None):
         if just_one is None:
-            return self.ph["times"]
+            return self.ph[self._MT_TIMES]
         else:
-            return self.ph["times"][just_one]
+            return self.ph[self._MT_TIMES][just_one]
 
     def __repr__(self):
         return Signal.__repr__(self)\
-            + "\ntimes-" + self.get_times().__repr__() + "\nvalues-" + self.__repr__()
+            + "\ntimes-" + self.get_times().__repr__() + "\nvalues-" + _np.ndarray.__repr__(self)
 
     # Works with timestamps
     def getslice(self, f, l):
@@ -143,4 +152,4 @@ class EventsSignal(UnevenlySignal):
         # find f & l indexes of indexes
         f = _np.searchsorted(self.times, f)
         l = _np.searchsorted(self.times, l)
-        return EventsSignal(self.times[f:l], self.get_values[f:l], checks=False)
+        return EventsSignal(self.times[f:l], self.view(_np.ndarray)[f:l], checks=False)

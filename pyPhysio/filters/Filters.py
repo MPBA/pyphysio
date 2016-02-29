@@ -1,20 +1,19 @@
 # coding=utf-8
 
 import numpy as np
-from ..BaseFilter import Filter as Filter
+from ..BaseFilter import Filter as _Filter
 from ..PhUI import PhUI as _PhUI
 from ..features.TDFeatures import Mean as _Mean, SD as _SD
 from ..features.CacheOnlyFeatures import CacheOnlyFeature as _CacheOnlyFeature
 
 __author__ = 'AleB'
-__all__ = ["Filters"]
 
 """
 Filters are blocks that take as input a SIGNAL and gives as output another SIGNAL of the SAME NATURE.
 """
 
 
-class Normalize(Filter):
+class Normalize(_Filter):
     """
     Normalizes the series removing the mean (val-mean)
     """
