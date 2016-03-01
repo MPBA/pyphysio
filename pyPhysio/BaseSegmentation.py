@@ -1,5 +1,8 @@
 # coding=utf-8
 from copy import copy as _cpy
+import numpy as _np
+from BaseAlgorithm import Algorithm as _Algorithm
+from Signal import EvenlySignal as _EvenlySignal
 __author__ = 'AleB'
 
 
@@ -33,7 +36,7 @@ class Segment(object):
 
     @property
     def end_time(self):
-        return self._signal.times[self.end] if self.end is not None else None
+        return self._signal.get_times(self.end) if self.end is not None else None
 
     @property
     def duration(self):
@@ -44,7 +47,7 @@ class Segment(object):
         return self._label
 
     def is_empty(self):
-        return self._signal is None or self._begin > len(self._signal)
+        return self._signal is None or self._begin >= len(self._signal)
 
     from datetime import datetime as dt, MAXYEAR
     _mdt = dt(MAXYEAR, 12, 31, 23, 59, 59, 999999)
@@ -65,23 +68,37 @@ class Segment(object):
         return '%s:%s' % (str(self.begin), str(self.end)) + (":%s" % self._label) if self._label is not None else ""
 
 
-class SegmentsGenerator(object):
+class SegmentsGenerator(_Algorithm):
     """
     Base and abstract class for the windows computation.
     """
-    def __init__(self):
-        assert self.__class__ != SegmentsGenerator.__class__, "This class is abstract."
+
+    def __init__(self, params=None, p_kwargs=None, **kwargs):
+        if p_kwargs is not None:
+            kwargs.update(p_kwargs)
+        super(SegmentsGenerator, self).__init__(params, kwargs)
         self._signal = None
+
+    # Algorithm Override
+    def __call__(self, data):
+        return self.get(data, self._params, use_cache=False)
 
     def __iter__(self):
         return SegmentationIterator(self)
 
-    def __call__(self, signal=None):
-        # TODO Simplify
-        self._signal = signal
-        d = [x for x in self]
-        self._signal = None
-        return d
+    @classmethod
+    def algorithm(cls, data, params):
+        o = cls(params)
+        o._signal = data
+        return o
+
+    @classmethod
+    def is_nature_supported(cls, data):
+        return isinstance(data, _EvenlySignal)
+
+    @classmethod
+    def get_used_params(cls):
+        return []
 
     def next_segment(self):
         """
@@ -96,6 +113,12 @@ class SegmentsGenerator(object):
         @raise StopIteration: End of the iteration
         """
         raise NotImplementedError()
+
+    def __repr__(self):
+        if self._signal is not None:
+            return super(SegmentsGenerator, self).__repr__() + " over\n" + str(self._signal)
+        else:
+            return super(SegmentsGenerator, self).__repr__()
 
 
 class SegmentationIterator(object):

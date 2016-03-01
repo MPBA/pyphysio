@@ -89,7 +89,7 @@ class Algorithm(object):
         return self._params
 
     @classmethod
-    def is_nature_supported(cls, nature):
+    def is_nature_supported(cls, data):
         """
         Placeholder for the subclasses
         :returns: Weather nature is compatible or not

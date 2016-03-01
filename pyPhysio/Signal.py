@@ -120,8 +120,7 @@ class UnevenlySignal(Signal):
         # TODO check: useful O(n) monotonicity check?
         assert not check or len(input_array) == len(times_array),\
             "Length mismatch (%d vs. %d)" % (len(input_array), len(times_array))
-        assert not all(times_array[i] <= times_array[i+1] for i in xrange(len(times_array)-1)),\
-            "Time is not monotonic"
+        assert all(i > 0 for i in _np.diff(times_array)), "Time is not monotonic"
         obj = Signal(input_array, signal_nature, start_time, meta).view(cls)
         obj.ph[cls._MT_TIMES] = times_array
         return obj
@@ -151,6 +150,6 @@ class EventsSignal(UnevenlySignal):
     # Works with timestamps
     def getslice(self, f, l):
         # find f & l indexes of indexes
-        f = _np.searchsorted(self.times, f)
-        l = _np.searchsorted(self.times, l)
-        return EventsSignal(self.times[f:l], self.view(_np.ndarray)[f:l], checks=False)
+        f = _np.searchsorted(self.get_times(), f)
+        l = _np.searchsorted(self.get_times(), l)
+        return EventsSignal(self.get_times()[f:l], self.view(_np.ndarray)[f:l], checks=False)
