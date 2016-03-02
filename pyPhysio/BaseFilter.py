@@ -6,7 +6,7 @@ __author__ = 'AleB'
 class Filter(Algorithm):
 
     @classmethod
-    def is_nature_supported(cls, data):
+    def is_nature_supported(cls, signal):
         return True
 
     @classmethod
