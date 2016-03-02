@@ -11,7 +11,7 @@ class Segment(object):
     Base Segment, a begin-end pair with a reference to the base signal and a name.
     """
 
-    def __init__(self, begin, end, label, signal):
+    def __init__(self, begin, end, label=None, signal=None):
         """
         Creates a base Window
         @param begin: Begin sample index
@@ -54,9 +54,9 @@ class Segment(object):
 
     def __call__(self, data):
         if self._end is None:
-            return data.between_time(self._begin, Segment._mdt)
+            return data[self._begin:Segment._mdt]
         else:
-            return data.between_time(self._begin, self._end)
+            return data[self._begin, self._end]
 
     def islice(self, data, include_partial=False):
         if (include_partial or self._end <= data.index[-1]) and self._begin < data.index[-1]:
