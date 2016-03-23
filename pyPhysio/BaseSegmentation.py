@@ -52,11 +52,13 @@ class Segment(object):
     from datetime import datetime as dt, MAXYEAR
     _mdt = dt(MAXYEAR, 12, 31, 23, 59, 59, 999999)
 
-    def __call__(self, data):
+    def __call__(self, data=None):
+        if data is None:
+            data = self._signal
         if self._end is None:
             return data[self._begin:Segment._mdt]
         else:
-            return data[self._begin, self._end]
+            return data[self._begin:self._end]
 
     def islice(self, data, include_partial=False):
         if (include_partial or self._end <= data.index[-1]) and self._begin < data.index[-1]:
