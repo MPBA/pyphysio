@@ -10,7 +10,7 @@ class Indicator(Algorithm):
     """
 
     @classmethod
-    def is_nature_supported(cls, signal):
+    def is_nature_supported(cls, data):
         return True
 
     @classmethod

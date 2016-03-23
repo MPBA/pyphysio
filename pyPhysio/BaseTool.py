@@ -2,12 +2,10 @@
 from BaseAlgorithm import Algorithm
 __author__ = 'AleB'
 
-
-class Filter(Algorithm):
-
-    @classmethod
-    def is_nature_supported(cls, data):
-        return True
+"""
+Algorithms which return one or more np.array
+"""
+class Tool(Algorithm):
 
     @classmethod
     def algorithm(cls, data, params):
@@ -20,7 +18,7 @@ class Filter(Algorithm):
         raise NotImplementedError(cls.__name__ + " is not implemented.")
 
     @classmethod
-    def get_used_params(cls):
+    def check_params(cls):
         """
         The default return if the method is not implemented
         :return: Empty list
