@@ -636,38 +636,37 @@ class DriverEstim(_Estimator):
             pass
         return params
 
+    @staticmethod
+    def _gen_bateman(fsamp, par_bat):
+        """
+        Generates the bateman function:
 
-@classmethod
-def _gen_bateman(fsamp, par_bat):
-    """
-    Generates the bateman function:
+        if len(par_bat) = 2: :math:`b = e^{-t/T1} - e^{-t/T2}`
 
-    if len(par_bat) = 2: :math:`b = e^{-t/T1} - e^{-t/T2}`
+        if len(par_bat) = 4: :math:`b = e^{-t/T1} - (1-A)e^{-t/T2} - Ae^{-t/T3}`
 
-    if len(par_bat) = 4: :math:`b = e^{-t/T1} - (1-A)e^{-t/T2} - Ae^{-t/T3}`
+        Parameters
+        ----------
+        fsamp : float
+            The sampling frequency
+        par_bat: list (T1, T2)
+            Parameters of the bateman function
 
-    Parameters
-    ----------
-    fsamp : float
-        The sampling frequency
-    par_bat: list (T1, T2)
-        Parameters of the bateman function
+        Returns
+        -------
+        bateman : nparray
+            The bateman function
+        """
 
-    Returns
-    -------
-    bateman : nparray
-        The bateman function
-    """
+        idx_T1 = par_bat[0] * fsamp
+        idx_T2 = par_bat[1] * fsamp
+        len_bat = idx_T2 * 10
+        idx_bat = _np.arange(len_bat)
+        bateman = -1 * (_np.exp(-idx_bat / idx_T1) - _np.exp(-idx_bat / idx_T2))
 
-    idx_T1 = par_bat[0] * fsamp
-    idx_T2 = par_bat[1] * fsamp
-    len_bat = idx_T2 * 10
-    idx_bat = _np.arange(len_bat)
-    bateman = -1 * (_np.exp(-idx_bat / idx_T1) - _np.exp(-idx_bat / idx_T2))
-
-    # normalize
-    bateman = bateman / ((1 / fsamp) * _np.sum(bateman))
-    return bateman
+        # normalize
+        bateman = bateman / ((1 / fsamp) * _np.sum(bateman))
+        return bateman
 
 
 class PhasicEstim(_Estimator):
