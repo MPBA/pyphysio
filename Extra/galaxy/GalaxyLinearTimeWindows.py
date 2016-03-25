@@ -22,7 +22,7 @@ class GalaxyLinearTimeWindows(ParamExecClass):
         output_file = self._kwargs['output']
         c = load_ds_from_csv_column(self._kwargs['input'])
         w = list(LinearTimeWindows(self._kwargs['step'], self._kwargs['width'], data=c))
-        b, e = (map(lambda x: x.begin, w), map(lambda x: x.end, w))
+        b, e = (map(lambda x: x.get_begin(), w), map(lambda x: x.get_end(), w))
         d = DataFrame(columns=['begin', 'end'])
         d['begin'] = b
         d['end'] = e

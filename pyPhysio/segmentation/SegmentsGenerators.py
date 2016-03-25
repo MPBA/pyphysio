@@ -65,9 +65,9 @@ class TimeSegments(SegmentsGenerator):
             raise StopIteration()
         b = e = self._i
         l = len(self._signal)
-        while self._i < l and self._signal.get_times(self._i) <= self._signal.get_times(b) + self._step:
+        while self._i < l and self._signal.get_x_values(self._i) <= self._signal.get_x_values(b) + self._step:
             self._i += 1
-        while e < l and self._signal.get_times(e) <= self._signal.get_times(b) + self._width:
+        while e < l and self._signal.get_x_values(e) <= self._signal.get_x_values(b) + self._width:
             e += 1
         s = Segment(b, e, '', self._signal)
         if s.is_empty():
@@ -95,7 +95,7 @@ class ExistingSegments(SegmentsGenerator):
             w = self._wins[self._ind]
             if self._signal is not None:
                 assert isinstance(w, Segment), "%s is not a Segment" % str(w)
-                w = Segment(w.begin, w.end, w.label, self._signal)
+                w = Segment(w.get_begin(), w.get_end(), w.get_label(), self._signal)
                 if w.is_empty():
                     self._ind = 0
                     raise StopIteration()
@@ -126,7 +126,7 @@ class FromEventsSegments(SegmentsGenerator):
         self._events = self._params["events"]
         self._s = 0
         self._i = 0
-        self._t = self._events.get_times(0)
+        self._t = self._events.get_x_values(0)
 
     def next_segment(self):
         if self._signal is None:
@@ -138,8 +138,8 @@ class FromEventsSegments(SegmentsGenerator):
             if self._i < l:
                 if self._s < len(self._events) - 1:
                     o = self._i
-                    self._t = self._events.get_times(self._s + 1)
-                    while self._i < l and self._signal.get_times(self._i) <= self._t:
+                    self._t = self._events.get_x_values(self._s + 1)
+                    while self._i < l and self._signal.get_x_values(self._i) <= self._t:
                         self._i += 1
                     w = Segment(o, self._i, self._events[self._s], self._signal)
                 elif self._s < len(self._events):

@@ -46,7 +46,7 @@ class WindowsIterator(object):
             else:
                 _PhUI.w("The specified algorithm '%s' is not an algorithm nor a PyPhysio algorithm name." % algorithm)
         self._winn += 1
-        return [self._winn if win.label is None else win.label, win.begin, win.end] + ret
+        return [self._winn if win.get_label() is None else win.get_label(), win.get_begin(), win.get_end()] + ret
 
     def step_windowing(self):
         return self._comp_one(self._win_iter.next())
