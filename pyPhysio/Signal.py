@@ -1,7 +1,7 @@
 # coding=utf-8
 from __future__ import division
 import numpy as _np
-from abc import abstractmethod
+from abc import abstractmethod as _abstract, ABCMeta as _ABCMeta
 
 __author__ = 'AleB'
 
@@ -9,13 +9,15 @@ __author__ = 'AleB'
 
 
 class Signal(_np.ndarray):
+    __metaclass__ = _ABCMeta
+
     _MT_NATURE = "signal_nature"
     _MT_START_TIME = "start_time"
     _MT_META_DICT = "metadata"
     _MT_SAMPLING_FREQ = "sampling_freq"
     _MT_INFO_ATTR = "_pyphysio"
 
-    @abstractmethod
+    @_abstract
     def __new__(cls, y_values, sampling_freq, signal_nature="", start_time=0, meta=None):
         # noinspection PyNoneFunctionAssignment
         obj = _np.asarray(y_values).view(cls)
@@ -42,11 +44,11 @@ class Signal(_np.ndarray):
     def ph(self):
         return self._pyphysio
 
-    @abstractmethod
+    @_abstract
     def get_duration(self):
         return None
 
-    @abstractmethod
+    @_abstract
     def get_x_values(self, just_one=None):
         return None
 
@@ -106,9 +108,11 @@ class EvenlySignal(Signal):
 
 
 class XYSignal(Signal):
+    __metaclass__ = _ABCMeta
+
     _MT_X_VALUES = "x_values"
 
-    @abstractmethod
+    @_abstract
     def __new__(cls, y_values, x_values, sampling_freq, signal_nature, start_time, meta, check):
         assert not check or len(y_values) == len(x_values), \
             "Length mismatch (y:%d vs. x:%d)" % (len(y_values), len(x_values))
@@ -122,11 +126,11 @@ class XYSignal(Signal):
         else:
             return self.ph[self._MT_X_VALUES][just_one]
 
-    @abstractmethod
+    @_abstract
     def get_duration(self):
         return None
 
-    @abstractmethod
+    @_abstract
     def getslice(self, f, l):
         pass
 

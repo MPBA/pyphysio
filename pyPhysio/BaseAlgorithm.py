@@ -1,13 +1,16 @@
 # coding=utf-8
 from Signal import Signal
+from abc import abstractmethod as _abstract, ABCMeta as _ABCMeta
 __author__ = 'AleB'
 
 
 class Algorithm(object):
+    __metaclass__ = _ABCMeta
     """
     This is the algorithm container super class. It (is abstract) should be used only to be extended.
     """
 
+    @_abstract
     def __init__(self, params=None, **kwargs):
         """
         Incorporates the parameters and saves them in the instance.
@@ -18,7 +21,6 @@ class Algorithm(object):
         @param kwargs: kwargs parameters to pass to the feature extractor.
         @type kwargs: dict
         """
-        assert self.__class__ != Algorithm, "This class is abstract and must be extended to be used."
         assert params is None or type(params) is dict, "The syntax is algorithm([params])(signal)"
         if params is None:
             self._params = {}
@@ -86,15 +88,17 @@ class Algorithm(object):
         return self._params
 
     @classmethod
+    @_abstract
     def is_nature_supported(cls, signal):
         """
         Placeholder for the subclasses
         :returns: Weather nature is compatible or not
         @raise NotImplementedError: Ever
         """
-        raise NotImplementedError(cls.__name__ + " is not implemented.")
+        pass
 
     @classmethod
+    @_abstract
     def algorithm(cls, data, params):
         """
         Placeholder for the subclasses
@@ -102,15 +106,16 @@ class Algorithm(object):
         :param params:
         :param data:
         """
-        raise NotImplementedError(cls.__name__ + " is not implemented.")
+        pass
 
     @classmethod
+    @_abstract
     def get_used_params(cls):
         """
         Placeholder for the subclasses
         @raise NotImplementedError: Ever
         """
-        raise NotImplementedError(cls.__name__ + " is not implemented.")
+        pass
 
 
 class CustomAlgorithm(Algorithm):

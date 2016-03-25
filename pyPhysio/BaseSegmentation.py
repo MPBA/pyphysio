@@ -1,5 +1,5 @@
 # coding=utf-8
-from abc import abstractmethod
+from abc import ABCMeta as _ABCMeta, abstractmethod as _abstract
 from copy import copy as _cpy
 from BaseAlgorithm import Algorithm as _Algorithm
 from Signal import EvenlySignal as _EvenlySignal
@@ -68,13 +68,14 @@ class SegmentsGenerator(_Algorithm):
     """
     Base and abstract class for the windows computation.
     """
+    __metaclass__ = _ABCMeta
 
-    @abstractmethod
+    @_abstract
     def __init__(self, params=None, **kwargs):
         super(SegmentsGenerator, self).__init__(params, **kwargs)
         self._signal = None
 
-    @abstractmethod
+    @_abstract
     def next_segment(self):
         """
         Executes a segmentation step.
@@ -82,7 +83,7 @@ class SegmentsGenerator(_Algorithm):
         """
         raise StopIteration()
 
-    @abstractmethod
+    @_abstract
     def init_segmentation(self):
         """
         Executes a segmentation step.
