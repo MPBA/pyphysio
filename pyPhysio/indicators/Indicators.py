@@ -286,7 +286,7 @@ class Mean(_Indicator):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(Mean, self).__init__(params, kwargs)
+        super(Mean, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -307,7 +307,7 @@ class Median(_Indicator):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(Median, self).__init__(params, kwargs)
+        super(Median, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -328,7 +328,7 @@ class SD(_Indicator):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(SD, self).__init__(params, kwargs)
+        super(SD, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -341,10 +341,8 @@ class PNNx(_Indicator):
     where the difference between the two values is greater than the parameter (threshold).
     """
 
-    def __init__(self, params=None, _kwargs=None, **kwargs):
-        if type(_kwargs) is dict:
-            kwargs.update(_kwargs)
-        super(PNNx, self).__init__(params, kwargs)
+    def __init__(self, params=None, **kwargs):
+        super(PNNx, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -378,10 +376,8 @@ class NNx(_Indicator):
     parameter (threshold).
     """
 
-    def __init__(self, params=None, _kwargs=None, **kwargs):
-        if type(_kwargs) is dict:
-            kwargs.update(_kwargs)
-        super(NNx, self).__init__(params, kwargs)
+    def __init__(self, params=None, **kwargs):
+        super(NNx, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -419,7 +415,7 @@ class PNN10(PNNx):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(PNN10, self).__init__(params, kwargs)
+        super(PNN10, self).__init__(params, **kwargs)
 
     @staticmethod
     def threshold():
@@ -433,7 +429,7 @@ class PNN25(PNNx):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(PNN25, self).__init__(params, kwargs)
+        super(PNN25, self).__init__(params, **kwargs)
 
     @staticmethod
     def threshold():
@@ -447,7 +443,7 @@ class PNN50(PNNx):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(PNN50, self).__init__(params, kwargs)
+        super(PNN50, self).__init__(params, **kwargs)
 
     @staticmethod
     def threshold():
@@ -460,7 +456,7 @@ class NN10(NNx):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(NN10, self).__init__(params, kwargs)
+        super(NN10, self).__init__(params, **kwargs)
 
     @staticmethod
     def threshold():
@@ -473,7 +469,7 @@ class NN25(NNx):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(NN25, self).__init__(params, kwargs)
+        super(NN25, self).__init__(params, **kwargs)
 
     @staticmethod
     def threshold():
@@ -486,7 +482,7 @@ class NN50(NNx):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(NN50, self).__init__(params, kwargs)
+        super(NN50, self).__init__(params, **kwargs)
 
     @staticmethod
     def threshold():
@@ -499,7 +495,7 @@ class RMSSD(_Indicator):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(RMSSD, self).__init__(params, kwargs)
+        super(RMSSD, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -511,7 +507,7 @@ class DiffSD(_Indicator):
     """Calculates the standard deviation of the differences between each value and its next."""
 
     def __init__(self, params=None, **kwargs):
-        super(DiffSD, self).__init__(params, kwargs)
+        super(DiffSD, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -525,7 +521,7 @@ class Triang(_Indicator):
     highest bin of the data's 100 bin histogram."""
 
     def __init__(self, params=None, **kwargs):
-        super(Triang, self).__init__(params, kwargs)
+        super(Triang, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -538,7 +534,7 @@ class TINN(_Indicator):
     """Calculates the difference between two histogram-related indicators."""
 
     def __init__(self, params=None, **kwargs):
-        super(TINN, self).__init__(params, kwargs)
+        super(TINN, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -581,7 +577,7 @@ class TINN(_Indicator):
 
 class InBand(_Indicator):
     def __init__(self, params=None, **kwargs):
-        super(InBand, self).__init__(params, kwargs)
+        super(InBand, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -604,11 +600,11 @@ class InBand(_Indicator):
 
 class PowerInBand(_Indicator):
     def __init__(self, params=None, **kwargs):
-        super(PowerInBand, self).__init__(params, kwargs)
+        super(PowerInBand, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
-        ignore, _pow_band, ignored = InBand.get(data, params)
+        ignore, _pow_band, ignored = InBand.get(data, **params)
         return sum(_pow_band) / len(_pow_band)
 
     @classmethod
@@ -618,7 +614,7 @@ class PowerInBand(_Indicator):
 
 class PowerInBandNormal(_Indicator):
     def __init__(self, params=None, **kwargs):
-        super(PowerInBandNormal, self).__init__(params, kwargs)
+        super(PowerInBandNormal, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -632,7 +628,7 @@ class PowerInBandNormal(_Indicator):
 
 class PeakInBand(_Indicator):
     def __init__(self, params=None, **kwargs):
-        super(PeakInBand, self).__init__(params, kwargs)
+        super(PeakInBand, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -646,7 +642,7 @@ class PeakInBand(_Indicator):
 
 class LFHF(_Indicator):
     def __init__(self, params=None, **kwargs):
-        super(LFHF, self).__init__(params, kwargs)
+        super(LFHF, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -668,7 +664,7 @@ class NormalizedLF(_Indicator):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(NormalizedLF, self).__init__(params, kwargs)
+        super(NormalizedLF, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -688,7 +684,7 @@ class NormalizedHF(_Indicator):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(NormalizedHF, self).__init__(params, kwargs)
+        super(NormalizedHF, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -709,7 +705,7 @@ class ApproxEntropy(_Indicator):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(ApproxEntropy, self).__init__(params, kwargs)
+        super(ApproxEntropy, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -749,7 +745,7 @@ class SampleEntropy(_Indicator):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(SampleEntropy, self).__init__(params, kwargs)
+        super(SampleEntropy, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -790,7 +786,7 @@ class FractalDimension(_Indicator):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(FractalDimension, self).__init__(params, kwargs)
+        super(FractalDimension, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -822,7 +818,7 @@ class SVDEntropy(_Indicator):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(SVDEntropy, self).__init__(params, kwargs)
+        super(SVDEntropy, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -841,7 +837,7 @@ class Fisher(_Indicator):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(Fisher, self).__init__(params, kwargs)
+        super(Fisher, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -864,7 +860,7 @@ class CorrelationDim(_Indicator):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(CorrelationDim, self).__init__(params, kwargs)
+        super(CorrelationDim, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -900,7 +896,7 @@ class PoinSD1(_Indicator):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(PoinSD1, self).__init__(params, kwargs)
+        super(PoinSD1, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -914,7 +910,7 @@ class PoinSD2(_Indicator):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(PoinSD2, self).__init__(params, kwargs)
+        super(PoinSD2, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -928,7 +924,7 @@ class PoinSD12(_Indicator):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(PoinSD12, self).__init__(params, kwargs)
+        super(PoinSD12, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -942,7 +938,7 @@ class PoinEll(_Indicator):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(PoinEll, self).__init__(params, kwargs)
+        super(PoinEll, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -956,7 +952,7 @@ class Hurst(_Indicator):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(Hurst, self).__init__(params, kwargs)
+        super(Hurst, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -988,7 +984,7 @@ class PetrosianFracDim(_Indicator):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(PetrosianFracDim, self).__init__(params, kwargs)
+        super(PetrosianFracDim, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -1007,7 +1003,7 @@ class DFAShortTerm(_Indicator):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(DFAShortTerm, self).__init__(params, kwargs)
+        super(DFAShortTerm, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -1040,7 +1036,7 @@ class DFALongTerm(_Indicator):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(DFALongTerm, self).__init__(params, kwargs)
+        super(DFALongTerm, self).__init__(params, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):

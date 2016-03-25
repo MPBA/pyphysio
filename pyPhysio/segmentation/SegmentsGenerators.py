@@ -13,7 +13,7 @@ class LengthSegments(SegmentsGenerator):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(LengthSegments, self).__init__(params, kwargs)
+        super(LengthSegments, self).__init__(params, **kwargs)
         assert "step" in self._params, "Need the parameter 'step' for the segmentation."
         self._step = None
         self._width = None
@@ -44,7 +44,7 @@ class TimeSegments(SegmentsGenerator):
     __init__(self, step, width=0, start=0)
     """
     def __init__(self, params=None, **kwargs):
-        super(TimeSegments, self).__init__(params, kwargs)
+        super(TimeSegments, self).__init__(params, **kwargs)
         assert "step" in self._params, "Need the parameter 'step' for the segmentation."
         self._step = None
         self._width = None
@@ -81,7 +81,7 @@ class ExistingSegments(SegmentsGenerator):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(ExistingSegments, self).__init__(params, kwargs)
+        super(ExistingSegments, self).__init__(params, **kwargs)
         assert "segments" in self._params, "Need the parameter 'segments' (array of Segment) for the segmentation."
         self._wins = None
         self._ind = None
@@ -112,7 +112,7 @@ class FromEventsSegments(SegmentsGenerator):
     """
 
     def __init__(self, params=None, **kwargs):
-        super(FromEventsSegments, self).__init__(params, kwargs)
+        super(FromEventsSegments, self).__init__(params, **kwargs)
         assert "events" in self._params, "Need the parameter 'events' (EventSignal) for this segmentation."
         self._i = None
         self._t = None

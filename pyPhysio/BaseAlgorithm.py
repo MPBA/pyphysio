@@ -8,7 +8,7 @@ class Algorithm(object):
     This is the algorithm container super class. It (is abstract) should be used only to be extended.
     """
 
-    def __init__(self, params=None, _kwargs=None, **kwargs):
+    def __init__(self, params=None, **kwargs):
         """
         Incorporates the parameters and saves them in the instance.
         @param params: Dictionary of string-value parameters passed by the user.
@@ -20,14 +20,11 @@ class Algorithm(object):
         """
         assert self.__class__ != Algorithm, "This class is abstract and must be extended to be used."
         assert params is None or type(params) is dict, "The syntax is algorithm([params])(signal)"
-        assert type(_kwargs) is dict or _kwargs is None
         if params is None:
             self._params = {}
         else:
             self._params = params.copy()
         self._params.update(kwargs)
-        if type(_kwargs) is dict:
-            self._params.update(_kwargs)
 
     def __call__(self, data):
         """
@@ -114,6 +111,23 @@ class Algorithm(object):
         @raise NotImplementedError: Ever
         """
         raise NotImplementedError(cls.__name__ + " is not implemented.")
+
+
+class CustomAlgorithm(Algorithm):
+    def __init__(self, algorithm, check_params, is_nature_supported, params=None, **kwargs):
+        super(CustomAlgorithm, self).__init__(params, **kwargs)
+        self._algo = algorithm
+        self._check = check_params
+        self._nature = is_nature_supported
+
+    def get_used_params(self):
+        return self._check()
+
+    def algorithm(self, data, params):
+        return self._algo(data, params)
+
+    def is_nature_supported(self, signal):
+        return self._nature(signal)
 
 
 class Cache(object):

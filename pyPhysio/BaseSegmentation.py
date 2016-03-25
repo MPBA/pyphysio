@@ -75,10 +75,8 @@ class SegmentsGenerator(_Algorithm):
     Base and abstract class for the windows computation.
     """
 
-    def __init__(self, params=None, p_kwargs=None, **kwargs):
-        if p_kwargs is not None:
-            kwargs.update(p_kwargs)
-        super(SegmentsGenerator, self).__init__(params, kwargs)
+    def __init__(self, params=None, **kwargs):
+        super(SegmentsGenerator, self).__init__(params, **kwargs)
         self._signal = None
 
     # Algorithm Override
