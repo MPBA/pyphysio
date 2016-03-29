@@ -1,5 +1,5 @@
 # coding=utf-8
-from Signal import Signal
+from Signal import _Signal
 from abc import abstractmethod as _abstract, ABCMeta as _ABCMeta
 __author__ = 'AleB'
 
@@ -10,7 +10,6 @@ class Algorithm(object):
     This is the algorithm container super class. It (is abstract) should be used only to be extended.
     """
 
-    @_abstract
     def __init__(self, params=None, **kwargs):
         """
         Incorporates the parameters and saves them in the instance.
@@ -52,7 +51,7 @@ class Algorithm(object):
         @type use_cache: bool
         @return: The value of the feature.
         """
-        assert isinstance(data, Signal), "The data must be a Signal."
+        assert isinstance(data, _Signal), "The data must be a Signal."
         if type(params) is dict:
             kwargs.update(params)
         if use_cache is True:
@@ -116,23 +115,6 @@ class Algorithm(object):
         @raise NotImplementedError: Ever
         """
         pass
-
-
-class CustomAlgorithm(Algorithm):
-    def __init__(self, algorithm, check_params, is_nature_supported, params=None, **kwargs):
-        super(CustomAlgorithm, self).__init__(params, **kwargs)
-        self._algo = algorithm
-        self._check = check_params
-        self._nature = is_nature_supported
-
-    def get_used_params(self):
-        return self._check()
-
-    def algorithm(self, data, params):
-        return self._algo(data, params)
-
-    def is_nature_supported(self, signal):
-        return self._nature(signal)
 
 
 class Cache(object):

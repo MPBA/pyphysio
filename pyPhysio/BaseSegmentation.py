@@ -1,5 +1,5 @@
 # coding=utf-8
-from abc import ABCMeta as _ABCMeta, abstractmethod as _abstract
+from abc import abstractmethod as _abstract, ABCMeta as _ABCMeta
 from copy import copy as _cpy
 from BaseAlgorithm import Algorithm as _Algorithm
 from Signal import EvenlySignal as _EvenlySignal

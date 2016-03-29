@@ -1,23 +1,20 @@
 # coding=utf-8
 from __future__ import division
 import numpy as _np
-from abc import abstractmethod as _abstract, ABCMeta as _ABCMeta
+from Utility import abstractmethod as _abstract
 
 __author__ = 'AleB'
 
 # Everything in SECONDS (s) !!!
 
 
-class Signal(_np.ndarray):
-    __metaclass__ = _ABCMeta
-
+class _Signal(_np.ndarray):
     _MT_NATURE = "signal_nature"
     _MT_START_TIME = "start_time"
     _MT_META_DICT = "metadata"
     _MT_SAMPLING_FREQ = "sampling_freq"
     _MT_INFO_ATTR = "_pyphysio"
 
-    @_abstract
     def __new__(cls, y_values, sampling_freq, signal_nature="", start_time=0, meta=None):
         # noinspection PyNoneFunctionAssignment
         obj = _np.asarray(y_values).view(cls)
@@ -46,11 +43,11 @@ class Signal(_np.ndarray):
 
     @_abstract
     def get_duration(self):
-        return None
+        pass
 
     @_abstract
     def get_x_values(self, just_one=None):
-        return None
+        pass
 
     def get_y_values(self):
         return _np.asarray(self)
@@ -74,10 +71,7 @@ class Signal(_np.ndarray):
         return "<signal: " + self.get_signal_nature() + ", start_time: " + str(self.get_start_time()) + ">"
 
 
-class EvenlySignal(Signal):
-    def __new__(cls, y_values, sampling_freq, signal_nature="", start_time=0, meta=None):
-        obj = Signal(y_values, sampling_freq, signal_nature, start_time, meta).view(cls)
-        return obj
+class EvenlySignal(_Signal):
 
     def get_duration(self):
         # Uses future division
@@ -103,20 +97,17 @@ class EvenlySignal(Signal):
         return EvenlySignal(self[f:l], self.get_sampling_freq(), self.get_signal_nature(), f)
 
     def __repr__(self):
-        return Signal.__repr__(self)[:-1] + " freq:" + str(self.get_sampling_freq()) + "Hz>\n" + self.view(
+        return _Signal.__repr__(self)[:-1] + " freq:" + str(self.get_sampling_freq()) + "Hz>\n" + self.view(
             _np.ndarray).__repr__()
 
 
-class XYSignal(Signal):
-    __metaclass__ = _ABCMeta
-
+class _XYSignal(_Signal):
     _MT_X_VALUES = "x_values"
 
-    @_abstract
     def __new__(cls, y_values, x_values, sampling_freq, signal_nature, start_time, meta, check):
         assert not check or len(y_values) == len(x_values), \
             "Length mismatch (y:%d vs. x:%d)" % (len(y_values), len(x_values))
-        obj = Signal(y_values, sampling_freq, signal_nature, start_time, meta).view(cls)
+        obj = _Signal.__new__(cls, y_values, sampling_freq, signal_nature, start_time, meta)
         obj.ph[cls._MT_X_VALUES] = x_values
         return obj
 
@@ -128,23 +119,23 @@ class XYSignal(Signal):
 
     @_abstract
     def get_duration(self):
-        return None
+        pass
 
     @_abstract
     def getslice(self, f, l):
         pass
 
     def __repr__(self):
-        return Signal.__repr__(self) + "\ntimes-" + self.get_x_values().__repr__() + "\nvalues-" + self.view(
+        return _Signal.__repr__(self) + "\ntimes-" + self.get_x_values().__repr__() + "\nvalues-" + self.view(
             _np.ndarray).__repr__()
 
 
-class UnevenlySignal(XYSignal):
+class UnevenlySignal(_XYSignal):
     _MT_DURATION = "duration"
 
     def __new__(cls, y_values, time_values, duration, sampling_freq, signal_nature="", start_time=0, meta=None,
                 check=True):
-        obj = XYSignal(y_values, time_values, sampling_freq, signal_nature, start_time, meta, check).view(cls)
+        obj = _XYSignal.__new__(cls, y_values, time_values, sampling_freq, signal_nature, start_time, meta, check)
         obj.ph[cls._MT_DURATION] = duration
         return obj
 
@@ -160,9 +151,7 @@ class UnevenlySignal(XYSignal):
                               self.get_signal_nature(), check=False)
 
 
-class UnevenlyTimeSignal(XYSignal):
-    def __new__(cls, y_values, time_values, signal_nature="", start_time=0, meta=None, check=True):
-        return XYSignal(y_values, time_values, signal_nature, start_time, meta, check).view(cls)
+class UnevenlyTimeSignal(_XYSignal):
 
     def get_duration(self):
         return self.get_start_time() + self.get_x_values(len(self))
@@ -175,13 +164,14 @@ class UnevenlyTimeSignal(XYSignal):
         return UnevenlySignal(self[f:l], self.get_x_values()[f:l], self.get_signal_nature(), check=False)
 
 
-class EventsSignal(UnevenlyTimeSignal):
-    def __new__(cls, events, times, start_time=0, meta=None, check=True):
-        return UnevenlySignal(events, times, 0, 0, "events", start_time, meta, check)
-
-    # Works with timestamps
-    def getslice(self, f, l):
-        # find f & l indexes of indexes
-        f = _np.searchsorted(self.get_x_values(), f)
-        l = _np.searchsorted(self.get_x_values(), l)
-        return EventsSignal(self.get_x_values()[f:l], self.view(_np.ndarray)[f:l], check=False)
+# Not used
+# class EventsSignal(UnevenlyTimeSignal):
+#     def __new__(cls, events, times, start_time=0, meta=None, check=True):
+#         return UnevenlySignal(events, times, 0, 0, "events", start_time, meta, check)
+#
+#     # Works with timestamps
+#     def getslice(self, f, l):
+#         # find f & l indexes of indexes
+#         f = _np.searchsorted(self.get_x_values(), f)
+#         l = _np.searchsorted(self.get_x_values(), l)
+#         return EventsSignal(self.get_x_values()[f:l], self.view(_np.ndarray)[f:l], check=False)
