@@ -8,7 +8,7 @@ __author__ = 'AleB'
 import pyphysio.pyPhysio as ph
 
 sig = ph.EvenlySignal(bvp_np, bvp_sf, bvp_st)
-sig.metadata.set_anag("Tito", "Livio", "SUB0524", 42)
+sig.get_metadata.set_anag("Tito", "Livio", "SUB0524", 42)
 
 # I have to resample it
 sig = ph.resample(sig, 1024, "spline")
