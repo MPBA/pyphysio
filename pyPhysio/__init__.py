@@ -4,6 +4,7 @@ import indicators.Indicators
 import filters.Filters
 from indicators.Indicators import *
 from filters.Filters import *
+from tools.Tools import *
 from segmentation.SegmentsGenerators import *
 import segmentation.SegmentsGenerators
 from BaseSegmentation import Segment
@@ -29,14 +30,14 @@ def algo(function, params=None):
     from pyPhysio.BaseAlgorithm import Algorithm
 
     class Custom(Algorithm):
-        def __call__(self, data):
-            """
-            Executes the algorithm using the parameters saved by the constructor.
-            @param data: The data.
-            @type data: TimeSeries
-            @return: The result.
-            """
-            return self.get(data, self._params, use_cache=False)
+        # def __call__(self, data):
+        #     """
+        #     Executes the algorithm using the parameters saved by the constructor.
+        #     @param data: The data.
+        #     @type data: TimeSeries
+        #     @return: The result.
+        #     """
+        #     return self.get(data, self._params, use_cache=False)
 
         @classmethod
         def algorithm(cls, data, params):
