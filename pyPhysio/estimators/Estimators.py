@@ -75,3 +75,5 @@ class PeakDetection(Estimator):
                     look_for_max = True
 
         return max_i, min_i, max_v, min_v
+
+from CodedEstimators import *

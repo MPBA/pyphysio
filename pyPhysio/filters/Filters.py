@@ -100,3 +100,5 @@ class Diff(_Filter):
         :param data:
         """
         return np.diff(data)
+
+from CodedFilters import *

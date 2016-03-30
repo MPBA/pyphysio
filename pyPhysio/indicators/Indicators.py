@@ -5,8 +5,7 @@ import spectrum
 from scipy import signal
 from ..Utility import interpolate_ibi as _interpolate_ibi
 from ..BaseIndicator import Indicator as _Indicator
-from ..indicators.SupportValues import SumSV as _SumSV, LengthSV as _LengthSV, DiffsSV as _DiffsSV, \
-    MedianSV as _MedianSV
+from ..indicators.SupportValues import SumSV as _SumSV, LengthSV as _LengthSV, DiffsSV as _DiffsSV, MedianSV as _MedianSV
 import numpy as _np
 
 __author__ = 'AleB'
@@ -53,7 +52,7 @@ class PSDLombscargleCalc(_Indicator):
         t = _np.cumsum(data)
 
         # stop : scalar
-        # The end value of the sequence, unless endpoint is set to False. In that case, the sequence consists of
+        #     The end value of the sequence, unless endpoint is set to False. In that case, the sequence consists of
         #     all but the last of num + 1 evenly spaced samples, so that stop is excluded. Note that the step size
         #     changes when endpoint is False.
 
@@ -576,6 +575,7 @@ class TINN(_Indicator):
 
 
 class InBand(_Indicator):
+
     def __init__(self, params=None, **kwargs):
         super(InBand, self).__init__(params, **kwargs)
 
@@ -599,6 +599,7 @@ class InBand(_Indicator):
 
 
 class PowerInBand(_Indicator):
+
     def __init__(self, params=None, **kwargs):
         super(PowerInBand, self).__init__(params, **kwargs)
 
@@ -613,6 +614,7 @@ class PowerInBand(_Indicator):
 
 
 class PowerInBandNormal(_Indicator):
+
     def __init__(self, params=None, **kwargs):
         super(PowerInBandNormal, self).__init__(params, **kwargs)
 
@@ -627,6 +629,7 @@ class PowerInBandNormal(_Indicator):
 
 
 class PeakInBand(_Indicator):
+
     def __init__(self, params=None, **kwargs):
         super(PeakInBand, self).__init__(params, **kwargs)
 
@@ -761,8 +764,8 @@ class SampleEntropy(_Indicator):
             num_elem_m1 = uj_m1.shape[0]
 
             r = r * SD.get(data)
-            d_m = _cd(uj_m, uj_m, 'che' + 'bys' + 'hev')
-            d_m1 = _cd(uj_m1, uj_m1, 'che' + 'bys' + 'hev')
+            d_m = _cd(uj_m, uj_m, 'che'+'bys'+'hev')
+            d_m1 = _cd(uj_m1, uj_m1, 'che'+'bys'+'hev')
 
             cmr_m_sa_mp_en = _np.zeros(num_elem_m)
             for i in xrange(num_elem_m):
@@ -798,7 +801,7 @@ class FractalDimension(_Indicator):
             uj_m = OrderedSubsets.get(data, subset_size=2)
             cra = params['cra']
             crb = params['crb']
-            mutual_distance = _pd(uj_m, 'che' + 'bys' + 'hev')
+            mutual_distance = _pd(uj_m, 'che'+'bys'+'hev')
 
             num_elem = len(mutual_distance)
 
