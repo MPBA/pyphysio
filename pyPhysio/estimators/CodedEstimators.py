@@ -37,7 +37,10 @@ class BeatFromBP(_Estimator):
     -----
         See paper ...
     """
-
+    @classmethod
+    def get_signal_type(cls):
+        return ['BVP']
+    
     @classmethod
     def algorithm(cls, signal, params):  # FIX others
         bpm_max = params["bpm_max"]
@@ -53,13 +56,12 @@ class BeatFromBP(_Estimator):
 
         # STAGE 1 - EXTRACT BEAT POSITION SIGNAL
         if method == 'dt':  # (derivative gaussian)
+            sigma = my_assert(sigma, params)
             len_model = sigma * 8
             M = round(len_model * fsamp)
             sigma = round(sigma * fsamp)
 
-            # TODO: use ConvolutionalFilter(wintype='dgauss')
-            gauss_dt = ConvolutionalFilter(sigma * 8, sigma)  # TODO: formato della chiamata (param=val, param2=val)
-
+            gauss_dt = ConvolutionalFilter(sigma * 8, sigma)
             signal_f = gauss_dt(signal)
 
         elif method == 'lp':  # (lowpass)
