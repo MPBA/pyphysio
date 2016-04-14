@@ -1,6 +1,6 @@
 import numpy as _np
 
-from pyPhysio import ConvolutionalFilter as _ConvFlt
+from ..filters.Filters import ConvolutionalFilter as _ConvFlt
 from ..PhUI import PhUI as _ph
 from ..BaseTool import Tool as _Tool
 from ..Signal import UnevenlySignal as _Unev

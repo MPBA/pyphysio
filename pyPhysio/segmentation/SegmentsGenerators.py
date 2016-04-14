@@ -22,7 +22,7 @@ class LengthSegments(SegmentsGenerator):
     def init_segmentation(self):
         if self._signal is None:
             raise ValueError("Can't preview the segments without a signal here. Use the syntax "
-                             + LengthSegments.__name__ + "(p[params])(signal)")
+                             + LengthSegments.__name__ + "(**params)(signal)")
         self._step = self._params["step"]
         self._width =\
             self._params["step"] if "width" not in self._params or self._params["width"] == 0 else self._params["width"]
@@ -113,7 +113,7 @@ class FromEventsSegments(SegmentsGenerator):
 
     def __init__(self, params=None, **kwargs):
         super(FromEventsSegments, self).__init__(params, **kwargs)
-        assert "events" in self._params, "Need the parameter 'events' (EventSignal) for this segmentation."
+        assert "events" in self._params, "Need the parameter 'events' for this segmentation."
         self._i = None
         self._t = None
         self._s = None
@@ -128,10 +128,13 @@ class FromEventsSegments(SegmentsGenerator):
         self._i = 0
         self._t = self._events.get_x_values(0)
 
+        while self._i < len(self._signal) and self._signal.get_x_values(self._i) < self._t:
+            self._i += 1
+
     def next_segment(self):
         if self._signal is None:
             PhUI.w("Can't preview the segments without a signal here. Use the syntax "
-                   + LengthSegments.__name__ + "(p[params])(signal)")
+                   + LengthSegments.__name__ + "(**params)(signal)")
             raise StopIteration()
         else:
             l = len(self._signal)
@@ -139,11 +142,11 @@ class FromEventsSegments(SegmentsGenerator):
                 if self._s < len(self._events) - 1:
                     o = self._i
                     self._t = self._events.get_x_values(self._s + 1)
-                    while self._i < l and self._signal.get_x_values(self._i) <= self._t:
+                    while self._i < l and self._signal.get_x_values(self._i) < self._t:
                         self._i += 1
                     w = Segment(o, self._i, self._events[self._s], self._signal)
                 elif self._s < len(self._events):
-                    w = Segment(self._i, len(self._signal), self._events[self._s], self._signal)
+                    w = Segment(self._i, l, self._events[self._s], self._signal)
                 else:
                     raise StopIteration()
             else:

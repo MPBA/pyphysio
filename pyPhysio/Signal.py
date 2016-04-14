@@ -2,7 +2,7 @@
 from __future__ import division
 import numpy as _np
 from scipy import interpolate as _interp
-from Utility import abstractmethod as _abstract, AbstractCalledError as _ACError
+from Utility import abstractmethod as _abstract
 
 __author__ = 'AleB'
 
@@ -73,7 +73,6 @@ class _Signal(_np.ndarray):
 
 
 class EvenlySignal(_Signal):
-
     def get_duration(self):
         # Uses future division
         return len(self) / self.get_sampling_freq()
@@ -118,7 +117,7 @@ class EvenlySignal(_Signal):
             The resampled signal
         """
 
-        ratio = self.get_sampling_freq()/fout
+        ratio = self.get_sampling_freq() / fout
 
         if self.get_sampling_freq() >= fout and ratio.is_integer():  # fast interpolation
             indexes = _np.arange(len(self))
@@ -126,12 +125,12 @@ class EvenlySignal(_Signal):
             signal_out = self[keep]
         else:
             indexes = _np.arange(len(self))
-            indexes_out = _np.arange(0, len(self)-1+ratio, ratio)  # TODO: check
+            indexes_out = _np.arange(0, len(self) - 1 + ratio, ratio)  # TODO: check
             if kind == 'cubic':
                 tck = _interp.InterpolatedUnivariateSpline(indexes, self)
             else:
                 tck = _interp.interp1d(indexes, self, kind=kind)
-            signal_out = tck(indexes_out)
+            signal_out = tck(indexes_out)  # TODO: raises an error
 
         return EvenlySignal(signal_out, fout, self.get_signal_nature(), self.get_start_time(), self.get_metadata())
 
@@ -142,6 +141,9 @@ class _XYSignal(_Signal):
     def __new__(cls, y_values, x_values, sampling_freq, signal_nature, start_time, meta, check):
         assert not check or len(y_values) == len(x_values), \
             "Length mismatch (y:%d vs. x:%d)" % (len(y_values), len(x_values))
+        x_values = _np.array(x_values)
+        # assert not check or x_values.all(x_values.argsort()), \
+        #     "x_values array not monotonic."
         obj = _Signal.__new__(cls, y_values, sampling_freq, signal_nature, start_time, meta)
         obj.ph[cls._MT_X_VALUES] = x_values
         return obj
@@ -165,7 +167,7 @@ class _XYSignal(_Signal):
         pass
 
     def __repr__(self):
-        return _Signal.__repr__(self) + "\ny-values\n" + self.view(_np.ndarray).__repr__() +\
+        return _Signal.__repr__(self) + "\ny-values\n" + self.view(_np.ndarray).__repr__() + \
             "\nx-times\n" + self.get_x_values().__repr__()
 
     def _to_evenly(self, kind='linear', length=None):
@@ -212,7 +214,7 @@ class _XYSignal(_Signal):
 class UnevenlySignal(_XYSignal):
     _MT_ORIGINAL_LENGTH = "duration"
 
-    def __new__(cls, y_values, indexes, original_length, sampling_freq, signal_nature="", start_time=0, meta=None,
+    def __new__(cls, y_values, indexes, sampling_freq=0, original_length=0, signal_nature="", start_time=0, meta=None,
                 check=True):
         obj = _XYSignal.__new__(cls, y_values, indexes, sampling_freq, signal_nature, start_time, meta, check)
         obj.ph[cls._MT_ORIGINAL_LENGTH] = original_length
@@ -229,7 +231,7 @@ class UnevenlySignal(_XYSignal):
         # find f & l indexes of indexes
         f = _np.searchsorted(self.get_x_values(), f)
         l = _np.searchsorted(self.get_x_values, l)
-        return UnevenlySignal(self[f:l], self.get_x_values()[f:l], self.get_duration(), self.get_sampling_freq(),
+        return UnevenlySignal(self[f:l], self.get_x_values()[f:l], self.get_sampling_freq(), self.get_duration(),
                               self.get_signal_nature(), check=False)
 
     def to_evenly(self, kind='linear'):
@@ -237,7 +239,6 @@ class UnevenlySignal(_XYSignal):
 
 
 class UnevenlyTimeSignal(_XYSignal):
-
     def get_duration(self):
         return self.get_x_values(-1)
 
