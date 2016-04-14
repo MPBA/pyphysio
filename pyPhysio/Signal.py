@@ -1,25 +1,28 @@
 # coding=utf-8
 from __future__ import division
 import numpy as _np
+from scipy import interpolate as _interp
+from Utility import abstractmethod as _abstract, AbstractCalledError as _ACError
 
 __author__ = 'AleB'
 
 # Everything in SECONDS (s) !!!
 
 
-class Signal(_np.ndarray):
-    _NP_TIME_T = _np.float64
+class _Signal(_np.ndarray):
     _MT_NATURE = "signal_nature"
     _MT_START_TIME = "start_time"
     _MT_META_DICT = "metadata"
+    _MT_SAMPLING_FREQ = "sampling_freq"
     _MT_INFO_ATTR = "_pyphysio"
 
-    def __new__(cls, input_array, signal_nature="", start_time=0, meta=None):
+    def __new__(cls, y_values, sampling_freq, signal_nature="", start_time=0, meta=None):
         # noinspection PyNoneFunctionAssignment
-        obj = _np.asarray(input_array).view(cls)
+        obj = _np.asarray(y_values).view(cls)
         obj._pyphysio = {
             cls._MT_NATURE: signal_nature,
             cls._MT_START_TIME: start_time,
+            cls._MT_SAMPLING_FREQ: sampling_freq,
             cls._MT_META_DICT: meta if meta is not None else {}
         }
         return obj
@@ -39,99 +42,100 @@ class Signal(_np.ndarray):
     def ph(self):
         return self._pyphysio
 
-    @property
-    def signal_nature(self):
+    @_abstract
+    def get_duration(self):
+        pass
+
+    @_abstract
+    def get_x_values(self, just_one=None):
+        pass
+
+    def get_y_values(self):
+        return _np.asarray(self)
+
+    def get_signal_nature(self):
         return self.ph[self._MT_NATURE]
 
-    @property
-    def start_time(self):
+    def get_sampling_freq(self):
+        return self.ph[self._MT_SAMPLING_FREQ]
+
+    def get_start_time(self):
         return self.ph[self._MT_START_TIME]
 
-    @property
-    def metadata(self):
+    def get_end_time(self):
+        return self.get_start_time() + self.get_duration()
+
+    def get_metadata(self):
         return self.ph[self._MT_META_DICT]
 
-    @property
-    def duration(self):
-        assert self.__class__ != Signal.__class__, "Abstract"
-        return None
-
-    @property
-    def end_time(self):
-        return self.start_time + self.duration
-
-    def get_times(self, just_one=None):
-        assert self.__class__ != Signal.__class__, "Abstract"
-        return None
-
     def __repr__(self):
-        return "<signal: " + self.signal_nature + ", start_time: " + str(self.start_time) + ">"
-
-    def getslice(self, f, l):
-        assert self.__class__ != Signal.__class__, "Abstract"
+        return "<signal: " + self.get_signal_nature() + ", start_time: " + str(self.get_start_time()) + ">"
 
 
-class EvenlySignal(Signal):
-    _MT_SAMPLING_FREQ = "sampling_freq"
+class EvenlySignal(_Signal):
 
-    def __new__(cls, input_array, sampling_freq, signal_nature="", start_time=0, meta=None):
-        obj = Signal(input_array, signal_nature, start_time, meta).view(cls)
-        obj.ph[cls._MT_SAMPLING_FREQ] = sampling_freq
-        return obj
-
-    @property
-    def duration(self):
+    def get_duration(self):
         # Uses future division
+<<<<<<< HEAD
         return len(self) / self.sampling_freq
     
     @property
     def nsamples(self):
         # Uses future division
         return len(self)
+=======
+        return len(self) / self.get_sampling_freq()
+>>>>>>> aa01c96c835c133c1c60ed9fa1a23dca6afbdeac
 
-    @property
-    def sampling_freq(self):
-        return self.ph[self._MT_SAMPLING_FREQ]
-
-    def get_times(self, just_one=None):
+    def get_x_values(self, just_one=None):
         # Using future division
-        tmp_step = 1. / self.sampling_freq
         if just_one is None:
-            return _np.arange(self.start_time, self.end_time, tmp_step)
+            return _np.arange(0, self.get_duration(), 1. / self.get_sampling_freq())
         else:
-            return self.start_time + tmp_step * just_one
+            return just_one / self.get_sampling_freq()
 
-    def __repr__(self):
-        return Signal.__repr__(self)[:-1] + " freq:" + str(self.sampling_freq) + "Hz>\n"\
-            + self.view(_np.ndarray).__repr__()
-
-    # Works with timestamps
+    # Works with timestamps (OLD)
     def getslice(self, f, l):
         # Using future division
         # find base_signal's indexes
-        f = (f - self.start_time) / self.sampling_freq
-        l = (l - self.start_time) / self.sampling_freq
+        f = (f - self.get_start_time()) / self.get_sampling_freq()
+        l = (l - self.get_start_time()) / self.get_sampling_freq()
         # clip the end
         # [:] has exclusive end
         if l > len(self):
             l = len(self)
-        return EvenlySignal(self[f:l], self.sampling_freq, self.signal_nature, f)
+        return EvenlySignal(self[f:l], self.get_sampling_freq(), self.get_signal_nature(), f)
+
+    def __repr__(self):
+        return _Signal.__repr__(self)[:-1] + " freq:" + str(self.get_sampling_freq()) + "Hz>\n" + self.view(
+            _np.ndarray).__repr__()
 
     def resample(self, fout, kind='linear'):
+<<<<<<< HEAD
         '''
         Resample a signal
         
+=======
+        """
+        Resample a signal
+
+>>>>>>> aa01c96c835c133c1c60ed9fa1a23dca6afbdeac
         Parameters
         ----------
         fout : float
             The sampling frequency for resampling
         kind : str
             Method for interpolation: 'linear', 'nearest', 'zero', 'slinear', 'quadratic, 'cubic'
+<<<<<<< HEAD
         
+=======
+
+>>>>>>> aa01c96c835c133c1c60ed9fa1a23dca6afbdeac
         Returns
         -------
         resampled_signal : EvenlySignal
             The resampled signal
+<<<<<<< HEAD
         '''
         # TODO: check fout exists
         # TODO. check kind has correct value
@@ -172,20 +176,55 @@ class UnevenlySignal(Signal):
         assert all(i > 0 for i in _np.diff(times_array)), "Time is not monotonic"
         obj = Signal(input_array, signal_nature, start_time, meta).view(cls)
         obj.ph[cls._MT_TIMES] = times_array
+=======
+        """
+
+        ratio = self.get_sampling_freq()/fout
+
+        if self.get_sampling_freq() >= fout and ratio.is_integer():  # fast interpolation
+            indexes = _np.arange(len(self))
+            keep = indexes % ratio == 0
+            signal_out = self[keep]
+        else:
+            indexes = _np.arange(len(self))
+            indexes_out = _np.arange(0, len(self)-1+ratio, ratio)  # TODO: check
+            if kind == 'cubic':
+                tck = _interp.InterpolatedUnivariateSpline(indexes, self)
+            else:
+                tck = _interp.interp1d(indexes, self, kind=kind)
+            signal_out = tck(indexes_out)
+
+        return EvenlySignal(signal_out, fout, self.get_signal_nature(), self.get_start_time(), self.get_metadata())
+
+
+class _XYSignal(_Signal):
+    _MT_X_VALUES = "x_values"
+
+    def __new__(cls, y_values, x_values, sampling_freq, signal_nature, start_time, meta, check):
+        assert not check or len(y_values) == len(x_values), \
+            "Length mismatch (y:%d vs. x:%d)" % (len(y_values), len(x_values))
+        obj = _Signal.__new__(cls, y_values, sampling_freq, signal_nature, start_time, meta)
+        obj.ph[cls._MT_X_VALUES] = x_values
+>>>>>>> aa01c96c835c133c1c60ed9fa1a23dca6afbdeac
         return obj
 
-    def get_times(self, just_one=None):
+    def get_x_values(self, just_one=None):
         if just_one is None:
-            return self.ph[self._MT_TIMES]
+            return self.ph[self._MT_X_VALUES]
         else:
-            return self.ph[self._MT_TIMES][just_one]
+            return self.ph[self._MT_X_VALUES][just_one]
 
-    def __repr__(self):
-        return Signal.__repr__(self)\
-            + "\ntimes-" + self.get_times().__repr__() + "\nvalues-" + self.view(_np.ndarray).__repr__()
+    @_abstract
+    def get_duration(self):
+        pass
 
-    # Works with timestamps
+    @_abstract
+    def to_evenly(self, kind='linear'):
+        pass
+
+    @_abstract
     def getslice(self, f, l):
+<<<<<<< HEAD
         # find f & l indexes of indexes
         f = _np.searchsorted(self.get_times(), f)
         l = _np.searchsorted(self.get_times(), l)
@@ -196,10 +235,23 @@ class UnevenlySignal(Signal):
         """
         Interpolate the UnevenlySignal to obtain an evenly spaced signal    
         
+=======
+        pass
+
+    def __repr__(self):
+        return _Signal.__repr__(self) + "\ny-values\n" + self.view(_np.ndarray).__repr__() +\
+            "\nx-times\n" + self.get_x_values().__repr__()
+
+    def _to_evenly(self, kind='linear', length=None):
+        """
+        Interpolate the UnevenlySignal to obtain an evenly spaced signal
+
+>>>>>>> aa01c96c835c133c1c60ed9fa1a23dca6afbdeac
         Parameters
         ----------
         kind : str
             Method for interpolation: 'linear', 'nearest', 'zero', 'slinear', 'quadratic, 'cubic'
+<<<<<<< HEAD
         
         Returns
         -------
@@ -233,10 +285,93 @@ class UnevenlySignal(Signal):
 class EventsSignal(UnevenlySignal):
     def __new__(cls, events, times, meta=None, checks=True):
         return UnevenlySignal(events, times, "events", meta, checks)
+=======
+
+        length : number
+            Length of the resulting signal. If not specified the last sample will be one after the last input point.
+
+        Returns
+        -------
+        interpolated_signal: ndarray
+            The interpolated signal
+        """
+
+        data_x = self.get_x_values()
+        data_y = self.get_y_values()
+
+        # Add padding
+        if self.get_x_values(0) != 0:
+            data_x = _np.r_[0, data_x]
+            data_y = _np.r_[data_y[0], data_y]
+        if self.get_x_values(-1) != length - 1:
+            data_x = _np.r_[data_x, length - 1]
+            data_y = _np.r_[data_y, data_y[-1]]
+
+        # Cubic if needed
+        if kind == 'cubic':
+            tck = _interp.InterpolatedUnivariateSpline(data_x, data_y)
+        else:
+            tck = _interp.interp1d(data_x, data_y, kind=kind)
+        sig_out = tck(_np.arange(length))
+
+        # Init new signal
+        sig_out = EvenlySignal(sig_out, self.get_sampling_freq(), self.get_signal_nature(), self.get_start_time(),
+                               self.get_metadata())
+        return sig_out
+
+
+class UnevenlySignal(_XYSignal):
+    _MT_ORIGINAL_LENGTH = "duration"
+
+    def __new__(cls, y_values, indexes, original_length, sampling_freq, signal_nature="", start_time=0, meta=None,
+                check=True):
+        obj = _XYSignal.__new__(cls, y_values, indexes, sampling_freq, signal_nature, start_time, meta, check)
+        obj.ph[cls._MT_ORIGINAL_LENGTH] = original_length
+        return obj
+
+    def get_duration(self):
+        return self.ph[self._MT_ORIGINAL_LENGTH] / self.get_sampling_freq()
+
+    def get_original_length(self):
+        return self.ph[self._MT_ORIGINAL_LENGTH]
+>>>>>>> aa01c96c835c133c1c60ed9fa1a23dca6afbdeac
 
     # Works with timestamps
     def getslice(self, f, l):
         # find f & l indexes of indexes
-        f = _np.searchsorted(self.get_times(), f)
-        l = _np.searchsorted(self.get_times(), l)
-        return EventsSignal(self.get_times()[f:l], self.view(_np.ndarray)[f:l], checks=False)
+        f = _np.searchsorted(self.get_x_values(), f)
+        l = _np.searchsorted(self.get_x_values, l)
+        return UnevenlySignal(self[f:l], self.get_x_values()[f:l], self.get_duration(), self.get_sampling_freq(),
+                              self.get_signal_nature(), check=False)
+
+    def to_evenly(self, kind='linear'):
+        return self._to_evenly(kind, self.get_original_length())
+
+
+class UnevenlyTimeSignal(_XYSignal):
+
+    def get_duration(self):
+        return self.get_x_values(-1)
+
+    def to_evenly(self, kind='linear'):
+        return self._to_evenly(kind, self.get_duration() * self.get_sampling_freq())
+
+    # # Works with timestamps
+    # def getslice(self, f, l):
+    #     # find f & l indexes of indexes
+    #     f = _np.searchsorted(self.get_x_values(), f)
+    #     l = _np.searchsorted(self.get_x_values(), l)
+    #     return UnevenlySignal(self[f:l], self.get_x_values()[f:l], self.get_signal_nature())
+
+
+# Not used
+# class EventsSignal(UnevenlyTimeSignal):
+#     def __new__(cls, events, times, start_time=0, meta=None, check=True):
+#         return UnevenlySignal(events, times, 0, 0, "events", start_time, meta, check)
+#
+#     # Works with timestamps
+#     def getslice(self, f, l):
+#         # find f & l indexes of indexes
+#         f = _np.searchsorted(self.get_x_values(), f)
+#         l = _np.searchsorted(self.get_x_values(), l)
+#         return EventsSignal(self.get_x_values()[f:l], self.view(_np.ndarray)[f:l], check=False)

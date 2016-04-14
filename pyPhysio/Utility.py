@@ -4,6 +4,30 @@ import numpy as np
 __author__ = 'AleB'
 
 
+class AbstractCalledError(RuntimeError):
+    pass
+
+
+def abstractmethod(funcobj):
+    """A decorator indicating abstract methods.
+    """
+    def abstract_error(*args, **kwargs):
+        #
+        #
+        #
+        #
+        #
+        raise AbstractCalledError("This method is abstract")
+        #
+        #
+        #
+        #
+        #
+
+    funcobj.func_code = abstract_error.func_code
+    return abstract_error
+
+
 def derive(data, labels):
     ll = []
     tt = []

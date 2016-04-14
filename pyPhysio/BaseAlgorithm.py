@@ -1,14 +1,16 @@
 # coding=utf-8
-from Signal import Signal
+from Signal import _Signal
+from abc import abstractmethod as _abstract, ABCMeta as _ABCMeta
 __author__ = 'AleB'
 
 
 class Algorithm(object):
+    __metaclass__ = _ABCMeta
     """
     This is the algorithm container super class. It (is abstract) should be used only to be extended.
     """
 
-    def __init__(self, params=None, _kwargs=None, **kwargs):
+    def __init__(self, params=None, **kwargs):
         """
         Incorporates the parameters and saves them in the instance.
         @param params: Dictionary of string-value parameters passed by the user.
@@ -18,16 +20,12 @@ class Algorithm(object):
         @param kwargs: kwargs parameters to pass to the feature extractor.
         @type kwargs: dict
         """
-        assert self.__class__ != Algorithm, "This class is abstract and must be extended to be used."
         assert params is None or type(params) is dict, "The syntax is algorithm([params])(signal)"
-        assert type(_kwargs) is dict or _kwargs is None
         if params is None:
             self._params = {}
         else:
             self._params = params.copy()
         self._params.update(kwargs)
-        if type(_kwargs) is dict:
-            self._params.update(_kwargs)
 
     def __call__(self, data):
         """
@@ -53,7 +51,7 @@ class Algorithm(object):
         @type use_cache: bool
         @return: The value of the feature.
         """
-        assert isinstance(data, Signal), "The data must be a Signal."
+        assert isinstance(data, _Signal), "The data must be a Signal."
         if type(params) is dict:
             kwargs.update(params)
         if use_cache is True:
@@ -89,15 +87,17 @@ class Algorithm(object):
         return self._params
 
     @classmethod
-    def is_nature_supported(cls, data):
+    @_abstract
+    def is_nature_supported(cls, signal):
         """
         Placeholder for the subclasses
         :returns: Weather nature is compatible or not
         @raise NotImplementedError: Ever
         """
-        raise NotImplementedError(cls.__name__ + " is not implemented.")
+        pass
 
     @classmethod
+    @_abstract
     def algorithm(cls, data, params):
         """
         Placeholder for the subclasses
@@ -105,15 +105,16 @@ class Algorithm(object):
         :param params:
         :param data:
         """
-        raise NotImplementedError(cls.__name__ + " is not implemented.")
+        pass
 
     @classmethod
+    @_abstract
     def get_used_params(cls):
         """
         Placeholder for the subclasses
         @raise NotImplementedError: Ever
         """
-        raise NotImplementedError(cls.__name__ + " is not implemented.")
+        pass
 
 
 class Cache(object):

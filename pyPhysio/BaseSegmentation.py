@@ -1,6 +1,6 @@
 # coding=utf-8
+from abc import abstractmethod as _abstract, ABCMeta as _ABCMeta
 from copy import copy as _cpy
-import numpy as _np
 from BaseAlgorithm import Algorithm as _Algorithm
 from Signal import EvenlySignal as _EvenlySignal
 __author__ = 'AleB'
@@ -22,28 +22,22 @@ class Segment(object):
         self._label = label
         self._signal = signal
 
-    @property
-    def begin(self):
+    def get_begin(self):
         return self._begin
 
-    @property
-    def end(self):
+    def get_end(self):
         return self._end
 
-    @property
-    def start_time(self):
-        return self._signal.start_time + self._signal.get_times(self._begin)  # TODO this does not work
+    def get_start_time(self):
+        return self._signal.get_start_time() + self._signal.get_x_values(self._begin)  # TODO this does not work
 
-    @property
-    def end_time(self):
-        return self._signal.get_times(self.end) if self.end is not None else None
+    def get_end_time(self):
+        return self._signal.get_x_values(self.get_end()) if self.get_end() is not None else None
 
-    @property
-    def duration(self):
-        return (self.end_time - self.start_time) if self.end is not None else None
+    def get_duration(self):
+        return (self.get_end_time() - self.get_start_time()) if self.get_end() is not None else None
 
-    @property
-    def label(self):
+    def get_label(self):
         return self._label
 
     def is_empty(self):
@@ -52,11 +46,13 @@ class Segment(object):
     from datetime import datetime as dt, MAXYEAR
     _mdt = dt(MAXYEAR, 12, 31, 23, 59, 59, 999999)
 
-    def __call__(self, data):
+    def __call__(self, data=None):
+        if data is None:
+            data = self._signal
         if self._end is None:
             return data[self._begin:Segment._mdt]
         else:
-            return data[self._begin, self._end]
+            return data[self._begin:self._end]
 
     def islice(self, data, include_partial=False):
         if (include_partial or self._end <= data.index[-1]) and self._begin < data.index[-1]:
@@ -65,21 +61,37 @@ class Segment(object):
             raise StopIteration()
 
     def __repr__(self):
-        return '%s:%s' % (str(self.begin), str(self.end)) + (":%s" % self._label) if self._label is not None else ""
+        return '%s:%s' % (str(self.get_begin()), str(self.get_end())) + (":%s" % self._label) if self._label is not None else ""
 
 
 class SegmentsGenerator(_Algorithm):
     """
     Base and abstract class for the windows computation.
     """
+    __metaclass__ = _ABCMeta
 
-    def __init__(self, params=None, p_kwargs=None, **kwargs):
-        if p_kwargs is not None:
-            kwargs.update(p_kwargs)
-        super(SegmentsGenerator, self).__init__(params, kwargs)
+    @_abstract
+    def __init__(self, params=None, **kwargs):
+        super(SegmentsGenerator, self).__init__(params, **kwargs)
         self._signal = None
 
-    # Algorithm Override
+    @_abstract
+    def next_segment(self):
+        """
+        Executes a segmentation step.
+        @raise StopIteration: End of the iteration
+        """
+        raise StopIteration()
+
+    @_abstract
+    def init_segmentation(self):
+        """
+        Executes a segmentation step.
+        @raise StopIteration: End of the iteration
+        """
+        raise NotImplementedError()
+
+    # Algorithm Override, no cache
     def __call__(self, data):
         return self.get(data, self._params, use_cache=False)
 
@@ -99,20 +111,6 @@ class SegmentsGenerator(_Algorithm):
     @classmethod
     def get_used_params(cls):
         return []
-
-    def next_segment(self):
-        """
-        Executes a segmentation step.
-        @raise StopIteration: End of the iteration
-        """
-        raise StopIteration()
-
-    def init_segmentation(self):
-        """
-        Executes a segmentation step.
-        @raise StopIteration: End of the iteration
-        """
-        raise NotImplementedError()
 
     def __repr__(self):
         if self._signal is not None:

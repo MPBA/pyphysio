@@ -1,35 +1,11 @@
 # coding=utf-8
 from BaseAlgorithm import Algorithm
+from abc import ABCMeta as _ABCMeta
 __author__ = 'AleB'
 
 
 class Indicator(Algorithm):
-    """
-    Defines a class of algorithms that extracts a single time tuple, only one time-value pair, that has specific data as
-    value.
-    """
-
-    @classmethod
-    def is_nature_supported(cls, data):
-        return True
-
-    @classmethod
-    def algorithm(cls, data, params):
-        """
-        Placeholder for the subclasses
-        @raise NotImplementedError: Ever
-        :param params:
-        :param data:
-        """
-        raise NotImplementedError(cls.__name__ + " is a Feature but it is not implemented.")
-
-    @classmethod
-    def get_used_params(cls):
-        """
-        Default empty list of parameters.
-        @return An empty list if not overridden.
-        """
-        return []
+    __metaclass__ = _ABCMeta
 
     @classmethod
     def compute_on(cls, state):
