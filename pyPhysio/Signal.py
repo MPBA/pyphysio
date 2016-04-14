@@ -76,16 +76,7 @@ class EvenlySignal(_Signal):
 
     def get_duration(self):
         # Uses future division
-<<<<<<< HEAD
-        return len(self) / self.sampling_freq
-    
-    @property
-    def nsamples(self):
-        # Uses future division
-        return len(self)
-=======
         return len(self) / self.get_sampling_freq()
->>>>>>> aa01c96c835c133c1c60ed9fa1a23dca6afbdeac
 
     def get_x_values(self, just_one=None):
         # Using future division
@@ -111,72 +102,20 @@ class EvenlySignal(_Signal):
             _np.ndarray).__repr__()
 
     def resample(self, fout, kind='linear'):
-<<<<<<< HEAD
-        '''
-        Resample a signal
-        
-=======
         """
         Resample a signal
 
->>>>>>> aa01c96c835c133c1c60ed9fa1a23dca6afbdeac
         Parameters
         ----------
         fout : float
             The sampling frequency for resampling
         kind : str
             Method for interpolation: 'linear', 'nearest', 'zero', 'slinear', 'quadratic, 'cubic'
-<<<<<<< HEAD
-        
-=======
 
->>>>>>> aa01c96c835c133c1c60ed9fa1a23dca6afbdeac
         Returns
         -------
         resampled_signal : EvenlySignal
             The resampled signal
-<<<<<<< HEAD
-        '''
-        # TODO: check fout exists
-        # TODO. check kind has correct value
-        
-        ratio = self.sampling_freq/fout
-        
-        if self.sampling_freq>=fout and ratio.is_integer(): #fast interpolation
-            indexes = _np.arange(self.nsamples)
-            keep = (indexes%ratio == 0)
-            signal_out = signal[keep]
-            
-            self.sampling_freq = fout
-            # fix other signal properties
-            
-            return(signal_out)
-        
-        else:
-            indexes = np.arange(len(signal))        
-            indexes_out = np.arange(0, len(signal)-1+ratio, ratio) #TODO: check
-            if kind=='cubic':
-            tck = interpolate.InterpolatedUnivariateSpline(indexes, signal)
-            else:
-            tck = interpolate.interp1d(indexes, signal, kind=kind)
-            signal_out = tck(indexes_out)
-            
-            self.sampling_freq = fout
-            # fix other signal properties
-            
-            return(signal_out)
-
-class UnevenlySignal(Signal):
-    _MT_TIMES = "times"
-
-    def __new__(cls, input_array, indexes_array, sampling_freq, length_original, signal_nature="", start_time=0, meta=None, check=True): # FIX 
-        # TODO check: useful O(n) monotonicity check?
-        assert not check or len(input_array) == len(times_array),\
-            "Length mismatch (%d vs. %d)" % (len(input_array), len(times_array))
-        assert all(i > 0 for i in _np.diff(times_array)), "Time is not monotonic"
-        obj = Signal(input_array, signal_nature, start_time, meta).view(cls)
-        obj.ph[cls._MT_TIMES] = times_array
-=======
         """
 
         ratio = self.get_sampling_freq()/fout
@@ -205,7 +144,6 @@ class _XYSignal(_Signal):
             "Length mismatch (y:%d vs. x:%d)" % (len(y_values), len(x_values))
         obj = _Signal.__new__(cls, y_values, sampling_freq, signal_nature, start_time, meta)
         obj.ph[cls._MT_X_VALUES] = x_values
->>>>>>> aa01c96c835c133c1c60ed9fa1a23dca6afbdeac
         return obj
 
     def get_x_values(self, just_one=None):
@@ -224,18 +162,6 @@ class _XYSignal(_Signal):
 
     @_abstract
     def getslice(self, f, l):
-<<<<<<< HEAD
-        # find f & l indexes of indexes
-        f = _np.searchsorted(self.get_times(), f)
-        l = _np.searchsorted(self.get_times(), l)
-        return UnevenlySignal(self[f:l], self.get_times()[f:l], self.signal_nature, check=False)
-
-    @classmethod
-    def resample(self, kind='linear')
-        """
-        Interpolate the UnevenlySignal to obtain an evenly spaced signal    
-        
-=======
         pass
 
     def __repr__(self):
@@ -245,47 +171,10 @@ class _XYSignal(_Signal):
     def _to_evenly(self, kind='linear', length=None):
         """
         Interpolate the UnevenlySignal to obtain an evenly spaced signal
-
->>>>>>> aa01c96c835c133c1c60ed9fa1a23dca6afbdeac
         Parameters
         ----------
         kind : str
             Method for interpolation: 'linear', 'nearest', 'zero', 'slinear', 'quadratic, 'cubic'
-<<<<<<< HEAD
-        
-        Returns
-        -------
-        interpolated_signal: nparray
-            The interpolated signal
-        """
-        data_y = _np.array(self.values())
-        data_x = _np.array(self.indexes())
-        total_len = 
-        if self.indexes_array[0] != 0:
-            data_x = _np.r[0, data_x]
-            data_y = _np.r[self.input_array[0], self.input_array] #
-        if self.indexes_array[-1] != total_len:
-            self.indexes_array = _np.r[self.indexes_array, total_len-1]
-            self.input_array = _np.r[self.input_array, self.input_array[-1]]
-            
-        # TODO: sistemare i tempi:
-        # 1) indici originali
-        # 2) fsamp originale
-        # 3) lunghezza originale
-        if kind=='cubic':
-            tck = interpolate.InterpolatedUnivariateSpline(self.indexes_array, self.input_array)
-        else:
-            tck = interpolate.interp1d(self.indexes_array, self.input_array, kind=kind)
-        sig_out = tck(_np.arange(total_len))
-        
-        sig_out = EvenlySignal(sig_out, ...)
-        # fix other signal properties
-        return(sig_out)
-
-class EventsSignal(UnevenlySignal):
-    def __new__(cls, events, times, meta=None, checks=True):
-        return UnevenlySignal(events, times, "events", meta, checks)
-=======
 
         length : number
             Length of the resulting signal. If not specified the last sample will be one after the last input point.
@@ -334,7 +223,6 @@ class UnevenlySignal(_XYSignal):
 
     def get_original_length(self):
         return self.ph[self._MT_ORIGINAL_LENGTH]
->>>>>>> aa01c96c835c133c1c60ed9fa1a23dca6afbdeac
 
     # Works with timestamps
     def getslice(self, f, l):

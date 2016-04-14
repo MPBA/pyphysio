@@ -1034,6 +1034,7 @@ class DFAShortTerm(_Indicator):
 
 
 class DFALongTerm(_Indicator):
+
     """
     Calculate the alpha2 (long term) component index of the De-trended Fluctuation Analysis.
     """
