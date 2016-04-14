@@ -55,8 +55,12 @@ class TimeSegments(SegmentsGenerator):
         self._step = self._params["step"]
         self._width =\
             self._params["step"] if "width" not in self._params or self._params["width"] == 0 else self._params["width"]
-        self._i = self._params["start"] if "start" in self._params else 0
-        self._signal = self._signal
+        self._i = 0
+        # initial seek
+        if "start" in self._params:
+            start = self._params["start"]
+            while self._i < len(self._signal) and self._signal.get_x_values(self._i) < start:
+                self._i += 1
 
     def next_segment(self):
         if self._signal is None:
@@ -73,6 +77,52 @@ class TimeSegments(SegmentsGenerator):
         if s.is_empty():
             raise StopIteration()
         return s
+
+
+class FromStartStopSegments(SegmentsGenerator):  # TESTME
+    """
+    Constant length (time) segments
+    __init__(self, step, width=0, start=0)
+    """
+    def __init__(self, params=None, **kwargs):
+        super(FromStartStopSegments, self).__init__(params, **kwargs)
+        assert "starts" in self._params, "Need the parameter 'start' (array of times) for the segmentation."
+        assert "stops" in self._params, "Need the parameter 'stop' (array of times) for the segmentation."
+        self._b = None
+        self._e = None
+        self._i = None
+
+    def init_segmentation(self):
+        self._b = 0
+        self._e = 0
+        self._i = 0
+
+    def next_segment(self):
+        if self._signal is None:
+            PhUI.w("Can't preview the segments without a signal here. Use the syntax "
+                   + TimeSegments.__name__ + "(p[params])(signal)")
+            raise StopIteration()
+        else:
+            l = len(self._signal)
+
+            if self._i < len(self._params['starts']):
+                start = self._params['starts'][self._i]
+                while self._b < l and self._signal.get_x_values(self._b) < start:
+                    self._b += 1
+                stop = self._params['stops'][self._i]
+                while self._e < l and self._signal.get_x_values(self._e) < stop:
+                    self._e += 1
+
+                self._i += 1
+
+                s = Segment(self._b, self._e, '', self._signal)
+
+                if s.is_empty():
+                    raise StopIteration()
+                else:
+                    return s
+            else:
+                raise StopIteration()
 
 
 class ExistingSegments(SegmentsGenerator):
@@ -128,6 +178,7 @@ class FromEventsSegments(SegmentsGenerator):
         self._i = 0
         self._t = self._events.get_x_values(0)
 
+        # TODO: May be not so efficient but it is better than searchsorted (small k < n often smaller than log2(n))
         while self._i < len(self._signal) and self._signal.get_x_values(self._i) < self._t:
             self._i += 1
 
