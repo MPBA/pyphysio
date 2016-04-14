@@ -3,6 +3,7 @@ from abc import abstractmethod as _abstract, ABCMeta as _ABCMeta
 from copy import copy as _cpy
 from BaseAlgorithm import Algorithm as _Algorithm
 from Signal import EvenlySignal as _EvenlySignal
+
 __author__ = 'AleB'
 
 
@@ -43,14 +44,15 @@ class Segment(object):
     def is_empty(self):
         return self._signal is None or self._begin >= len(self._signal)
 
-    from datetime import datetime as dt, MAXYEAR
-    _mdt = dt(MAXYEAR, 12, 31, 23, 59, 59, 999999)
+    # from datetime import datetime as dt, MAXYEAR
+    #
+    # _mdt = dt(MAXYEAR, 12, 31, 23, 59, 59, 999999)
 
     def __call__(self, data=None):
         if data is None:
             data = self._signal
         if self._end is None:
-            return data[self._begin:Segment._mdt]
+            return data[self._begin:]  # TESTME: used to use the max time but it is with sample number
         else:
             return data[self._begin:self._end]
 
@@ -61,7 +63,8 @@ class Segment(object):
             raise StopIteration()
 
     def __repr__(self):
-        return '%s:%s' % (str(self.get_begin()), str(self.get_end())) + (":%s" % self._label) if self._label is not None else ""
+        return '[%s:%s' % (str(self.get_begin()), str(self.get_end())) + (
+            ":%s]" % self._label) if self._label is not None else "]"
 
 
 class SegmentsGenerator(_Algorithm):
