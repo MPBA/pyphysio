@@ -122,7 +122,6 @@ class GeneralTest(unittest.TestCase):
         # start time
         self.assertEqual(s.get_signal_nature(), nature)
 
-
     def test_evenly_signal_resample(self):
         samples = 1000
         freq_down = 7
@@ -140,18 +139,18 @@ class GeneralTest(unittest.TestCase):
                             meta={'mode': test_string, 'subject': 'Baptist;Alessandro'}
                             )
 
-        def check_resampled(freq, freq_down, nature, sig, samples, start, test_string):
+        def check_resampled(freq_new):
             # resample
-            resampled = sig.resample(freq_down)
+            resampled = s.resample(freq_new)
             # new number of samples
-            new_samples = _ceil(samples * freq_down / freq)
+            new_samples = _ceil(samples * freq_new / freq)
 
             # length Y
             self.assertEqual(len(resampled), new_samples)
             # length X
             self.assertEqual(len(resampled.get_x_values()), len(resampled))
             # sampling frequency in Hz
-            self.assertEqual(resampled.get_sampling_freq(), freq_down)
+            self.assertEqual(resampled.get_sampling_freq(), freq_new)
             # duration differs less than 1s from the original
             self.assertLess(abs(resampled.get_duration() - samples / freq), 1)
             # start timestamp
@@ -164,22 +163,23 @@ class GeneralTest(unittest.TestCase):
             self.assertEqual(resampled.get_signal_nature(), nature)
 
         # down-sampling int
-        check_resampled(freq, freq_down, nature, s, samples, start, test_string)
+        check_resampled(freq_down)
         # over-sampling int
-        check_resampled(freq, freq_up, nature, s, samples, start, test_string)
+        check_resampled(freq_up)
         # down-sampling rationale
-        check_resampled(freq, freq_down_r, nature, s, samples, start, test_string)
+        check_resampled(freq_down_r)
 
-    def test_unevenly_signal_advanced(self):
-        original_length = 1000
+    def test_unevenly_signal_to_evenly(self):
         samples = 200
+        indexes = np.cumsum(np.random.rand(1, samples))
         freq = 13
+        original_length = (indexes[-1] + 1) * freq
         start = 1460713373
         nature = "una_bif-fa"
         test_string = 'test1235'
 
         s = ph.UnevenlySignal(y_values=np.cumsum(np.random.rand(1, samples) - .5) * 100,
-                              indexes=np.cumsum(np.random.rand(1, samples)) * 100,
+                              indexes=indexes,
                               sampling_freq=freq,
                               original_length=original_length,
                               signal_nature=nature,
@@ -187,11 +187,15 @@ class GeneralTest(unittest.TestCase):
                               meta={'mode': test_string, 'subject': 'Baptist;Alessandro'},
                               check=True
                               )
+
+        # conversion
+        s = s.to_evenly()  # TODO: add custom freq
+
         # length Y
-        self.assertEqual(len(s), samples)
-        self.assertEqual(len(s.get_y_values()), samples)
+        self.assertEqual(len(s), original_length)
+        self.assertEqual(len(s.get_y_values()), len(s))
         # length X
-        self.assertEqual(len(s.get_x_values()), samples)
+        self.assertEqual(len(s.get_x_values()), len(s))
         # sampling frequency in Hz
         self.assertEqual(s.get_sampling_freq(), freq)
         # duration in seconds
@@ -204,8 +208,6 @@ class GeneralTest(unittest.TestCase):
         self.assertEqual(s.get_metadata()['mode'], test_string)
         # start time
         self.assertEqual(s.get_signal_nature(), nature)
-        # original length
-        self.assertEqual(s.get_original_length(), original_length)
 
     def test_sparse_signal_advanced(self):
         samples = 1000
