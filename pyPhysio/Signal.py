@@ -80,7 +80,7 @@ class EvenlySignal(_Signal):
     def get_x_values(self, just_one=None):
         # Using future division
         if just_one is None:
-            return _np.arange(0, self.get_duration(), 1. / self.get_sampling_freq())[:len(self)]
+            return _np.arange(len(self)) / self.get_sampling_freq()
         else:
             return just_one / self.get_sampling_freq()
 
@@ -171,7 +171,12 @@ class _XYSignal(_Signal):
         return _Signal.__repr__(self) + "\ny-values\n" + self.view(_np.ndarray).__repr__() + \
             "\nx-times\n" + self.get_x_values().__repr__()
 
-    def _to_evenly(self, kind='linear', length=None):
+
+class SparseSignal(_XYSignal):
+    def get_duration(self):
+        return self.get_x_values(-1)
+
+    def to_evenly(self, kind='linear'):
         """
         Interpolate the UnevenlySignal to obtain an evenly spaced signal
         Parameters
@@ -188,6 +193,7 @@ class _XYSignal(_Signal):
             The interpolated signal
         """
 
+        length = self.get_duration() * self.get_sampling_freq()
         data_x = self.get_x_values()
         data_y = self.get_y_values()
 
@@ -212,14 +218,6 @@ class _XYSignal(_Signal):
         return sig_out
 
 
-class SparseSignal(_XYSignal):
-    def get_duration(self):
-        return self.get_x_values(-1)
-
-    def to_evenly(self, kind='linear'):
-        return self._to_evenly(kind, self.get_duration() * self.get_sampling_freq())
-
-
 class UnevenlySignal(_XYSignal):
     _MT_ORIGINAL_LENGTH = "duration"
 
@@ -236,7 +234,46 @@ class UnevenlySignal(_XYSignal):
         return self.ph[self._MT_ORIGINAL_LENGTH]
 
     def to_evenly(self, kind='linear'):
-        return self._to_evenly(kind, self.get_original_length())
+        """
+        Interpolate the UnevenlySignal to obtain an evenly spaced signal
+        Parameters
+        ----------
+        kind : str
+            Method for interpolation: 'linear', 'nearest', 'zero', 'slinear', 'quadratic, 'cubic'
+
+        length : number
+            Length of the resulting signal. If not specified the last sample will be one after the last input point.
+
+        Returns
+        -------
+        interpolated_signal: ndarray
+            The interpolated signal
+        """
+
+        length = self.get_original_length()
+        # TODO: check that the computed length is bigger than the data_x one
+        data_x = self.get_x_values() * self.get_sampling_freq()
+        data_y = self.get_y_values()
+
+        # Add padding
+        if self.get_x_values(0) != 0:
+            data_x = _np.r_[0, data_x]
+            data_y = _np.r_[data_y[0], data_y]
+        if self.get_x_values(-1) != length - 1:
+            data_x = _np.r_[data_x, length - 1]
+            data_y = _np.r_[data_y, data_y[-1]]
+
+        # Cubic if needed
+        if kind == 'cubic':
+            tck = _interp.InterpolatedUnivariateSpline(data_x, data_y)
+        else:
+            tck = _interp.interp1d(data_x, data_y, kind=kind)
+        sig_out = tck(_np.arange(length))
+
+        # Init new signal
+        sig_out = EvenlySignal(sig_out, self.get_sampling_freq(), self.get_signal_nature(), self.get_start_time(),
+                               self.get_metadata())
+        return sig_out
 
     # Works with timestamps
     def getslice(self, f, l):
