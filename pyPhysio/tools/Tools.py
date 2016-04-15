@@ -44,7 +44,7 @@ class PeakDetection(_Tool):
         # TODO: check added code
         # ---
         else:
-            from pyPhysio import Diff
+            from ..estimators import Diff
             deltas = Diff()(signal)
         mins = []
         maxs = []

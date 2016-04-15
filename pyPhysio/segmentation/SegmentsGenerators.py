@@ -1,7 +1,6 @@
 # coding=utf-8
-from ..PhUI import PhUI
+from ..PhUI import PhUI as _l
 from ..BaseSegmentation import SegmentsGenerator, Segment
-from ..Signal import EvenlySignal as _EvenlySignal
 
 __author__ = 'AleB'
 
@@ -64,7 +63,7 @@ class TimeSegments(SegmentsGenerator):
 
     def next_segment(self):
         if self._signal is None:
-            PhUI.w("Can't preview the segments without a signal here. Use the syntax "
+            _l.w("Can't preview the segments without a signal here. Use the syntax "
                    + TimeSegments.__name__ + "(p[params])(signal)")
             raise StopIteration()
         b = e = self._i
@@ -79,7 +78,7 @@ class TimeSegments(SegmentsGenerator):
         return s
 
 
-class FromStartStopSegments(SegmentsGenerator):  # TESTME
+class FromStartStopSegments(SegmentsGenerator):
     """
     Constant length (time) segments
     __init__(self, step, width=0, start=0)
@@ -99,13 +98,12 @@ class FromStartStopSegments(SegmentsGenerator):  # TESTME
 
     def next_segment(self):
         if self._signal is None:
-            PhUI.w("Can't preview the segments without a signal here. Use the syntax "
-                   + TimeSegments.__name__ + "(p[params])(signal)")
+            _l.w("Can't preview the segments without a signal here. Use the syntax "
+                 + TimeSegments.__name__ + "(p[params])(signal)")
             raise StopIteration()
         else:
-            l = len(self._signal)
-
             if self._i < len(self._params['starts']):
+                l = len(self._signal)
                 start = self._params['starts'][self._i]
                 while self._b < l and self._signal.get_x_values(self._b) < start:
                     self._b += 1
@@ -184,8 +182,8 @@ class FromEventsSegments(SegmentsGenerator):
 
     def next_segment(self):
         if self._signal is None:
-            PhUI.w("Can't preview the segments without a signal here. Use the syntax "
-                   + LengthSegments.__name__ + "(**params)(signal)")
+            _l.w("Can't preview the segments without a signal here. Use the syntax "
+                 + LengthSegments.__name__ + "(**params)(signal)")
             raise StopIteration()
         else:
             l = len(self._signal)
