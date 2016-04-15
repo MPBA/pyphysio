@@ -9,7 +9,7 @@ from segmentation.SegmentsGenerators import *
 import segmentation.SegmentsGenerators
 from BaseSegmentation import Segment
 from WindowsIterator import WindowsIterator
-from Signal import EvenlySignal, UnevenlySignal, UnevenlyTimeSignal
+from Signal import EvenlySignal, UnevenlySignal, SparseSignal
 
 __author__ = "AleB"
 
@@ -27,7 +27,7 @@ def algo(function, params=None):
     :return: An algorithm class if params is None else a parametrized algorithm instance.
     """
 
-    from pyPhysio.BaseAlgorithm import Algorithm
+    from BaseAlgorithm import Algorithm
 
     class Custom(Algorithm):
         # def __call__(self, data):

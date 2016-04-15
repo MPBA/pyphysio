@@ -80,7 +80,7 @@ class EvenlySignal(_Signal):
     def get_x_values(self, just_one=None):
         # Using future division
         if just_one is None:
-            return _np.arange(0, self.get_duration(), 1. / self.get_sampling_freq())
+            return _np.arange(0, self.get_duration(), 1. / self.get_sampling_freq())[:len(self)]
         else:
             return just_one / self.get_sampling_freq()
 
@@ -119,18 +119,19 @@ class EvenlySignal(_Signal):
 
         ratio = self.get_sampling_freq() / fout
 
-        if self.get_sampling_freq() >= fout and ratio.is_integer():  # fast interpolation
-            indexes = _np.arange(len(self))
-            keep = indexes % ratio == 0
-            signal_out = self[keep]
+        if fout < self.get_sampling_freq() and ratio.is_integer():  # fast interpolation
+            signal_out = self[::ratio]
         else:
-            indexes = _np.arange(len(self))
-            indexes_out = _np.arange(0, len(self) - 1 + ratio, ratio)  # TODO: check
+            # The last sample is doubled to allow the new size to be correct
+            indexes = _np.arange(len(self) + 1)
+            indexes_out = _np.arange(len(self) * fout / self.get_sampling_freq()) * ratio
+            self_l = _np.append(self, self[-1])
+
             if kind == 'cubic':
-                tck = _interp.InterpolatedUnivariateSpline(indexes, self)
+                tck = _interp.InterpolatedUnivariateSpline(indexes, self_l)
             else:
-                tck = _interp.interp1d(indexes, self, kind=kind)
-            signal_out = tck(indexes_out)  # TODO: raises an error
+                tck = _interp.interp1d(indexes, self_l, kind=kind)
+            signal_out = tck(indexes_out)
 
         return EvenlySignal(signal_out, fout, self.get_signal_nature(), self.get_start_time(), self.get_metadata())
 
@@ -211,6 +212,14 @@ class _XYSignal(_Signal):
         return sig_out
 
 
+class SparseSignal(_XYSignal):
+    def get_duration(self):
+        return self.get_x_values(-1)
+
+    def to_evenly(self, kind='linear'):
+        return self._to_evenly(kind, self.get_duration() * self.get_sampling_freq())
+
+
 class UnevenlySignal(_XYSignal):
     _MT_ORIGINAL_LENGTH = "duration"
 
@@ -226,6 +235,9 @@ class UnevenlySignal(_XYSignal):
     def get_original_length(self):
         return self.ph[self._MT_ORIGINAL_LENGTH]
 
+    def to_evenly(self, kind='linear'):
+        return self._to_evenly(kind, self.get_original_length())
+
     # Works with timestamps
     def getslice(self, f, l):
         # find f & l indexes of indexes
@@ -233,17 +245,6 @@ class UnevenlySignal(_XYSignal):
         l = _np.searchsorted(self.get_x_values, l)
         return UnevenlySignal(self[f:l], self.get_x_values()[f:l], self.get_sampling_freq(), self.get_duration(),
                               self.get_signal_nature(), check=False)
-
-    def to_evenly(self, kind='linear'):
-        return self._to_evenly(kind, self.get_original_length())
-
-
-class UnevenlyTimeSignal(_XYSignal):
-    def get_duration(self):
-        return self.get_x_values(-1)
-
-    def to_evenly(self, kind='linear'):
-        return self._to_evenly(kind, self.get_duration() * self.get_sampling_freq())
 
     # # Works with timestamps
     # def getslice(self, f, l):
