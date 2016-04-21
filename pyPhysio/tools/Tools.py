@@ -6,7 +6,7 @@ from pyPhysio import ConvolutionalFilter as _ConvFlt
 from ..PhUI import PhUI as _ph
 from ..BaseTool import Tool as _Tool
 from ..Signal import UnevenlySignal as _Unev
-from ..filters.Filters import Diff as Diff
+from ..filters.Filters import Diff as _Diff
 from ..estimators.Estimators import DriverEstim as _DriverEstim
 
 """
@@ -96,7 +96,10 @@ class PeakDetection(_Tool):
     @classmethod
     def check_params(cls, params):     
         params = {
-			'delta' : MultiType(2, [FloatPar(0, 2, 'The threshold for the detection of the peaks.', '>0'), VectorPar(2, 'Vector of the ranges of the signal to be used as local threshold')]),
+			'delta' : MultiType(2, [
+				FloatPar(0, 2, 'The threshold for the detection of the peaks.', '>0'), 
+				VectorPar(2, 'Vector of the ranges of the signal to be used as local threshold')
+				]),
             'refractory' : IntPar(1, 1, 'Number of samples to skip after detection of a peak', '>0'),
             'start_max' : BoolPar(True, 0, 'Whether to start looking for a max.')
             }
@@ -311,7 +314,6 @@ class PSD(_Tool):
 		
 		# TODO: check signal type.
 		# TODO: if unevenly --> interpolate
-		# TODO: How to pass fsamp to interpolate
 		
 		L = len(signal)
 		if remove_mean:
@@ -711,7 +713,7 @@ class BootstrapEstimation(_Tool):
     @classmethod
     def check_params(cls, params):
         params = {
-			'func' : Object(2, 'Function'),
+			'func' : ObjectPar(2, 'Function (accepts as input a vector and returns a scalar).'),
 			'N' : IntPar(100, 1, 'Number of iterations', '>0'),
 			'k' : FloatPar(0.5, 1, 'Portion of data to be used at each iteration', '>0 <1')
 			}

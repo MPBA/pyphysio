@@ -40,6 +40,7 @@ class InBand(_Indicator):
 			}
         return params
 
+
 class PowerInBand(_Indicator):
     def __init__(self, params=None, **kwargs):
         super(PowerInBand, self).__init__(params, kwargs)
@@ -62,6 +63,7 @@ class PowerInBand(_Indicator):
 			'freq_max': FloatPar(0, 2, 'Higher frequency of the band', '>0')
 			}
         return params
+
 
 class PeakInBand(_Indicator):
     def __init__(self, params=None, **kwargs):

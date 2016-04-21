@@ -341,10 +341,10 @@ class ConvolutionalFilter(_Filter):
     @classmethod
     def _check_params(cls, params):
         params = {
-			'irftype': ListPar('none', 2, 'Type of IRF to be generated.', ['gauss', 'rect', 'triang', 'dgauss', 'custom']),
+			'irftype': ListPar('gauss', 1, 'Type of IRF to be generated.', ['gauss', 'rect', 'triang', 'dgauss', 'custom']),
 			'normalize': BoolPar(True, 1, 'Whether to normalizes the IRF to have unitary area'),
-            'win_len': IntPar(1, 2, "Durarion of the generated IRF in seconds (if irftype is not 'custom')", '>0', 'irftype' != 'custom'),
-            'irf': VectorPar(2, "IRF to be used if irftype is 'custom'")
+            'win_len': IntPar(1, 2, "Durarion of the generated IRF in seconds (if irftype is not 'custom')", '>0', params['irftype']!='custom'),
+            'irf': VectorPar(2, "IRF to be used if irftype is 'custom'", params['irftype']=='custom')
             }
         return params
 

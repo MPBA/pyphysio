@@ -50,10 +50,10 @@ class BeatFromBP(_Estimator):
 
         fsamp = signal.sampling_freq
 
-        refractory = int(round(fsamp / fmax))
+        refractory = int(fsamp / fmax)
 
         # STAGE 1 - EXTRACT BEAT POSITION SIGNAL
-        signal_f = _IIRFilter(fp = 1.2 * fmax, fs = 5 * fmax)(signal)
+        signal_f = _IIRFilter(fp = 1.2 * fmax, fs = 3 * fmax)(signal)
 
         deltas = 0.5 * _SignalRange(win_len = 3/fmax, win_step = 1/fmax)(signal)
 
@@ -175,7 +175,7 @@ class BeatFromECG(_Estimator):
     @classmethod
     def check_params(cls, params):
 		params = {
-		'bpm_max' : IntPar(180, 1, 'Maximal expected heart rate (in beats per minute)', '>1 <=400'),
+		'bpm_max' : IntPar(180, 1, 'Maximal expected heart rate (in beats per minute)', '>0'),
 		'delta' : FloatPar(0, 1, 'Threshold for the peak detection. If delta = 0 (default) the signal range is automatically computed and used', '>0')
 		}
 		return params
@@ -245,8 +245,8 @@ class DriverEstim(_Estimator):
     @classmethod
     def check_params(cls, params):
         params = {
-			'T1' : Float(0.75, 1, 'T1 parameter for the Bateman function', 0, np.Inf),
-			'T2' : Float(2, 1, 'T2 parameter for the Bateman function', 0, np.Inf)
+			'T1' : Float(0.75, 1, 'T1 parameter for the Bateman function', '>0'),
+			'T2' : Float(2, 1, 'T2 parameter for the Bateman function', '>0')
 		}
         return params
 

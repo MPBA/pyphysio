@@ -10,6 +10,7 @@ import numpy as _np
 
 __author__ = 'AleB'
 
+## HRV
 class PoincareSD1(_Indicator):
     @classmethod
     def algorithm(cls, data, params):
