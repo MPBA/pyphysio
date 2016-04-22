@@ -19,8 +19,7 @@ class InBand(_Indicator):
         assert 'freq_max' in params, "Need the parameter 'freq_max' as the higher bound of the band."
         
         # TODO (Andrea): ?pass the PSD estimator instance as parameter? Yes, or only its name, discuss?
-        # assert 'psd_method' in params, "Need the parameter 'psd_method' as the higher bound of the band."
-
+        
         freq, spec = PSD.get(data, params)
 
         return ([freq[i] for i in xrange(len(freq)) if params['freq_min'] <= freq[i] < params['freq_max']],

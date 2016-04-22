@@ -96,7 +96,6 @@ class BeatFromBP(_Estimator):
         ibi_values = _np.r_[ibi_values[0], ibi_values]
         idx_ibi = _np.array(true_peaks)
 
-        # TODO (Andrea) done: passare anche la sampling freq - check che sia giusto ...
         ibi = _UnevenlySignal(ibi_values, idx_ibi, fsamp, 'IBI', signal.start_time, signal.meta)
         return ibi
 
@@ -152,8 +151,7 @@ class BeatFromECG(_Estimator):
         fmax = bpm_max / 60
 
         if delta == 0:
-            # TODO (Andrea): check next line, from signal is it right?
-            delta = 0.7 * _SignalRange(winlen=2 / fmax, winstep=0.5 / fmax)(signal)
+            delta = 0.7 * _SignalRange(winlen=2 / fmax, winstep= 0.5 / fmax)(signal)
         else:
             delta = _np.repeat(delta, len(signal))
 
@@ -172,7 +170,6 @@ class BeatFromECG(_Estimator):
         ibi_values = _np.r_[ibi_values[0], ibi_values]
         idx_ibi = _np.array(idx_d)
 
-        # TODO (Andrea) done: passare anche la sampling freq - check che sia giusto ...
         ibi = _UnevenlySignal(ibi_values, idx_ibi, fsamp, 'IBI', signal.start_time, signal.meta)
         return ibi
 
@@ -240,16 +237,13 @@ class DriverEstim(_Estimator):
 
         signal_in = _np.r_[bateman_first_half, signal, bateman_second_half]
 
-        # TODO (Andrea): next dec_flt and driver are not used and driver is not defined before driver[...
-
         # deconvolution
-        dec_filt = _DeConvolutionalFilter(irf=bateman)(signal_in)
+        driver = _DeConvolutionalFilter(irf=bateman)(signal_in)
         driver = driver[idx_max_bat + 1: idx_max_bat + len(signal)]
 
         # gaussian smoothing
         driver = _ConvolutionalFilter(irftype='gauss', win_len=0.2 * 8)
 
-        # TODO (Andrea): check fsamp
         driver = _EvenlySignal(driver, fsamp, "dEDA", signal.start_time, signal.meta)
         return driver
 
@@ -336,8 +330,7 @@ class PhasicEstim(_Estimator):
         idx_pre, idx_post = _PeakSelection(maxs=max_driv, pre_max=pre_max, post_max=post_max)
 
         # Linear interpolation to substitute the peaks
-        # TODO (Andrea): driver does not exist, is it max_driv?
-        driver_no_peak = _np.copy(driver)
+        driver_no_peak = _np.copy(signal)
         for I in range(len(idx_pre)):
             i_st = idx_pre[I]
             i_sp = idx_post[I]
@@ -346,23 +339,20 @@ class PhasicEstim(_Estimator):
 
             idx_base = _np.arange(i_sp - i_st)
 
-            coeff = (driver[i_sp] - driver[i_st]) / len(idx_base)
+            coeff = (signal[i_sp] - signal[i_st]) / len(idx_base)
 
-            driver_base = idx_base * coeff + driver[i_st]
+            driver_base = idx_base * coeff + signal[i_st]
 
             driver_no_peak[i_st:i_sp] = driver_base
 
         idx_grid = _np.arange(0, len(driver_no_peak) - 1, grid_size * fsamp)
         idx_grid = _np.r_[idx_grid, len(driver_no_peak) - 1]
 
-        driver_grid = _UnevenlySignal(driver_no_peak, idx_grid)
-        # TODO (Andrea): check and add above: fsamp, "dEDA", signal.get_start_time(), signal.get_metadata())
+        driver_grid = _UnevenlySignal(driver_no_peak, idx_grid, fsamp, "dEDA", signal.get_start_time(), signal.get_metadata())
 
-        tonic = driver_grid.to_evenly(kind='cubic')  # TODO: check len
+        tonic = driver_grid.to_evenly(kind='cubic')
 
-        phasic = driver - tonic
-
-        # TODO: return EvenlySignal-s
+        phasic = signal - tonic
 
         return phasic, tonic, driver_no_peak
 

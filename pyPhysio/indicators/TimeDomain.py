@@ -31,22 +31,22 @@ class Histogram(_Indicator):
             }
         return params
 
-
+"""
 class HistogramMax(_Indicator):
     @classmethod
     def algorithm(cls, signal, params):
-        """
-        Calculates the Histogram's max value
-        @return: (values, bins)
-        @rtype: (array, array)
-        """
+        
+#        Calculates the Histogram's max value
+#        @return: (values, bins)
+#        @rtype: (array, array)
+       
         h, b = Histogram.get(signal, params)
-        return _np.max(h)  # TODO 2 Andrea: max h or b(max h)??
+        return _np.max(h)
 
     @classmethod
     def get_used_params(cls):
         return Histogram.get_used_params()
-
+"""
 
 class Mean(_Indicator):
     """

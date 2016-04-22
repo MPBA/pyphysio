@@ -102,7 +102,7 @@ class Diff(_Filter):
                 "Computing %s on '%s' may not make sense.".format(Diff.__class__.__name__, signal.__class__.__name__))
         degree = params['degree']
 
-        # TODO: Manage Time references, in particular if Unevenly (to be discussed...) .. who cares?
+        # TODO (Ale): Manage Time references
         sig_1 = signal[:-degree]
         sig_2 = signal[degree:]
 
@@ -155,6 +155,7 @@ class IIRFilter(_Filter):
         nyq = 0.5 * fsamp
         fp = _np.array(fp)
         fs = _np.array(fs)
+        # TODO: Try (nyq=0)?
         wp = fp / nyq
         ws = fs / nyq
         b, a = _filter_design.iirdesign(wp, ws, loss, att, ftype=ftype)
@@ -295,13 +296,16 @@ class ConvolutionalFilter(_Filter):
                 g = _gaussian(N, std)
                 irf = _np.diff(g)
 
-        # TODO (Andrea): a questo punto N e irf potrebbero non esistere ancora
-
+            # TODO (Andrea): a questo punto N e irf potrebbero non esistere ancora
+            else: #?
+                #ERROR 'not implemented'
+                return(signal)
+                
         # NORMALIZE
         if normalize:
             irf = irf / _np.sum(irf)  # TODO (Andrea): account fsamp? TEST
 
-        # TODO (Ale): sicuri che dopo questa riga signal rimanga un in nparray? No
+        # TODO (Ale): sicuri che dopo questa riga signal rimanga un nparray? No
         signal_ = _np.r_[_np.ones(N) * signal[0], signal, _np.ones(N) * signal[-1]]  # TESTME
 
         signal_f = _np.convolve(signal_, irf, mode='same')
@@ -358,7 +362,7 @@ class DeConvolutionalFilter(_Filter):
         if normalize:
             irf = irf / _np.sum(irf)
         l = len(signal)
-        fft_signal = _np.fft.fft(signal, n=l)  # TODO: UNUSED var?
+        fft_signal = _np.fft.fft(signal, n=l)
         fft_irf = _np.fft.fft(irf, n=l)
         out = _np.fft.ifft(fft_signal / fft_irf)
 

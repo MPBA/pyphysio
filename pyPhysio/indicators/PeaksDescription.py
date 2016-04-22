@@ -17,9 +17,9 @@ class PeaksMax(_Indicator):
         """
 
         maxs, mins = _PeakDetection.get(data, delta=params['delta'])
-        # TODO (Andrea): test next line
+        
         if _np.shape(maxs)[0] == 0:
-            _PhUI.w("_np.shape(maxs)[0] == 0")
+            _PhUI.w("_np.shape(maxs)[0] == 0") # TODO: Put a more explicative message
             return _np.nan
         else:
             return _np.nanmax(maxs[:, 1])
@@ -41,7 +41,7 @@ class PeaksMin(_Indicator):
 
         maxs, mins = _PeakDetection.get(data, delta=params['delta'])
         if _np.shape(maxs)[0] == 0:
-            _PhUI.w("_np.shape(maxs)[0] == 0")
+            _PhUI.w("_np.shape(maxs)[0] == 0") # TODO: Put a more explicative message
             return _np.nan
         else:
             return _np.nanmin(maxs[:, 1])
@@ -62,9 +62,9 @@ class PeaksMean(_Indicator):
         """
 
         maxs, mins = _PeakDetection.get(data, delta=params['delta'])
-        # TODO (Andrea): test next line
+        
         if _np.shape(maxs)[0] == 0:
-            _PhUI.w("_np.shape(maxs)[0] == 0")
+            _PhUI.w("_np.shape(maxs)[0] == 0") # TODO: Put a more explicative message
             return _np.nan
         else:
             return _np.nanmean(maxs[:, 1])
@@ -85,9 +85,9 @@ class PeaksNum(_Indicator):
         """
 
         maxs, mins = _PeakDetection.get(data, delta=params['delta'])
-        # TODO (Andrea): test next line
+        
         if _np.shape(maxs)[0] == 0:
-            _PhUI.w("_np.shape(maxs)[0] == 0")
+            _PhUI.w("_np.shape(maxs)[0] == 0") # TODO: Put a more explicative message
             return _np.nan
         else:
             return len(maxs[:, 1])
@@ -234,9 +234,9 @@ class SlopeMin(_Indicator):
             return _np.nan
         else:
             fsamp = data.sampling_freq
+            idxs_peak = maxs[:,0]
             slopes = []
             for I in range(len(idxs_start)):
-                # TODO (Andrea): idxs_peak is not defined
                 if (_np.isnan(idxs_peak[I]) == False) & (_np.isnan(idxs_start[I]) == False):
                     dy = data[idxs_peak[I]] - data[idxs_start[I]]
                     dt = (idxs_peak[I] - idxs_start[I]) / fsamp
@@ -275,9 +275,9 @@ class SlopeMax(_Indicator):
             return _np.nan
         else:
             fsamp = data.sampling_freq
+            idxs_peak = maxs[:,0]
             slopes = []
             for I in range(len(idxs_start)):
-                # TODO (Andrea): idxs_peak is not defined
                 if (_np.isnan(idxs_peak[I]) == False) & (_np.isnan(idxs_start[I]) == False):
                     dy = data[idxs_peak[I]] - data[idxs_start[I]]
                     dt = (idxs_peak[I] - idxs_start[I]) / fsamp
@@ -316,9 +316,9 @@ class SlopeMean(_Indicator):
             return _np.nan
         else:
             fsamp = data.sampling_freq
+            idxs_peak = maxs[:,0]
             slopes = []
             for I in range(len(idxs_start)):
-                # TODO (Andrea): idxs_peak is not defined
                 if (_np.isnan(idxs_peak[I]) == False) & (_np.isnan(idxs_start[I]) == False):
                     dy = data[idxs_peak[I]] - data[idxs_start[I]]
                     dt = (idxs_peak[I] - idxs_start[I]) / fsamp

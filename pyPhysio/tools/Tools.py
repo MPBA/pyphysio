@@ -1,6 +1,9 @@
 from __future__ import division
 import numpy as _np
 import asa as _asa
+from scipy.signal import _welch
+import scipy.optimize as _opt
+from spectrum import _Periodogram, _aryule, _arma2psd, _AIC
 from pyPhysio import ConvolutionalFilter as _ConvFlt, PhUI as _PhUI
 from ..Parameters import Parameter as _Par
 import itertools as _itertools
@@ -131,7 +134,6 @@ class PeakSelection(_Tool):
         i_post_max = params['post_max'] * signal.sampling_freq
         i_peaks = maxs[:, 0].astype(int)
 
-        # TODO (Andrea): test next line
         if _np.shape(maxs)[0] == 0:
             _PhUI.e('No peaks found in the input')
             return _np.array([]), _np.array([])
@@ -229,7 +231,7 @@ class SignalRange(_Tool):
 
         windows = _np.arange(0, len(signal) - idx_len, idx_step)
         deltas = _np.zeros(len(signal))
-        # TODO (Andrea): check added code
+        
         # ---
         curr_delta = None
         # ---
@@ -298,6 +300,8 @@ class PSD(_Tool):
         window = params['window']
         normalize = params['normalize']
         remove_mean = params['remove_mean']
+        
+        fsamp = signal.sampling_freq
 
         # TODO: check signal type.
         # TODO: if unevenly --> interpolate
@@ -328,7 +332,6 @@ class PSD(_Tool):
             psd = spec_tmp[0:(_np.ceil(len(spec_tmp) / 2))]
 
         elif method == 'welch':
-            # TODO (Andrea): _welch and fsamp does not exist
             bands_w, psd = _welch(signal, fsamp, nfft=nfft)
 
         elif method == 'ar':
@@ -336,12 +339,11 @@ class PSD(_Tool):
             max_order = params['max_order']
 
             orders = range(min_order, max_order + 1)
-            # TODO (Andrea): _aryule, _arma2psd and AIC do not exist, AICs is not callable with (l,p,order)
             AICs = []
             for order in orders:
                 try:
                     ar, p, k = _aryule(signal, order=order, norm='biased')
-                    AICs.append(AIC(l, p, order))
+                    AICs.append(_AIC(l, p, order))
                 except AssertionError:  # TODO (Andrea): check whether to start from higher orders
                     break
             best_order = orders[_np.argmin(AICs)]
@@ -350,7 +352,6 @@ class PSD(_Tool):
             psd = _arma2psd(ar, NFFT=nfft)
             psd = psd[0: _np.ceil(len(psd) / 2)]
 
-        # TODO (Andrea): fsamp not defined, is it the one of signal?
         freqs = _np.linspace(start=0, stop=fsamp / 2, num=len(psd), endpoint=True)
 
         # NORMALIZE
@@ -381,10 +382,10 @@ class Energy(_Tool):
 
     Parameters
     ----------
-    winstep : int
+    win_len : int
+        The dimension of the window    
+    win_step : int
         The increment indexes to start the next window
-    winlen : int
-        The dimension of the window
     smooth : boolean
         Whether to convolve the result with a gaussian window
 
@@ -397,9 +398,10 @@ class Energy(_Tool):
     @classmethod
     def algorithm(cls, signal, params):
         fsamp = signal.sampling_freq
-
-        idx_len = params['win_len'] * fsamp
-        idx_step = params['win_step'] * fsamp
+        win_len = params['win_len']
+        win_step = params['win_step']
+        idx_len =  win_len * fsamp
+        idx_step = win_step * fsamp
         smooth = params['smooth']
 
         windows = _np.arange(0, len(signal) - idx_len, idx_step)
@@ -420,8 +422,7 @@ class Energy(_Tool):
         energy_out = _UnevenlySignal(energy, idx_interp, 1).to_evenly(kind='linear').get_y_values()
 
         if smooth:
-            # TODO (Andrea): check sintax and win_len
-            energy_out = _ConvFlt(irftype='gauss', win_len=2 * win_len * 2, normalize=True)(energy_out)
+            energy_out = _ConvFlt(irftype='gauss', win_len = 2 * win_len, normalize=True)(energy_out)
 
         return energy_out
 
@@ -656,7 +657,6 @@ class CreateTemplate(_Tool):
         template = template / _np.sum(template)
         return template
 
-    # TODO (Andrea): idx_stop era default a -1 con vincolo >0
     _params_descriptors = {
         'ref_indexes': _Par(2, _np.ndarray,
                             'Indexes of the signals to be used as reference point to generate the template', None),
@@ -759,7 +759,9 @@ class BeatOutliers(_Tool):
         counter_bad = 0
 
         # missings = []
-        # TODO (Andrea): idx_ibi and ibi are not defined
+        # TODO (Ale): giusta la sintassi?
+        idx_ibi = signal.x_values
+        ibi = signal.y_values
         for i in range(1, len(idx_ibi)):
             curr_median = _np.median(ibi_cache)
             curr_idx = idx_ibi[i]
@@ -784,7 +786,6 @@ class BeatOutliers(_Tool):
 
         return id_bad_ibi
 
-    # TODO (Andrea): ibi_median a 0 con vincolo >0
     _params_descriptors = {
         'ibi_median': _Par(1, (int, float),
                            'Ibi value used to initialize the cache. If 0 (default) the ibi_median is computed on the input signal',
@@ -989,7 +990,7 @@ class BeatOptimizer(_Tool):
         starts = _np.where(diff_idxs > 0)[0]
         stops = _np.where(diff_idxs < 0)[0] + 1
 
-        # TODO (Andrea): is stops an array?
+        # TODO (Ale): is stops an array? It should
         if len(starts) > len(stops):
             stops = _np.r_[stops, starts[-1] + 1]
 
@@ -1113,7 +1114,7 @@ class OptimizeBateman(_Tool):
         min_T2 = par_ranges[2]
         max_T2 = par_ranges[3]
 
-        # TODO (Andrea): _loss_function and _opt are not defined
+        # TODO (Ale): _loss_function is the function below
 
         if opt_method == 'asa':
             T1 = 0.75
@@ -1142,7 +1143,7 @@ class OptimizeBateman(_Tool):
         else:
             return x0
 
-    @staticmethod
+    @classmethod
     def _loss_function(par_bat, signal, delta, min_T1, max_T2):
         """
         Computes the loss for optimization of Bateman parameters.
@@ -1188,6 +1189,7 @@ class OptimizeBateman(_Tool):
         idx_selected_maxs = _np.where(diff_maxs > th_diff)[0]
         selected_maxs = idx_maxs[idx_selected_maxs]
 
+        energy = _np.Inf
         if len(selected_maxs) != 0:
             energy = 0
             for idx_max in selected_maxs:
@@ -1222,9 +1224,7 @@ class OptimizeBateman(_Tool):
             _PhUI.w('Peaks found but too near. Returning Inf')
             return _np.Inf  # or 10000 #TODO: check if np.Inf does not raise errors
 
-        # TODO (Andrea): loss is not defined
-        loss = _np.nan
-        _PhUI.i('Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(loss))
+        _PhUI.i('Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(energy))
         return energy
 
     _params_descriptors = {

@@ -114,7 +114,7 @@ class Embed(_Indicator):
         @return: Data array with shape (l - n + 1, n) having l=len(data) and n=subset_size
         @rtype: array
         """
-        # TODO inserire algoritmo piu generale con delay tau
+        # TODO (Ale): Inserire algoritmo piu generale con delay tau
         n = params['dimension']
         t = params['delay']
         # ...
@@ -219,12 +219,12 @@ class SampleEntropy(_Indicator):
             num_elem_m = uj_m.shape[0]
             num_elem_m1 = uj_m1.shape[0]
 
-            # r = r * SD.get(data) #FIX use this when merged all
+            # r = r * SD.get(data) #TODO (Ale) use this when merged all?
             r = r * _np.std(data)
             d_m = _cd(uj_m, uj_m,
-                      'chebyshev')  # TODO: mettere questo come algoritmo esterno per sfruttare la cache (usato anche da approxEntropy)
+                      'chebyshev')  # TODO (Ale): mettere questo come algoritmo esterno per sfruttare la cache (usato anche da approxEntropy)
             d_m1 = _cd(uj_m1, uj_m1,
-                       'chebyshev')  # TODO: mettere questo come algoritmo esterno per sfruttare la cache (usato anche da approxEntropy)
+                       'chebyshev')  # TODO (Ale): mettere questo come algoritmo esterno per sfruttare la cache (usato anche da approxEntropy)
 
             cmr_m_sa_mp_en = _np.zeros(num_elem_m)
             for i in xrange(num_elem_m):
