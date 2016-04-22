@@ -176,7 +176,7 @@ class SparseSignal(_XYSignal):
     def get_duration(self):
         return self.get_x_values(-1)
 
-    def to_evenly(self, kind='linear'):
+    def to_evenly(self, kind='linear', new_fsamp=None, length=None):
         """
         Interpolate the UnevenlySignal to obtain an evenly spaced signal
         Parameters
@@ -184,8 +184,11 @@ class SparseSignal(_XYSignal):
         kind : str
             Method for interpolation: 'linear', 'nearest', 'zero', 'slinear', 'quadratic, 'cubic'
 
+        new_fsamp : number
+            Frequency of the resulting signal. If not specified the original signal's will be used.
+
         length : number
-            Length of the resulting signal. If not specified the last sample will be one after the last input point.
+            Length in samples of the resulting signal. If not specified the last sample will be one after the last input point.
 
         Returns
         -------
@@ -193,7 +196,10 @@ class SparseSignal(_XYSignal):
             The interpolated signal
         """
 
-        length = self.get_duration() * self.get_sampling_freq()
+        if new_fsamp is None:
+            new_fsamp = self.get_sampling_freq()
+        if length is None:
+            length = self.get_duration() * new_fsamp
         data_x = self.get_x_values()
         data_y = self.get_y_values()
 
@@ -213,7 +219,7 @@ class SparseSignal(_XYSignal):
         sig_out = tck(_np.arange(length))
 
         # Init new signal
-        sig_out = EvenlySignal(sig_out, self.get_sampling_freq(), self.get_signal_nature(), self.get_start_time(),
+        sig_out = EvenlySignal(sig_out, new_fsamp, self.get_signal_nature(), self.get_start_time(),
                                self.get_metadata())
         return sig_out
 
@@ -233,7 +239,7 @@ class UnevenlySignal(_XYSignal):
     def get_original_length(self):
         return self.ph[self._MT_ORIGINAL_LENGTH]
 
-    def to_evenly(self, kind='linear'):
+    def to_evenly(self, kind='linear', new_fsamp=None, length=None):
         """
         Interpolate the UnevenlySignal to obtain an evenly spaced signal
         Parameters
@@ -241,8 +247,11 @@ class UnevenlySignal(_XYSignal):
         kind : str
             Method for interpolation: 'linear', 'nearest', 'zero', 'slinear', 'quadratic, 'cubic'
 
+        new_fsamp : number
+            Frequency of the resulting signal. If not specified the original signal's will be used.
+
         length : number
-            Length of the resulting signal. If not specified the last sample will be one after the last input point.
+            Length in samples of the resulting signal. If not specified the last sample will be one after the last input point.
 
         Returns
         -------
@@ -250,9 +259,11 @@ class UnevenlySignal(_XYSignal):
             The interpolated signal
         """
 
-        length = self.get_original_length()
+        length = self.get_original_length() if length is None else length
+        if new_fsamp is None:
+            new_fsamp = self.get_sampling_freq()
         # TODO: check that the computed length is bigger than the data_x one
-        data_x = self.get_x_values() * self.get_sampling_freq()
+        data_x = self.get_x_values() / new_fsamp
         data_y = self.get_y_values()
 
         # Add padding

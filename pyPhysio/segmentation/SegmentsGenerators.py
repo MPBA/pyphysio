@@ -1,5 +1,5 @@
 # coding=utf-8
-from ..PhUI import PhUI as _l
+from pyPhysio import PhUI as _l
 from ..BaseSegmentation import SegmentsGenerator, Segment
 
 __author__ = 'AleB'

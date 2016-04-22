@@ -5,10 +5,12 @@ __author__ = 'AleB'
 
 
 class Algorithm(object):
-    __metaclass__ = _ABCMeta
     """
     This is the algorithm container super class. It (is abstract) should be used only to be extended.
     """
+    __metaclass__ = _ABCMeta
+
+    _params_descriptors = {}
 
     def __init__(self, params=None, **kwargs):
         """
@@ -69,7 +71,6 @@ class Algorithm(object):
         This class is abstract.
         @return: The hash of the parameters used by the feature.
         :param params:
-        :param params:
         """
         p = params.copy()
         p.update({'': str(cls)})
@@ -87,8 +88,16 @@ class Algorithm(object):
         return self._params
 
     @classmethod
+    def get_params_descriptors(cls):
+        """
+        Returns the used parameters
+        :rtype: dict[str, Parameter]
+        """
+        return cls._params_descriptors
+
+    @classmethod
     @_abstract
-    def is_nature_supported(cls, signal):
+    def is_compatible(cls, signal):
         """
         Placeholder for the subclasses
         :returns: Weather nature is compatible or not
@@ -104,15 +113,6 @@ class Algorithm(object):
         @raise NotImplementedError: Ever
         :param params:
         :param data:
-        """
-        pass
-
-    @classmethod
-    @_abstract
-    def get_used_params(cls):
-        """
-        Placeholder for the subclasses
-        @raise NotImplementedError: Ever
         """
         pass
 

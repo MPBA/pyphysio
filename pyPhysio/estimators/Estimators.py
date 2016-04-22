@@ -2,6 +2,7 @@
 import numpy as _np
 from ..BaseEstimator import Estimator as _Estimator
 from ..Signal import UnevenlySignal as _UnevenlySignal, EvenlySignal as _EvenlySignal
+from pyPhysio import PhUI as _PhUI
 from ..filters.Filters import IIRFilter as _IIRFilter, Diff as _Diff, DeConvolutionalFilter as _DeConvolutionalFilter, \
     ConvolutionalFilter as _ConvolutionalFilter
 from ..tools.Tools import SignalRange as _SignalRange, PeakDetection as _PeakDetection, Minima as _Minima, \
@@ -59,7 +60,7 @@ class BeatFromBP(_Estimator):
         deltas = 0.5 * _SignalRange(win_len=3 / fmax, win_step=1 / fmax)(signal)
 
         # detection of candidate peaks
-        maxp, minp = _PeakDetection(deltas=deltas, refractory=refractory, start_max=True)(signal_f)  ### Tools
+        maxp, minp = _PeakDetection(deltas=deltas, refractory=refractory, start_max=True)(signal_f)  # Tools
         idx_d = maxp[:, 0]
 
         if idx_d[0] == 0:
@@ -87,7 +88,7 @@ class BeatFromBP(_Estimator):
                 peak = idx_mins[1]
                 true_peaks.append(start_ + peak_obs + peak)
             else:
-                # WARNING 'Peak not found; idx_beat: '+str(idx_beat)
+                _PhUI.w('Peak not found; idx_beat: '+str(idx_beat))
                 pass
 
         # STAGE 4 - FINALIZE computing IBI and fixing indexes

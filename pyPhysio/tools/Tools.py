@@ -1,18 +1,14 @@
 from __future__ import division
 import numpy as _np
 import asa as _asa
-#import scipy.optimize as _opt
-from pyPhysio import ConvolutionalFilter as _ConvFlt
+from pyPhysio import ConvolutionalFilter as _ConvFlt, PhUI as _PhUI
+from ..Parameters import Parameter as _Par
 import itertools as _itertools
-from ..PhUI import PhUI as _PhUI
 from ..BaseTool import Tool as _Tool
 from ..Signal import UnevenlySignal as _UnevenlySignal, EvenlySignal as _EvenlySignal
 from ..filters.Filters import Diff as _Diff
 from ..estimators.Estimators import DriverEstim as _DriverEstim
 
-"""
-Tools are generic operations that take as input a SIGNAL (or numpy array?) and give as output one or more np.array.
-"""
 
 class PeakDetection(_Tool):
     """
@@ -34,20 +30,16 @@ class PeakDetection(_Tool):
     mins : nparray
         Array containing indexes (first column) and values (second column) of the minima
     """
-    
-    @classmethod
-    def get_signal_type(cls):
-        return []
 
     @classmethod
     def algorithm(cls, signal, params):
         delta = params['delta']
         refractory = params['refractory']
         start_max = params['start_max']
-        
+
         if len(delta) != len(signal):
             _PhUI.e("delta vector's length differs from signal's one.")
-            return _np.array([[],[]]), _np.array([[],[]])
+            return _np.array([[], []]), _np.array([[], []])
 
         mins = []
         maxs = []
@@ -94,17 +86,21 @@ class PeakDetection(_Tool):
             i += 1
         return _np.array(maxs), _np.array(mins)
 
-    @classmethod
-    def check_params(cls, params):     
-        params = {
-            'delta' : MultiType(2, [
-                FloatPar(0, 2, 'The threshold for the detection of the peaks.', '>0'),
-                VectorPar(2, 'Vector of the ranges of the signal to be used as local threshold')
-                ]),
-            'refractory' : IntPar(1, 1, 'Number of samples to skip after detection of a peak', '>0'),
-            'start_max' : BoolPar(True, 0, 'Whether to start looking for a max.')
-            }
-        return params
+    _params_descriptors = {
+        'delta': _Par(2, (int, float),
+                      "The threshold for the detection of the peaks.",
+                      0,
+                      lambda x: x > 0,
+                      lambda x, y: 'deltas' not in y),
+        'deltas': _Par(2, _np.array,
+                       "Vector of the ranges of the signal to be used as local threshold",
+                       None,
+                       lambda x, y: 'delta' not in y),
+        'refractory': _Par(1, _np.int64,
+                           "Number of samples to skip after detection of a peak",
+                           lambda x: x > 0),
+        'start_max': _Par(0, bool, "Whether to start looking for a max.", True)
+    }
 
 
 class PeakSelection(_Tool):
@@ -129,15 +125,11 @@ class PeakSelection(_Tool):
     """
 
     @classmethod
-    def get_signal_type(cls):
-        return []
-
-    @classmethod
     def algorithm(cls, signal, params):
         maxs = params['maxs']
-        i_pre_max = params['pre_max']*signal.sampling_freq
-        i_post_max = params['post_max']*signal.sampling_freq
-        i_peaks = maxs[:,0].astype(int)
+        i_pre_max = params['pre_max'] * signal.sampling_freq
+        i_post_max = params['post_max'] * signal.sampling_freq
+        i_peaks = maxs[:, 0].astype(int)
 
         # TODO (Andrea): test next line
         if _np.shape(maxs)[0] == 0:
@@ -148,7 +140,7 @@ class PeakSelection(_Tool):
             i_start = []
             i_stop = []
             for i_pk in i_peaks:
-                if (i_pk < i_pre_max) or (i_pk >= len(signal_dt) - i_post_max) :
+                if (i_pk < i_pre_max) or (i_pk >= len(signal_dt) - i_post_max):
                     _PhUI.w('Peak at start/end of signal, not accounting')
                     i_start.append(_np.nan)
                     i_stop.append(_np.nan)
@@ -156,9 +148,9 @@ class PeakSelection(_Tool):
                     # TODO: vedere se si puo scrivere un codice meno complesso
                     # TODO: gestire se sorpasso gli intervalli e non ho trovato il minimo
 
-                    #find START
+                    # find START
                     i_st = i_pk - i_pre_max
-                    signal_dt_pre = signal_dt[i_st : i_pk]
+                    signal_dt_pre = signal_dt[i_st: i_pk]
                     i_pre = len(signal_dt_pre) - 1
 
                     done = False
@@ -174,9 +166,9 @@ class PeakSelection(_Tool):
                     i_pre_true = i_st + i_pre + 1
                     i_start.append(i_pre_true)
 
-                    #find STOP
+                    # find STOP
                     i_sp = i_pk + i_post_max
-                    signal_dt_post = signal_dt[i_pk : i_sp]
+                    signal_dt_post = signal_dt[i_pk: i_sp]
                     i_post = 0
 
                     done = False
@@ -194,13 +186,16 @@ class PeakSelection(_Tool):
 
             return _np.array(i_start).astype(int), _np.array(i_stop).astype(int)
 
-    def check_params(cls, params):
-        params = {
-            'maxs':VectorPar(2, 'Array containing indexes (first column) and values (second column) of the maxima'),
-            'pre_max' : FloatPar(1, 2, 'Duration (in seconds) of interval before the peak that is considered to find the start of the peak', '>0'),
-            'post_max' : FloatPar(1, 2, 'Duration (in seconds) of interval after the peak that is considered to find the start of the peak', '>0')
-            }
-        return params
+    _params_descriptors = {
+        'maxs': _Par(2, list,
+                     'Array containing indexes (first column) and values (second column) of the maxima'),
+        'pre_max': _Par(2, (int, float),
+                        'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
+                        1, lambda x: x > 0),
+        'post_max': _Par(2, (int, float),
+                         'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
+                         1, lambda x: x > 0)
+    }
 
 
 class SignalRange(_Tool):
@@ -223,15 +218,11 @@ class SignalRange(_Tool):
     """
 
     @classmethod
-    def get_signal_type(cls):
-        return []
-
-    @classmethod
     def algorithm(cls, signal, params):
         win_len = params['win_len']
         win_step = params['win_step']
         smooth = params['smooth']
-        
+
         fsamp = signal.sampling_freq
         idx_len = int(win_len * fsamp)
         idx_step = int(win_step * fsamp)
@@ -256,14 +247,11 @@ class SignalRange(_Tool):
 
         return deltas
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'win_len' : IntPar(1, 2, 'The length of the window (seconds)', '>0'),
-            'win_step' : IntPar(1, 2, 'The increment to start the next window (seconds)', '>0')
-            'smooth' : BoolPar(True, 1, 'Whether to convolve the result with a gaussian window')
-            }
-        return params
+    _params_descriptors = {
+        'win_len': _Par(2, int, 'The length of the window (seconds)', 1, lambda x: x > 0),
+        'win_step': _Par(2, int, 'The increment to start the next window (seconds)', 1, lambda x: x > 0),
+        'smooth': _Par(1, bool, 'Whether to convolve the result with a gaussian window', True)
+    }
 
 
 class PSD(_Tool):
@@ -294,18 +282,14 @@ class PSD(_Tool):
     psd : nparray
         The Power Spectrum Density
     """
-    
-    #TODO: consider point below:
+
+    # TODO: consider point below:
     '''
     A density spectrum considers the amplitudes per unit frequency. 
     Density spectra are used to compare spectra with different frequency resolution as the 
     magnitudes are not influenced by the resolution because it is per Hertz. The amplitude 
     spectra on the other hand depend on the chosen frequency resolution.
     '''
-
-    @classmethod
-    def get_signal_type(cls):
-        return []
 
     @classmethod
     def algorithm(cls, signal, params):
@@ -351,40 +335,44 @@ class PSD(_Tool):
             min_order = params['min_order']
             max_order = params['max_order']
 
-            orders = range(min_order, max_order+1)
+            orders = range(min_order, max_order + 1)
             # TODO (Andrea): _aryule, _arma2psd and AIC do not exist, AICs is not callable with (l,p,order)
             AICs = []
             for order in orders:
                 try:
                     ar, p, k = _aryule(signal, order=order, norm='biased')
                     AICs.append(AIC(l, p, order))
-                except AssertionError: # TODO (Andrea): check whether to start from higher orders
+                except AssertionError:  # TODO (Andrea): check whether to start from higher orders
                     break
             best_order = orders[_np.argmin(AICs)]
 
             ar, p, k = _aryule(signal, best_order, norm='biased')
-            psd = _arma2psd(ar, NFFT = nfft)
-            psd = psd[0: _np.ceil(len(psd)/2)]
+            psd = _arma2psd(ar, NFFT=nfft)
+            psd = psd[0: _np.ceil(len(psd) / 2)]
 
-        # TODO (Andrea): fsamp not defines, is it the one of signal?
-        freqs = _np.linspace(start=0, stop=fsamp/2, num=len(psd), endpoint=True)
+        # TODO (Andrea): fsamp not defined, is it the one of signal?
+        freqs = _np.linspace(start=0, stop=fsamp / 2, num=len(psd), endpoint=True)
 
         # NORMALIZE
         if normalize:
             psd /= 0.5 * fsamp * _np.sum(psd) / len(psd)
         return freqs, psd
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'method' : ListPar('welch', 1, 'Method to estimate the PSD', ['fft', 'welch', 'ar']),
-            'min_order' : IntPar(10, 1, 'Minimum order of the model (for psd_method="ar")', '>0'),
-            'nfft' : IntPar(2048, 1, 'Number of samples in the PSD', '>0'),
-            'window' : ListPar('hamming', 1, 'Type of window to adapt the signal before estimation of the PSD', ['hamming', 'blackman', 'hanning', 'none']),
-            'normalize' : BoolPar(True, 1, 'Whether to normalize the PSD'),
-            'remove_mean' : BoolPar(True, 1, 'Whether to remove the mean from the signal before estimation of the PSD')
-            }
-        return params
+    _method_list = ['welch', 'fft', 'ar']
+    _window_list = ['hamming', 'blackman', 'hanning', 'none']
+
+    _params_descriptors = {
+        'method': _Par(1, str, 'Method to estimate the PSD', 'welch', lambda x: x in PSD._method_list),
+        'min_order': _Par(1, int, 'Minimum order of the model (for method="ar")',
+                          10,
+                          lambda x: x > 0,
+                          lambda x, y: y["method"] == "ar"),
+        'nfft': _Par(1, int, 'Number of samples in the PSD', 2048, lambda x: x > 0),
+        'window': _Par(1, str, 'Type of window to adapt the signal before estimation of the PSD',
+                       'hamming', lambda x: x in PSD._window_list),
+        'normalize': _Par(1, bool, 'Whether to normalize the PSD', True),
+        'remove_mean': _Par(1, bool, 'Whether to remove the mean from the signal before estimation of the PSD', True)
+    }
 
 
 class Energy(_Tool):
@@ -407,15 +395,11 @@ class Energy(_Tool):
     """
 
     @classmethod
-    def get_signal_type(cls):
-        return []
-
-    @classmethod
     def algorithm(cls, signal, params):
         fsamp = signal.sampling_freq
 
-        idx_len = params['win_len'] *fsamp
-        idx_step = params['win_step'] *fsamp
+        idx_len = params['win_len'] * fsamp
+        idx_step = params['win_step'] * fsamp
         smooth = params['smooth']
 
         windows = _np.arange(0, len(signal) - idx_len, idx_step)
@@ -437,18 +421,15 @@ class Energy(_Tool):
 
         if smooth:
             # TODO (Andrea): check sintax and win_len
-            energy_out = _ConvFlt(irftype='gauss', win_len= 2 * win_len * 2, normalize=True)(energy_out)
+            energy_out = _ConvFlt(irftype='gauss', win_len=2 * win_len * 2, normalize=True)(energy_out)
 
         return energy_out
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'win_len' : IntPar(1, 2, 'The length of the window (seconds)', '>0'),
-            'win_step' : IntPar(1, 2, 'The increment to start the next window (seconds)', '>0')
-            'smooth' : BoolPar(True, 1, 'Whether to convolve the result with a gaussian window')
-            }
-        return params
+    _params_descriptors = {
+        'win_len': _Par(2, int, 'The length of the window (seconds)', 1, lambda x: x > 0),
+        'win_step': _Par(2, int, 'The increment to start the next window (seconds)', 1, lambda x: x > 0),
+        'smooth': _Par(1, bool, 'Whether to convolve the result with a gaussian window', True)
+    }
 
 
 class Maxima(_Tool):
@@ -473,10 +454,6 @@ class Maxima(_Tool):
     """
 
     @classmethod
-    def get_signal_type(cls):
-        return []
-
-    @classmethod
     def algorithm(cls, signal, params):
         method = params['method']
         refractory = params['refractory']
@@ -484,14 +461,14 @@ class Maxima(_Tool):
             maxima = []
             prev = signal[0]
             k = 1
-            while k < len(signal)-1:
+            while k < len(signal) - 1:
                 curr = signal[k]
-                nxt = signal[k+1]
+                nxt = signal[k + 1]
                 if (curr >= prev) and (curr >= nxt):
                     maxima.append(k)
                     prev = signal[k + 1 + refractory]
                     k = k + 2 + refractory
-                else: #continue
+                else:  # continue
                     prev = signal[k]
                     k += 1
             maxima = _np.array(maxima).astype(int)
@@ -501,8 +478,8 @@ class Maxima(_Tool):
         elif method == 'windowing':
             # TODO: test the algorithm
             fsamp = signal.sampling_freq
-            wlen = int(params['win_len']*fsamp)
-            wstep = int(params['win_step']*fsamp)
+            wlen = int(params['win_len'] * fsamp)
+            wstep = int(params['win_step'] * fsamp)
 
             idx_maxs = [0]
             maxs = [0]
@@ -516,22 +493,31 @@ class Maxima(_Tool):
                 curr_idx_max = _np.argmax(curr_win) + idx_st
                 curr_max = _np.max(curr_win)
 
-                if curr_idx_max != idx_maxs[-1] and curr_idx_max != idx_st and curr_idx_max != idx_sp-1: #peak not already detected & peak not at the beginnig/end of the window:
+                if curr_idx_max != idx_maxs[
+                    -1] and curr_idx_max != idx_st and curr_idx_max != idx_sp - 1:  # peak not already detected & peak not at the beginnig/end of the window:
                     idx_maxs.append(curr_idx_max)
                     maxs.append(curr_max)
-            idx_maxs.append(len(signal)-1)
+            idx_maxs.append(len(signal) - 1)
             maxs.append(signal[-1])
             return _np.c_[idx_maxs, maxs]
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'method' : ListPar('complete', 'Method to detect the maxima', ['complete', 'windowing']),
-            'refractory' : IntPar(1, 1, 'Number of samples to skip after detection of a maximum (method = "complete")', '>0', 'method'=='complete'),
-            'win_len' : IntPar(1, 1, 'Size of window in seconds (method = "windowing")', '>0', 'method'=='windowing'),
-            'win_step' : IntPar(1, 1, 'Increment to start the next window in seconds (method = "windowing")', '>0', 'method'=='windowing')
-            }
-        return params
+    _params_descriptors = {
+        'method': _Par(2, 'Method to detect the maxima',
+                       'complete',
+                       lambda x: x in ['complete', 'windowing']),
+        'refractory': _Par(1, 'Number of samples to skip after detection of a maximum (method = "complete")',
+                           1,
+                           lambda x: x > 0,
+                           lambda x, p: p['method'] == 'complete'),
+        'win_len': _Par(1, 'Size of window in seconds (method = "windowing")',
+                        1,
+                        lambda x: x > 0,
+                        lambda x, p: p['method'] == 'windowing'),
+        'win_step': _Par(1, 'Increment to start the next window in seconds (method = "windowing")',
+                         1,
+                         lambda x: x > 0,
+                         lambda x, p: p['method'] == 'windowing'),
+    }
 
 
 class Minima(_Tool):
@@ -556,10 +542,6 @@ class Minima(_Tool):
     """
 
     @classmethod
-    def get_signal_type(cls):
-        return ['']
-
-    @classmethod
     def algorithm(cls, signal, params):
         method = params['method']
         refractory = params['refractory']
@@ -567,14 +549,14 @@ class Minima(_Tool):
             minima = []
             prev = signal[0]
             k = 1
-            while k < len(signal)-1:
+            while k < len(signal) - 1:
                 curr = signal[k]
-                nxt = signal[k+1]
+                nxt = signal[k + 1]
                 if (curr <= prev) and (curr <= nxt):
                     minima.append(k)
                     prev = signal[k + 1 + refractory]
                     k = k + 2 + refractory
-                else: #continue
+                else:  # continue
                     prev = signal[k]
                     k += 1
             minima = _np.array(minima).astype(int)
@@ -598,22 +580,31 @@ class Minima(_Tool):
                 curr_idx_min = _np.argmin(curr_win) + idx_st
                 curr_min = _np.min(curr_win)
 
-                if curr_idx_min != idx_mins[-1] and curr_idx_min != idx_st and curr_idx_min != idx_sp-1: #peak not present & peak not at the beginnig/end of the window
+                if curr_idx_min != idx_mins[
+                    -1] and curr_idx_min != idx_st and curr_idx_min != idx_sp - 1:  # peak not present & peak not at the beginnig/end of the window
                     idx_mins.append(curr_idx_min)
                     mins.append(curr_min)
-            idx_mins.append(len(signal)-1)
+            idx_mins.append(len(signal) - 1)
             mins.append(signal[-1])
             return _np.c_[idx_mins, mins]
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'method' : ListPar('complete', 'Method to detect the minima', ['complete', 'windowing']),
-            'refractory' : IntPar(1, 1, 'Number of samples to skip after detection of a minimum (method = "complete")', '>0', 'method'=='complete'),
-            'win_len' : IntPar(1, 1, 'Size of window in seconds (method = "windowing")', '>0', 'method'=='windowing'),
-            'win_step' : IntPar(1, 1, 'Increment to start the next window in seconds (method = "windowing")', '>0', 'method'=='windowing')
-            }
-        return params
+    _params_descriptors = {
+        'method': _Par(2, 'Method to detect the minima',
+                       'complete',
+                       lambda x: x in ['complete', 'windowing']),
+        'refractory': _Par(1, 'Number of samples to skip after detection of a maximum (method = "complete")',
+                           1,
+                           lambda x: x > 0,
+                           lambda x, p: p['method'] == 'complete'),
+        'win_len': _Par(1, 'Size of window in seconds (method = "windowing")',
+                        1,
+                        lambda x: x > 0,
+                        lambda x, p: p['method'] == 'windowing'),
+        'win_step': _Par(1, 'Increment to start the next window in seconds (method = "windowing")',
+                         1,
+                         lambda x: x > 0,
+                         lambda x, p: p['method'] == 'windowing'),
+    }
 
 
 class CreateTemplate(_Tool):
@@ -640,10 +631,6 @@ class CreateTemplate(_Tool):
     """
 
     @classmethod
-    def get_signal_type(cls):
-        return []
-
-    @classmethod
     def algorithm(cls, signal, params):
         idx_start = params['idx_start']
         idx_end = params['idx_stop']
@@ -651,33 +638,39 @@ class CreateTemplate(_Tool):
         smp_post = params['smp_post']
         ref_indexes = params['ref_indexes']
         sig = _np.array(signal[idx_start:idx_end])
-        ref_indexes = _np.array(ref_indexes[_np.where((ref_indexes > idx_start) & (ref_indexes<= idx_end))[0]]) - idx_start
+        ref_indexes = _np.array(
+            ref_indexes[_np.where((ref_indexes > idx_start) & (ref_indexes <= idx_end))[0]]) - idx_start
         total_samples = smp_pre + smp_post
         templates = _np.zeros(total_samples)
 
-        for i in range(1, len(ref_indexes)-1):
+        for i in range(1, len(ref_indexes) - 1):
             idx_peak = ref_indexes[i]
             tmp = sig[idx_peak - smp_pre: idx_peak + smp_post]
-            tmp = (tmp - _np.min(tmp))/(_np.max(tmp) - _np.min(tmp))
+            tmp = (tmp - _np.min(tmp)) / (_np.max(tmp) - _np.min(tmp))
             templates = _np.c_[templates, tmp]
 
         templates = templates[:, 1:]
 
-        template = _np.mean(templates, axis = 1)
+        template = _np.mean(templates, axis=1)
         template = template - template[0]
-        template = template/_np.sum(template)
+        template = template / _np.sum(template)
         return template
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'ref_indexes' : VectorPar(2, 'Indexes of the signals to be used as reference point to generate the template'),
-            'idx_start' : IntPar(0, 2, 'Index of the signal to start the segmentation of the portion used to generate the template', '>0'),
-            'idx_stop' : IntPar(-1, 2, 'Index of the signal to end the segmentation of the portion used to generate the template', '>0'),
-            'smp_pre' : IntPar(100, 2, 'Number of samples before the reference point to be used to generate the template', '>0'),
-            'smp_post' : IntPar(100, 2, 'Number of samples after the reference point to be used to generate the template', '>0')
-            }
-        return params
+    # TODO (Andrea): idx_stop era default a -1 con vincolo >0
+    _params_descriptors = {
+        'ref_indexes': _Par(2, _np.ndarray,
+                            'Indexes of the signals to be used as reference point to generate the template', None),
+        'idx_start': _Par(2, int,
+                          'Index of the signal to start the segmentation of the portion used to generate the template',
+                          None, lambda x: x > 0),
+        'idx_stop': _Par(2, int,
+                         'Index of the signal to end the segmentation of the portion used to generate the template',
+                         None, lambda x: x > 0),
+        'smp_pre': _Par(2, int, 'Number of samples before the reference point to be used to generate the template',
+                        None, lambda x: x > 0),
+        'smp_post': _Par(2, int, 'Number of samples after the reference point to be used to generate the template',
+                         None, lambda x: x > 0)
+    }
 
 
 class BootstrapEstimation(_Tool):
@@ -698,10 +691,6 @@ class BootstrapEstimation(_Tool):
     estim : float
         The bootstrapped estimate
     """
-    
-    @classmethod
-    def get_signal_type(cls):
-        return []
 
     @classmethod
     def algorithm(cls, signal, params):
@@ -719,14 +708,12 @@ class BootstrapEstimation(_Tool):
             estim.append(curr_est)
         return _np.mean(estim)
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'func' : ObjectPar(2, 'Function (accepts as input a vector and returns a scalar).'),
-            'N' : IntPar(100, 1, 'Number of iterations', '>0'),
-            'k' : FloatPar(0.5, 1, 'Portion of data to be used at each iteration', '>0 <1')
-            }
-        return params
+    from types import FunctionType as func
+    _params_descriptors = {
+        'func': _Par(2, func, 'Function (accepts as input a vector and returns a scalar).'),
+        'N': _Par(1, int, 'Number of iterations', 100, lambda x: x > 0),
+        'k': _Par(1, (int, float), 'Portion of data to be used at each iteration', 0.5, lambda x: 0 < x < 1)
+    }
 
 
 ### IBI Tools
@@ -754,7 +741,7 @@ class BeatOutliers(_Tool):
     It only detects outliers. You should manually remove outliers using FixIBI
     
     """
-    
+
     @classmethod
     def get_signal_type(cls):
         return ['IBI']
@@ -762,7 +749,7 @@ class BeatOutliers(_Tool):
     @classmethod
     def algorithm(cls, signal, params):
         cache, sensitivity, ibi_median = params["cache"], params["sensitivity"], params["ibi_median"]
-        
+
         if ibi_median == 0:
             ibi_expected = _np.median(signal)
         else:
@@ -792,20 +779,22 @@ class BeatOutliers(_Tool):
 
             if counter_bad == cache:  # ibi cache probably corrupted, reinitialize
                 ibi_cache = _np.repeat(ibi_expected, cache)
-                #MESSAGE 'Cache re-initialized - '+ str(curr_idx)
+                # MESSAGE 'Cache re-initialized - '+ str(curr_idx)
                 counter_bad = 0
 
         return id_bad_ibi
 
-
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'ibi_median' : IntPar(0, 1, 'Ibi value used to initialize the cache. If 0 (default) the ibi_median is computed on the input signal', '>0'),
-            'cache' : IntPar(3, 1, 'Nuber of IBI to be stored in the cache for adaptive computation of the interval of accepted values', '>0'),
-            'sensitivity' : FloatPar(0.25, 1, 'Relative variation from the current median that is accepted', '>0')
-            }
-        return params
+    # TODO (Andrea): ibi_median a 0 con vincolo >0
+    _params_descriptors = {
+        'ibi_median': _Par(1, (int, float),
+                           'Ibi value used to initialize the cache. If 0 (default) the ibi_median is computed on the input signal',
+                           0, lambda x: x >= 0),
+        'cache': _Par(1, int,
+                      'Nuber of IBI to be stored in the cache for adaptive computation of the interval of accepted values',
+                      3, lambda x: x > 0),
+        'sensitivity': _Par(1, (int, float), 'Relative variation from the current median that is accepted', 0.25,
+                            lambda x: x > 0)
+    }
 
 
 class FixIBI(_Tool):
@@ -823,29 +812,28 @@ class FixIBI(_Tool):
         Corrected IBI
             
     """
-    
+
     @classmethod
     def get_signal_type(cls):
         return ['IBI']
 
     @classmethod
     def algorithm(cls, signal, params):
-        assert isinstance(signal, _UnevenlySignal), "IBI can only be represented by an EvenlySignal, %s found." % type(signal)
+        assert isinstance(signal, _UnevenlySignal), "IBI can only be represented by an EvenlySignal, %s found." % type(
+            signal)
         id_bad = params['id_bad_ibi']
         idx_ibi = signal.get_x_values()
-        ibi =  signal.get_y_values()
+        ibi = signal.get_y_values()
         idx_ibi_nobad = _np.delete(idx_ibi, id_bad)
         ibi_nobad = _np.delete(ibi, id_bad)
         idx_ibi = idx_ibi_nobad.astype(int)
         ibi = ibi_nobad
-        return _UnevenlySignal(ibi, idx_ibi, signal.get_sampling_freq(), len(signal), signal.get_signal_nature(), signal.get_start_time())
+        return _UnevenlySignal(ibi, idx_ibi, signal.get_sampling_freq(), len(signal), signal.get_signal_nature(),
+                               signal.get_start_time())
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'id_bad_ibi' : VectorPar(2, 'Identifiers of abnormal beats')
-            }
-        return params
+    _params_descriptors = {
+        'id_bad_ibi': _Par(2, list, 'Identifiers of abnormal beats')
+    }
 
 
 class BeatOptimizer(_Tool):
@@ -872,7 +860,7 @@ class BeatOptimizer(_Tool):
     -----
     ...        
     """
-    
+
     @classmethod
     def get_signal_type(cls):
         return ['IBI']
@@ -880,10 +868,10 @@ class BeatOptimizer(_Tool):
     @classmethod
     def algorithm(cls, signal, params):
         b, cache, sensitivity, ibi_median = params["B"], params["cache"], params["sensitivity"], params["ibi_median"]
-        
+
         idx_ibi = signal.indexes
         fsamp = signal.fsamp
-        
+
         if ibi_median == 0:
             ibi_expected = _np.median(_Diff()(idx_ibi))
         else:
@@ -1055,25 +1043,26 @@ class BeatOptimizer(_Tool):
                     best_error = cand_error
             idx_out[i_st - 1: i_sp + 1] = best_portion
 
-
         ###
         # finalize arrays
         idx_out = _np.array(idx_out) + idx_st
         ibi_out = _Diff()(idx_out)
         ibi_out = _np.r_[ibi_out[0], ibi_out]
 
-        return _UnevenlySignal(ibi_out, idx_out, signal.get_sampling_freq(), len(signal), "IBI", signal.get_start_time(), meta=signal.meta)
+        return _UnevenlySignal(ibi_out, idx_out, signal.get_sampling_freq(), len(signal), "IBI",
+                               signal.get_start_time(), meta=signal.meta)
 
-
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'B' : FloatPar(0.25, 1, 'Ball radius (in seconds) to detect paired beats', '>0')
-            'ibi_median' : IntPar(0, 1, 'Ibi value used to initialize the cache. If 0 (default) the ibi_median is computed on the input signal', '>0'),
-            'cache' : IntPar(3, 1, 'Nuber of IBI to be stored in the cache for adaptive computation of the interval of accepted values', '>0'),
-            'sensitivity' : FloatPar(0.25, 1, 'Relative variation from the current median that is accepted', '>0')
-            }
-        return params
+    _params_descriptors = {
+        'B': _Par(1, (int, float), 'Ball radius (in seconds) to detect paired beats', 0.25, lambda x: x > 0),
+        'ibi_median': _Par(1, int,
+                           'Ibi value used to initialize the cache. If 0 (default) the ibi_median is computed on the input signal',
+                           0, lambda x: x > 0),
+        'cache': _Par(1, int,
+                      'Nuber of IBI to be stored in the cache for adaptive computation of the interval of accepted values',
+                      3, lambda x: x > 0),
+        'sensitivity': _Par(1, (int, float), 'Relative variation from the current median that is accepted', 0.25,
+                            lambda x: x > 0)
+    }
 
 
 ### EDA Tools
@@ -1120,7 +1109,7 @@ class OptimizeBateman(_Tool):
 
         min_T1 = par_ranges[0]
         max_T1 = par_ranges[1]
-    
+
         min_T2 = par_ranges[2]
         max_T2 = par_ranges[3]
 
@@ -1131,34 +1120,27 @@ class OptimizeBateman(_Tool):
             T2 = 2
             if maxiter == 0:
                 maxiter = 99999
-            x0, loss_x0, exit_code, asa_opts = _asa.asa(_loss_function, _np.array([T1, T2]), xmin=_np.array([min_T1, min_T2]), xmax=_np.array([max_T1, max_T2]), full_output=True, limit_generated=maxiter, args=(signal, delta, min_T1, max_T2))
+            x0, loss_x0, exit_code, asa_opts = _asa.asa(_loss_function, _np.array([T1, T2]),
+                                                        xmin=_np.array([min_T1, min_T2]),
+                                                        xmax=_np.array([max_T1, max_T2]), full_output=True,
+                                                        limit_generated=maxiter, args=(signal, delta, min_T1, max_T2))
         elif opt_method == 'grid':
-            step_T1 = (max_T1-min_T1)/n_step
-            step_T2 = (max_T2-min_T2)/n_step
-            rranges = (slice(min_T1, max_T1+step_T1, step_T1), slice(min_T2, max_T2+step_T2, step_T2))
-            x0, loss_x0, grid, loss_grid = _opt.brute(_loss_function, rranges, args=(signal, delta, min_T1, max_T2), finish=None, full_output=True)
+            step_T1 = (max_T1 - min_T1) / n_step
+            step_T2 = (max_T2 - min_T2) / n_step
+            rranges = (slice(min_T1, max_T1 + step_T1, step_T1), slice(min_T2, max_T2 + step_T2, step_T2))
+            x0, loss_x0, grid, loss_grid = _opt.brute(_loss_function, rranges, args=(signal, delta, min_T1, max_T2),
+                                                      finish=None, full_output=True)
         else:
             _PhUI.e("opt_method not understood")
             return None
 
         if complete:
-            x0_min, l_x0_min, niter, nfuncalls, warnflag  = _opt.fmin(_loss_function, x0, args=(signal, delta), full_output=True, **min_pars) #TODO (Ale): funziona?
+            x0_min, l_x0_min, niter, nfuncalls, warnflag = _opt.fmin(_loss_function, x0, args=(signal, delta),
+                                                                     full_output=True,
+                                                                     **min_pars)  # TODO (Ale): funziona?
             return x0_min, x0
         else:
             return x0
-        
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'opt_method' : ListPar('asa', 1, 'Method to perform the search of optimal parameters.', ['asa', 'grid'] ),
-            'complete' : BoolPar(True, 1, 'Whether to perform a minimization after detecting the optimal parameters'),
-            'par_ranges' : VectorPar(1, '[min_T1, max_T1, min_T2, max_T2] boundaries for the Bateman parameters', 'len(par_ranges) == 4'),
-            'maxiter' : IntPar(0, 1, 'Maximum number of iterations ("asa" method). ', '>0', 'opt_method' = 'asa'),
-            'n_step' : IntPar(10, 1, 'Number of increments in the grid search', '>0', 'opt_method' = 'grid'),
-            'delta' : FloatPar(0, 2, 'Minimum amplitude of the peaks in the driver', '>0')
-            'min_pars' : ObjectPar(0, 'Additional parameters to pass to the minimization function (when complete = True)')\
-            }
-        return params
 
     @staticmethod
     def _loss_function(par_bat, signal, delta, min_T1, max_T2):
@@ -1186,7 +1168,7 @@ class OptimizeBateman(_Tool):
 
         # check if pars hit boudaries
         if par_bat[0] < min_T1 or par_bat[1] > max_T2 or par_bat[0] >= par_bat[1]:
-            return _np.Inf # 10000 TODO: check if it raises errors
+            return _np.Inf  # 10000 TODO: check if it raises errors
 
         fsamp = signal.sampling_freq
         driver = _DriverEstim(par_bat)(signal)
@@ -1195,8 +1177,8 @@ class OptimizeBateman(_Tool):
         if len(maxs) != 0:
             idx_maxs = maxs[:, 0]
         else:
-            #WARNING 'Unable to find peaks in driver signal for computation of Energy. Returning Inf'
-            return _np.Inf # or 10000 #TODO: check if np.Inf does not raise errors 
+            _PhUI.w('Unable to find peaks in driver signal for computation of Energy. Returning Inf')
+            return _np.Inf  # or 10000 #TODO: check if np.Inf does not raise errors
 
         # STAGE 1: select maxs distant from the others
         diff_maxs = _np.diff(_np.r_[idx_maxs, len(driver) - 1])
@@ -1225,20 +1207,38 @@ class OptimizeBateman(_Tool):
                 mean_s = BootstrapEstimation(func=_np.mean, N=100, k=0.5)(diff_y_sel)
 
                 mean_y = BootstrapEstimation(func=_np.median, N=100, k=0.5)(y)
-                
+
                 b_mean_s = mean_y - mean_s * (half + (len(driver_portion) - half) / 2)
 
                 line_mean_s = mean_s * _np.arange(len(driver_portion)) + b_mean_s
 
                 driver_detrended = driver_portion - line_mean_s
-                
+
                 driver_detrended /= _np.max(driver_detrended)
                 energy_curr = (1 / fsamp) * _np.sum(driver_detrended[fsamp:] ** 2) / (len(driver_detrended) - fsamp)
 
                 energy += energy_curr
         else:
-            #WARNING 'Peaks found but too near. Returning Inf'
-            return _np.Inf # or 10000 #TODO: check if np.Inf does not raise errors
-        
-        #MESSAGE 'Current parameters: '+str(par_bat[0]) + ' - ' +str(par_bat[1]) + ' Loss: '+ str(loss)
+            _PhUI.w('Peaks found but too near. Returning Inf')
+            return _np.Inf  # or 10000 #TODO: check if np.Inf does not raise errors
+
+        # TODO (Andrea): loss is not defined
+        loss = _np.nan
+        _PhUI.i('Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(loss))
         return energy
+
+    _params_descriptors = {
+        'opt_method': _Par(1, str, 'Method to perform the search of optimal parameters.', 'asa',
+                           lambda x: x in ['asa', 'grid']),
+        'complete': _Par(1, bool, 'Whether to perform a minimization after detecting the optimal parameters', True),
+        'par_range': _Par(1, list, '[min_T1, max_T1, min_T2, max_T2] boundaries for the Bateman parameters',
+                          lambda x: len(x) == 4),
+        'maxiter': _Par(1, int, 'Maximum number of iterations ("asa" method).', 0, lambda x: x > 0,
+                        lambda x, p: p['opt_method'] == 'asa'),
+        'n_step': _Par(1, int, 'Number of increments in the grid search', 10, lambda x: x > 0,
+                       lambda x, p: p['opt_method'] == 'grid'),
+        'delta': _Par(2, (int, float), 'Minimum amplitude of the peaks in the driver', 0, lambda x: x > 0),
+        'min_pars': _Par(0, dict, 'Additional parameters to pass to the minimization function (when complete = True)',
+                         activation=lambda x, p: p['complete'])
+
+    }

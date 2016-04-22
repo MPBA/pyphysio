@@ -3,7 +3,7 @@ from __future__ import division
 
 from ..BaseIndicator import Indicator as _Indicator
 from ..filters.Filters import Diff as _Diff
-from pyPhysio.PhUI import PhUI as _PhUI
+from pyPhysio import PhUI as _PhUI
 import numpy as _np
 
 __author__ = 'AleB'
@@ -152,7 +152,7 @@ class Triang(_Indicator):
             h, b = Histogram(histogram_bins=bins)(data)
             return len(data) / _np.max(h)
         else:
-            # warning
+            _PhUI.w("len(bins) < 10")
             return _np.nan
 
 

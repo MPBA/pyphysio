@@ -47,3 +47,30 @@ def algo(function, params=None):
         return Custom
     else:
         return Custom(params)
+
+
+class PhUI(object):
+    @staticmethod
+    def a(condition, message):
+        if not condition:
+            raise ValueError(message)
+
+    @staticmethod
+    def o(mex):
+        PhUI.p(mex, '', 31)
+
+    @staticmethod
+    def i(mex):
+        PhUI.p(mex, '', 35)
+
+    @staticmethod
+    def w(mex):
+        PhUI.p(mex, 'Warning: ', 33)
+
+    @staticmethod
+    def e(mex):
+        PhUI.p(mex, 'Error: ', 34)
+
+    @staticmethod
+    def p(mex, lev, col):
+        print(">%s\x1b[%dm%s\x1b[39m" % (lev, col, mex))

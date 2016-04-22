@@ -4,7 +4,7 @@ import numpy as _np
 from scipy.signal import gaussian as _gaussian, filtfilt as _filtfilt, filter_design as _filter_design
 from ..BaseFilter import Filter as _Filter
 from ..Signal import EvenlySignal as _EvenlySignal
-from ..PhUI import PhUI as _PhUI
+from pyPhysio import PhUI as _PhUI
 from ..indicators.TimeDomain import Mean as _Mean, StDev as _StDev
 
 __author__ = 'AleB'
