@@ -9,16 +9,20 @@ class PhUI(object):
             raise ValueError(message)
 
     @staticmethod
-    def i(mex):
-        PhUI.p(mex, '', 35)
-
-    @staticmethod
     def o(mex):
         PhUI.p(mex, '', 31)
 
     @staticmethod
+    def i(mex):
+        PhUI.p(mex, '', 35)
+
+    @staticmethod
     def w(mex):
         PhUI.p(mex, 'Warning: ', 33)
+
+    @staticmethod
+    def e(mex):
+        PhUI.p(mex, 'Error: ', 34)
 
     @staticmethod
     def p(mex, lev, col):

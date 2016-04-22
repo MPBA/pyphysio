@@ -1,22 +1,23 @@
 # coding=utf-8
 import numpy as _np
-import itertools as _itertools
-from ..BaseEstimator import Estimator
-from ..PhUI import PhUI
-from ..filters.Filters import IIRFilter as _IIRFilter, Diff as _Diff, DeConvolutionalFilter as _DeConvolutionalFilter, ConvolutionalFilter as _ConvolutionalFilter
-from ..tools.Tools import SignalRange as _SignalRange, PeakDetection as _PeakDetection, Minima as _Minima, PeakSelection as _PeakSelection
+from ..BaseEstimator import Estimator as _Estimator
+from ..Signal import UnevenlySignal as _UnevenlySignal, EvenlySignal as _EvenlySignal
+from ..filters.Filters import IIRFilter as _IIRFilter, Diff as _Diff, DeConvolutionalFilter as _DeConvolutionalFilter, \
+    ConvolutionalFilter as _ConvolutionalFilter
+from ..tools.Tools import SignalRange as _SignalRange, PeakDetection as _PeakDetection, Minima as _Minima, \
+    PeakSelection as _PeakSelection
 
 __author__ = 'AleB'
 
 
-### IBI ESTIMATION
+# IBI ESTIMATION
 class BeatFromBP(_Estimator):
     """
     Identify the beats in a Blood Pulse (BP) signal and compute the IBIs.
     Optimized to identify the percussion peak.
-    
+
     Limitations: works only on 'BP' type signal.
-    
+
     Based on two stages:
     1) Identification of candidate beats
     2) Identification of the peak for each beat, using the derivative of the signal
@@ -25,7 +26,7 @@ class BeatFromBP(_Estimator):
     ----------
     bpm_max : int (>0)
         Maximal expected heart rate (in beats per minute)
-    
+
     Returns
     -------
     ibi : UnevenlySignal
@@ -35,13 +36,13 @@ class BeatFromBP(_Estimator):
     -----
         ...
     """
-    
+
     @classmethod
     def get_signal_type(cls):
         return ['BVP', 'BP']
-    
+
     @classmethod
-    def algorithm(cls, signal, params):  # FIX others
+    def algorithm(cls, signal, params):  # FIX others TODO Andrea: ?
         bpm_max = params["bpm_max"]
         # method = params["method"]
         # sigma = params["sigma"]
@@ -53,12 +54,12 @@ class BeatFromBP(_Estimator):
         refractory = int(fsamp / fmax)
 
         # STAGE 1 - EXTRACT BEAT POSITION SIGNAL
-        signal_f = _IIRFilter(fp = 1.2 * fmax, fs = 3 * fmax)(signal)
+        signal_f = _IIRFilter(fp=1.2 * fmax, fs=3 * fmax)(signal)
 
-        deltas = 0.5 * _SignalRange(win_len = 3/fmax, win_step = 1/fmax)(signal)
+        deltas = 0.5 * _SignalRange(win_len=3 / fmax, win_step=1 / fmax)(signal)
 
         # detection of candidate peaks
-        maxp, minp = _PeakDetection(deltas = deltas, refractory=refractory, start_max = True)(signal_f)  ### Tools
+        maxp, minp = _PeakDetection(deltas=deltas, refractory=refractory, start_max=True)(signal_f)  ### Tools
         idx_d = maxp[:, 0]
 
         if idx_d[0] == 0:
@@ -80,33 +81,34 @@ class BeatFromBP(_Estimator):
             true_obs = dxdt[start_ + peak_obs: idx_beat]
 
             # find the 'first minimum' (zero) the derivative (peak)
-            mins = _Minima(win_len = 0.05, win_step = 0.0025, method = 'windowing')(abs(true_obs))
+            mins = _Minima(win_len=0.05, win_step=0.0025, method='windowing')(abs(true_obs))
             idx_mins = mins[:, 0]
             if len(idx_mins) >= 2:
                 peak = idx_mins[1]
                 true_peaks.append(start_ + peak_obs + peak)
             else:
-                #WARNING 'Peak not found; idx_beat: '+str(idx_beat)
+                # WARNING 'Peak not found; idx_beat: '+str(idx_beat)
                 pass
 
         # STAGE 4 - FINALIZE computing IBI and fixing indexes
         ibi_values = _Diff()(true_peaks) / fsamp
         ibi_values = _np.r_[ibi_values[0], ibi_values]
         idx_ibi = _np.array(true_peaks)
-        
-        #TODO (Ale): passare anche la sampling freq - check che sia giusto ...
-        ibi = UnevenlySignal(ibi_values, idx_ibi, 'IBI', signal.start_time, meta=signal.meta)
+
+        # TODO (Andrea) done: passare anche la sampling freq - check che sia giusto ...
+        ibi = _UnevenlySignal(ibi_values, idx_ibi, fsamp, 'IBI', signal.start_time, signal.meta)
         return ibi
 
     @classmethod
     def check_params(cls, params):
-		params = {
-		'bpm_max':IntPar(180, 1, 'Maximal expected heart rate (in beats per minute)', '>1 <=400')
-		}
-		return params
+        params = {
+            'bpm_max': IntPar(180, 1, 'Maximal expected heart rate (in beats per minute)', '>1 <=400')
+        }
+        return params
 
     @staticmethod
     def _generate_gaussian_derivative(M, S):
+        # TODO (Andrea): _gaussian not found
         g = _gaussian(M, S)
         gaussian_derivative_model = _np.diff(g)
 
@@ -116,7 +118,7 @@ class BeatFromBP(_Estimator):
 class BeatFromECG(_Estimator):
     """
     Identify the beats in an ECG signal and compute the IBIs.
-    
+
     Parameters
     ----------
     bpm_max : int (>0)
@@ -125,19 +127,19 @@ class BeatFromECG(_Estimator):
     delta : float or nd.array or Signal (>0 len(delta)=len(signal)
         Threshold for the peak detection.
         If not given it will be computed.
-    
+
     Returns
     -------
     idx_ibi : nparray
         Indexes of the input signal corresponding to R peaks
     ibi : nparray
         Inter beat interval values at R peaks
-    
+
     Notes
     -----
     See paper ...
     """
-    
+
     @classmethod
     def get_signal_type(cls):
         return ['ECG']
@@ -145,43 +147,46 @@ class BeatFromECG(_Estimator):
     @classmethod
     def algorithm(cls, signal, params):
         bpm_max, delta = params["bpm_max"], params["delta"]
-        
+
         fmax = bpm_max / 60
 
-        if delta==0:
-			delta = 0.7 * _SignalRange(winlen = 2/fmax, winstep = 0.5/fmax)
-		else:
-			delta = _np.repeat(delta, len(signal))
-        
+        if delta == 0:
+            # TODO (Andrea): check next line, from signal is it right?
+            delta = 0.7 * _SignalRange(winlen=2 / fmax, winstep=0.5 / fmax)(signal)
+        else:
+            delta = _np.repeat(delta, len(signal))
+
         fsamp = signal.fsamp
 
         refractory = int(fsamp / fmax)
 
-        maxp, minp = _PeakDetection(delta = delta, refractory=refractory, start_max = True)(signal)
+        maxp, minp = _PeakDetection(delta=delta, refractory=refractory, start_max=True)(signal)
 
         idx_d = maxp[:, 0]
 
         if idx_d[0] == 0:
             idx_d = idx_d[1:]
 
-        ibi_values = Diff()(idx_d) / fsamp
+        ibi_values = _Diff()(idx_d) / fsamp
         ibi_values = _np.r_[ibi_values[0], ibi_values]
         idx_ibi = _np.array(idx_d)
-        
-        #TODO (Ale): passare anche la sampling freq - check che sia giusto ...
-        ibi = UnevenlySignal(ibi_values, idx_ibi, 'IBI', fsamp, signal.start_time, meta=signal.meta)
+
+        # TODO (Andrea) done: passare anche la sampling freq - check che sia giusto ...
+        ibi = _UnevenlySignal(ibi_values, idx_ibi, fsamp, 'IBI', signal.start_time, signal.meta)
         return ibi
-        
+
     @classmethod
     def check_params(cls, params):
-		params = {
-		'bpm_max' : IntPar(180, 1, 'Maximal expected heart rate (in beats per minute)', '>0'),
-		'delta' : FloatPar(0, 1, 'Threshold for the peak detection. If delta = 0 (default) the signal range is automatically computed and used', '>0')
-		}
-		return params
+        params = {
+            'bpm_max': IntPar(180, 1, 'Maximal expected heart rate (in beats per minute)', '>0'),
+            'delta': FloatPar(0, 1,
+                              'Threshold for the peak detection. If delta = 0 (default) the signal range is automatically computed and used',
+                              '>0')
+        }
+        return params
 
 
-### PHASIC ESTIMATION
+# PHASIC ESTIMATION
 class DriverEstim(_Estimator):
     """
     Estimates the driver of an EDA signal according to Benedek 2010
@@ -189,13 +194,13 @@ class DriverEstim(_Estimator):
     The estimation uses a deconvolution using a bateman function as Impulsive Response Function.
     Based on the bateman function:
 
-    :math:`b = e^{-t/T1} - e^{-t/T2}`
+    :math:`b = e^{-t/t1} - e^{-t/t2}`
 
     Parameters
     ----------
-    par_bat: list (T1, T2)
+    par_bat: list (t1, t2)
         Parameters of the bateman function
-    
+
     Returns
     -------
     driver : EvenlySignal
@@ -205,49 +210,54 @@ class DriverEstim(_Estimator):
     -----
     ...
     """
-    
+
     @classmethod
     def get_signal_type(cls):
         return ['EDA']
 
     @classmethod
     def algorithm(cls, signal, params):
-        T1 = params['T1']
-        T2 = params['T2']
-        
-        par_bat = [T1, T2]
-        
+        t1 = params['t1']
+        t2 = params['t2']
+
+        par_bat = [t1, t2]
+
         fsamp = signal.fsamp
 
         bateman = DriverEstim._gen_bateman(fsamp, par_bat)
 
         idx_max_bat = _np.argmax(bateman)
-        
+
         # Prepare the input signal to avoid starting/ending peaks in the driver
         bateman_first_half = bateman[0:idx_max_bat + 1]
-        bateman_first_half = signal[0] * (bateman_first_half - _np.min(bateman_first_half)) / (_np.max(bateman_first_half) - _np.min(bateman_first_half))
+        bateman_first_half = signal[0] * (bateman_first_half - _np.min(bateman_first_half)) / (
+            _np.max(bateman_first_half) - _np.min(bateman_first_half))
 
         bateman_second_half = bateman[idx_max_bat:]
-        bateman_second_half = signal[-1] * (bateman_second_half - _np.min(bateman_second_half)) / (_np.max(bateman_second_half) - _np.min(bateman_second_half))
-        
+        bateman_second_half = signal[-1] * (bateman_second_half - _np.min(bateman_second_half)) / (
+            _np.max(bateman_second_half) - _np.min(bateman_second_half))
+
         signal_in = _np.r_[bateman_first_half, signal, bateman_second_half]
-        
+
+        # TODO (Andrea): next dec_flt and driver are not used and driver is not defined before driver[...
+
         # deconvolution
         dec_filt = _DeConvolutionalFilter(irf=bateman)(signal_in)
         driver = driver[idx_max_bat + 1: idx_max_bat + len(signal)]
-        
-        # gaussian smoothing
-        driver = _ConvolutionalFilter(irftype='gauss', win_len= 0.2*8)
 
-        driver = EvenlySignal(driver, signal_nature="dEDA", start_time=signal.start_time, meta=signal.meta)
+        # gaussian smoothing
+        driver = _ConvolutionalFilter(irftype='gauss', win_len=0.2 * 8)
+
+        # TODO (Andrea): check fsamp
+        driver = _EvenlySignal(driver, fsamp, "dEDA", signal.start_time, signal.meta)
         return driver
 
     @classmethod
     def check_params(cls, params):
         params = {
-			'T1' : Float(0.75, 1, 'T1 parameter for the Bateman function', '>0'),
-			'T2' : Float(2, 1, 'T2 parameter for the Bateman function', '>0')
-		}
+            'T1': Float(0.75, 1, 'T1 parameter for the Bateman function', '>0'),
+            'T2': Float(2, 1, 'T2 parameter for the Bateman function', '>0')
+        }
         return params
 
     @staticmethod
@@ -274,7 +284,7 @@ class DriverEstim(_Estimator):
         idx_T2 = par_bat[1] * fsamp
         len_bat = idx_T2 * 10
         idx_bat = _np.arange(len_bat)
-        bateman = -1 * (_np.exp(-idx_bat / idx_T1) - _np.exp(-idx_bat / idx_T2))
+        bateman = _np.exp(-idx_bat / idx_T2) - _np.exp(-idx_bat / idx_T1)
 
         # normalize
         bateman = fsamp * bateman / _np.sum(bateman)
@@ -308,30 +318,30 @@ class PhasicEstim(_Estimator):
         The "de-peaked" driver signal used to generate the interpolation grid
     """
 
-	@classmethod
+    @classmethod
     def get_signal_type(cls):
         return ['dEDA']
-	
+
     @classmethod
     def algorithm(cls, signal, params):
         delta = params["delta"]
         grid_size = params["grid_size"]
-		pre_max = params['pre_max']
-		post_max = params['post_max']
-		
+        pre_max = params['pre_max']
+        post_max = params['post_max']
 
-        fsamp = signal.fsamp        
+        fsamp = signal.fsamp
         max_driv, tmp_ = _PeakDetection(delta=delta, refractory=1, start_max=True)(signal)
-        
-        idx_pre, i_post = _PeakSelection(maxs = max_driv, pre_max = pre_max, post_max = post_max)
+
+        idx_pre, idx_post = _PeakSelection(maxs=max_driv, pre_max=pre_max, post_max=post_max)
 
         # Linear interpolation to substitute the peaks
+        # TODO (Andrea): driver does not exist, is it max_driv?
         driver_no_peak = _np.copy(driver)
         for I in range(len(idx_pre)):
             i_st = idx_pre[I]
             i_sp = idx_post[I]
-            
-            #TODO: if i_st or i_sp = _np.nan
+
+            # TODO: if i_st or i_sp = _np.nan
 
             idx_base = _np.arange(i_sp - i_st)
 
@@ -343,23 +353,28 @@ class PhasicEstim(_Estimator):
 
         idx_grid = _np.arange(0, len(driver_no_peak) - 1, grid_size * fsamp)
         idx_grid = _np.r_[idx_grid, len(driver_no_peak) - 1]
-        
-        driver_grid = UnevenlySignal(driver_no_peak, idx_grid) #TODO (Ale): check definition
 
-        tonic = driver_grid.to_evenly(kind='cubic') #TODO: check len
-                
+        driver_grid = _UnevenlySignal(driver_no_peak, idx_grid)
+        # TODO (Andrea): check and add above: fsamp, "dEDA", signal.get_start_time(), signal.get_metadata())
+
+        tonic = driver_grid.to_evenly(kind='cubic')  # TODO: check len
+
         phasic = driver - tonic
-        
-        #TODO: return EvenlySignal-s
+
+        # TODO: return EvenlySignal-s
 
         return phasic, tonic, driver_no_peak
 
     @classmethod
     def check_params(cls, params):
         params = {
-			'delta':FloatPar(0, 2, 'Minimum amplitude of the peaks in the driver', '>0'),
-            'grid_size' : IntPar(1, 0, 'Sampling size of the interpolation grid in seconds', '>0'),
-            'pre_max' : FloatPar(2, 1, 'Duration (in seconds) of interval before the peak that is considered to find the start of the peak', '>0'),
-			'post_max' : FloatPar(2, 1, 'Duration (in seconds) of interval after the peak that is considered to find the start of the peak', '>0')
-			}
+            'delta': FloatPar(0, 2, 'Minimum amplitude of the peaks in the driver', '>0'),
+            'grid_size': IntPar(1, 0, 'Sampling size of the interpolation grid in seconds', '>0'),
+            'pre_max': FloatPar(2, 1,
+                                'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
+                                '>0'),
+            'post_max': FloatPar(2, 1,
+                                 'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
+                                 '>0')
+        }
         return params

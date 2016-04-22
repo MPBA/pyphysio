@@ -139,7 +139,7 @@ class EvenlySignal(_Signal):
 class _XYSignal(_Signal):
     _MT_X_VALUES = "x_values"
 
-    def __new__(cls, y_values, x_values, sampling_freq, signal_nature, start_time, meta, check):
+    def __new__(cls, y_values, x_values, sampling_freq, signal_nature="", start_time=0, meta=None, check=True):
         assert not check or len(y_values) == len(x_values), \
             "Length mismatch (y:%d vs. x:%d)" % (len(y_values), len(x_values))
         x_values = _np.array(x_values)
@@ -219,7 +219,7 @@ class SparseSignal(_XYSignal):
 
 
 class UnevenlySignal(_XYSignal):
-    _MT_ORIGINAL_LENGTH = "duration"
+    _MT_ORIGINAL_LENGTH = "original_length"
 
     def __new__(cls, y_values, indexes, sampling_freq=0, original_length=0, signal_nature="", start_time=0, meta=None,
                 check=True):
