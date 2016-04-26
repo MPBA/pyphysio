@@ -2,11 +2,12 @@
 import numpy as _np
 from ..BaseEstimator import Estimator as _Estimator
 from ..Signal import UnevenlySignal as _UnevenlySignal, EvenlySignal as _EvenlySignal
-from pyPhysio import PhUI as _PhUI
+from pyphysio.pyPhysio import PhUI as _PhUI
 from ..filters.Filters import IIRFilter as _IIRFilter, Diff as _Diff, DeConvolutionalFilter as _DeConvolutionalFilter, \
     ConvolutionalFilter as _ConvolutionalFilter
 from ..tools.Tools import SignalRange as _SignalRange, PeakDetection as _PeakDetection, Minima as _Minima, \
     PeakSelection as _PeakSelection
+from ..Parameters import Parameter as _Par
 
 __author__ = 'AleB'
 
@@ -88,7 +89,7 @@ class BeatFromBP(_Estimator):
                 peak = idx_mins[1]
                 true_peaks.append(start_ + peak_obs + peak)
             else:
-                _PhUI.w('Peak not found; idx_beat: '+str(idx_beat))
+                _PhUI.w('Peak not found; idx_beat: ' + str(idx_beat))
                 pass
 
         # STAGE 4 - FINALIZE computing IBI and fixing indexes
@@ -99,12 +100,9 @@ class BeatFromBP(_Estimator):
         ibi = _UnevenlySignal(ibi_values, idx_ibi, fsamp, 'IBI', signal.start_time, signal.meta)
         return ibi
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'bpm_max': IntPar(180, 1, 'Maximal expected heart rate (in beats per minute)', '>1 <=400')
-        }
-        return params
+    _params_descriptors = {
+        'bpm_max': _Par(1, int, 'Maximal expected heart rate (in beats per minute)', 180, lambda x: 1 < x <= 400)
+    }
 
     @staticmethod
     def _generate_gaussian_derivative(M, S):
@@ -151,7 +149,7 @@ class BeatFromECG(_Estimator):
         fmax = bpm_max / 60
 
         if delta == 0:
-            delta = 0.7 * _SignalRange(winlen=2 / fmax, winstep= 0.5 / fmax)(signal)
+            delta = 0.7 * _SignalRange(winlen=2 / fmax, winstep=0.5 / fmax)(signal)
         else:
             delta = _np.repeat(delta, len(signal))
 
@@ -173,15 +171,12 @@ class BeatFromECG(_Estimator):
         ibi = _UnevenlySignal(ibi_values, idx_ibi, fsamp, 'IBI', signal.start_time, signal.meta)
         return ibi
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'bpm_max': IntPar(180, 1, 'Maximal expected heart rate (in beats per minute)', '>0'),
-            'delta': FloatPar(0, 1,
-                              'Threshold for the peak detection. If delta = 0 (default) the signal range is automatically computed and used',
-                              '>0')
-        }
-        return params
+    _params_descriptors = {
+        'bpm_max': _Par(1, int, 180, 1, 'Maximal expected heart rate (in beats per minute)', lambda x: x > 0),
+        'delta': _Par(1, (float, int), 'Threshold for the peak detection. If delta = 0 (default) the signal range'
+                                       ' is automatically computed and used',
+                      0, lambda x: x > 0)
+    }
 
 
 # PHASIC ESTIMATION
@@ -247,13 +242,10 @@ class DriverEstim(_Estimator):
         driver = _EvenlySignal(driver, fsamp, "dEDA", signal.start_time, signal.meta)
         return driver
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'T1': Float(0.75, 1, 'T1 parameter for the Bateman function', '>0'),
-            'T2': Float(2, 1, 'T2 parameter for the Bateman function', '>0')
-        }
-        return params
+    _params_descriptors = {
+        'T1': _Par(1, (float, int), 'T1 parameter for the Bateman function', 0.75, lambda x: x > 0),
+        'T2': _Par(1, (float, int), 'T2 parameter for the Bateman function', 2, lambda x: x > 0)
+    }
 
     @staticmethod
     def _gen_bateman(fsamp, par_bat):
@@ -348,7 +340,8 @@ class PhasicEstim(_Estimator):
         idx_grid = _np.arange(0, len(driver_no_peak) - 1, grid_size * fsamp)
         idx_grid = _np.r_[idx_grid, len(driver_no_peak) - 1]
 
-        driver_grid = _UnevenlySignal(driver_no_peak, idx_grid, fsamp, "dEDA", signal.get_start_time(), signal.get_metadata())
+        driver_grid = _UnevenlySignal(driver_no_peak, idx_grid, fsamp, "dEDA", signal.get_start_time(),
+                                      signal.get_metadata())
 
         tonic = driver_grid.to_evenly(kind='cubic')
 
@@ -356,16 +349,15 @@ class PhasicEstim(_Estimator):
 
         return phasic, tonic, driver_no_peak
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'delta': FloatPar(0, 2, 'Minimum amplitude of the peaks in the driver', '>0'),
-            'grid_size': IntPar(1, 0, 'Sampling size of the interpolation grid in seconds', '>0'),
-            'pre_max': FloatPar(2, 1,
-                                'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
-                                '>0'),
-            'post_max': FloatPar(2, 1,
-                                 'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
-                                 '>0')
-        }
-        return params
+    _params_descriptors = {
+        'delta': _Par(2, (float, int), 'Minimum amplitude of the peaks in the driver', 0, lambda x: x > 0),
+        'grid_size': _Par(0, int, 'Sampling size of the interpolation grid in seconds', 1, lambda x: x > 0),
+        'pre_max':
+            _Par(1, (float, int),
+                 'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
+                 2, lambda x: x > 0),
+        'post_max':
+            _Par(1, (float, int),
+                 'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
+                 2, lambda x: x > 0)
+    }

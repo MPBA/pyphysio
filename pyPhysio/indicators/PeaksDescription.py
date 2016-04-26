@@ -2,9 +2,10 @@
 from __future__ import division
 
 from ..BaseIndicator import Indicator as _Indicator
-from pyPhysio import PhUI as _PhUI
+from pyphysio.pyPhysio import PhUI as _PhUI
 from ..tools.Tools import PeakDetection as _PeakDetection, PeakSelection as _PeakSelection
 import numpy as _np
+from ..Parameters import Parameter as _Par
 
 __author__ = 'AleB'
 
@@ -17,19 +18,16 @@ class PeaksMax(_Indicator):
         """
 
         maxs, mins = _PeakDetection.get(data, delta=params['delta'])
-        
+
         if _np.shape(maxs)[0] == 0:
-            _PhUI.w("_np.shape(maxs)[0] == 0") # TODO: Put a more explicative message
+            _PhUI.w("_np.shape(maxs)[0] == 0")  # TODO: Put a more explicative message
             return _np.nan
         else:
             return _np.nanmax(maxs[:, 1])
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'delta': FloatPar(0, 2, 'Amplitude of the minimum peak', '>0')
-        }
-        return params
+    _params_descriptors = {
+        'delta': _Par(2, (float, int), 'Amplitude of the minimum peak', 0, lambda x: x > 0)
+    }
 
 
 class PeaksMin(_Indicator):
@@ -41,17 +39,14 @@ class PeaksMin(_Indicator):
 
         maxs, mins = _PeakDetection.get(data, delta=params['delta'])
         if _np.shape(maxs)[0] == 0:
-            _PhUI.w("_np.shape(maxs)[0] == 0") # TODO: Put a more explicative message
+            _PhUI.w("_np.shape(maxs)[0] == 0")  # TODO: Put a more explicative message
             return _np.nan
         else:
             return _np.nanmin(maxs[:, 1])
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'delta': FloatPar(0, 2, 'Amplitude of the minimum peak', '>0')
-        }
-        return params
+    _params_descriptors = {
+        'delta': _Par(2, (float, int), 'Amplitude of the minimum peak', 0, lambda x: x > 0)
+    }
 
 
 class PeaksMean(_Indicator):
@@ -62,19 +57,16 @@ class PeaksMean(_Indicator):
         """
 
         maxs, mins = _PeakDetection.get(data, delta=params['delta'])
-        
+
         if _np.shape(maxs)[0] == 0:
-            _PhUI.w("_np.shape(maxs)[0] == 0") # TODO: Put a more explicative message
+            _PhUI.w("_np.shape(maxs)[0] == 0")  # TODO: Put a more explicative message
             return _np.nan
         else:
             return _np.nanmean(maxs[:, 1])
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'delta': FloatPar(0, 2, 'Amplitude of the minimum peak', '>0')
-        }
-        return params
+    _params_descriptors = {
+        'delta': _Par(2, (float, int), 'Amplitude of the minimum peak', 0, lambda x: x > 0)
+    }
 
 
 class PeaksNum(_Indicator):
@@ -85,19 +77,16 @@ class PeaksNum(_Indicator):
         """
 
         maxs, mins = _PeakDetection.get(data, delta=params['delta'])
-        
+
         if _np.shape(maxs)[0] == 0:
-            _PhUI.w("_np.shape(maxs)[0] == 0") # TODO: Put a more explicative message
+            _PhUI.w("_np.shape(maxs)[0] == 0")  # TODO: Put a more explicative message
             return _np.nan
         else:
             return len(maxs[:, 1])
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'delta': FloatPar(0, 2, 'Amplitude of the minimum peak', '>0')
-        }
-        return params
+    _params_descriptors = {
+        'delta': _Par(2, (float, int), 'Amplitude of the minimum peak', 0, lambda x: x > 0)
+    }
 
 
 class DurationMin(_Indicator):
@@ -118,25 +107,22 @@ class DurationMin(_Indicator):
             fsamp = data.sampling_freq
             durations = []
             for I in range(len(idxs_start)):
-                if (_np.isnan(idxs_stop[I]) == False) & (_np.isnan(idxs_start[I]) == False):
+                if (_np.isnan(idxs_stop[I]) is False) & (_np.isnan(idxs_start[I]) is False):
                     durations.append((idxs_stop[I] - idxs_start[
                         I]) / fsamp)  # TODO: volendo si puo mettere in cache anche il calcolo di durations
                 else:
                     durations.append(_np.nan)
             return _np.nanmin(_np.array(durations))
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'delta': FloatPar(0, 2, 'Amplitude of the minimum peak', '>0'),
-            'pre_max': FloatPar(1, 2,
-                                'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
-                                '>0'),
-            'post_max': FloatPar(1, 2,
-                                 'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
-                                 '>0')
-        }
-        return params
+    _params_descriptors = {
+        'delta': _Par(2, (float, int), 'Amplitude of the minimum peak', 0, lambda x: x > 0),
+        'pre_max': _Par(2, (float, int),
+                        'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
+                        1, lambda x: x > 0),
+        'post_max': _Par(2, (float, int),
+                         'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
+                         1, lambda x: x > 0)
+    }
 
 
 class DurationMax(_Indicator):
@@ -157,7 +143,7 @@ class DurationMax(_Indicator):
             fsamp = data.sampling_freq
             durations = []
             for I in range(len(idxs_start)):
-                if (_np.isnan(idxs_stop[I]) == False) & (_np.isnan(idxs_start[I]) == False):
+                if (_np.isnan(idxs_stop[I]) is False) & (_np.isnan(idxs_start[I]) is False):
                     durations.append((idxs_stop[I] - idxs_start[
                         I]) / fsamp)  # TODO: volendo si puo mettere in cache anche il calcolo di durations
                 else:
@@ -165,18 +151,15 @@ class DurationMax(_Indicator):
 
             return _np.nanmax(_np.array(durations))
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'delta': FloatPar(0, 2, 'Amplitude of the minimum peak', '>0'),
-            'pre_max': FloatPar(1, 2,
-                                'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
-                                '>0'),
-            'post_max': FloatPar(1, 2,
-                                 'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
-                                 '>0')
-        }
-        return params
+    _params_descriptors = {
+        'delta': _Par(2, (float, int), 'Amplitude of the minimum peak', 0, lambda x: x > 0),
+        'pre_max': _Par(2, (float, int),
+                        'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
+                        1, lambda x: x > 0),
+        'post_max': _Par(2, (float, int),
+                         'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
+                         1, lambda x: x > 0)
+    }
 
 
 class DurationMean(_Indicator):
@@ -197,25 +180,22 @@ class DurationMean(_Indicator):
             fsamp = data.sampling_freq
             durations = []
             for I in range(len(idxs_start)):
-                if (_np.isnan(idxs_stop[I]) == False) & (_np.isnan(idxs_start[I]) == False):
+                if (_np.isnan(idxs_stop[I]) is False) & (_np.isnan(idxs_start[I]) is False):
                     durations.append((idxs_stop[I] - idxs_start[
                         I]) / fsamp)  # TODO: volendo si puo mettere in cache anche il calcolo di durations
                 else:
                     durations.append(_np.nan)
             return _np.nanmean(_np.array(durations))
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'delta': FloatPar(0, 2, 'Amplitude of the minimum peak', '>0'),
-            'pre_max': FloatPar(1, 2,
-                                'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
-                                '>0'),
-            'post_max': FloatPar(1, 2,
-                                 'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
-                                 '>0')
-        }
-        return params
+    _params_descriptors = {
+        'delta': _Par(2, (float, int), 'Amplitude of the minimum peak', 0, lambda x: x > 0),
+        'pre_max': _Par(2, (float, int),
+                        'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
+                        1, lambda x: x > 0),
+        'post_max': _Par(2, (float, int),
+                         'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
+                         1, lambda x: x > 0)
+    }
 
 
 class SlopeMin(_Indicator):
@@ -234,10 +214,10 @@ class SlopeMin(_Indicator):
             return _np.nan
         else:
             fsamp = data.sampling_freq
-            idxs_peak = maxs[:,0]
+            idxs_peak = maxs[:, 0]
             slopes = []
             for I in range(len(idxs_start)):
-                if (_np.isnan(idxs_peak[I]) == False) & (_np.isnan(idxs_start[I]) == False):
+                if (_np.isnan(idxs_peak[I]) is False) & (_np.isnan(idxs_start[I]) is False):
                     dy = data[idxs_peak[I]] - data[idxs_start[I]]
                     dt = (idxs_peak[I] - idxs_start[I]) / fsamp
                     slopes.append(dy / dt)  # TODO: volendo si puo mettere in cache anche il calcolo delle slopes
@@ -245,18 +225,15 @@ class SlopeMin(_Indicator):
                     slopes.append(_np.nan)  # TODO: volendo si puo mettere in cache anche il calcolo delle slopes
             return _np.nanmin(_np.array(slopes))
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'delta': FloatPar(0, 2, 'Amplitude of the minimum peak', '>0'),
-            'pre_max': FloatPar(1, 2,
-                                'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
-                                '>0'),
-            'post_max': FloatPar(1, 2,
-                                 'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
-                                 '>0')
-        }
-        return params
+    _params_descriptors = {
+        'delta': _Par(2, (float, int), 'Amplitude of the minimum peak', 0, lambda x: x > 0),
+        'pre_max': _Par(2, (float, int),
+                        'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
+                        1, lambda x: x > 0),
+        'post_max': _Par(2, (float, int),
+                         'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
+                         1, lambda x: x > 0)
+    }
 
 
 class SlopeMax(_Indicator):
@@ -275,7 +252,7 @@ class SlopeMax(_Indicator):
             return _np.nan
         else:
             fsamp = data.sampling_freq
-            idxs_peak = maxs[:,0]
+            idxs_peak = maxs[:, 0]
             slopes = []
             for I in range(len(idxs_start)):
                 if (_np.isnan(idxs_peak[I]) == False) & (_np.isnan(idxs_start[I]) == False):
@@ -284,20 +261,17 @@ class SlopeMax(_Indicator):
                     slopes.append(dy / dt)  # TODO: volendo si puo mettere in cache anche il calcolo delle slopes
                 else:
                     slopes.append(_np.nan)  # TODO: volendo si puo mettere in cache anche il calcolo delle slopes
-            return (_np.nanmax(_np.array(slopes)))
+            return _np.nanmax(_np.array(slopes))
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'delta': FloatPar(0, 2, 'Amplitude of the minimum peak', '>0'),
-            'pre_max': FloatPar(1, 2,
-                                'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
-                                '>0'),
-            'post_max': FloatPar(1, 2,
-                                 'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
-                                 '>0')
-        }
-        return params
+    _params_descriptors = {
+        'delta': _Par(2, (float, int), 'Amplitude of the minimum peak', 0, lambda x: x > 0),
+        'pre_max': _Par(2, (float, int),
+                        'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
+                        1, lambda x: x > 0),
+        'post_max': _Par(2, (float, int),
+                         'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
+                         1, lambda x: x > 0)
+    }
 
 
 class SlopeMean(_Indicator):
@@ -316,10 +290,10 @@ class SlopeMean(_Indicator):
             return _np.nan
         else:
             fsamp = data.sampling_freq
-            idxs_peak = maxs[:,0]
+            idxs_peak = maxs[:, 0]
             slopes = []
             for I in range(len(idxs_start)):
-                if (_np.isnan(idxs_peak[I]) == False) & (_np.isnan(idxs_start[I]) == False):
+                if (_np.isnan(idxs_peak[I]) is False) & (_np.isnan(idxs_start[I]) is False):
                     dy = data[idxs_peak[I]] - data[idxs_start[I]]
                     dt = (idxs_peak[I] - idxs_start[I]) / fsamp
                     slopes.append(dy / dt)  # TODO: volendo si puo mettere in cache anche il calcolo delle slopes
@@ -327,15 +301,12 @@ class SlopeMean(_Indicator):
                     slopes.append(_np.nan)  # TODO: volendo si puo mettere in cache anche il calcolo delle slopes
             return _np.nanmean(_np.array(slopes))
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'delta': FloatPar(0, 2, 'Amplitude of the minimum peak', '>0'),
-            'pre_max': FloatPar(1, 2,
-                                'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
-                                '>0'),
-            'post_max': FloatPar(1, 2,
-                                 'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
-                                 '>0')
-        }
-        return params
+    _params_descriptors = {
+        'delta': _Par(2, (float, int), 'Amplitude of the minimum peak', 0, lambda x: x > 0),
+        'pre_max': _Par(2, (float, int),
+                        'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
+                        1, lambda x: x > 0),
+        'post_max': _Par(2, (float, int),
+                         'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
+                         1, lambda x: x > 0)
+    }

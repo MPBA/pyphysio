@@ -6,6 +6,7 @@ from ..filters.Filters import Diff as _Diff
 from ..indicators.TimeDomain import Mean as _Mean
 from scipy.spatial.distance import cdist as _cd
 import numpy as _np
+from ..Parameters import Parameter as _Par
 
 __author__ = 'AleB'
 
@@ -70,15 +71,11 @@ class PNNx(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        assert 'threshold' in params, "Need the parameter 'threshold'."
         return NNx.algorithm(data, params) / float(len(data))
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'threshold': FloatPar(10, 2, 'Threshold to select the subsequent differences', '>0'),
-        }
-        return params
+    _params_descriptors = {
+        'threshold': _Par(2, (float, int), 'Threshold to select the subsequent differences', 10, lambda x: x > 0),
+    }
 
 
 class NNx(_Indicator):
@@ -89,21 +86,13 @@ class NNx(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        assert 'threshold' in params, "Need the parameter 'threshold'."
         th = params['threshold']
         diff = _Diff.get(data)
         return sum(1.0 for x in diff if x > th)
 
-    @staticmethod
-    def get_used_params(**kwargs):
-        return ['threshold']
-
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'threshold': FloatPar(10, 2, 'Threshold to select the subsequent differences', '>0'),
-        }
-        return params
+    _params_descriptors = {
+        'threshold': _Par(2, (float, int), 'Threshold to select the subsequent differences', 10, lambda x: x > 0),
+    }
 
 
 class Embed(_Indicator):
@@ -144,17 +133,10 @@ class Embed(_Indicator):
             for j in range(numjumps):
                 DataExp[i, j] = data[jumpsvect[j] + i]
 
-    @classmethod
-    def get_used_params(cls):
-        return ['dimension', 'delay']
-
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'dimension': IntPar(1, 2, 'Embed dimension', '>0'),
-            'delay': IntPar(1, 2, 'Embed delay', '>0')
-        }
-        return params
+    _params_descriptors = {
+        'dimension': _Par(2, int, 'Embed dimension', 1, lambda x: x > 0),
+        'delay': _Par(2, int, 'Embed delay', 1, lambda x: x > 0)
+    }
 
 
 class ApproxEntropy(_Indicator):
@@ -164,7 +146,6 @@ class ApproxEntropy(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        assert 'radius' in params, "This feature needs the parameter 'radius'."
         if len(data) < 3:
             return _np.nan
         else:
@@ -193,12 +174,9 @@ class ApproxEntropy(_Indicator):
 
             return phi_m - phi_m1
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'radius': FloatPar(0.5, 2, 'Radius', '>0'),
-        }
-        return params
+    _params_descriptors = {
+        'radius': _Par(2, (float, int), 'Radius', 0.5, lambda x: x > 0),
+    }
 
 
 class SampleEntropy(_Indicator):
@@ -208,7 +186,6 @@ class SampleEntropy(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        assert 'radius' in params, "This feature needs the parameter 'radius'."
         if len(data) < 4:
             return _np.nan
         else:
@@ -241,12 +218,9 @@ class SampleEntropy(_Indicator):
 
             return _np.log(cm / cm1)
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'radius': FloatPar(0.5, 2, 'Radius', '>0'),
-        }
-        return params
+    _params_descriptors = {
+        'radius': _Par(2, (float, int), 'Radius', 0.5, lambda x: x > 0),
+    }
 
 
 class DFAShortTerm(_Indicator):
@@ -313,10 +287,10 @@ class DFALongTerm(_Indicator):
 
 # class FractalDimension(_Indicator): #TODO: sistemare tutto ma nascondere per il momento
 #
-#     #Calculates the fractal dimension of the data series.
+# #Calculates the fractal dimension of the data series.
 #
 #
-#     def __init__(self, params=None, **kwargs):
+# def __init__(self, params=None, **kwargs):
 #         super(FractalDimension, self).__init__(params, kwargs)
 #
 #     @classmethod
@@ -458,4 +432,3 @@ class DFALongTerm(_Indicator):
 #                 n_delta += 1
 #         n = len(data)
 #         return _np.float(_np.log10(n) / (_np.log10(n) + _np.log10(n / n + 0.4 * n_delta)))
-

@@ -1,16 +1,17 @@
+# coding=utf-8
 from __future__ import division
 import numpy as _np
 import asa as _asa
-from scipy.signal import _welch
+from scipy.signal import welch as _welch
 import scipy.optimize as _opt
-from spectrum import _Periodogram, _aryule, _arma2psd, _AIC
-from pyPhysio import ConvolutionalFilter as _ConvFlt, PhUI as _PhUI
+from spectrum import aryule as _aryule, arma2psd as _arma2psd, AIC as _AIC
 from ..Parameters import Parameter as _Par
 import itertools as _itertools
 from ..BaseTool import Tool as _Tool
 from ..Signal import UnevenlySignal as _UnevenlySignal, EvenlySignal as _EvenlySignal
-from ..filters.Filters import Diff as _Diff
+from ..filters.Filters import Diff as _Diff, ConvolutionalFilter as _ConvFlt
 from ..estimators.Estimators import DriverEstim as _DriverEstim
+from pyphysio.pyPhysio import PhUI as _PhUI
 
 
 class PeakDetection(_Tool):
@@ -97,8 +98,7 @@ class PeakDetection(_Tool):
                       lambda x, y: 'deltas' not in y),
         'deltas': _Par(2, _np.array,
                        "Vector of the ranges of the signal to be used as local threshold",
-                       None,
-                       lambda x, y: 'delta' not in y),
+                       constraint=lambda x, y: 'delta' not in y),
         'refractory': _Par(1, _np.int64,
                            "Number of samples to skip after detection of a peak",
                            lambda x: x > 0),
@@ -191,12 +191,14 @@ class PeakSelection(_Tool):
     _params_descriptors = {
         'maxs': _Par(2, list,
                      'Array containing indexes (first column) and values (second column) of the maxima'),
-        'pre_max': _Par(2, (int, float),
-                        'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
-                        1, lambda x: x > 0),
-        'post_max': _Par(2, (int, float),
-                         'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
-                         1, lambda x: x > 0)
+        'pre_max':
+            _Par(2, (int, float),
+                 'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
+                 1, lambda x: x > 0),
+        'post_max':
+            _Par(2, (int, float),
+                 'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
+                 1, lambda x: x > 0)
     }
 
 
@@ -231,7 +233,7 @@ class SignalRange(_Tool):
 
         windows = _np.arange(0, len(signal) - idx_len, idx_step)
         deltas = _np.zeros(len(signal))
-        
+
         # ---
         curr_delta = None
         # ---
@@ -272,35 +274,36 @@ class PSD(_Tool):
         Whether to remove the mean from the signal
     min_order : int (default=10)
         Minimum order of the model (for psd_method='ar')
-    max_order : int (defaut=25)
+    max_order : int (default=25)
         Maximum order of the model (for psd_method='ar')
     normalize : boolean
         Whether to normalize the PSD
 
     Returns
     -------
-    freq : nparray
+    freq : array
         The frequencies
-    psd : nparray
+    psd : array
         The Power Spectrum Density
     """
 
     # TODO: consider point below:
-    '''
-    A density spectrum considers the amplitudes per unit frequency. 
-    Density spectra are used to compare spectra with different frequency resolution as the 
-    magnitudes are not influenced by the resolution because it is per Hertz. The amplitude 
-    spectra on the other hand depend on the chosen frequency resolution.
-    '''
+    # A density spectrum considers the amplitudes per unit frequency.
+    # Density spectra are used to compare spectra with different frequency resolution as the
+    # magnitudes are not influenced by the resolution because it is per Hertz. The amplitude
+    # spectra on the other hand depend on the chosen frequency resolution.
+
 
     @classmethod
     def algorithm(cls, signal, params):
+        # Removed parameters equal to default
+
         method = params['psd_method']
         nfft = params['nfft']
         window = params['window']
         normalize = params['normalize']
         remove_mean = params['remove_mean']
-        
+
         fsamp = signal.sampling_freq
 
         # TODO: check signal type.
@@ -339,20 +342,20 @@ class PSD(_Tool):
             max_order = params['max_order']
 
             orders = range(min_order, max_order + 1)
-            AICs = []
+            aics = []
             for order in orders:
                 try:
-                    ar, p, k = _aryule(signal, order=order, norm='biased')
-                    AICs.append(_AIC(l, p, order))
+                    ar, p, k = _aryule(signal, order=order)
+                    aics.append(_AIC(l, p, order))
                 except AssertionError:  # TODO (Andrea): check whether to start from higher orders
                     break
-            best_order = orders[_np.argmin(AICs)]
+            best_order = orders[_np.argmin(aics)]
 
-            ar, p, k = _aryule(signal, best_order, norm='biased')
+            ar, p, k = _aryule(signal, best_order)
             psd = _arma2psd(ar, NFFT=nfft)
             psd = psd[0: _np.ceil(len(psd) / 2)]
 
-        freqs = _np.linspace(start=0, stop=fsamp / 2, num=len(psd), endpoint=True)
+        freqs = _np.linspace(start=0, stop=fsamp / 2, num=len(psd))
 
         # NORMALIZE
         if normalize:
@@ -400,7 +403,7 @@ class Energy(_Tool):
         fsamp = signal.sampling_freq
         win_len = params['win_len']
         win_step = params['win_step']
-        idx_len =  win_len * fsamp
+        idx_len = win_len * fsamp
         idx_step = win_step * fsamp
         smooth = params['smooth']
 
@@ -422,7 +425,7 @@ class Energy(_Tool):
         energy_out = _UnevenlySignal(energy, idx_interp, 1).to_evenly(kind='linear').get_y_values()
 
         if smooth:
-            energy_out = _ConvFlt(irftype='gauss', win_len = 2 * win_len, normalize=True)(energy_out)
+            energy_out = _ConvFlt(irftype='gauss', win_len=2 * win_len, normalize=True)(energy_out)
 
         return energy_out
 
@@ -494,8 +497,8 @@ class Maxima(_Tool):
                 curr_idx_max = _np.argmax(curr_win) + idx_st
                 curr_max = _np.max(curr_win)
 
-                if curr_idx_max != idx_maxs[
-                    -1] and curr_idx_max != idx_st and curr_idx_max != idx_sp - 1:  # peak not already detected & peak not at the beginnig/end of the window:
+                # peak not already detected & peak not at the beginnig/end of the window:
+                if curr_idx_max != idx_maxs[-1] and curr_idx_max != idx_st and curr_idx_max != idx_sp - 1:
                     idx_maxs.append(curr_idx_max)
                     maxs.append(curr_max)
             idx_maxs.append(len(signal) - 1)
@@ -581,8 +584,8 @@ class Minima(_Tool):
                 curr_idx_min = _np.argmin(curr_win) + idx_st
                 curr_min = _np.min(curr_win)
 
-                if curr_idx_min != idx_mins[
-                    -1] and curr_idx_min != idx_st and curr_idx_min != idx_sp - 1:  # peak not present & peak not at the beginnig/end of the window
+                # peak not present & peak not at the beginnig/end of the window
+                if curr_idx_min != idx_mins[-1] and curr_idx_min != idx_st and curr_idx_min != idx_sp - 1:
                     idx_mins.append(curr_idx_min)
                     mins.append(curr_min)
             idx_mins.append(len(signal) - 1)
@@ -659,17 +662,17 @@ class CreateTemplate(_Tool):
 
     _params_descriptors = {
         'ref_indexes': _Par(2, _np.ndarray,
-                            'Indexes of the signals to be used as reference point to generate the template', None),
+                            'Indexes of the signals to be used as reference point to generate the template'),
         'idx_start': _Par(2, int,
                           'Index of the signal to start the segmentation of the portion used to generate the template',
-                          None, lambda x: x > 0),
+                          constraint=lambda x: x > 0),
         'idx_stop': _Par(2, int,
                          'Index of the signal to end the segmentation of the portion used to generate the template',
-                         None, lambda x: x > 0),
+                         constraint=lambda x: x > 0),
         'smp_pre': _Par(2, int, 'Number of samples before the reference point to be used to generate the template',
-                        None, lambda x: x > 0),
+                        constraint=lambda x: x > 0),
         'smp_post': _Par(2, int, 'Number of samples after the reference point to be used to generate the template',
-                         None, lambda x: x > 0)
+                         constraint=lambda x: x > 0)
     }
 
 
@@ -708,15 +711,16 @@ class BootstrapEstimation(_Tool):
             estim.append(curr_est)
         return _np.mean(estim)
 
-    from types import FunctionType as func
+    from types import FunctionType as Func
+
     _params_descriptors = {
-        'func': _Par(2, func, 'Function (accepts as input a vector and returns a scalar).'),
+        'func': _Par(2, Func, 'Function (accepts as input a vector and returns a scalar).'),
         'N': _Par(1, int, 'Number of iterations', 100, lambda x: x > 0),
         'k': _Par(1, (int, float), 'Portion of data to be used at each iteration', 0.5, lambda x: 0 < x < 1)
     }
 
 
-### IBI Tools
+# IBI Tools
 class BeatOutliers(_Tool):
     """
     Detects outliers in IBI signal.
@@ -760,8 +764,8 @@ class BeatOutliers(_Tool):
 
         # missings = []
         # TODO (Ale): giusta la sintassi?
-        idx_ibi = signal.x_values
-        ibi = signal.y_values
+        idx_ibi = signal.get_x_values()
+        ibi = signal.get_y_values()
         for i in range(1, len(idx_ibi)):
             curr_median = _np.median(ibi_cache)
             curr_idx = idx_ibi[i]
@@ -787,12 +791,14 @@ class BeatOutliers(_Tool):
         return id_bad_ibi
 
     _params_descriptors = {
-        'ibi_median': _Par(1, (int, float),
-                           'Ibi value used to initialize the cache. If 0 (default) the ibi_median is computed on the input signal',
-                           0, lambda x: x >= 0),
-        'cache': _Par(1, int,
-                      'Nuber of IBI to be stored in the cache for adaptive computation of the interval of accepted values',
-                      3, lambda x: x > 0),
+        'ibi_median':
+            _Par(1, (int, float),
+                 'Ibi value used to initialize the cache. If 0 (default) the ibi_median is computed on the input signal',
+                 0, lambda x: x >= 0),
+        'cache':
+            _Par(1, int,
+                 'Number of IBI to be stored in the cache for adaptive computation of the interval of accepted values',
+                 3, lambda x: x > 0),
         'sensitivity': _Par(1, (int, float), 'Relative variation from the current median that is accepted', 0.25,
                             lambda x: x > 0)
     }
@@ -1055,18 +1061,20 @@ class BeatOptimizer(_Tool):
 
     _params_descriptors = {
         'B': _Par(1, (int, float), 'Ball radius (in seconds) to detect paired beats', 0.25, lambda x: x > 0),
-        'ibi_median': _Par(1, int,
-                           'Ibi value used to initialize the cache. If 0 (default) the ibi_median is computed on the input signal',
-                           0, lambda x: x > 0),
-        'cache': _Par(1, int,
-                      'Nuber of IBI to be stored in the cache for adaptive computation of the interval of accepted values',
-                      3, lambda x: x > 0),
+        'ibi_median':
+            _Par(1, int,
+                 'Ibi value used to initialize the cache. If 0 (default) the ibi_median is computed on the input signal',
+                 0, lambda x: x > 0),
+        'cache':
+            _Par(1, int,
+                 'Nuber of IBI to be stored in the cache for adaptive computation of the interval of accepted values',
+                 3, lambda x: x > 0),
         'sensitivity': _Par(1, (int, float), 'Relative variation from the current median that is accepted', 0.25,
                             lambda x: x > 0)
     }
 
 
-### EDA Tools
+# EDA Tools
 class OptimizeBateman(_Tool):
     """
     Optimize the Bateman parameters T1 and T2.
@@ -1114,14 +1122,12 @@ class OptimizeBateman(_Tool):
         min_T2 = par_ranges[2]
         max_T2 = par_ranges[3]
 
-        # TODO (Ale): _loss_function is the function below
-
         if opt_method == 'asa':
             T1 = 0.75
             T2 = 2
             if maxiter == 0:
                 maxiter = 99999
-            x0, loss_x0, exit_code, asa_opts = _asa.asa(_loss_function, _np.array([T1, T2]),
+            x0, loss_x0, exit_code, asa_opts = _asa.asa(OptimizeBateman._loss_function, _np.array([T1, T2]),
                                                         xmin=_np.array([min_T1, min_T2]),
                                                         xmax=_np.array([max_T1, max_T2]), full_output=True,
                                                         limit_generated=maxiter, args=(signal, delta, min_T1, max_T2))
@@ -1129,21 +1135,21 @@ class OptimizeBateman(_Tool):
             step_T1 = (max_T1 - min_T1) / n_step
             step_T2 = (max_T2 - min_T2) / n_step
             rranges = (slice(min_T1, max_T1 + step_T1, step_T1), slice(min_T2, max_T2 + step_T2, step_T2))
-            x0, loss_x0, grid, loss_grid = _opt.brute(_loss_function, rranges, args=(signal, delta, min_T1, max_T2),
+            x0, loss_x0, grid, loss_grid = _opt.brute(OptimizeBateman._loss_function, rranges, args=(signal, delta, min_T1, max_T2),
                                                       finish=None, full_output=True)
         else:
             _PhUI.e("opt_method not understood")
             return None
 
         if complete:
-            x0_min, l_x0_min, niter, nfuncalls, warnflag = _opt.fmin(_loss_function, x0, args=(signal, delta),
+            x0_min, l_x0_min, niter, nfuncalls, warnflag = _opt.fmin(OptimizeBateman._loss_function, x0, args=(signal, delta),
                                                                      full_output=True,
-                                                                     **min_pars)  # TODO (Ale): funziona?
+                                                                     **min_pars)
             return x0_min, x0
         else:
             return x0
 
-    @classmethod
+    @staticmethod
     def _loss_function(par_bat, signal, delta, min_T1, max_T2):
         """
         Computes the loss for optimization of Bateman parameters.

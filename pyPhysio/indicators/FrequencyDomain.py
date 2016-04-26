@@ -1,13 +1,10 @@
 # coding=utf-8
 from __future__ import division
 
-import spectrum
-from scipy import signal
 from ..BaseIndicator import Indicator as _Indicator
-from ..indicators.SupportValues import SumSV as _SumSV, LengthSV as _LengthSV, DiffsSV as _DiffsSV, MedianSV as _MedianSV
-from ..filters.Filters import Diff as _Diff
 from ..tools.Tools import PSD as PSD
 import numpy as _np
+from ..Parameters import Parameter as _Par
 
 __author__ = 'AleB'
 
@@ -17,9 +14,9 @@ class InBand(_Indicator):
     def algorithm(cls, data, params):
         assert 'freq_min' in params, "Need the parameter 'freq_min' as the lower bound of the band."
         assert 'freq_max' in params, "Need the parameter 'freq_max' as the higher bound of the band."
-        
+
         # TODO (Andrea): ?pass the PSD estimator instance as parameter? Yes, or only its name, discuss?
-        
+
         freq, spec = PSD.get(data, params)
 
         return ([freq[i] for i in xrange(len(freq)) if params['freq_min'] <= freq[i] < params['freq_max']],
@@ -29,17 +26,13 @@ class InBand(_Indicator):
     def get_used_params(cls):
         return ['freq_max', 'freq_min']
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'freq_min': FloatPar(0, 2, 'Lower frequency of the band', '>0'),
-            'freq_max': FloatPar(0, 2, 'Higher frequency of the band', '>0')
-            }
-        return params
+    _params_descriptors = {
+        'freq_min': _Par(2, (float, int), 'Lower frequency of the band', 0, lambda x: x > 0),
+        'freq_max': _Par(2, (float, int), 'Higher frequency of the band', 0, lambda x: x > 0)
+    }
 
 
 class PowerInBand(_Indicator):
-
     @classmethod
     def algorithm(cls, data, params):
         frequencies, _pow_band = InBand.get(data, params)
@@ -51,13 +44,10 @@ class PowerInBand(_Indicator):
     def get_used_params(cls):
         return InBand.get_used_params()
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'freq_min': FloatPar(0, 2, 'Lower frequency of the band', '>0'),
-            'freq_max': FloatPar(0, 2, 'Higher frequency of the band', '>0')
-            }
-        return params
+    _params_descriptors = {
+        'freq_min': _Par(2, (float, int), 'Lower frequency of the band', 0, lambda x: x > 0),
+        'freq_max': _Par(2, (float, int), 'Higher frequency of the band', 0, lambda x: x > 0)
+    }
 
 
 class PeakInBand(_Indicator):
@@ -70,10 +60,7 @@ class PeakInBand(_Indicator):
     def get_used_params(cls):
         return InBand.get_used_params()
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'freq_min': FloatPar(0, 2, 'Lower frequency of the band', '>0'),
-            'freq_max': FloatPar(0, 2, 'Higher frequency of the band', '>0')
-            }
-        return params
+    _params_descriptors = {
+        'freq_min': _Par(2, (float, int), 'Lower frequency of the band', 0, lambda x: x > 0),
+        'freq_max': _Par(2, (float, int), 'Higher frequency of the band', 0, lambda x: x > 0)
+    }

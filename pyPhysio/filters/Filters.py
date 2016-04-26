@@ -4,8 +4,10 @@ import numpy as _np
 from scipy.signal import gaussian as _gaussian, filtfilt as _filtfilt, filter_design as _filter_design
 from ..BaseFilter import Filter as _Filter
 from ..Signal import EvenlySignal as _EvenlySignal
-from pyPhysio import PhUI as _PhUI
+from pyphysio.pyPhysio import PhUI as _PhUI
 from ..indicators.TimeDomain import Mean as _Mean, StDev as _StDev
+from ..Parameters import Parameter as _Par
+from pyphysio.pyPhysio.Utility import abstractmethod as _abstract
 
 __author__ = 'AleB'
 
@@ -63,15 +65,12 @@ class Normalize(_Filter):
         elif method == Normalize.Types.Custom:
             return (signal - params['norm_bias']) / params['norm_range']
 
-    @classmethod
-    def _check_params(cls, params):
-        params = {
-            'norm_method': ListPar('standard', 2, 'Method for the normalization.',
-                                   ['mean', 'standard', 'min', 'maxmin', 'custom']),
-            'norm_bias': FloatPar(0, 2, 'Bias for custom normalization', '', 'norm_method' == 'custom'),
-            'norm_range': FloatPar(0, 2, 'Range for custom normalization', '', 'norm_method' == 'custom')
-        }
-        return params
+    _params_descriptors = {
+        'norm_method': _Par(2, str, 'Method for the normalization.', 'standard',
+                            lambda x: x in ['mean', 'standard', 'min', 'maxmin', 'custom']),
+        'norm_bias': _Par(2, (float, int), 'Bias for custom normalization', 0, activation=lambda x, p: p['norm_method'] == 'custom'),
+        'norm_range': _Par(2, (float, int), 'Range for custom normalization', 0, activation=lambda x, p: p['norm_method'] == 'custom')
+    }
 
 
 class Diff(_Filter):
@@ -108,12 +107,9 @@ class Diff(_Filter):
 
         return sig_2 - sig_1
 
-    @classmethod
-    def _check_params(cls, params):
-        params = {
-            'degree': FloatPar(1, 0, 'Degree of the differences', '')
-        }
-        return params
+    _params_descriptors = {
+        'degree': _Par(default=1, requirement_level=0, description='Degree of the differences', pytype=(float, int))
+    }
 
 
 class IIRFilter(_Filter):
@@ -166,17 +162,15 @@ class IIRFilter(_Filter):
 
         return _filtfilt(b, a, signal)
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'fp': VectorPar(2, 'The pass frequencies'),
-            'fs': VectorPar(2, 'The stop frequencies'),
-            'loss': FloatPar(0.1, 1, 'Loss tolerance in the pass band', '>0'),
-            'att': FloatPar(40, 1, 'Minimum attenuation required in the stop band.', '>0'),
-            'ftype': ListPar('butter', 1, 'Type of filter', ['butter', 'cheby1', 'cheby2', 'ellip', 'bessel'])
-        }
-        return params
+    _params_descriptors = {
+        'fp': _Par(2, list, 'The pass frequencies'),
+        'fs': _Par(2, list, 'The stop frequencies'),
+        'loss': _Par(1, (float, int), 'Loss tolerance in the pass band', 0.1, lambda x: x > 0),
+        'att': _Par(1, (float, int), 'Minimum attenuation required in the stop band.', 40, lambda x: x > 0),
+        'ftype': _Par(1, str, 'Type of filter', 'butter', lambda x: x in ['butter', 'cheby1', 'cheby2', 'ellip', 'bessel'])
+    }
 
+    @_abstract
     def plot(self):
         # plot frequency response
         # TODO (new feature)
@@ -212,12 +206,9 @@ class MatchedFilter(_Filter):
         filtered_signal = filtered_signal[_np.argmax(template):]
         return filtered_signal
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'template': VectorPar(2, 'The template for matched filter (not reversed)')
-        }
-        return params
+    _params_descriptors = {
+        'template': _Par(2, list, 'The template for matched filter (not reversed)')
+    }
 
     def plot(self):
         # TODO (new feature)
@@ -312,17 +303,14 @@ class ConvolutionalFilter(_Filter):
         signal_out = signal_f[N:-N]
         return signal_out
 
-    @classmethod
-    def _check_params(cls, params):
-        params = {
-            'irftype': ListPar('gauss', 1, 'Type of IRF to be generated.',
-                               ['gauss', 'rect', 'triang', 'dgauss', 'custom']),
-            'normalize': BoolPar(True, 1, 'Whether to normalizes the IRF to have unitary area'),
-            'win_len': IntPar(1, 2, "Durarion of the generated IRF in seconds (if irftype is not 'custom')", '>0',
-                              params['irftype'] != 'custom'),
-            'irf': VectorPar(2, "IRF to be used if irftype is 'custom'", params['irftype'] == 'custom')
-        }
-        return params
+    _params_descriptors = {
+        'irftype': _Par(1, str, 'Type of IRF to be generated.', 'gauss',
+                        lambda x: x in ['gauss', 'rect', 'triang', 'dgauss', 'custom']),
+        'normalize': _Par(1, bool, 'Whether to normalizes the IRF to have unitary area', True),
+        'win_len': _Par(2, int, "Durarion of the generated IRF in seconds (if irftype is not 'custom')", 1,
+                        lambda x: x > 0, lambda x, p: p['irftype'] != 'custom'),
+        'irf': _Par(2, list, "IRF to be used if irftype is 'custom'", activation=lambda x, p: p['irftype'] == 'custom')
+    }
 
     @classmethod
     def plot(cls):
@@ -368,13 +356,10 @@ class DeConvolutionalFilter(_Filter):
 
         return abs(out)
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'irf': VectorPar(2, 'IRF used to deconvolve the signal'),
-            'normalize': BoolPar(True, 1, 'Whether to normalize the IRF to have unitary area')
-        }
-        return params
+    _params_descriptors = {
+        'irf': _Par(2, list, 'IRF used to deconvolve the signal'),
+        'normalize': _Par(1, 'Whether to normalize the IRF to have unitary area', True)
+    }
 
     @classmethod
     def plot(cls):

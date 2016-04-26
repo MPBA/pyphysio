@@ -3,8 +3,9 @@ from __future__ import division
 
 from ..BaseIndicator import Indicator as _Indicator
 from ..filters.Filters import Diff as _Diff
-from pyPhysio import PhUI as _PhUI
+from pyphysio.pyPhysio import PhUI as _PhUI
 import numpy as _np
+from ..Parameters import Parameter as _Par
 
 __author__ = 'AleB'
 
@@ -17,36 +18,33 @@ class Histogram(_Indicator):
         @return: (values, bins)
         @rtype: (array, array)
         """
-        
+
         return _np.histogram(signal, params['histogram_bins'])
 
-    @classmethod
-    def get_used_params(cls):
-        return ['histogram_bins']
+    _params_descriptors = {
+        'histogram_bins': _Par(1, (int, list),
+                               'Number of bins (int) or bin edges, including the rightmost edge (list-like).', 100,
+                               lambda x: type(x) is not int or x > 0)
+    }
 
-    @classmethod
-    def check_params(cls, params):
-        params = {
-            'histogram_bins': MultiTypePar(1, [IntPar(100, 1, 'Number of bins', '>0'), VectorPar(1, 'Bin edges, including the rightmost edge')])
-            }
-        return params
 
-"""
-class HistogramMax(_Indicator):
-    @classmethod
-    def algorithm(cls, signal, params):
-        
-#        Calculates the Histogram's max value
-#        @return: (values, bins)
-#        @rtype: (array, array)
-       
-        h, b = Histogram.get(signal, params)
-        return _np.max(h)
+# """
+# class HistogramMax(_Indicator):
+# @classmethod
+#     def algorithm(cls, signal, params):
+#
+# #        Calculates the Histogram's max value
+# #        @return: (values, bins)
+# #        @rtype: (array, array)
+#
+#         h, b = Histogram.get(signal, params)
+#         return _np.max(h)
+#
+#     @classmethod
+#     def get_used_params(cls):
+#         return Histogram.get_used_params()
+# """
 
-    @classmethod
-    def get_used_params(cls):
-        return Histogram.get_used_params()
-"""
 
 class Mean(_Indicator):
     """
@@ -116,7 +114,7 @@ class AUC(_Indicator):
     @classmethod
     def algorithm(cls, data, params):
         fsamp = data.sampling_freq
-        return (1/fsamp) * _np.nansum(data)
+        return (1 / fsamp) * _np.nansum(data)
 
 
 # HRV
@@ -147,7 +145,7 @@ class Triang(_Indicator):
     def algorithm(cls, data, params):
         min_ibi = _np.min(data)
         max_ibi = _np.max(data)
-        bins = _np.arange(min_ibi, max_ibi, 1000./128)
+        bins = _np.arange(min_ibi, max_ibi, 1000. / 128)
         if len(bins) >= 10:
             h, b = Histogram(histogram_bins=bins)(data)
             return len(data) / _np.max(h)
@@ -163,7 +161,7 @@ class TINN(_Indicator):
     def algorithm(cls, data, params):
         min_ibi = _np.min(data)
         max_ibi = _np.max(data)
-        bins = _np.arange(min_ibi, max_ibi, 1000./128)
+        bins = _np.arange(min_ibi, max_ibi, 1000. / 128)
         if len(bins) >= 10:
             h, b = Histogram.get(data, histogram_bins=bins)
             max_h = _np.max(h)
@@ -172,7 +170,7 @@ class TINN(_Indicator):
             hist_right = _np.array(h[_np.argmax(h):])
             rl = len(hist_right)
             y_left = _np.array(_np.linspace(0, max_h, ll))
-        
+
             minx = _np.Inf
             pos = 0
             for i in range(1, len(hist_left) - 1):
@@ -188,7 +186,7 @@ class TINN(_Indicator):
             y_right = _np.array(_np.linspace(max_h, 0, rl))
             minx = _np.Inf
             pos = 0
-            for i in range(rl-1, 1, -1):
+            for i in range(rl - 1, 1, -1):
                 curr_min = _np.sum((hist_right - y_right) ** 2)
                 if curr_min < minx:
                     minx = curr_min
@@ -197,8 +195,7 @@ class TINN(_Indicator):
                 y_right[0:i - 2] = _np.linspace(max_h, 0, i - 2)
 
             m = b[_np.argmax(h) + pos + 1]
-            return m-n
+            return m - n
         else:
             _PhUI.w("len(bins) < 10")
             return _np.nan
-
