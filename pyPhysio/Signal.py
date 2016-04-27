@@ -139,14 +139,14 @@ class EvenlySignal(_Signal):
 class _XYSignal(_Signal):
     _MT_X_VALUES = "x_values"
 
-    def __new__(cls, y_values, x_values, sampling_freq, signal_nature="", start_time=0, meta=None, check=True):
-        assert not check or len(y_values) == len(x_values), \
-            "Length mismatch (y:%d vs. x:%d)" % (len(y_values), len(x_values))
-        x_values = _np.array(x_values)
+    def __new__(cls, y_values, times, sampling_freq, signal_nature="", start_time=0, meta=None, check=True):
+        assert not check or len(y_values) == len(times), \
+            "Length mismatch (y:%d vs. x:%d)" % (len(y_values), len(times))
+        times = _np.array(times)
         # assert not check or x_values.all(x_values.argsort()), \
         #     "x_values array not monotonic."
         obj = _Signal.__new__(cls, y_values, sampling_freq, signal_nature, start_time, meta)
-        obj.ph[cls._MT_X_VALUES] = x_values
+        obj.ph[cls._MT_X_VALUES] = times
         return obj
 
     def get_x_values(self, just_one=None):
@@ -270,8 +270,8 @@ class UnevenlySignal(_XYSignal):
         if self.get_x_values(0) != 0:
             data_x = _np.r_[0, data_x]
             data_y = _np.r_[data_y[0], data_y]
-        if self.get_x_values(-1) != length - 1:
-            data_x = _np.r_[data_x, length - 1]
+        if self.get_x_values(-1) != length:
+            data_x = _np.r_[data_x, length]
             data_y = _np.r_[data_y, data_y[-1]]
 
         # Cubic if needed

@@ -1,7 +1,7 @@
 # coding=utf-8
 from __future__ import division
 
-import pyPhysio as ph
+import pyphysio.pyPhysio as ph
 import numpy as np
 from math import ceil as _ceil
 
@@ -96,7 +96,7 @@ class GeneralTest(unittest.TestCase):
         duration = times[-1]
 
         s = ph.SparseSignal(y_values=np.cumsum(np.random.rand(1, samples) - .5) * 100,
-                            x_values=times,
+                            times=times,
                             sampling_freq=freq,
                             signal_nature=nature,
                             start_time=start,
@@ -171,7 +171,7 @@ class GeneralTest(unittest.TestCase):
 
     def test_unevenly_signal_to_evenly(self):
         samples = 200
-        indexes = np.cumsum(np.random.rand(1, samples))
+        indexes = np.round(np.cumsum(np.random.rand(1, samples)))
         freq = 13
         original_length = (indexes[-1] + 1) * freq
         start = 1460713373
@@ -219,7 +219,7 @@ class GeneralTest(unittest.TestCase):
         duration = times[-1]
 
         s = ph.SparseSignal(y_values=np.cumsum(np.random.rand(1, samples) - .5) * 100,
-                            x_values=times,
+                            times=times,
                             sampling_freq=freq,
                             signal_nature=nature,
                             start_time=start,

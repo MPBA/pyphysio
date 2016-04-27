@@ -1,6 +1,8 @@
 # coding=utf-8
 from Signal import _Signal
 from abc import abstractmethod as _abstract, ABCMeta as _ABCMeta
+from Utility import PhUI as _PhUI
+
 __author__ = 'AleB'
 
 
@@ -11,6 +13,7 @@ class Algorithm(object):
     __metaclass__ = _ABCMeta
 
     _params_descriptors = {}
+    _parameter_error = None
 
     def __init__(self, params=None, **kwargs):
         """
@@ -28,6 +31,17 @@ class Algorithm(object):
         else:
             self._params = params.copy()
         self._params.update(kwargs)
+        # Parameters check
+        p = self.get_params_descriptors()
+        for n in p:
+            if n in self._params:
+                r, e = p[n](self._params[n])
+                if not r:
+                    self._parameter_error = ValueError("Parameter error: " + e)
+            else:
+                r, self._params[n] = p[n].not_present(n, self)
+                if not r:
+                    self._parameter_error = ValueError("Parameter error")
 
     def __call__(self, data):
         """
@@ -36,7 +50,10 @@ class Algorithm(object):
         @type data: TimeSeries
         @return: The result.
         """
-        return self.get(data, self._params)
+        if self._parameter_error is None:
+            return self.get(data, self._params)
+        else:
+            raise self._parameter_error
 
     def __repr__(self):
         return self.__class__.__name__ + str(self._params)
