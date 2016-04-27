@@ -4,10 +4,9 @@ import numpy as _np
 from scipy.signal import gaussian as _gaussian, filtfilt as _filtfilt, filter_design as _filter_design
 from ..BaseFilter import Filter as _Filter
 from ..Signal import EvenlySignal as _EvenlySignal
-from pyphysio.pyPhysio import PhUI as _PhUI
-from ..indicators.TimeDomain import Mean as _Mean, StDev as _StDev
+from ..Utility import PhUI as _PhUI
 from ..Parameters import Parameter as _Par
-from pyphysio.pyPhysio.Utility import abstractmethod as _abstract
+from ..Utility import abstractmethod as _abstract
 
 __author__ = 'AleB'
 
@@ -53,6 +52,8 @@ class Normalize(_Filter):
 
     @classmethod
     def algorithm(cls, signal, params):
+        from ..indicators.TimeDomain import Mean as _Mean, StDev as _StDev
+
         method = params['norm_method']
         if method == Normalize.Types.Mean:
             return signal - _Mean.get(signal)
@@ -257,50 +258,48 @@ class ConvolutionalFilter(_Filter):
         normalize = params["normalize"]
 
         fsamp = signal.sampling_freq
+        irf = None
 
         if irftype == 'custom':
             if 'irf' not in params:
-                # ERROR 'irf parameter needed'
+                _PhUI.e("'irf' parameter missing in " + cls.__name__)
                 return signal
-            irf = _np.array(params["irf"])
+            else:
+                irf = _np.array(params["irf"])
         else:
             if 'win_len' not in params:
-                # ERROR 'win_len parameter needed'
+                _PhUI.e("'win_len' parameter missing in " + cls.__name__)
                 return signal
+            else:
+                n = params['win_len'] * fsamp
 
-            N = params['win_len'] * fsamp
-
-            if irftype == 'gauss':
-                std = _np.floor(N / 8)
-                irf = _gaussian(N, std)
-            elif irftype == 'rect':
-                irf = _np.ones(N)
-            elif irftype == 'triang':
-                irf_1 = _np.arange(N // 2)
-                irf_2 = irf_1[-1] - _np.arange(N // 2)
-                if N % 2 == 0:
-                    irf = _np.r_[irf_1, irf_2]
-                else:
-                    irf = _np.r_[irf_1, irf_1[-1] + 1, irf_2]
-            elif irftype == 'dgauss':
-                std = N // 8
-                g = _gaussian(N, std)
-                irf = _np.diff(g)
-
-            # TODO (Andrea): a questo punto N e irf potrebbero non esistere ancora
-            else: #?
-                #ERROR 'not implemented'
-                return(signal)
+                if irftype == 'gauss':
+                    std = _np.floor(n / 8)
+                    irf = _gaussian(n, std)
+                elif irftype == 'rect':
+                    irf = _np.ones(n)
+                elif irftype == 'triang':
+                    irf_1 = _np.arange(n // 2)
+                    irf_2 = irf_1[-1] - _np.arange(n // 2)
+                    if n % 2 == 0:
+                        irf = _np.r_[irf_1, irf_2]
+                    else:
+                        irf = _np.r_[irf_1, irf_1[-1] + 1, irf_2]
+                elif irftype == 'dgauss':
+                    std = n // 8
+                    g = _gaussian(n, std)
+                    irf = _np.diff(g)
                 
         # NORMALIZE
         if normalize:
             irf = irf / _np.sum(irf)  # TODO (Andrea): account fsamp? TEST
 
         # TODO (Ale): sicuri che dopo questa riga signal rimanga un nparray? No
-        signal_ = _np.r_[_np.ones(N) * signal[0], signal, _np.ones(N) * signal[-1]]  # TESTME
+        # TODO (Andrea): n non dovrebbe essere definita anche in caso di irftype == custom?
+        signal_ = _np.r_[_np.ones(n) * signal[0], signal, _np.ones(n) * signal[-1]]  # TESTME
 
         signal_f = _np.convolve(signal_, irf, mode='same')
-        signal_out = signal_f[N:-N]
+        signal_out = signal_f[n:-n]
         return signal_out
 
     _params_descriptors = {

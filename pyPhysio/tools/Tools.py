@@ -5,13 +5,12 @@ import asa as _asa
 from scipy.signal import welch as _welch
 import scipy.optimize as _opt
 from spectrum import aryule as _aryule, arma2psd as _arma2psd, AIC as _AIC
-from ..Parameters import Parameter as _Par
 import itertools as _itertools
+from ..Parameters import Parameter as _Par
 from ..BaseTool import Tool as _Tool
 from ..Signal import UnevenlySignal as _UnevenlySignal, EvenlySignal as _EvenlySignal
 from ..filters.Filters import Diff as _Diff, ConvolutionalFilter as _ConvFlt
-from ..estimators.Estimators import DriverEstim as _DriverEstim
-from pyphysio.pyPhysio import PhUI as _PhUI
+from ..Utility import PhUI as _PhUI
 
 
 class PeakDetection(_Tool):
@@ -1172,6 +1171,7 @@ class OptimizeBateman(_Tool):
         loss : float
             The computed loss
         """
+        from ..estimators.Estimators import DriverEstim as _DriverEstim
 
         # check if pars hit boudaries
         if par_bat[0] < min_T1 or par_bat[1] > max_T2 or par_bat[0] >= par_bat[1]:

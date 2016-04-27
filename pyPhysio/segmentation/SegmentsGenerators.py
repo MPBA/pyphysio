@@ -1,5 +1,5 @@
 # coding=utf-8
-from pyPhysio import PhUI as _l
+from ..Utility import PhUI as _PhUI
 from ..BaseSegmentation import SegmentsGenerator, Segment
 
 __author__ = 'AleB'
@@ -63,7 +63,7 @@ class TimeSegments(SegmentsGenerator):
 
     def next_segment(self):
         if self._signal is None:
-            _l.w("Can't preview the segments without a signal here. Use the syntax "
+            _PhUI.w("Can't preview the segments without a signal here. Use the syntax "
                    + TimeSegments.__name__ + "(p[params])(signal)")
             raise StopIteration()
         b = e = self._i
@@ -98,7 +98,7 @@ class FromStartStopSegments(SegmentsGenerator):
 
     def next_segment(self):
         if self._signal is None:
-            _l.w("Can't preview the segments without a signal here. Use the syntax "
+            _PhUI.w("Can't preview the segments without a signal here. Use the syntax "
                  + TimeSegments.__name__ + "(p[params])(signal)")
             raise StopIteration()
         else:
@@ -182,7 +182,7 @@ class FromEventsSegments(SegmentsGenerator):
 
     def next_segment(self):
         if self._signal is None:
-            _l.w("Can't preview the segments without a signal here. Use the syntax "
+            _PhUI.w("Can't preview the segments without a signal here. Use the syntax "
                  + LengthSegments.__name__ + "(**params)(signal)")
             raise StopIteration()
         else:

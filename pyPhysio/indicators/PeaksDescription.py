@@ -1,10 +1,10 @@
 # coding=utf-8
 from __future__ import division
 
-from ..BaseIndicator import Indicator as _Indicator
-from pyphysio.pyPhysio import PhUI as _PhUI
-from ..tools.Tools import PeakDetection as _PeakDetection, PeakSelection as _PeakSelection
 import numpy as _np
+from ..BaseIndicator import Indicator as _Indicator
+from ..Utility import PhUI as _PhUI
+from ..tools.Tools import PeakDetection as _PeakDetection, PeakSelection as _PeakSelection
 from ..Parameters import Parameter as _Par
 
 __author__ = 'AleB'

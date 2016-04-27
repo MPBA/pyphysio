@@ -1,6 +1,6 @@
 # coding=utf-8
 from BaseSegmentation import SegmentationIterator as _SegmentationIterator
-from pyPhysio import PhUI as _PhUI
+from Utility import PhUI as _PhUI
 from BaseAlgorithm import Algorithm
 
 __author__ = 'AleB'

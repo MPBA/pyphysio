@@ -2,7 +2,7 @@
 import numpy as _np
 from ..BaseEstimator import Estimator as _Estimator
 from ..Signal import UnevenlySignal as _UnevenlySignal, EvenlySignal as _EvenlySignal
-from pyphysio.pyPhysio import PhUI as _PhUI
+from ..Utility import PhUI as _PhUI
 from ..filters.Filters import IIRFilter as _IIRFilter, Diff as _Diff, DeConvolutionalFilter as _DeConvolutionalFilter, \
     ConvolutionalFilter as _ConvolutionalFilter
 from ..tools.Tools import SignalRange as _SignalRange, PeakDetection as _PeakDetection, Minima as _Minima, \

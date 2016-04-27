@@ -1,10 +1,10 @@
 # coding=utf-8
 from __future__ import division
 
+import numpy as _np
 from ..BaseIndicator import Indicator as _Indicator
 from ..filters.Filters import Diff as _Diff
-from pyphysio.pyPhysio import PhUI as _PhUI
-import numpy as _np
+from ..Utility import PhUI as _PhUI
 from ..Parameters import Parameter as _Par
 
 __author__ = 'AleB'
