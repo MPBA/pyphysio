@@ -15,12 +15,12 @@ w4 = ph.ExistingSegments(segments=w3)(s)
 y1 = [x for x in w1]
 y2 = [x for x in w2]
 y3 = [x for x in w3]
-ph.fmap(w1, [ph.Mean(), ph.SD(), ph.NNx(threshold=31)])
-ph.fmap(w2, [ph.Mean(), ph.SD(), ph.NNx(threshold=31)])
-ph.fmap(w3, [ph.Mean(), ph.SD(), ph.NNx(threshold=31)])
-ph.fmap(y1, [ph.Mean(), ph.SD(), ph.NNx(threshold=31)])
-ph.fmap(y2, [ph.Mean(), ph.SD(), ph.NNx(threshold=31)])
-ph.fmap(y3, [ph.Mean(), ph.SD(), ph.NNx(threshold=31)])
+ph.fmap(w1, [ph.Mean(), ph.StDev(), ph.NNx(threshold=31)])
+ph.fmap(w2, [ph.Mean(), ph.StDev(), ph.NNx(threshold=31)])
+ph.fmap(w3, [ph.Mean(), ph.StDev(), ph.NNx(threshold=31)])
+ph.fmap(y1, [ph.Mean(), ph.StDev(), ph.NNx(threshold=31)])
+ph.fmap(y2, [ph.Mean(), ph.StDev(), ph.NNx(threshold=31)])
+ph.fmap(y3, [ph.Mean(), ph.StDev(), ph.NNx(threshold=31)])
 
 # noinspection PyArgumentEqualDefault
 sd2 = s.resample(1, 'linear')

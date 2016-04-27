@@ -17,7 +17,7 @@ class InBand(_Indicator):
 
         # TODO (Andrea): ?pass the PSD estimator instance as parameter? Yes, or only its name, discuss?
 
-        freq, spec = PSD.get(data, params)
+        freq, spec = PSD(params)(data)
 
         return ([freq[i] for i in xrange(len(freq)) if params['freq_min'] <= freq[i] < params['freq_max']],
                 [spec[i] for i in xrange(len(spec)) if params['freq_min'] <= freq[i] < params['freq_max']])
@@ -27,15 +27,15 @@ class InBand(_Indicator):
         return ['freq_max', 'freq_min']
 
     _params_descriptors = {
-        'freq_min': _Par(2, (float, int), 'Lower frequency of the band', 0, lambda x: x > 0),
-        'freq_max': _Par(2, (float, int), 'Higher frequency of the band', 0, lambda x: x > 0)
+        'freq_min': _Par(2, float, 'Lower frequency of the band', 0, lambda x: x > 0),
+        'freq_max': _Par(2, float, 'Higher frequency of the band', 0, lambda x: x > 0)
     }
 
 
 class PowerInBand(_Indicator):
     @classmethod
     def algorithm(cls, data, params):
-        frequencies, _pow_band = InBand.get(data, params)
+        frequencies, _pow_band = InBand(params)(data)
         df = frequencies[1] - frequencies[0]
         # TODO (Andrea) Decidere se e come normalizzare
         return df * _np.sum(_pow_band)
@@ -45,15 +45,15 @@ class PowerInBand(_Indicator):
         return InBand.get_used_params()
 
     _params_descriptors = {
-        'freq_min': _Par(2, (float, int), 'Lower frequency of the band', 0, lambda x: x > 0),
-        'freq_max': _Par(2, (float, int), 'Higher frequency of the band', 0, lambda x: x > 0)
+        'freq_min': _Par(2, float, 'Lower frequency of the band', 0, lambda x: x > 0),
+        'freq_max': _Par(2, float, 'Higher frequency of the band', 0, lambda x: x > 0)
     }
 
 
 class PeakInBand(_Indicator):
     @classmethod
     def algorithm(cls, data, params):
-        _freq_band, _pow_band = InBand.get(data, params)
+        _freq_band, _pow_band = InBand(params)(data)
         return _freq_band[_np.argmax(_pow_band)]
 
     @classmethod
@@ -61,6 +61,6 @@ class PeakInBand(_Indicator):
         return InBand.get_used_params()
 
     _params_descriptors = {
-        'freq_min': _Par(2, (float, int), 'Lower frequency of the band', 0, lambda x: x > 0),
-        'freq_max': _Par(2, (float, int), 'Higher frequency of the band', 0, lambda x: x > 0)
+        'freq_min': _Par(2, float, 'Lower frequency of the band', 0, lambda x: x > 0),
+        'freq_max': _Par(2, float, 'Higher frequency of the band', 0, lambda x: x > 0)
     }

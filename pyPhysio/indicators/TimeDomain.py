@@ -22,7 +22,7 @@ class Histogram(_Indicator):
         return _np.histogram(signal, params['histogram_bins'])
 
     _params_descriptors = {
-        'histogram_bins': _Par(1, (int, list),
+        'histogram_bins': _Par(1, list,
                                'Number of bins (int) or bin edges, including the rightmost edge (list-like).', 100,
                                lambda x: type(x) is not int or x > 0)
     }
@@ -37,7 +37,7 @@ class Histogram(_Indicator):
 # #        @return: (values, bins)
 # #        @rtype: (array, array)
 #
-#         h, b = Histogram.get(signal, params)
+#         h, b = Histogram(params)(signal)
 #         return _np.max(h)
 #
 #     @classmethod
@@ -48,7 +48,9 @@ class Histogram(_Indicator):
 
 class Mean(_Indicator):
     """
-    Calculates the average value of the data.
+    Compute the arithmetic mean along the specified axis, ignoring NaNs.
+
+    Uses directly numpy.nanmean, but uses the PyPhysio cache.
     """
 
     @classmethod
@@ -58,7 +60,9 @@ class Mean(_Indicator):
 
 class Min(_Indicator):
     """
-    Calculates the minimum value of the data.
+    Return minimum of the data, ignoring any NaNs.
+
+    Uses directly numpy.nanmin, but uses the PyPhysio cache.
     """
 
     @classmethod
@@ -68,7 +72,9 @@ class Min(_Indicator):
 
 class Max(_Indicator):
     """
-    Calculates the maximum value of the data.
+    Return maximum of the data, ignoring any NaNs.
+
+    Uses directly numpy.nanmax, but uses the PyPhysio cache.
     """
 
     @classmethod
@@ -78,7 +84,8 @@ class Max(_Indicator):
 
 class Range(_Indicator):
     """
-    Calculates the range value of the data.
+    Computes the range value of the data, ignoring any NaNs.
+    The range is the difference Max(d) - Min(d)
     """
 
     @classmethod
@@ -88,7 +95,9 @@ class Range(_Indicator):
 
 class Median(_Indicator):
     """
-    Calculates the median of the data series.
+    Computes the median of the data.
+
+    Uses directly numpy.median but uses the PyPhysio cache.
     """
 
     @classmethod
@@ -98,7 +107,9 @@ class Median(_Indicator):
 
 class StDev(_Indicator):
     """
-    Calculates the standard deviation of the data series.
+    Computes the standard deviation of the data, ignoring any NaNs.
+
+    Uses directly numpy.nanstd but uses the PyPhysio cache.
     """
 
     @classmethod
@@ -106,15 +117,27 @@ class StDev(_Indicator):
         return _np.nanstd(data)
 
 
-class AUC(_Indicator):
+class Sum(_Indicator):
     """
-    Calculates the Area Under the Curve of the data series.
+    Computes the sum of the values in the data, treating Not a Numbers (NaNs) as zero.
+
+    Uses directly numpy.nansum but uses the PyPhysio cache.
     """
 
     @classmethod
     def algorithm(cls, data, params):
-        fsamp = data.sampling_freq
-        return (1 / fsamp) * _np.nansum(data)
+        return _np.nansum(data)
+
+
+class AUC(_Indicator):
+    """
+    Computes the Area Under the Curve of the data, treating Not a Numbers (NaNs) as zero.
+    """
+
+    @classmethod
+    def algorithm(cls, data, params):
+        fsamp = data.get_sampling_freq()
+        return (1. / fsamp) * Sum()(data)
 
 
 # HRV
@@ -125,8 +148,8 @@ class RMSSD(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        diff = _Diff.get(data)
-        return _np.sqrt(sum(diff ** 2) / len(diff))
+        diff = _Diff()(data)
+        return _np.sqrt(_np.sum(_np.power(diff, 2)) / len(diff))
 
 
 class SDSD(_Indicator):
@@ -134,8 +157,8 @@ class SDSD(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        diff = _Diff.get(data)
-        return _np.std(diff)
+        diff = _Diff()(data)
+        return StDev()(diff)
 
 
 class Triang(_Indicator):
@@ -163,7 +186,7 @@ class TINN(_Indicator):
         max_ibi = _np.max(data)
         bins = _np.arange(min_ibi, max_ibi, 1000. / 128)
         if len(bins) >= 10:
-            h, b = Histogram.get(data, histogram_bins=bins)
+            h, b = Histogram(histogram_bins=bins)(data)
             max_h = _np.max(h)
             hist_left = _np.array(h[0:_np.argmax(h)])
             ll = len(hist_left)

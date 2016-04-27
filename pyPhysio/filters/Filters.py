@@ -56,9 +56,9 @@ class Normalize(_Filter):
 
         method = params['norm_method']
         if method == Normalize.Types.Mean:
-            return signal - _Mean.get(signal)
+            return signal - _Mean()(signal)
         elif method == Normalize.Types.MeanSd:
-            return signal - _Mean.get(signal) / _StDev.get(signal)
+            return signal - _Mean()(signal) / _StDev()(signal)
         elif method == Normalize.Types.Min:
             return signal - _np.min(signal)
         elif method == Normalize.Types.MaxMin:
@@ -69,8 +69,8 @@ class Normalize(_Filter):
     _params_descriptors = {
         'norm_method': _Par(2, str, 'Method for the normalization.', 'standard',
                             lambda x: x in ['mean', 'standard', 'min', 'maxmin', 'custom']),
-        'norm_bias': _Par(2, (float, int), 'Bias for custom normalization', 0, activation=lambda x, p: p['norm_method'] == 'custom'),
-        'norm_range': _Par(2, (float, int), 'Range for custom normalization', 0, activation=lambda x, p: p['norm_method'] == 'custom')
+        'norm_bias': _Par(2, float, 'Bias for custom normalization', 0, activation=lambda x, p: p['norm_method'] == 'custom'),
+        'norm_range': _Par(2, float, 'Range for custom normalization', 0, activation=lambda x, p: p['norm_method'] == 'custom')
     }
 
 
@@ -109,7 +109,7 @@ class Diff(_Filter):
         return sig_2 - sig_1
 
     _params_descriptors = {
-        'degree': _Par(default=1, requirement_level=0, description='Degree of the differences', pytype=(float, int))
+        'degree': _Par(default=1, requirement_level=0, description='Degree of the differences', pytype=float)
     }
 
 
@@ -166,8 +166,8 @@ class IIRFilter(_Filter):
     _params_descriptors = {
         'fp': _Par(2, list, 'The pass frequencies'),
         'fs': _Par(2, list, 'The stop frequencies'),
-        'loss': _Par(1, (float, int), 'Loss tolerance in the pass band', 0.1, lambda x: x > 0),
-        'att': _Par(1, (float, int), 'Minimum attenuation required in the stop band.', 40, lambda x: x > 0),
+        'loss': _Par(1, float, 'Loss tolerance in the pass band', 0.1, lambda x: x > 0),
+        'att': _Par(1, float, 'Minimum attenuation required in the stop band.', 40, lambda x: x > 0),
         'ftype': _Par(1, str, 'Type of filter', 'butter', lambda x: x in ['butter', 'cheby1', 'cheby2', 'ellip', 'bessel'])
     }
 

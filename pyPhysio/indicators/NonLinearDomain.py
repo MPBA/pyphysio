@@ -58,8 +58,8 @@ class PoinEll(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        sd1 = PoincareSD1.get(data)
-        sd2 = PoincareSD2.get(data)
+        sd1 = PoincareSD1()(data)
+        sd2 = PoincareSD2()(data)
         return sd1 * sd2 * _np.pi
 
 
@@ -74,7 +74,7 @@ class PNNx(_Indicator):
         return NNx.algorithm(data, params) / float(len(data))
 
     _params_descriptors = {
-        'threshold': _Par(2, (float, int), 'Threshold to select the subsequent differences', 10, lambda x: x > 0),
+        'threshold': _Par(2, float, 'Threshold to select the subsequent differences', 10, lambda x: x > 0),
     }
 
 
@@ -87,11 +87,11 @@ class NNx(_Indicator):
     @classmethod
     def algorithm(cls, data, params):
         th = params['threshold']
-        diff = _Diff.get(data)
+        diff = _Diff()(data)
         return sum(1.0 for x in diff if x > th)
 
     _params_descriptors = {
-        'threshold': _Par(2, (float, int), 'Threshold to select the subsequent differences', 10, lambda x: x > 0),
+        'threshold': _Par(2, float, 'Threshold to select the subsequent differences', 10, lambda x: x > 0),
     }
 
 
@@ -150,8 +150,8 @@ class ApproxEntropy(_Indicator):
             return _np.nan
         else:
             r = params['radius']
-            uj_m = Embed.get(data, dimension=2, delay=1)
-            uj_m1 = Embed.get(data, dimension=3, delay=1)
+            uj_m = Embed(dimension=2, delay=1)(data)
+            uj_m1 = Embed(dimension=3, delay=1)(data)
             card_elem_m = uj_m.shape[0]
             card_elem_m1 = uj_m1.shape[0]
 
@@ -175,7 +175,7 @@ class ApproxEntropy(_Indicator):
             return phi_m - phi_m1
 
     _params_descriptors = {
-        'radius': _Par(2, (float, int), 'Radius', 0.5, lambda x: x > 0),
+        'radius': _Par(2, float, 'Radius', 0.5, lambda x: x > 0),
     }
 
 
@@ -190,8 +190,8 @@ class SampleEntropy(_Indicator):
             return _np.nan
         else:
             r = params['radius']
-            uj_m = Embed.get(data, dimension=2, delay=1)
-            uj_m1 = Embed.get(data, dimension=3, delay=1)
+            uj_m = Embed(dimension=2, delay=1)(data)
+            uj_m1 = Embed(dimension=3, delay=1)(data)
 
             num_elem_m = uj_m.shape[0]
             num_elem_m1 = uj_m1.shape[0]
@@ -219,7 +219,7 @@ class SampleEntropy(_Indicator):
             return _np.log(cm / cm1)
 
     _params_descriptors = {
-        'radius': _Par(2, (float, int), 'Radius', 0.5, lambda x: x > 0),
+        'radius': _Par(2, float, 'Radius', 0.5, lambda x: x > 0),
     }
 
 
@@ -300,7 +300,7 @@ class DFALongTerm(_Indicator):
 #         if len(data) < 3:
 #             return _np.nan
 #         else:
-#             uj_m = OrderedSubsets.get(data, dimension=2, delay = 1)
+#             uj_m = OrderedSubsets(dimension=2, delay=1)(data)
 #             cra = params['cra']
 #             crb = params['crb']
 #             mutual_distance = _pd(uj_m, 'chebyshev')
@@ -328,7 +328,7 @@ class DFALongTerm(_Indicator):
 #         if len(data) < 2:
 #             return _np.nan
 #         else:
-#             uj_m = Embed.get(data, dimension=2, delay=1)
+#             uj_m = Embed(dimension=2, delay=1)(data)
 #             w = _np.linalg.svd(uj_m, compute_uv=False)
 #             w /= sum(w)
 #             return -1 * sum(w * _np.log(w))
@@ -344,7 +344,7 @@ class DFALongTerm(_Indicator):
 #         if len(data) < 2:
 #             return _np.nan
 #         else:
-#             uj_m = Embed.get(data, dimension=2, delay=1)
+#             uj_m = Embed(dimension=2, delay=1)(data)
 #             w = _np.linalg.svd(uj_m, compute_uv=False)
 #             w /= sum(w)
 #             fi = 0
@@ -425,7 +425,7 @@ class DFALongTerm(_Indicator):
 #
 #     @classmethod
 #     def algorithm(cls, data, params):
-#         d = _Diff.get(data)
+#         d = _Diff()(data)
 #         n_delta = 0  # number of sign changes in derivative of the signal
 #         for i in xrange(1, len(d)):
 #             if d[i] * d[i - 1] < 0:

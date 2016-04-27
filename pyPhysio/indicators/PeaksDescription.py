@@ -17,7 +17,7 @@ class PeaksMax(_Indicator):
         Peaks Max
         """
 
-        maxs, mins = _PeakDetection.get(data, delta=params['delta'])
+        maxs, mins = _PeakDetection(params['delta'])(data)
 
         if _np.shape(maxs)[0] == 0:
             _PhUI.w("_np.shape(maxs)[0] == 0")  # TODO: Put a more explicative message
@@ -26,7 +26,7 @@ class PeaksMax(_Indicator):
             return _np.nanmax(maxs[:, 1])
 
     _params_descriptors = {
-        'delta': _Par(2, (float, int), 'Amplitude of the minimum peak', 0, lambda x: x > 0)
+        'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0)
     }
 
 
@@ -37,7 +37,7 @@ class PeaksMin(_Indicator):
         Peaks Min
         """
 
-        maxs, mins = _PeakDetection.get(data, delta=params['delta'])
+        maxs, mins = _PeakDetection(params['delta'])(data)
         if _np.shape(maxs)[0] == 0:
             _PhUI.w("_np.shape(maxs)[0] == 0")  # TODO: Put a more explicative message
             return _np.nan
@@ -45,7 +45,7 @@ class PeaksMin(_Indicator):
             return _np.nanmin(maxs[:, 1])
 
     _params_descriptors = {
-        'delta': _Par(2, (float, int), 'Amplitude of the minimum peak', 0, lambda x: x > 0)
+        'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0)
     }
 
 
@@ -56,7 +56,7 @@ class PeaksMean(_Indicator):
         Peaks Mean
         """
 
-        maxs, mins = _PeakDetection.get(data, delta=params['delta'])
+        maxs, mins = _PeakDetection(params['delta'])(data)
 
         if _np.shape(maxs)[0] == 0:
             _PhUI.w("_np.shape(maxs)[0] == 0")  # TODO: Put a more explicative message
@@ -65,7 +65,7 @@ class PeaksMean(_Indicator):
             return _np.nanmean(maxs[:, 1])
 
     _params_descriptors = {
-        'delta': _Par(2, (float, int), 'Amplitude of the minimum peak', 0, lambda x: x > 0)
+        'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0)
     }
 
 
@@ -76,7 +76,7 @@ class PeaksNum(_Indicator):
         Number of Peaks
         """
 
-        maxs, mins = _PeakDetection.get(data, delta=params['delta'])
+        maxs, mins = _PeakDetection(params['delta'])(data)
 
         if _np.shape(maxs)[0] == 0:
             _PhUI.w("_np.shape(maxs)[0] == 0")  # TODO: Put a more explicative message
@@ -85,7 +85,7 @@ class PeaksNum(_Indicator):
             return len(maxs[:, 1])
 
     _params_descriptors = {
-        'delta': _Par(2, (float, int), 'Amplitude of the minimum peak', 0, lambda x: x > 0)
+        'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0)
     }
 
 
@@ -96,9 +96,9 @@ class DurationMin(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        maxs, mins = _PeakDetection.get(data, delta=params['delta'])
-        idxs_start, idxs_stop = _PeakSelection.get(data, maxs=maxs, pre_max=params['pre_max'],
-                                                   post_max=params['post_max'])
+        maxs, mins = _PeakDetection(params['delta'])(data)
+        idxs_start, idxs_stop = _PeakSelection(maxs=maxs, pre_max=params['pre_max'],
+                                               post_max=params['post_max'])(data)
 
         if len(idxs_start) == 0:
             _PhUI.w("len(idxs_start) == 0")
@@ -115,11 +115,11 @@ class DurationMin(_Indicator):
             return _np.nanmin(_np.array(durations))
 
     _params_descriptors = {
-        'delta': _Par(2, (float, int), 'Amplitude of the minimum peak', 0, lambda x: x > 0),
-        'pre_max': _Par(2, (float, int),
+        'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0),
+        'pre_max': _Par(2, float,
                         'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
                         1, lambda x: x > 0),
-        'post_max': _Par(2, (float, int),
+        'post_max': _Par(2, float,
                          'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
                          1, lambda x: x > 0)
     }
@@ -132,9 +132,9 @@ class DurationMax(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        maxs, mins = _PeakDetection.get(data, delta=params['delta'])
-        idxs_start, idxs_stop = _PeakSelection.get(data, maxs=maxs, pre_max=params['pre_max'],
-                                                   post_max=params['post_max'])
+        maxs, mins = _PeakDetection(delta=params['delta'])(data)
+        idxs_start, idxs_stop = _PeakSelection(maxs=maxs, pre_max=params['pre_max'],
+                                               post_max=params['post_max'])(data)
 
         if len(idxs_start) == 0:
             _PhUI.w("len(idxs_start) == 0")
@@ -152,11 +152,11 @@ class DurationMax(_Indicator):
             return _np.nanmax(_np.array(durations))
 
     _params_descriptors = {
-        'delta': _Par(2, (float, int), 'Amplitude of the minimum peak', 0, lambda x: x > 0),
-        'pre_max': _Par(2, (float, int),
+        'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0),
+        'pre_max': _Par(2, float,
                         'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
                         1, lambda x: x > 0),
-        'post_max': _Par(2, (float, int),
+        'post_max': _Par(2, float,
                          'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
                          1, lambda x: x > 0)
     }
@@ -169,9 +169,9 @@ class DurationMean(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        maxs, mins = _PeakDetection.get(data, delta=params['delta'])
-        idxs_start, idxs_stop = _PeakSelection.get(data, maxs=maxs, pre_max=params['pre_max'],
-                                                   post_max=params['post_max'])
+        maxs, mins = _PeakDetection(delta=params['delta'])(data)
+        idxs_start, idxs_stop = _PeakSelection(maxs=maxs, pre_max=params['pre_max'],
+                                               post_max=params['post_max'])(data)
 
         if len(idxs_start) == 0:
             _PhUI.w("len(idxs_start) == 0")
@@ -188,11 +188,11 @@ class DurationMean(_Indicator):
             return _np.nanmean(_np.array(durations))
 
     _params_descriptors = {
-        'delta': _Par(2, (float, int), 'Amplitude of the minimum peak', 0, lambda x: x > 0),
-        'pre_max': _Par(2, (float, int),
+        'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0),
+        'pre_max': _Par(2, float,
                         'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
                         1, lambda x: x > 0),
-        'post_max': _Par(2, (float, int),
+        'post_max': _Par(2, float,
                          'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
                          1, lambda x: x > 0)
     }
@@ -205,9 +205,9 @@ class SlopeMin(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        maxs, mins = _PeakDetection.get(data, delta=params['delta'])
-        idxs_start, idxs_stop = _PeakSelection.get(data, maxs=maxs, pre_max=params['pre_max'],
-                                                   post_max=params['post_max'])
+        maxs, mins = _PeakDetection(delta=params['delta'])(data)
+        idxs_start, idxs_stop = _PeakSelection(maxs=maxs, pre_max=params['pre_max'],
+                                               post_max=params['post_max'])(data)
 
         if len(idxs_start) == 0:
             _PhUI.w("len(idxs_start) == 0")
@@ -226,11 +226,11 @@ class SlopeMin(_Indicator):
             return _np.nanmin(_np.array(slopes))
 
     _params_descriptors = {
-        'delta': _Par(2, (float, int), 'Amplitude of the minimum peak', 0, lambda x: x > 0),
-        'pre_max': _Par(2, (float, int),
+        'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0),
+        'pre_max': _Par(2, float,
                         'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
                         1, lambda x: x > 0),
-        'post_max': _Par(2, (float, int),
+        'post_max': _Par(2, float,
                          'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
                          1, lambda x: x > 0)
     }
@@ -243,9 +243,9 @@ class SlopeMax(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        maxs, mins = _PeakDetection.get(data, delta=params['delta'])
-        idxs_start, idxs_stop = _PeakSelection.get(data, maxs=maxs, pre_max=params['pre_max'],
-                                                   post_max=params['post_max'])
+        maxs, mins = _PeakDetection(delta=params['delta'])(data)
+        idxs_start, idxs_stop = _PeakSelection(maxs=maxs, pre_max=params['pre_max'],
+                                               post_max=params['post_max'])(data)
 
         if len(idxs_start) == 0:
             _PhUI.w("len(idxs_start) == 0")
@@ -264,11 +264,11 @@ class SlopeMax(_Indicator):
             return _np.nanmax(_np.array(slopes))
 
     _params_descriptors = {
-        'delta': _Par(2, (float, int), 'Amplitude of the minimum peak', 0, lambda x: x > 0),
-        'pre_max': _Par(2, (float, int),
+        'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0),
+        'pre_max': _Par(2, float,
                         'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
                         1, lambda x: x > 0),
-        'post_max': _Par(2, (float, int),
+        'post_max': _Par(2, float,
                          'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
                          1, lambda x: x > 0)
     }
@@ -281,9 +281,9 @@ class SlopeMean(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        maxs, mins = _PeakDetection.get(data, delta=params['delta'])
-        idxs_start, idxs_stop = _PeakSelection.get(data, maxs=maxs, pre_max=params['pre_max'],
-                                                   post_max=params['post_max'])
+        maxs, mins = _PeakDetection(delta=params['delta'])(data)
+        idxs_start, idxs_stop = _PeakSelection(maxs=maxs, pre_max=params['pre_max'],
+                                               post_max=params['post_max'])(data)
 
         if len(idxs_start) == 0:
             _PhUI.w("len(idxs_start) == 0")
@@ -302,11 +302,11 @@ class SlopeMean(_Indicator):
             return _np.nanmean(_np.array(slopes))
 
     _params_descriptors = {
-        'delta': _Par(2, (float, int), 'Amplitude of the minimum peak', 0, lambda x: x > 0),
-        'pre_max': _Par(2, (float, int),
+        'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0),
+        'pre_max': _Par(2, float,
                         'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
                         1, lambda x: x > 0),
-        'post_max': _Par(2, (float, int),
+        'post_max': _Par(2, float,
                          'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
                          1, lambda x: x > 0)
     }

@@ -90,7 +90,7 @@ class PeakDetection(_Tool):
         return _np.array(maxs), _np.array(mins)
 
     _params_descriptors = {
-        'delta': _Par(2, (int, float),
+        'delta': _Par(2, float,
                       "The threshold for the detection of the peaks.",
                       0,
                       lambda x: x > 0,
@@ -191,11 +191,11 @@ class PeakSelection(_Tool):
         'maxs': _Par(2, list,
                      'Array containing indexes (first column) and values (second column) of the maxima'),
         'pre_max':
-            _Par(2, (int, float),
+            _Par(2, float,
                  'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
                  1, lambda x: x > 0),
         'post_max':
-            _Par(2, (int, float),
+            _Par(2, float,
                  'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
                  1, lambda x: x > 0)
     }
@@ -715,7 +715,7 @@ class BootstrapEstimation(_Tool):
     _params_descriptors = {
         'func': _Par(2, Func, 'Function (accepts as input a vector and returns a scalar).'),
         'N': _Par(1, int, 'Number of iterations', 100, lambda x: x > 0),
-        'k': _Par(1, (int, float), 'Portion of data to be used at each iteration', 0.5, lambda x: 0 < x < 1)
+        'k': _Par(1, float, 'Portion of data to be used at each iteration', 0.5, lambda x: 0 < x < 1)
     }
 
 
@@ -791,14 +791,14 @@ class BeatOutliers(_Tool):
 
     _params_descriptors = {
         'ibi_median':
-            _Par(1, (int, float),
+            _Par(1, float,
                  'Ibi value used to initialize the cache. If 0 (default) the ibi_median is computed on the input signal',
                  0, lambda x: x >= 0),
         'cache':
             _Par(1, int,
                  'Number of IBI to be stored in the cache for adaptive computation of the interval of accepted values',
                  3, lambda x: x > 0),
-        'sensitivity': _Par(1, (int, float), 'Relative variation from the current median that is accepted', 0.25,
+        'sensitivity': _Par(1, float, 'Relative variation from the current median that is accepted', 0.25,
                             lambda x: x > 0)
     }
 
@@ -1059,7 +1059,7 @@ class BeatOptimizer(_Tool):
                                signal.get_start_time(), meta=signal.meta)
 
     _params_descriptors = {
-        'B': _Par(1, (int, float), 'Ball radius (in seconds) to detect paired beats', 0.25, lambda x: x > 0),
+        'B': _Par(1, float, 'Ball radius (in seconds) to detect paired beats', 0.25, lambda x: x > 0),
         'ibi_median':
             _Par(1, int,
                  'Ibi value used to initialize the cache. If 0 (default) the ibi_median is computed on the input signal',
@@ -1068,7 +1068,7 @@ class BeatOptimizer(_Tool):
             _Par(1, int,
                  'Nuber of IBI to be stored in the cache for adaptive computation of the interval of accepted values',
                  3, lambda x: x > 0),
-        'sensitivity': _Par(1, (int, float), 'Relative variation from the current median that is accepted', 0.25,
+        'sensitivity': _Par(1, float, 'Relative variation from the current median that is accepted', 0.25,
                             lambda x: x > 0)
     }
 
@@ -1243,7 +1243,7 @@ class OptimizeBateman(_Tool):
                         lambda x, p: p['opt_method'] == 'asa'),
         'n_step': _Par(1, int, 'Number of increments in the grid search', 10, lambda x: x > 0,
                        lambda x, p: p['opt_method'] == 'grid'),
-        'delta': _Par(2, (int, float), 'Minimum amplitude of the peaks in the driver', 0, lambda x: x > 0),
+        'delta': _Par(2, float, 'Minimum amplitude of the peaks in the driver', 0, lambda x: x > 0),
         'min_pars': _Par(0, dict, 'Additional parameters to pass to the minimization function (when complete = True)',
                          activation=lambda x, p: p['complete'])
 

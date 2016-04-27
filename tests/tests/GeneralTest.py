@@ -244,6 +244,39 @@ class GeneralTest(unittest.TestCase):
         # start time
         self.assertEqual(s.get_signal_nature(), nature)
 
+    def test_cache_with_time_domain(self):
+        samples = 1000
+        freq_down = 13
+        freq = freq_down * 7
+        start = 1460713373
+        nature = "una_bif-fa"
+        test_string = 'test1235'
+
+        s = ph.EvenlySignal(y_values=np.cumsum(np.random.rand(1, samples) - .5) * 100,
+                            sampling_freq=freq,
+                            signal_nature=nature,
+                            start_time=start,
+                            meta={'mode': test_string, 'subject': 'Baptist;Alessandro'}
+                            )
+
+        def function():
+            # Mean
+            self.assertEqual(np.nanmean(s), ph.Mean()(s))
+            # Min
+            self.assertEqual(np.nanmin(s), ph.Min()(s))
+            # Max
+            self.assertEqual(np.nanmax(s), ph.Max()(s))
+            # Range
+            self.assertEqual(np.nanmax(s) - np.nanmin(s), ph.Range()(s))
+            # Median
+            self.assertEqual(np.median(s), ph.Median()(s))
+            # StDev
+            self.assertEqual(np.nanstd(s), ph.StDev()(s))
+
+        # raw
+        function()
+        # cache
+        function()
 
 if __name__ == '__main__':
     unittest.main()

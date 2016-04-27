@@ -13,16 +13,19 @@ class Parameter(object):
         self._activation = activation
 
     def check_type(self, value):
-        return _np.issubdtype(_np.dtype(type(value)), self._pytype)
+        return (_np.issubdtype(type(value), int) and self._pytype is float) or \
+               (_np.issubdtype(type(value), float) and value.is_integer()) or \
+            _np.issubdtype(type(value), self._pytype)
 
     def check_constraint(self, value):
         return self._constraint is None or self._constraint(value)
 
     def __call__(self, value):
         if not self.check_type(value):
-            raise ValueError("Wrong parameter type: " + type(value) + "not sub-dtype of " + self._pytype)
+            raise ValueError("Wrong parameter type: " + str(type(value)) + " not sub-dtype of " + str(self._pytype))
         elif not self.check_constraint(value):
             raise ValueError("Parameter constraint: " + self._description)
+        return True, None
 
     def not_present(self, name, algo):
         if self._requirement_level == 0:

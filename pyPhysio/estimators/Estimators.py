@@ -173,8 +173,8 @@ class BeatFromECG(_Estimator):
 
     _params_descriptors = {
         'bpm_max': _Par(1, int, 180, 1, 'Maximal expected heart rate (in beats per minute)', lambda x: x > 0),
-        'delta': _Par(1, (float, int), 'Threshold for the peak detection. If delta = 0 (default) the signal range'
-                                       ' is automatically computed and used',
+        'delta': _Par(1, float, 'Threshold for the peak detection. If delta = 0 (default) the signal range'
+                                ' is automatically computed and used',
                       0, lambda x: x > 0)
     }
 
@@ -243,8 +243,8 @@ class DriverEstim(_Estimator):
         return driver
 
     _params_descriptors = {
-        'T1': _Par(1, (float, int), 'T1 parameter for the Bateman function', 0.75, lambda x: x > 0),
-        'T2': _Par(1, (float, int), 'T2 parameter for the Bateman function', 2, lambda x: x > 0)
+        'T1': _Par(1, float, 'T1 parameter for the Bateman function', 0.75, lambda x: x > 0),
+        'T2': _Par(1, float, 'T2 parameter for the Bateman function', 2, lambda x: x > 0)
     }
 
     @staticmethod
@@ -350,14 +350,14 @@ class PhasicEstim(_Estimator):
         return phasic, tonic, driver_no_peak
 
     _params_descriptors = {
-        'delta': _Par(2, (float, int), 'Minimum amplitude of the peaks in the driver', 0, lambda x: x > 0),
+        'delta': _Par(2, float, 'Minimum amplitude of the peaks in the driver', 0, lambda x: x > 0),
         'grid_size': _Par(0, int, 'Sampling size of the interpolation grid in seconds', 1, lambda x: x > 0),
         'pre_max':
-            _Par(1, (float, int),
+            _Par(1, float,
                  'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
                  2, lambda x: x > 0),
         'post_max':
-            _Par(1, (float, int),
+            _Par(1, float,
                  'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
                  2, lambda x: x > 0)
     }
