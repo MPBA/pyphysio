@@ -13,12 +13,14 @@ class InBand(_Indicator):
     @classmethod
     def algorithm(cls, data, params):
         # TODO (Andrea): ?pass the PSD estimator instance as parameter? Yes, or only its name, discuss?
+
         freq, spec = PSD(params)(data)
+
         # freq is sorted so
         i_min = _np.searchsorted(freq, params["freq_min"])
         i_max = _np.searchsorted(freq, params["freq_max"])
-        return ([freq[i] for i in xrange(len(freq)) if params['freq_min'] <= freq[i] < params['freq_max']],
-                [spec[i] for i in xrange(len(spec)) if params['freq_min'] <= freq[i] < params['freq_max']])
+
+        return freq[i_min:i_max], spec[i_min:i_max]
 
     _params_descriptors = {
         'freq_min': _Par(2, float, 'Lower frequency of the band', 0, lambda x: x > 0),
@@ -29,10 +31,10 @@ class InBand(_Indicator):
 class PowerInBand(_Indicator):
     @classmethod
     def algorithm(cls, data, params):
-        frequencies, _pow_band = InBand(params)(data)
-        df = frequencies[1] - frequencies[0]
+        freq, pow = InBand(params)(data)
+        df = freq[1] - freq[0]
         # TODO (Andrea) Decidere se e come normalizzare
-        return df * _np.sum(_pow_band)
+        return df * _np.sum(pow)
 
     _params_descriptors = InBand.get_params_descriptors()
 

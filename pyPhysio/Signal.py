@@ -288,7 +288,7 @@ class UnevenlySignal(_XYSignal):
 
     # Works with timestamps
     def getslice(self, f, l):
-        # find f & l indexes of indexes
+        # find f & l indexes of indexes, TODO check if searchsorted == len(arg)
         f = _np.searchsorted(self.get_x_values(), f)
         l = _np.searchsorted(self.get_x_values, l)
         return UnevenlySignal(self[f:l], self.get_x_values()[f:l], self.get_sampling_freq(), self.get_duration(),
