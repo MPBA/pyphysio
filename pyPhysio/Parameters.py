@@ -31,7 +31,7 @@ class Parameter(object):
         if self._requirement_level == 0:
             return True, self._default
         elif self._requirement_level == 1:
-            _PhUI.i("Using default value for: " + name + " in " + algo.__class__.__name__)
+            _PhUI.i("Default value for " + name + ": " + str(self._default) + " in " + algo.__class__.__name__)
             return True, self._default
         elif self._requirement_level == 2:
             _PhUI.e("Missing parameter: " + name + " in " + algo.__class__.__name__)
