@@ -255,7 +255,7 @@ class SlopeMax(_Indicator):
             idxs_peak = maxs[:, 0]
             slopes = []
             for I in range(len(idxs_start)):
-                if (_np.isnan(idxs_peak[I]) == False) & (_np.isnan(idxs_start[I]) == False):
+                if (_np.isnan(idxs_peak[I]) is False) & (_np.isnan(idxs_start[I]) is False):
                     dy = data[idxs_peak[I]] - data[idxs_start[I]]
                     dt = (idxs_peak[I] - idxs_start[I]) / fsamp
                     slopes.append(dy / dt)  # TODO: volendo si puo mettere in cache anche il calcolo delle slopes
