@@ -292,12 +292,11 @@ class PSD(_Tool):
     # magnitudes are not influenced by the resolution because it is per Hertz. The amplitude
     # spectra on the other hand depend on the chosen frequency resolution.
 
-
     @classmethod
     def algorithm(cls, signal, params):
         # Removed parameters equal to default
 
-        method = params['psd_method']
+        method = params['method']
         nfft = params['nfft']
         window = params['window']
         normalize = params['normalize']
