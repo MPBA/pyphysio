@@ -51,7 +51,7 @@ class BeatFromBP(_Estimator):
 
         fmax = bpm_max / 60
 
-        fsamp = signal.sampling_freq
+        fsamp = signal.get_sampling_freq()
 
         refractory = int(fsamp / fmax)
 
@@ -97,7 +97,7 @@ class BeatFromBP(_Estimator):
         ibi_values = _np.r_[ibi_values[0], ibi_values]
         idx_ibi = _np.array(true_peaks)
 
-        ibi = _UnevenlySignal(ibi_values, idx_ibi, fsamp, 'IBI', signal.start_time, signal.meta)
+        ibi = _UnevenlySignal(ibi_values, idx_ibi, fsamp, 'IBI', signal.get_start_time(), signal.get_metadata())
         return ibi
 
     _params_descriptors = {
@@ -168,7 +168,7 @@ class BeatFromECG(_Estimator):
         ibi_values = _np.r_[ibi_values[0], ibi_values]
         idx_ibi = _np.array(idx_d)
 
-        ibi = _UnevenlySignal(ibi_values, idx_ibi, fsamp, 'IBI', signal.start_time, signal.meta)
+        ibi = _UnevenlySignal(ibi_values, idx_ibi, fsamp, 'IBI', signal.get_start_time(), signal.get_metadata())
         return ibi
 
     _params_descriptors = {
@@ -239,7 +239,7 @@ class DriverEstim(_Estimator):
         # gaussian smoothing
         driver = _ConvolutionalFilter(irftype='gauss', win_len=0.2 * 8)
 
-        driver = _EvenlySignal(driver, fsamp, "dEDA", signal.start_time, signal.meta)
+        driver = _EvenlySignal(driver, fsamp, "dEDA", signal.get_start_time(), signal.get_metadata())
         return driver
 
     _params_descriptors = {

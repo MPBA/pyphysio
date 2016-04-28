@@ -257,7 +257,7 @@ class ConvolutionalFilter(_Filter):
         irftype = params["irftype"]
         normalize = params["normalize"]
 
-        fsamp = signal.sampling_freq
+        fsamp = signal.get_sampling_freq()
         irf = None
 
         if irftype == 'custom':

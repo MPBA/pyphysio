@@ -104,7 +104,7 @@ class DurationMin(_Indicator):
             _PhUI.w("len(idxs_start) == 0")
             return _np.nan
         else:
-            fsamp = data.sampling_freq
+            fsamp = data.get_sampling_freq()
             durations = []
             for I in range(len(idxs_start)):
                 if (_np.isnan(idxs_stop[I]) is False) & (_np.isnan(idxs_start[I]) is False):
@@ -140,7 +140,7 @@ class DurationMax(_Indicator):
             _PhUI.w("len(idxs_start) == 0")
             return _np.nan
         else:
-            fsamp = data.sampling_freq
+            fsamp = data.get_sampling_freq()
             durations = []
             for I in range(len(idxs_start)):
                 if (_np.isnan(idxs_stop[I]) is False) & (_np.isnan(idxs_start[I]) is False):
@@ -177,7 +177,7 @@ class DurationMean(_Indicator):
             _PhUI.w("len(idxs_start) == 0")
             return _np.nan
         else:
-            fsamp = data.sampling_freq
+            fsamp = data.get_sampling_freq()
             durations = []
             for I in range(len(idxs_start)):
                 if (_np.isnan(idxs_stop[I]) is False) & (_np.isnan(idxs_start[I]) is False):
@@ -213,7 +213,7 @@ class SlopeMin(_Indicator):
             _PhUI.w("len(idxs_start) == 0")
             return _np.nan
         else:
-            fsamp = data.sampling_freq
+            fsamp = data.get_sampling_freq()
             idxs_peak = maxs[:, 0]
             slopes = []
             for I in range(len(idxs_start)):
@@ -251,7 +251,7 @@ class SlopeMax(_Indicator):
             _PhUI.w("len(idxs_start) == 0")
             return _np.nan
         else:
-            fsamp = data.sampling_freq
+            fsamp = data.get_sampling_freq()
             idxs_peak = maxs[:, 0]
             slopes = []
             for I in range(len(idxs_start)):
@@ -289,7 +289,7 @@ class SlopeMean(_Indicator):
             _PhUI.w("len(idxs_start) == 0")
             return _np.nan
         else:
-            fsamp = data.sampling_freq
+            fsamp = data.get_sampling_freq()
             idxs_peak = maxs[:, 0]
             slopes = []
             for I in range(len(idxs_start)):

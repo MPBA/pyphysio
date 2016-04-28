@@ -129,8 +129,8 @@ class PeakSelection(_Tool):
     @classmethod
     def algorithm(cls, signal, params):
         maxs = params['maxs']
-        i_pre_max = params['pre_max'] * signal.sampling_freq
-        i_post_max = params['post_max'] * signal.sampling_freq
+        i_pre_max = params['pre_max'] * signal.get_sampling_freq()
+        i_post_max = params['post_max'] * signal.get_sampling_freq()
         i_peaks = maxs[:, 0].astype(int)
 
         if _np.shape(maxs)[0] == 0:
@@ -226,7 +226,7 @@ class SignalRange(_Tool):
         win_step = params['win_step']
         smooth = params['smooth']
 
-        fsamp = signal.sampling_freq
+        fsamp = signal.get_sampling_freq()
         idx_len = int(win_len * fsamp)
         idx_step = int(win_step * fsamp)
 
@@ -302,7 +302,7 @@ class PSD(_Tool):
         normalize = params['normalize']
         remove_mean = params['remove_mean']
 
-        fsamp = signal.sampling_freq
+        fsamp = signal.get_sampling_freq()
 
         # TODO: check signal type.
         # TODO: if unevenly --> interpolate
@@ -398,7 +398,7 @@ class Energy(_Tool):
 
     @classmethod
     def algorithm(cls, signal, params):
-        fsamp = signal.sampling_freq
+        fsamp = signal.get_sampling_freq()
         win_len = params['win_len']
         win_step = params['win_step']
         idx_len = win_len * fsamp
@@ -479,7 +479,7 @@ class Maxima(_Tool):
 
         elif method == 'windowing':
             # TODO: test the algorithm
-            fsamp = signal.sampling_freq
+            fsamp = signal.get_sampling_freq()
             wlen = int(params['win_len'] * fsamp)
             wstep = int(params['win_step'] * fsamp)
 
@@ -1055,7 +1055,7 @@ class BeatOptimizer(_Tool):
         ibi_out = _np.r_[ibi_out[0], ibi_out]
 
         return _UnevenlySignal(ibi_out, idx_out, signal.get_sampling_freq(), len(signal), "IBI",
-                               signal.get_start_time(), meta=signal.meta)
+                               signal.get_start_time(), meta=signal.get_metadata())
 
     _params_descriptors = {
         'B': _Par(1, float, 'Ball radius (in seconds) to detect paired beats', 0.25, lambda x: x > 0),
@@ -1176,7 +1176,7 @@ class OptimizeBateman(_Tool):
         if par_bat[0] < min_T1 or par_bat[1] > max_T2 or par_bat[0] >= par_bat[1]:
             return _np.Inf  # 10000 TODO: check if it raises errors
 
-        fsamp = signal.sampling_freq
+        fsamp = signal.get_sampling_freq()
         driver = _DriverEstim(par_bat)(signal)
         maxs, mins = PeakDetection(delta=delta, refractory=1, start_max=True)(driver)
 
