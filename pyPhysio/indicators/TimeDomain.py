@@ -6,7 +6,7 @@ import numpy as _np
 from ..BaseIndicator import Indicator as _Indicator
 from ..filters.Filters import Diff as _Diff
 from ..Utility import PhUI as _PhUI
-from pyphysio.pyPhysio.tools.Tools import Histogram
+from ..tools.Tools import Histogram
 
 
 __author__ = 'AleB'
