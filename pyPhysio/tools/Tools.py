@@ -129,8 +129,8 @@ class PeakSelection(_Tool):
     @classmethod
     def algorithm(cls, signal, params):
         maxs = params['maxs']
-        i_pre_max = params['pre_max'] * signal.sampling_freq
-        i_post_max = params['post_max'] * signal.sampling_freq
+        i_pre_max = params['pre_max'] * signal.get_sampling_freq()
+        i_post_max = params['post_max'] * signal.get_sampling_freq()
         i_peaks = maxs[:, 0].astype(int)
 
         if _np.shape(maxs)[0] == 0:
@@ -207,9 +207,9 @@ class SignalRange(_Tool):
 
     Parameters
     ----------
-    win_len : int
+    win_len : float
         The length of the window (seconds)
-    win_step : int
+    win_step : float
         The increment to start the next window (seconds)
     smooth : boolean
         Whether to convolve the result with a gaussian window
@@ -226,7 +226,7 @@ class SignalRange(_Tool):
         win_step = params['win_step']
         smooth = params['smooth']
 
-        fsamp = signal.sampling_freq
+        fsamp = signal.get_sampling_freq()
         idx_len = int(win_len * fsamp)
         idx_step = int(win_step * fsamp)
 
@@ -251,8 +251,8 @@ class SignalRange(_Tool):
         return deltas
 
     _params_descriptors = {
-        'win_len': _Par(2, int, 'The length of the window (seconds)', 1, lambda x: x > 0),
-        'win_step': _Par(2, int, 'The increment to start the next window (seconds)', 1, lambda x: x > 0),
+        'win_len': _Par(2, float, 'The length of the window (seconds)', 1, lambda x: x > 0),
+        'win_step': _Par(2, float, 'The increment to start the next window (seconds)', 1, lambda x: x > 0),
         'smooth': _Par(1, bool, 'Whether to convolve the result with a gaussian window', True)
     }
 
@@ -303,7 +303,7 @@ class PSD(_Tool):
         normalize = params['normalize']
         remove_mean = params['remove_mean']
 
-        fsamp = signal.sampling_freq
+        fsamp = signal.get_sampling_freq()
 
         # TODO: check signal type.
         # TODO: if unevenly --> interpolate
@@ -384,9 +384,9 @@ class Energy(_Tool):
 
     Parameters
     ----------
-    win_len : int
+    win_len : float
         The dimension of the window    
-    win_step : int
+    win_step : float
         The increment indexes to start the next window
     smooth : boolean
         Whether to convolve the result with a gaussian window
@@ -399,7 +399,7 @@ class Energy(_Tool):
 
     @classmethod
     def algorithm(cls, signal, params):
-        fsamp = signal.sampling_freq
+        fsamp = signal.get_sampling_freq()
         win_len = params['win_len']
         win_step = params['win_step']
         idx_len = win_len * fsamp
@@ -429,8 +429,8 @@ class Energy(_Tool):
         return energy_out
 
     _params_descriptors = {
-        'win_len': _Par(2, int, 'The length of the window (seconds)', 1, lambda x: x > 0),
-        'win_step': _Par(2, int, 'The increment to start the next window (seconds)', 1, lambda x: x > 0),
+        'win_len': _Par(2, float, 'The length of the window (seconds)', 1, lambda x: x > 0),
+        'win_step': _Par(2, float, 'The increment to start the next window (seconds)', 1, lambda x: x > 0),
         'smooth': _Par(1, bool, 'Whether to convolve the result with a gaussian window', True)
     }
 
@@ -445,7 +445,7 @@ class Maxima(_Tool):
         Method to detect the maxima
     refractory : int
         Number of samples to skip after detection of a maximum (method = 'complete')
-    win_len : int
+    win_len : float
         Size of window in seconds (method = 'windowing')
     win_step : int
         Increment to start the next window in seconds (method = 'windowing')
@@ -480,7 +480,7 @@ class Maxima(_Tool):
 
         elif method == 'windowing':
             # TODO: test the algorithm
-            fsamp = signal.sampling_freq
+            fsamp = signal.get_sampling_freq()
             wlen = int(params['win_len'] * fsamp)
             wstep = int(params['win_step'] * fsamp)
 
@@ -508,6 +508,9 @@ class Maxima(_Tool):
         'method': _Par(2, 'Method to detect the maxima',
                        'complete',
                        lambda x: x in ['complete', 'windowing']),
+        
+        # FIX: Mi sembra che manchi il tipo di parametro nei parametri qui sotto:
+        
         'refractory': _Par(1, 'Number of samples to skip after detection of a maximum (method = "complete")',
                            1,
                            lambda x: x > 0,
@@ -533,9 +536,9 @@ class Minima(_Tool):
         Method to detect the minima
     refractory : int
         Number of samples to skip after detection of a maximum (method = 'complete')
-    win_len : int
+    win_len : float
         Size of window (method = 'windowing')
-    win_step : int
+    win_step : float
         Steps to start the next of window (method = 'windowing')
 
     Returns
@@ -595,6 +598,7 @@ class Minima(_Tool):
         'method': _Par(2, 'Method to detect the minima',
                        'complete',
                        lambda x: x in ['complete', 'windowing']),
+        # FIX: Mi sembra che manchi il tipo di parametro nei parametri qui sotto:
         'refractory': _Par(1, 'Number of samples to skip after detection of a maximum (method = "complete")',
                            1,
                            lambda x: x > 0,
@@ -1177,7 +1181,7 @@ class OptimizeBateman(_Tool):
         if par_bat[0] < min_T1 or par_bat[1] > max_T2 or par_bat[0] >= par_bat[1]:
             return _np.Inf  # 10000 TODO: check if it raises errors
 
-        fsamp = signal.sampling_freq
+        fsamp = signal.get_sampling_freq()
         driver = _DriverEstim(par_bat)(signal)
         maxs, mins = PeakDetection(delta=delta, refractory=1, start_max=True)(driver)
 

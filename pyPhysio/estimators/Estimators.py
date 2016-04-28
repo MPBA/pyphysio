@@ -1,4 +1,5 @@
 # coding=utf-8
+from __future__ import division
 import numpy as _np
 from ..BaseEstimator import Estimator as _Estimator
 from ..Signal import UnevenlySignal as _UnevenlySignal, EvenlySignal as _EvenlySignal
@@ -51,7 +52,7 @@ class BeatFromBP(_Estimator):
 
         fmax = bpm_max / 60
 
-        fsamp = signal.sampling_freq
+        fsamp = signal.get_sampling_freq()
 
         refractory = int(fsamp / fmax)
 
@@ -122,9 +123,9 @@ class BeatFromECG(_Estimator):
     bpm_max : int (>0)
         Maximal expected heart rate (in beats per minute)
         If not given the peak detection will run without refractory period.
-    delta : float or nd.array or Signal (>0 len(delta)=len(signal)
+    delta : float (default=0)
         Threshold for the peak detection.
-        If not given it will be computed.
+        If not given or delta=0 it will be computed from the signal.
 
     Returns
     -------
@@ -149,11 +150,11 @@ class BeatFromECG(_Estimator):
         fmax = bpm_max / 60
 
         if delta == 0:
-            delta = 0.7 * _SignalRange(winlen=2 / fmax, winstep=0.5 / fmax)(signal)
+            delta = 0.7 * _SignalRange(win_len=2/fmax, win_step=0.5/fmax)(signal)
         else:
             delta = _np.repeat(delta, len(signal))
 
-        fsamp = signal.fsamp
+        fsamp = signal.get_sampling_freq()
 
         refractory = int(fsamp / fmax)
 
@@ -177,6 +178,9 @@ class BeatFromECG(_Estimator):
                                 ' is automatically computed and used',
                       0, lambda x: x > 0)
     }
+    
+    #FIXME: ibi_estimator = est_new.BeatFromECG(bpm_max = 180) # ERRORE
+
 
 
 # PHASIC ESTIMATION

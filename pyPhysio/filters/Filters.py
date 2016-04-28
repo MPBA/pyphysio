@@ -141,7 +141,7 @@ class IIRFilter(_Filter):
 
     @classmethod
     def algorithm(cls, signal, params):
-        fsamp = signal.fsamp
+        fsamp = signal.get_sampling_freq()
         fp, fs, loss, att, ftype = params["fp"], params["fs"], params["loss"], params["att"], params["ftype"]
 
         # TODO (Ale): if A and B already exist and fsamp is not changed skip the following
@@ -156,12 +156,19 @@ class IIRFilter(_Filter):
         wp = fp / nyq
         ws = fs / nyq
         b, a = _filter_design.iirdesign(wp, ws, loss, att, ftype=ftype)
-        if _np.isnan(b[0]) | _np.isnan(a[0]):
-            _PhUI.w('Filter parameters allow no solution')
-            return signal
+                
+        # TODO (new feature) Trovare metodo per capire se funziona o no
+        #if _np.max(a)>BIG_NUMBER | _np.isnan(_np.sum(a)):
+        #    _PhUI.w('Filter parameters allow no solution')
+        #    return signal
         # ---------
-
-        return _filtfilt(b, a, signal)
+        # FIX: con _filtfilt signal perde la classe e rimane nparray
+        sig_filtered = _filtfilt(b, a, signal)
+        if _np.isnan(sig_filtered[0]):
+            _PhUI.w('Filter parameters allow no solution. Returning original signal.')
+            return signal
+        else:
+            return sig_filtered
 
     _params_descriptors = {
         'fp': _Par(2, list, 'The pass frequencies'),
@@ -257,7 +264,7 @@ class ConvolutionalFilter(_Filter):
         irftype = params["irftype"]
         normalize = params["normalize"]
 
-        fsamp = signal.sampling_freq
+        fsamp = signal.get_sampling_freq()
         irf = None
 
         if irftype == 'custom':
