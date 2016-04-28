@@ -6,11 +6,11 @@ from scipy.signal import welch as _welch
 import scipy.optimize as _opt
 from spectrum import aryule as _aryule, arma2psd as _arma2psd, AIC as _AIC
 import itertools as _itertools
-from ..Parameters import Parameter as _Par
 from ..BaseTool import Tool as _Tool
 from ..Signal import UnevenlySignal as _UnevenlySignal, EvenlySignal as _EvenlySignal
 from ..filters.Filters import Diff as _Diff, ConvolutionalFilter as _ConvFlt
 from ..Utility import PhUI as _PhUI
+from ..Parameters import Parameter as _Par
 
 
 class PeakDetection(_Tool):
@@ -1248,3 +1248,23 @@ class OptimizeBateman(_Tool):
                          activation=lambda x, p: p['complete'])
 
     }
+
+
+class Histogram(_Tool):
+    @classmethod
+    def algorithm(cls, signal, params):
+        """
+        Compute the histogram of a set of data.
+
+        @return: (values, bins)
+        """
+
+        return _np.histogram(signal, params['histogram_bins'])
+
+    _params_descriptors = {
+        'histogram_bins': _Par(1, list,
+                               'Number of bins (int) or bin edges, including the rightmost edge (list-like).', 100,
+                               lambda x: type(x) is not int or x > 0)
+    }
+
+
