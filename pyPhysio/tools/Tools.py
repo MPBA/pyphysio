@@ -28,9 +28,9 @@ class PeakDetection(_Tool):
 
     Returns
     -------
-    maxs : nparray
+    maxs : array
         Array containing indexes (first column) and values (second column) of the maxima
-    mins : nparray
+    mins : array
         Array containing indexes (first column) and values (second column) of the minima
     """
 
@@ -114,7 +114,7 @@ class PeakSelection(_Tool):
 
     Parameters
     ----------
-    maxs : nparray
+    maxs : array
         Array containing indexes (first column) and values (second column) of the maxima
     pre_max : float
         Duration (in seconds) of interval before the peak that is considered to find the start of the peak
@@ -123,9 +123,9 @@ class PeakSelection(_Tool):
     
     Returns
     -------
-    starts : nparray
+    starts : array
         Array containing start indexes
-    ends : nparray
+    ends : array
         Array containing end indexes
     """
 
@@ -209,7 +209,7 @@ class SignalRange(_Tool):
 
     Returns
     -------
-    deltas : nparray
+    deltas : array
         Result of estimation of local range
     """
 
@@ -390,7 +390,7 @@ class Energy(_Tool):
 
     Returns
     -------
-    energy : nparray
+    energy : array
         Result of estimation of local energy
     """
 
@@ -449,7 +449,7 @@ class Maxima(_Tool):
 
     Returns
     -------
-    maxs : nparray
+    maxs : array
         Array containing indexes (first column) and values (second column) of the maxima
     """
 
@@ -540,7 +540,7 @@ class Minima(_Tool):
 
     Returns
     -------
-    mins : nparray
+    mins : array
         Array containing indexes (first column) and values (second column) of the minima
     """
 
@@ -617,7 +617,7 @@ class CreateTemplate(_Tool):
     
     Parameters
     ----------
-    ref_indexes : nparray of int
+    ref_indexes : array of int
         Indexes of the signals to be used as reference point to generate the template
     idx_start : int
         Index of the signal to start the segmentation of the portion used to generate the template
@@ -630,7 +630,7 @@ class CreateTemplate(_Tool):
     
     Returns
     -------
-    template : nparray
+    template : array
         The template
     """
 
@@ -782,7 +782,7 @@ class BeatOutliers(_Tool):
     
     Returns
     -------
-    id_bad_ibi : nparray
+    id_bad_ibi : array
         Identifiers of wrong beats
     
     Notes
@@ -854,7 +854,7 @@ class FixIBI(_Tool):
     
     Parameters
     ----------
-    id_bad_ibi : nparray
+    id_bad_ibi : array
         Identifiers of abnormal beats
    
     Returns
@@ -1201,7 +1201,7 @@ class OptimizeBateman(_Tool):
         ----------
         par_bat : list
             Bateman parameters to be optimized
-        signal : nparray
+        signal : array
             The EDA signal
         delta : float
             Minimum amplitude of the peaks in the driver

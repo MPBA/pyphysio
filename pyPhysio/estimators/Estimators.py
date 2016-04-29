@@ -129,9 +129,9 @@ class BeatFromECG(_Estimator):
 
     Returns
     -------
-    idx_ibi : nparray
+    idx_ibi : array
         Indexes of the input signal corresponding to R peaks
-    ibi : nparray
+    ibi : array
         Inter beat interval values at R peaks
 
     Notes
@@ -265,7 +265,7 @@ class DriverEstim(_Estimator):
 
         Returns
         -------
-        bateman : nparray
+        bateman : array
             The bateman function
         """
 
