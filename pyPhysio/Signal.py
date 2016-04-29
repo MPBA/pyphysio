@@ -3,6 +3,7 @@ from __future__ import division
 import numpy as _np
 from scipy import interpolate as _interp
 from Utility import abstractmethod as _abstract, PhUI as _PhUI
+from matplotlib.pyplot import plot as _plot
 
 __author__ = 'AleB'
 
@@ -67,6 +68,9 @@ class Signal(_np.ndarray):
 
     def get_metadata(self):
         return self.ph[self._MT_META_DICT]
+
+    def plot(self, style="b"):
+        _plot(self.get_x_values(), self.get_y_values(), style)
 
     def __repr__(self):
         return "<signal: " + self.get_signal_nature() + ", start_time: " + str(self.get_start_time()) + ">"
