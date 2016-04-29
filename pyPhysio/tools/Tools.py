@@ -110,7 +110,7 @@ class PeakDetection(_Tool):
 
 class PeakSelection(_Tool):
     """
-    Identifies the start and end indexes of each peak in the signal, using derivatives.
+    Identifies the start and the end indexes of each peak in the signal, using derivatives.
 
     Parameters
     ----------
@@ -131,64 +131,54 @@ class PeakSelection(_Tool):
 
     @classmethod
     def algorithm(cls, signal, params):
+        i_pre_max = int(params['pre_max'] * signal.get_sampling_freq())
+        i_post_max = int(params['post_max'] * signal.get_sampling_freq())
         maxs = params['maxs']
-        i_pre_max = params['pre_max'] * signal.get_sampling_freq()
-        i_post_max = params['post_max'] * signal.get_sampling_freq()
-        i_peaks = maxs[:, 0].astype(int)
+        r, c = maxs.shape
+        i_peaks = maxs if c == 1 else maxs[:, 0]
 
-        if _np.shape(maxs)[0] == 0:
-            _PhUI.e('No peaks found in the input')
-            return _np.array([]), _np.array([])
+        i_start = _np.empty(len(i_peaks), int)
+        i_stop = _np.empty(len(i_peaks), int)
+
+        if r == 0:
+            _PhUI.e('Empty peaks array, returning empty.')
         else:
             signal_dt = _Diff()(signal)
-            i_start = []
-            i_stop = []
-            for i_pk in i_peaks:
-                if (i_pk < i_pre_max) or (i_pk >= len(signal_dt) - i_post_max):
-                    _PhUI.w('Peak at start/end of signal, not accounting')
-                    i_start.append(_np.nan)
-                    i_stop.append(_np.nan)
+            for i in xrange(len(i_peaks)):
+                i_pk = int(i_peaks[i])
+
+                if i_pk < i_pre_max or i_pk >= len(signal_dt) - i_post_max:
+                    _PhUI.i('Peak at start/end of signal, not accounting')
+
+                    # TODO (Andrea): astype(int) converte i nan in -9223372036854775808, l'ho tolto, vanno bene i -1?
+                    # Perché il nan non c'è tra gli int
+                    i_start[i] = i_stop[i] = -1
                 else:
-                    # TODO: vedere se si puo scrivere un codice meno complesso
                     # TODO: gestire se sorpasso gli intervalli e non ho trovato il minimo
 
                     # find START
                     i_st = i_pk - i_pre_max
-                    signal_dt_pre = signal_dt[i_st: i_pk]
-                    i_pre = len(signal_dt_pre) - 1
+                    signal_dt_pre = signal_dt[i_st:i_pk]
+                    i_pre = i_pk - i_st - 1
 
-                    done = False
-                    while not done:
-                        if signal_dt_pre[i_pre] <= 0:
-                            done = True
-                        else:
-                            i_pre -= 1
-                            if i_pre < 0:
-                                done = True
-                                i_pre = 0
+                    while i_pre > 0 and signal_dt_pre[i_pre] > 0:
+                        i_pre -= 1
 
-                    i_pre_true = i_st + i_pre + 1
-                    i_start.append(i_pre_true)
+                    # i_pre_true =
+                    i_start[i] = i_st + i_pre + 1
 
                     # find STOP
                     i_sp = i_pk + i_post_max
                     signal_dt_post = signal_dt[i_pk: i_sp]
                     i_post = 0
 
-                    done = False
-                    while not done:
-                        if signal_dt_post[i_post] >= 0:
-                            done = True
-                        else:
-                            i_post += 1
-                            if i_post == len(signal_dt_post):
-                                done = True
-                                i_post = len(signal_dt_post)
+                    while signal_dt_post[i_post] < 0 and i_post < len(signal_dt_post):
+                        i_post += 1
 
-                    i_post_true = i_pk + i_post
-                    i_stop.append(i_post_true)
+                    # i_post_true =
+                    i_stop[i] = i_pk + i_post
 
-            return _np.array(i_start).astype(int), _np.array(i_stop).astype(int)
+        return i_start, i_stop
 
     _params_descriptors = {
         'maxs': _Par(2, list,
