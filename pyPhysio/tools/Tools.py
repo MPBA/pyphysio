@@ -373,7 +373,7 @@ class PSD(_Tool):
         'min_order': _Par(1, int, 'Minimum order of the model (for method="ar")',
                           10,
                           lambda x: x > 0,
-                          lambda x, y: y["method"] == "ar"),
+                          lambda x, y: y["method"] == "ar"), #FIXME: ERROR HERE
         'nfft': _Par(1, int, 'Number of samples in the PSD', 2048, lambda x: x > 0),
         'window': _Par(1, str, 'Type of window to adapt the signal before estimation of the PSD',
                        'hamming', lambda x: x in PSD._window_list),
