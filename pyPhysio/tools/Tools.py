@@ -224,31 +224,44 @@ class SignalRange(_Tool):
         idx_step = int(win_step * fsamp)
 
         if len(signal) < idx_len:
-            #WARNING: Input signal is shorter than the window length
+            _PhUI.w("Input signal is shorter than the window length.")
             return _np.max(signal) - _np.min(signal)
+        else:
+            # TODO (Andrea): con la next line si esclude l'ultima finestra
+            # se ho np.arange(0, 20-7, 5) -> array([ 0,  5, 10])
+            # escludo infatti 15 che +7 fa 22
+            # ma se ho np.arange(0, 20-5, 5) -> array([ 0,  5, 10])
+            # escludo 15 che +5 fa 20 escluso escludendo quindi una finestra valida
+            #
+            # Penso si possa risolvere con
+            # "len(signal) - idx_len" -> "len(signal) - idx_len + 1"
 
-        windows = _np.arange(0, len(signal) - idx_len, idx_step)
-        deltas = _np.zeros(len(signal))
+            windows = _np.arange(0, len(signal) - idx_len + 1, idx_step)
+            deltas = _np.zeros(len(signal))
 
-        curr_delta = None
-        
-        for start in windows:
-            portion_curr = signal[start: start + idx_len]
-            curr_delta = (_np.max(portion_curr) - _np.min(portion_curr))
-            deltas[start:start + idx_len] = curr_delta
-        
-        start = windows[-1]
-        
-        deltas[start+idx_len:] = curr_delta
+            curr_delta = 0
+            for start in windows:
+                portion_curr = signal[start:start + idx_len]
+                curr_delta = _np.max(portion_curr) - _np.min(portion_curr)
+                # TODO (Andrea): below
+                # 1) Permettere con l'attriuto win_step > win_len l'overlap delle finestre forse
+                # non ha senso perché la parte di overlap viene sovrascritta dalla prossima riga;
+                # a meno che:
+                #   - win_len < win_step (e verrebbero esclusi dei pezzi, se questo ha senso
+                #                         deltas = _np.empty(len(signal)) va cambiato in zeros)
+                #                                      =====                             =====
+                #   - win_len > win_step e l'ultima finestra di deltas è più lunga delle altre
+                # 2) Se len(windows) == 0 curr_delta resta a 0 e anche deltas
+                deltas[start:start + idx_len] = curr_delta
 
-        # TODO (Ale): NO dovrebbe ritornare un ndarray. Giusto come ho messo?
-        deltas = _EvenlySignal(deltas, signal.get_sampling_freq(), signal.get_signal_nature(),
-                               signal.get_start_time(), signal.get_metadata())
-        
-        if smooth:
-            deltas = _ConvFlt(irftype='gauss', win_len=win_len * 2, normalize=True)(deltas)
+            deltas[windows[-1] + idx_len:] = curr_delta
 
-        return deltas.get_y_values()
+            deltas = _EvenlySignal(deltas, signal.get_sampling_freq())
+
+            if smooth:
+                deltas = _ConvFlt(irftype='gauss', win_len=win_len * 2, normalize=True)(deltas)
+
+            return deltas.get_y_values()
 
     _params_descriptors = {
         'win_len': _Par(2, float, 'The length of the window (seconds)', 1, lambda x: x > 0),
