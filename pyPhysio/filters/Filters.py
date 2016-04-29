@@ -3,7 +3,7 @@ from __future__ import division
 import numpy as _np
 from scipy.signal import gaussian as _gaussian, filtfilt as _filtfilt, filter_design as _filter_design
 from ..BaseFilter import Filter as _Filter
-from ..Signal import EvenlySignal as _EvenlySignal
+from ..Signal import EvenlySignal as _EvenlySignal, Signal as _Signal
 from ..Utility import PhUI as _PhUI
 from ..Parameters import Parameter as _Par
 from ..Utility import abstractmethod as _abstract
@@ -97,9 +97,9 @@ class Diff(_Filter):
         """
         Calculates the differences between consecutive values
         """
-        if not isinstance(signal, _EvenlySignal):
+        if isinstance(signal, _Signal) and not isinstance(signal, _EvenlySignal):
             _PhUI.i(
-                "Computing %s on '%s' may not make sense.".format(Diff.__class__.__name__, signal.__class__.__name__))
+                "Computing %s on '%s' may not make sense." % (cls.__name__, signal.__class__.__name__))
         degree = params['degree']
 
         # TODO (Ale): Manage Time references
@@ -162,8 +162,10 @@ class IIRFilter(_Filter):
         #    _PhUI.w('Filter parameters allow no solution')
         #    return signal
         # ---------
-        # FIX: con _filtfilt signal perde la classe e rimane nparray
-        sig_filtered = _filtfilt(b, a, signal)
+        # FIXME (Ale): con _filtfilt signal perde la classe e rimane nparray
+        # TODO (Andrea): va bene EvenlySignal?
+        sig_filtered = _EvenlySignal(_filtfilt(b, a, signal), signal.get_sampling_freq(), signal.get_signal_nature(),
+                                     signal.get_start_time(), signal.get_metadata())
         if _np.isnan(sig_filtered[0]):
             _PhUI.w('Filter parameters allow no solution. Returning original signal.')
             return signal
@@ -306,14 +308,17 @@ class ConvolutionalFilter(_Filter):
         signal_ = _np.r_[_np.ones(n) * signal[0], signal, _np.ones(n) * signal[-1]]  # TESTME
 
         signal_f = _np.convolve(signal_, irf, mode='same')
-        signal_out = signal_f[n:-n]
+        # TODO (Andrea) va bene evenly signal?
+        signal_out = _EvenlySignal(signal_f[n:-n], signal.get_sampling_freq(), signal.get_signal_nature(),
+                                   signal.get_start_time(), signal.get_metadata())
         return signal_out
 
     _params_descriptors = {
         'irftype': _Par(1, str, 'Type of IRF to be generated.', 'gauss',
                         lambda x: x in ['gauss', 'rect', 'triang', 'dgauss', 'custom']),
         'normalize': _Par(1, bool, 'Whether to normalizes the IRF to have unitary area', True),
-        'win_len': _Par(2, int, "Durarion of the generated IRF in seconds (if irftype is not 'custom')", 1,
+        # TODO (Andrea): win_len was int is it ok float?
+        'win_len': _Par(2, float, "Durarion of the generated IRF in seconds (if irftype is not 'custom')", 1,
                         lambda x: x > 0, lambda x, p: p['irftype'] != 'custom'),
         'irf': _Par(2, list, "IRF to be used if irftype is 'custom'", activation=lambda x, p: p['irftype'] == 'custom')
     }

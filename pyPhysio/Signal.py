@@ -9,7 +9,7 @@ __author__ = 'AleB'
 # Everything in SECONDS (s) !!!
 
 
-class _Signal(_np.ndarray):
+class Signal(_np.ndarray):
     _MT_NATURE = "signal_nature"
     _MT_START_TIME = "start_time"
     _MT_META_DICT = "metadata"
@@ -72,7 +72,7 @@ class _Signal(_np.ndarray):
         return "<signal: " + self.get_signal_nature() + ", start_time: " + str(self.get_start_time()) + ">"
 
 
-class EvenlySignal(_Signal):
+class EvenlySignal(Signal):
     def get_duration(self):
         # Uses future division
         return len(self) / self.get_sampling_freq()
@@ -97,7 +97,7 @@ class EvenlySignal(_Signal):
         return EvenlySignal(self[f:l], self.get_sampling_freq(), self.get_signal_nature(), f)
 
     def __repr__(self):
-        return _Signal.__repr__(self)[:-1] + " freq:" + str(self.get_sampling_freq()) + "Hz>\n" + self.view(
+        return Signal.__repr__(self)[:-1] + " freq:" + str(self.get_sampling_freq()) + "Hz>\n" + self.view(
             _np.ndarray).__repr__()
 
     def resample(self, fout, kind='linear'):
@@ -136,7 +136,7 @@ class EvenlySignal(_Signal):
         return EvenlySignal(signal_out, fout, self.get_signal_nature(), self.get_start_time(), self.get_metadata())
 
 
-class _XYSignal(_Signal):
+class _XYSignal(Signal):
     _MT_X_VALUES = "x_values"
 
     def __new__(cls, y_values, times, sampling_freq, signal_nature="", start_time=0, meta=None, check=True):
@@ -145,7 +145,7 @@ class _XYSignal(_Signal):
         times = _np.array(times)
         # assert not check or x_values.all(x_values.argsort()), \
         #     "x_values array not monotonic."
-        obj = _Signal.__new__(cls, y_values, sampling_freq, signal_nature, start_time, meta)
+        obj = Signal.__new__(cls, y_values, sampling_freq, signal_nature, start_time, meta)
         obj.ph[cls._MT_X_VALUES] = times
         return obj
 
@@ -168,7 +168,7 @@ class _XYSignal(_Signal):
         pass
 
     def __repr__(self):
-        return _Signal.__repr__(self) + "\ny-values\n" + self.view(_np.ndarray).__repr__() + \
+        return Signal.__repr__(self) + "\ny-values\n" + self.view(_np.ndarray).__repr__() + \
             "\nx-times\n" + self.get_x_values().__repr__()
 
 

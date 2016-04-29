@@ -97,7 +97,7 @@ class PeakDetection(_Tool):
                       lambda x, y: 'deltas' not in y),
         'deltas': _Par(2, _np.array,
                        "Vector of the ranges of the signal to be used as local threshold",
-                       constraint=lambda x, y: 'delta' not in y),
+                       activation=lambda x, y: 'delta' not in y),
         'refractory': _Par(1, _np.int64,
                            "Number of samples to skip after detection of a peak",
                            lambda x: x > 0),
@@ -244,6 +244,10 @@ class SignalRange(_Tool):
         start = windows[-1]
         # ---
         deltas[start + idx_len:] = curr_delta
+
+        # TODO (Andrea): next riga si dovrebbe ritornare un evenlysignal according il tuo script ma dato che è un Tool non so
+        deltas = _EvenlySignal(deltas, signal.get_sampling_freq(), signal.get_signal_nature(),
+                               signal.get_start_time(), signal.get_metadata())
 
         if smooth:
             deltas = _ConvFlt(irftype='gauss', win_len=win_len * 2, normalize=True)(deltas)  # TODO: check sintax

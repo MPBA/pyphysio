@@ -150,7 +150,7 @@ class BeatFromECG(_Estimator):
         fmax = bpm_max / 60
 
         if delta == 0:
-            delta = 0.7 * _SignalRange(win_len=2/fmax, win_step=0.5/fmax)(signal)
+            delta = 0.7 * _SignalRange(win_len=2 / fmax, win_step=0.5 / fmax)(signal)
         else:
             delta = _np.repeat(delta, len(signal))
 
@@ -173,14 +173,12 @@ class BeatFromECG(_Estimator):
         return ibi
 
     _params_descriptors = {
-        'bpm_max': _Par(1, int, 180, 1, 'Maximal expected heart rate (in beats per minute)', lambda x: x > 0),
+        'bpm_max': _Par(1, int, 'Maximal expected heart rate (in beats per minute)',
+                        180, lambda x: x > 0),
         'delta': _Par(1, float, 'Threshold for the peak detection. If delta = 0 (default) the signal range'
                                 ' is automatically computed and used',
                       0, lambda x: x > 0)
     }
-    
-    #FIXME: ibi_estimator = est_new.BeatFromECG(bpm_max = 180) # ERRORE
-
 
 
 # PHASIC ESTIMATION

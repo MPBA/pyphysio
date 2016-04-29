@@ -1,5 +1,5 @@
 # coding=utf-8
-from Signal import _Signal
+from Signal import Signal
 from abc import abstractmethod as _abstract, ABCMeta as _ABCMeta
 from Utility import PhUI as _PhUI
 
@@ -35,13 +35,13 @@ class Algorithm(object):
         p = self.get_params_descriptors()
         for n in p:
             if n in self._params:
-                r, e = p[n](self._params[n])
+                r, e = p[n](self._params, n)
                 if not r:
-                    self._parameter_error = ValueError("Parameter error: " + e)
+                    self._parameter_error = ValueError("Error in parameters: " + e)
             else:
-                r, self._params[n] = p[n].not_present(n, self)
+                r, self._params[n] = p[n].not_present(self._params, n, self)
                 if not r:
-                    self._parameter_error = ValueError("Parameter error")
+                    self._parameter_error = ValueError("Error in parameters")
 
     def __call__(self, data):
         """
@@ -70,9 +70,11 @@ class Algorithm(object):
         @type use_cache: bool
         @return: The value of the feature.
         """
-        assert isinstance(data, _Signal), "The data must be a Signal."
         if type(params) is dict:
             kwargs.update(params)
+        if not isinstance(data, Signal):
+            _PhUI.w("The data is not a Signal. Optimization is not available and some errors may be caused by missing meta data (e.g. sampling frequency).")
+            use_cache = False
         if use_cache is True:
             Cache.cache_check(data)
             # noinspection PyTypeChecker
