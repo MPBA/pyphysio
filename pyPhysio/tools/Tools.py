@@ -207,9 +207,9 @@ class SignalRange(_Tool):
 
     Parameters
     ----------
-    win_len : int
+    win_len : float
         The length of the window (seconds)
-    win_step : int
+    win_step : float
         The increment to start the next window (seconds)
     smooth : boolean
         Whether to convolve the result with a gaussian window
@@ -251,8 +251,8 @@ class SignalRange(_Tool):
         return deltas
 
     _params_descriptors = {
-        'win_len': _Par(2, int, 'The length of the window (seconds)', 1, lambda x: x > 0),
-        'win_step': _Par(2, int, 'The increment to start the next window (seconds)', 1, lambda x: x > 0),
+        'win_len': _Par(2, float, 'The length of the window (seconds)', 1, lambda x: x > 0),
+        'win_step': _Par(2, float, 'The increment to start the next window (seconds)', 1, lambda x: x > 0),
         'smooth': _Par(1, bool, 'Whether to convolve the result with a gaussian window', True)
     }
 
@@ -383,9 +383,9 @@ class Energy(_Tool):
 
     Parameters
     ----------
-    win_len : int
+    win_len : float
         The dimension of the window    
-    win_step : int
+    win_step : float
         The increment indexes to start the next window
     smooth : boolean
         Whether to convolve the result with a gaussian window
@@ -428,8 +428,8 @@ class Energy(_Tool):
         return energy_out
 
     _params_descriptors = {
-        'win_len': _Par(2, int, 'The length of the window (seconds)', 1, lambda x: x > 0),
-        'win_step': _Par(2, int, 'The increment to start the next window (seconds)', 1, lambda x: x > 0),
+        'win_len': _Par(2, float, 'The length of the window (seconds)', 1, lambda x: x > 0),
+        'win_step': _Par(2, float, 'The increment to start the next window (seconds)', 1, lambda x: x > 0),
         'smooth': _Par(1, bool, 'Whether to convolve the result with a gaussian window', True)
     }
 
@@ -444,7 +444,7 @@ class Maxima(_Tool):
         Method to detect the maxima
     refractory : int
         Number of samples to skip after detection of a maximum (method = 'complete')
-    win_len : int
+    win_len : float
         Size of window in seconds (method = 'windowing')
     win_step : int
         Increment to start the next window in seconds (method = 'windowing')
@@ -507,6 +507,9 @@ class Maxima(_Tool):
         'method': _Par(2, 'Method to detect the maxima',
                        'complete',
                        lambda x: x in ['complete', 'windowing']),
+        
+        # FIX: Mi sembra che manchi il tipo di parametro nei parametri qui sotto:
+        
         'refractory': _Par(1, 'Number of samples to skip after detection of a maximum (method = "complete")',
                            1,
                            lambda x: x > 0,
@@ -532,9 +535,9 @@ class Minima(_Tool):
         Method to detect the minima
     refractory : int
         Number of samples to skip after detection of a maximum (method = 'complete')
-    win_len : int
+    win_len : float
         Size of window (method = 'windowing')
-    win_step : int
+    win_step : float
         Steps to start the next of window (method = 'windowing')
 
     Returns
@@ -594,6 +597,7 @@ class Minima(_Tool):
         'method': _Par(2, 'Method to detect the minima',
                        'complete',
                        lambda x: x in ['complete', 'windowing']),
+        # FIX: Mi sembra che manchi il tipo di parametro nei parametri qui sotto:
         'refractory': _Par(1, 'Number of samples to skip after detection of a maximum (method = "complete")',
                            1,
                            lambda x: x > 0,
