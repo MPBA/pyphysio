@@ -310,7 +310,7 @@ class PSD(_Tool):
         # Removed parameters equal to default
 
         method = params['method']
-        nfft = params['nfft']
+        nfft = params['nfft'] if "nfft" in params else None
         window = params['window']
         normalize = params['normalize']
         remove_mean = params['remove_mean']
