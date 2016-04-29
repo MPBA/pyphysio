@@ -36,57 +36,59 @@ class PeakDetection(_Tool):
 
     @classmethod
     def algorithm(cls, signal, params):
-        delta = params['delta']
         refractory = params['refractory']
-        start_max = params['start_max']
+        look_for_max = params['start_max']
 
-        if len(delta) != len(signal):
-            _PhUI.e("delta vector's length differs from signal's one.")
-            return _np.array([[], []]), _np.array([[], []])
+        deltas = params["deltas"] if "deltas" in params else None
+        delta = params["delta"] if "delta" in params else None
 
         mins = []
         maxs = []
 
-        # initialization
-        mn_candidate, mx_candidate = _np.Inf, -_np.Inf
-        mn_pos_candidate, mx_pos_candidate = _np.nan, _np.nan
+        if len(signal) < 1:
+            _PhUI.w("signal is too short (len < 1), returning empty.")
+        elif delta is None and len(deltas) != len(signal):
+            _PhUI.e("deltas vector's length differs from signal's one, returning empty.")
+        else:
+            mn_pos_candidate = mx_pos_candidate = 0
+            mn_candidate = mx_candidate = signal[0]
 
-        look_for_max = start_max
+            i_activation_min = 0
+            i_activation_max = 0
 
-        i_activation_max = 0
-        i_activation_min = 0
+            d = delta
 
-        i = 0
-        while i <= len(signal) - 1:
-            this = signal[i]
-            dd = delta[i]
+            for i in xrange(1, len(signal)):
+                sample = signal[i]
+                if delta is None:
+                    d = deltas[i]
 
-            if this > mx_candidate:
-                mx_candidate = this
-                mx_pos_candidate = i
-            if this < mn_candidate:
-                mn_candidate = this
-                mn_pos_candidate = i
-
-            if look_for_max:
-                if i >= i_activation_max and this < mx_candidate - dd:  # new max
-                    maxs.append((mx_pos_candidate, mx_candidate))
-                    i_activation_max = i + refractory
-
-                    mn_candidate = this
+                if sample > mx_candidate:
+                    mx_candidate = sample
+                    mx_pos_candidate = i
+                if sample < mn_candidate:
+                    mn_candidate = sample
                     mn_pos_candidate = i
 
-                    look_for_max = False
-            else:
-                if i >= i_activation_min and this > mn_candidate + dd:  # new min
-                    mins.append((mn_pos_candidate, mn_candidate))
-                    i_activation_min = i + refractory
+                if look_for_max:
+                    if i >= i_activation_max and sample < mx_candidate - d:  # new max
+                        maxs.append((mx_pos_candidate, mx_candidate))
+                        i_activation_max = i + refractory
 
-                    mx_candidate = this
-                    mx_pos_candidate = i
+                        mn_candidate = sample
+                        mn_pos_candidate = i
 
-                    look_for_max = True
-            i += 1
+                        look_for_max = False
+                else:
+                    if i >= i_activation_min and sample > mn_candidate + d:  # new min
+                        mins.append((mn_pos_candidate, mn_candidate))
+                        i_activation_min = i + refractory
+
+                        mx_candidate = sample
+                        mx_pos_candidate = i
+
+                        look_for_max = True
+
         return _np.array(maxs), _np.array(mins)
 
     _params_descriptors = {
@@ -95,12 +97,13 @@ class PeakDetection(_Tool):
                       0,
                       lambda x: x > 0,
                       lambda x, y: 'deltas' not in y),
-        'deltas': _Par(2, _np.array,
+        'deltas': _Par(2, list,
                        "Vector of the ranges of the signal to be used as local threshold",
                        activation=lambda x, y: 'delta' not in y),
-        'refractory': _Par(1, _np.int64,
+        'refractory': _Par(1, int,
                            "Number of samples to skip after detection of a peak",
-                           lambda x: x > 0),
+                           # TODO (Andrea): il refractory a default 0 va bene? O.o
+                           0, lambda x: x > 0),
         'start_max': _Par(0, bool, "Whether to start looking for a max.", True)
     }
 
