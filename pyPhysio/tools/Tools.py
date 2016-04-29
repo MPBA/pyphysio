@@ -332,11 +332,10 @@ class PSD(_Tool):
             win = _np.bartlett(l)
         elif window == 'hanning':
             win = _np.hanning(l)
-        elif window == 'none':
-            win = _np.ones(l)
         else:
-            _PhUI.w('Window type not understood, using none.')
             win = _np.ones(l)
+            if window != 'none':
+                _PhUI.w('Window type not understood, using none.')
 
         signal = signal * win
         if method == 'fft':
