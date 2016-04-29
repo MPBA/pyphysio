@@ -167,7 +167,7 @@ class IIRFilter(_Filter):
         sig_filtered = _EvenlySignal(_filtfilt(b, a, signal), signal.get_sampling_freq(), signal.get_signal_nature(),
                                      signal.get_start_time(), signal.get_metadata())
         if _np.isnan(sig_filtered[0]):
-            _PhUI.w('Filter parameters allow no solution. Returning original signal.')
+            _PhUI.w(cls.__name__ + ': Filter parameters allow no solution. Returning original signal.')
             return signal
         else:
             return sig_filtered

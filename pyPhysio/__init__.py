@@ -16,6 +16,15 @@ __author__ = "AleB"
 
 
 def fmap(segments, algorithms, alt_signal=None):
+    """
+    Generates a list composed of a list of results for each segment.
+
+    [[result for each algorithm] for each segment]
+    :param segments: An iterable of segments (e.g. an initialized SegmentGenerator)
+    :param algorithms: A list of algorithms
+    :param alt_signal: The signal that will be used instead of the one referenced in the segments
+    :return: A list containing a list for each segment containing a value for each algorithm
+    """
     return [[ind(seg(alt_signal)) for ind in algorithms] for seg in segments]
 
 
