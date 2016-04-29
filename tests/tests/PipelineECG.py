@@ -78,18 +78,16 @@ ecg_np_flt = flt_old.iir_filter(ecg_np, b, a)
 # NEW
 f_25_35 = flt_new.IIRFilter(fp = fp, fs = fs)
 ecg_pp_flt = f_25_35(ecg_pp) 
-#FIXME: ecg_pp_flt NON E' PIU' UN SIGNAL !!!!
-ecg_pp_flt = sig(ecg_pp_flt, fsamp, 'ECG')
 
-# filtering with bad settings
-fp = 25
-fs = 26
-f_25_26 = flt_new.IIRFilter(fp = fp, fs = fs)
-ecg_pp_flt = f_25_26(ecg_pp)
-ecg_pp_flt = f_25_26(ecg_pp) # La seconda volta non mi da il warning
+## filtering with bad settings
+#fp = 25
+#fs = 26
+#f_25_26 = flt_new.IIRFilter(fp = fp, fs = fs)
+#ecg_pp_flt = f_25_26(ecg_pp)
+#ecg_pp_flt = f_25_26(ecg_pp) # La seconda volta non mi da il warning
+##
 #
-
-ecg_pp_flt = f_25_35(ecg_pp)
+#ecg_pp_flt = f_25_35(ecg_pp)
 
 ecg_np = ecg_np_flt
 ecg_pp = ecg_pp_flt
@@ -97,30 +95,27 @@ ecg_pp = ecg_pp_flt
 #=============================
 # ESTIMATE DELTA
 # OLD
-#range_ecg_old = tll_old.estimate_delta(ecg_np, fsamp/2, fsamp, gauss_filt=False)
-#range_ecg_old = np.median(range_ecg_old*0.7)
+range_ecg_old = tll_old.estimate_delta(ecg_np, fsamp/2, fsamp, gauss_filt=False)
+range_ecg_old = np.median(range_ecg_old*0.7)
 # NEW
 range_estimator = tll_new.SignalRange(win_len = 1, win_step = 0.5, smooth = False)
 #ERRORE: Voleva parametri int, in realta' sono float. Corretto
 range_ecg_new = range_estimator(ecg_pp)
 range_ecg_new = np.median(range_ecg_new*0.7)
 
-#print(np.unique((range_ecg_old - range_ecg_new)))
+print(np.unique((range_ecg_old - range_ecg_new)))
 
 #=============================
 # PEAK DETECTION
 # OLD
-#idx_ibi_old, ibi_old = est_old.estimate_peaks_ecg(ecg_np, fsamp, range_ecg_old)
+idx_ibi_old, ibi_old = est_old.estimate_peaks_ecg(ecg_np, fsamp, range_ecg_old)
 # NEW
 
-# STRANI ERRORI
-ibi_estimator = est_new.BeatFromECG() #FIXME: Non da errore ma il default per bpm_max=1, dovrebbe essere 180
+ibi_estimator = est_new.BeatFromECG() #OK
+ibi_estimator = est_new.BeatFromECG(delta = range_ecg_new) #OK
+ibi_estimator = est_new.BeatFromECG(bpm_max = 120, delta = range_ecg_new) #OK
 
-ibi_estimator = est_new.BeatFromECG(delta = range_ecg_new) # OK usa il default (comunque sbagliato) per bpm_max
+ibi = ibi_estimator(ecg_pp) #FIXME: "The data is not a Signal." Falso
+#Mi dava errore controlla codice
 
-ibi_estimator = est_new.BeatFromECG(bpm_max = 180) #FIXME: ERRORE di difficile interpretazione
-
-
-# Provo comunque:
-ibi_estimator = est_new.BeatFromECG()
-ibi = ibi_estimator(ecg_pp) #FIXME: errore in pyPhysio/tools/Tools.py", line 244
+print(np.unique(ibi_old/fsamp - ibi.get_y_values())) # 0 OK
