@@ -6,9 +6,9 @@ import os
 
 import matplotlib.pyplot as plt
 
-#import pyphysio.Filters as flt_old
-#import pyphysio.Tools as tll_old
-#import pyphysio.Estimators as est_old
+import pyphysio.Filters as flt_old
+import pyphysio.Tools as tll_old
+import pyphysio.Estimators as est_old
 
 PYPHYSIODIR = '/home/andrea/Trento/CODICE/workspaces/pyHRV-AleB/pyHRV/pyHRV'
 
@@ -58,13 +58,13 @@ ecg_pp = sig(ecg_np, fsamp, 'ECG')
 # RESAMPLE
 fout = 128
 # OLD
-#ecg_np_res = flt_old.resample(ecg_np, fsamp, fout)
+ecg_np_res = flt_old.resample(ecg_np, fsamp, fout)
 # NEW
 ecg_pp_res = ecg_pp.resample(fout)
 
 #print(np.unique(ecg_np_res - ecg_pp_res)) # 0
 
-#ecg_np = ecg_np_res
+ecg_np = ecg_np_res
 ecg_pp = ecg_pp_res
 fsamp = 128
 
@@ -73,8 +73,8 @@ fsamp = 128
 fp = 25
 fs = 35
 # OLD
-#b, a = flt_old.iir_coefficients(fp, fs, fsamp, plot=True)
-#ecg_np_flt = flt_old.iir_filter(ecg_np, b, a)
+b, a = flt_old.iir_coefficients(fp, fs, fsamp, plot=False)
+ecg_np_flt = flt_old.iir_filter(ecg_np, b, a)
 # NEW
 f_25_35 = flt_new.IIRFilter(fp = fp, fs = fs)
 ecg_pp_flt = f_25_35(ecg_pp) 
@@ -91,7 +91,7 @@ ecg_pp_flt = f_25_26(ecg_pp) # La seconda volta non mi da il warning
 
 ecg_pp_flt = f_25_35(ecg_pp)
 
-#ecg_np = ecg_np_flt
+ecg_np = ecg_np_flt
 ecg_pp = ecg_pp_flt
 
 #=============================
