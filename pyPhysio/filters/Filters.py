@@ -162,7 +162,7 @@ class IIRFilter(_Filter):
         #    _PhUI.w('Filter parameters allow no solution')
         #    return signal
         # ---------
-        # FIXME (Ale): con _filtfilt signal perde la classe e rimane nparray
+        # FIXME: con _filtfilt signal perde la classe e rimane nparray
         # TODO (Andrea): va bene EvenlySignal?
         sig_filtered = _EvenlySignal(_filtfilt(b, a, signal), signal.get_sampling_freq(), signal.get_signal_nature(),
                                      signal.get_start_time(), signal.get_metadata())
@@ -303,7 +303,7 @@ class ConvolutionalFilter(_Filter):
         if normalize:
             irf = irf / _np.sum(irf)  # TODO (Andrea): account fsamp? TEST
 
-        # TODO (Ale): sicuri che dopo questa riga signal rimanga un nparray? No
+        # TODO: sicuri che dopo questa riga signal rimanga un nparray? No
         # TODO (Andrea): n non dovrebbe essere definita anche in caso di irftype == custom?
         signal_ = _np.r_[_np.ones(n) * signal[0], signal, _np.ones(n) * signal[-1]]  # TESTME
 

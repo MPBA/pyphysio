@@ -52,7 +52,7 @@ class Segment(object):
         if data is None:
             data = self._signal
         if self._end is None:
-            return data[self._begin:]  # TESTME: used to use the max time but it is with sample number
+            return data[self._begin:]  # TESTME: used to use the max time but it is with sample number now
         else:
             return data[self._begin:self._end]
 

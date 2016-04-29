@@ -4,7 +4,7 @@ from __future__ import division
 import numpy as _np
 from ..BaseIndicator import Indicator as _Indicator
 from ..Utility import PhUI as _PhUI
-from ..tools.Tools import PeakDetection as _PeakDetection, PeakSelection as _PeakSelection
+from ..tools.Tools import PeakDetection as _PeakDetection, PeakSelection as _PeakSelection, Durations, Slopes
 from ..Parameters import Parameter as _Par
 
 __author__ = 'AleB'
@@ -104,14 +104,7 @@ class DurationMin(_Indicator):
             _PhUI.w("len(idxs_start) == 0")
             return _np.nan
         else:
-            fsamp = data.get_sampling_freq()
-            durations = []
-            for I in range(len(idxs_start)):
-                if (_np.isnan(idxs_stop[I]) is False) & (_np.isnan(idxs_start[I]) is False):
-                    durations.append((idxs_stop[I] - idxs_start[
-                        I]) / fsamp)  # TODO: volendo si puo mettere in cache anche il calcolo di durations
-                else:
-                    durations.append(_np.nan)
+            durations = Durations(starts=idxs_start, stops=idxs_stop)(data)
             return _np.nanmin(_np.array(durations))
 
     _params_descriptors = {
@@ -140,15 +133,7 @@ class DurationMax(_Indicator):
             _PhUI.w("len(idxs_start) == 0")
             return _np.nan
         else:
-            fsamp = data.get_sampling_freq()
-            durations = []
-            for I in range(len(idxs_start)):
-                if (_np.isnan(idxs_stop[I]) is False) & (_np.isnan(idxs_start[I]) is False):
-                    durations.append((idxs_stop[I] - idxs_start[
-                        I]) / fsamp)  # TODO: volendo si puo mettere in cache anche il calcolo di durations
-                else:
-                    durations.append(_np.nan)
-
+            durations = Durations(starts=idxs_start, stops=idxs_stop)(data)
             return _np.nanmax(_np.array(durations))
 
     _params_descriptors = {
@@ -177,14 +162,7 @@ class DurationMean(_Indicator):
             _PhUI.w("len(idxs_start) == 0")
             return _np.nan
         else:
-            fsamp = data.get_sampling_freq()
-            durations = []
-            for I in range(len(idxs_start)):
-                if (_np.isnan(idxs_stop[I]) is False) & (_np.isnan(idxs_start[I]) is False):
-                    durations.append((idxs_stop[I] - idxs_start[
-                        I]) / fsamp)  # TODO: volendo si puo mettere in cache anche il calcolo di durations
-                else:
-                    durations.append(_np.nan)
+            durations = Durations(starts=idxs_start, stops=idxs_stop)(data)
             return _np.nanmean(_np.array(durations))
 
     _params_descriptors = {
@@ -213,16 +191,8 @@ class SlopeMin(_Indicator):
             _PhUI.w("len(idxs_start) == 0")
             return _np.nan
         else:
-            fsamp = data.get_sampling_freq()
             idxs_peak = maxs[:, 0]
-            slopes = []
-            for I in range(len(idxs_start)):
-                if (_np.isnan(idxs_peak[I]) is False) & (_np.isnan(idxs_start[I]) is False):
-                    dy = data[idxs_peak[I]] - data[idxs_start[I]]
-                    dt = (idxs_peak[I] - idxs_start[I]) / fsamp
-                    slopes.append(dy / dt)  # TODO: volendo si puo mettere in cache anche il calcolo delle slopes
-                else:
-                    slopes.append(_np.nan)  # TODO: volendo si puo mettere in cache anche il calcolo delle slopes
+            slopes = Slopes(starts=idxs_start, peaks=idxs_peak)(data)
             return _np.nanmin(_np.array(slopes))
 
     _params_descriptors = {
@@ -251,16 +221,8 @@ class SlopeMax(_Indicator):
             _PhUI.w("len(idxs_start) == 0")
             return _np.nan
         else:
-            fsamp = data.get_sampling_freq()
             idxs_peak = maxs[:, 0]
-            slopes = []
-            for I in range(len(idxs_start)):
-                if (_np.isnan(idxs_peak[I]) is False) & (_np.isnan(idxs_start[I]) is False):
-                    dy = data[idxs_peak[I]] - data[idxs_start[I]]
-                    dt = (idxs_peak[I] - idxs_start[I]) / fsamp
-                    slopes.append(dy / dt)  # TODO: volendo si puo mettere in cache anche il calcolo delle slopes
-                else:
-                    slopes.append(_np.nan)  # TODO: volendo si puo mettere in cache anche il calcolo delle slopes
+            slopes = Slopes(starts=idxs_start, peaks=idxs_peak)(data)
             return _np.nanmax(_np.array(slopes))
 
     _params_descriptors = {
@@ -289,16 +251,8 @@ class SlopeMean(_Indicator):
             _PhUI.w("len(idxs_start) == 0")
             return _np.nan
         else:
-            fsamp = data.get_sampling_freq()
             idxs_peak = maxs[:, 0]
-            slopes = []
-            for I in range(len(idxs_start)):
-                if (_np.isnan(idxs_peak[I]) is False) & (_np.isnan(idxs_start[I]) is False):
-                    dy = data[idxs_peak[I]] - data[idxs_start[I]]
-                    dt = (idxs_peak[I] - idxs_start[I]) / fsamp
-                    slopes.append(dy / dt)  # TODO: volendo si puo mettere in cache anche il calcolo delle slopes
-                else:
-                    slopes.append(_np.nan)  # TODO: volendo si puo mettere in cache anche il calcolo delle slopes
+            slopes = Slopes(starts=idxs_start, peaks=idxs_peak)(data)
             return _np.nanmean(_np.array(slopes))
 
     _params_descriptors = {

@@ -176,7 +176,7 @@ class FromEventsSegments(SegmentsGenerator):
         self._i = 0
         self._t = self._events.get_x_values(0)
 
-        # TODO: May be not so efficient but it is better than searchsorted (small k < n often smaller than log2(n))
+        # TESTME: May be not so efficient but it is better than searchsorted (small k < n often smaller than log2(n))
         while self._i < len(self._signal) and self._signal.get_x_values(self._i) < self._t:
             self._i += 1
 

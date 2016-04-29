@@ -250,7 +250,7 @@ class SignalRange(_Tool):
                                signal.get_start_time(), signal.get_metadata())
 
         if smooth:
-            deltas = _ConvFlt(irftype='gauss', win_len=win_len * 2, normalize=True)(deltas)  # TODO: check sintax
+            deltas = _ConvFlt(irftype='gauss', win_len=win_len * 2, normalize=True)(deltas)
 
         return deltas
 
@@ -308,8 +308,6 @@ class PSD(_Tool):
 
         fsamp = signal.get_sampling_freq()
 
-        # TODO: check signal type.
-        # TODO: if unevenly --> interpolate
         if not isinstance(signal, _EvenlySignal):
             signal = signal.to_evenly()
 
@@ -422,9 +420,9 @@ class Energy(_Tool):
 
         idx_interp = _np.r_[0, windows + round(idx_len / 2), len(signal)]
         energy = _np.array(energy)
-        # TODO: assumed ", 1," was the wanted fsamp
+        # TODO (Andrea): assumed ", 1," was the wanted fsamp
         # WAS: energy_out = flt.interpolate_unevenly(energy, idx_interp, 1, kind='linear')
-        energy_out = _UnevenlySignal(energy, idx_interp, 1).to_evenly(kind='linear').get_y_values()
+        energy_out = _UnevenlySignal(energy, idx_interp, 1).to_evenly().get_y_values()
 
         if smooth:
             energy_out = _ConvFlt(irftype='gauss', win_len=2 * win_len, normalize=True)(energy_out)
@@ -726,6 +724,51 @@ class BootstrapEstimation(_Tool):
     }
 
 
+class Durations(_Tool):
+    @classmethod
+    def algorithm(cls, data, params):
+        starts = params["starts"]
+        stops = params["stops"]
+
+        fsamp = data.get_sampling_freq()
+        durations = []
+        for I in range(len(starts)):
+            if (_np.isnan(stops[I]) is False) & (_np.isnan(starts[I]) is False):
+                durations.append((stops[I] - starts[
+                    I]) / fsamp)
+            else:
+                durations.append(_np.nan)
+        return durations
+
+    _params_descriptors = {
+        "starts": _Par(2, list, "Start indexes along the data"),
+        "stops": _Par(2, list, "Stop indexes along the data")
+    }
+
+
+class Slopes(_Tool):
+    @classmethod
+    def algorithm(cls, data, params):
+        starts = params["starts"]
+        peaks = params["peaks"]
+
+        fsamp = data.get_sampling_freq()
+        slopes = []
+        for I in range(len(starts)):
+            if (_np.isnan(peaks[I]) is False) & (_np.isnan(starts[I]) is False):
+                dy = data[peaks[I]] - data[starts[I]]
+                dt = (peaks[I] - starts[I]) / fsamp
+                slopes.append(dy / dt)
+            else:
+                slopes.append(_np.nan)
+        return slopes
+
+    _params_descriptors = {
+        "starts": _Par(2, list, "Start indexes along the data"),
+        "peaks": _Par(2, list, "Peak indexes along the data")
+    }
+
+
 # IBI Tools
 class BeatOutliers(_Tool):
     """
@@ -769,7 +812,6 @@ class BeatOutliers(_Tool):
         counter_bad = 0
 
         # missings = []
-        # TODO (Ale): giusta la sintassi?
         idx_ibi = signal.get_x_values()
         ibi = signal.get_y_values()
         for i in range(1, len(idx_ibi)):
@@ -1002,7 +1044,6 @@ class BeatOptimizer(_Tool):
         starts = _np.where(diff_idxs > 0)[0]
         stops = _np.where(diff_idxs < 0)[0] + 1
 
-        # TODO (Ale): is stops an array? It should
         if len(starts) > len(stops):
             stops = _np.r_[stops, starts[-1] + 1]
 
@@ -1235,7 +1276,7 @@ class OptimizeBateman(_Tool):
                 energy += energy_curr
         else:
             _PhUI.w('Peaks found but too near. Returning Inf')
-            return _np.Inf  # or 10000 #TODO: check if np.Inf does not raise errors
+            return _np.Inf  # or 10000 # TODO: check if np.Inf does not raise errors
 
         _PhUI.i('Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(energy))
         return energy

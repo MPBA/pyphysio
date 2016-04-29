@@ -10,7 +10,6 @@ from tools.Tools import *
 from segmentation.SegmentsGenerators import *
 import segmentation.SegmentsGenerators
 from BaseSegmentation import Segment
-from WindowsIterator import WindowsIterator
 from Signal import EvenlySignal, UnevenlySignal, SparseSignal
 
 __author__ = "AleB"

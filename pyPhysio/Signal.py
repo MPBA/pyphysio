@@ -2,7 +2,7 @@
 from __future__ import division
 import numpy as _np
 from scipy import interpolate as _interp
-from Utility import abstractmethod as _abstract
+from Utility import abstractmethod as _abstract, PhUI as _PhUI
 
 __author__ = 'AleB'
 
@@ -262,8 +262,10 @@ class UnevenlySignal(_XYSignal):
         length = self.get_original_length() if length is None else length
         if new_fsamp is None:
             new_fsamp = self.get_sampling_freq()
-        # TODO: check that the computed length is bigger than the data_x one
         data_x = self.get_x_values() / new_fsamp
+        # check that the computed length is bigger than the data_x one
+        if length < len(data_x):
+            _PhUI.w("The signal's original length or passed length is higher than the current.")
         data_y = self.get_y_values()
 
         # Add padding
@@ -285,22 +287,6 @@ class UnevenlySignal(_XYSignal):
         sig_out = EvenlySignal(sig_out, self.get_sampling_freq(), self.get_signal_nature(), self.get_start_time(),
                                self.get_metadata())
         return sig_out
-
-    # Works with timestamps
-    def getslice(self, f, l):
-        # find f & l indexes of indexes, TODO check if searchsorted == len(arg)
-        f = _np.searchsorted(self.get_x_values(), f)
-        l = _np.searchsorted(self.get_x_values, l)
-        return UnevenlySignal(self[f:l], self.get_x_values()[f:l], self.get_sampling_freq(), self.get_duration(),
-                              self.get_signal_nature(), check=False)
-
-    # # Works with timestamps
-    # def getslice(self, f, l):
-    #     # find f & l indexes of indexes
-    #     f = _np.searchsorted(self.get_x_values(), f)
-    #     l = _np.searchsorted(self.get_x_values(), l)
-    #     return UnevenlySignal(self[f:l], self.get_x_values()[f:l], self.get_signal_nature())
-
 
 # Not used
 # class EventsSignal(UnevenlyTimeSignal):
