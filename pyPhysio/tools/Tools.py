@@ -342,9 +342,6 @@ class PSD(_Tool):
             spec_tmp = _np.abs(_np.fft.fft(signal, n=nfft)) ** 2  # FFT
             psd = spec_tmp[0:(_np.ceil(len(spec_tmp) / 2))]
 
-        elif method == 'welch':
-            bands_w, psd = _welch(signal, fsamp, nfft=nfft)
-
         elif method == 'ar':
             min_order = params['min_order']
             max_order = params['max_order']
@@ -363,6 +360,11 @@ class PSD(_Tool):
             psd = _arma2psd(ar, NFFT=nfft)
             psd = psd[0: _np.ceil(len(psd) / 2)]
 
+        else:
+            bands_w, psd = _welch(signal, fsamp, nfft=nfft)
+            if method != 'welch':
+                _PhUI.w('Method not understood, using welch.')
+
         freqs = _np.linspace(start=0, stop=fsamp / 2, num=len(psd))
 
         # NORMALIZE
@@ -379,7 +381,7 @@ class PSD(_Tool):
                           10,
                           lambda x: x > 0,
                           lambda x, y: "method" in y and y["method"] == "ar"),
-        #'nfft': _Par(1, int, 'Number of samples in the PSD', 2048, lambda x: x > 0),
+        # 'nfft': _Par(1, int, 'Number of samples in the PSD', 2048, lambda x: x > 0),
         'window': _Par(1, str, 'Type of window to adapt the signal before estimation of the PSD',
                        'hamming', lambda x: x in PSD._window_list),
         'normalize': _Par(1, bool, 'Whether to normalize the PSD', True),
