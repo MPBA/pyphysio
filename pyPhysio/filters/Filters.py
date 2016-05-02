@@ -162,7 +162,7 @@ class IIRFilter(_Filter):
         #    _PhUI.w('Filter parameters allow no solution')
         #    return signal
         # ---------
-        # FIXME: con _filtfilt signal perde la classe e rimane nparray
+        # FIXME: con _filtfilt signal perde la classe e rimane array
         # TODO (Andrea): va bene EvenlySignal?
         sig_filtered = _EvenlySignal(_filtfilt(b, a, signal), signal.get_sampling_freq(), signal.get_signal_nature(),
                                      signal.get_start_time(), signal.get_metadata())
@@ -196,7 +196,7 @@ class MatchedFilter(_Filter):
 
     Parameters
     ----------
-    template : nparray
+    template : array
         The template for matched filter (not reversed)
 
     Returns
@@ -240,7 +240,7 @@ class ConvolutionalFilter(_Filter):
         Whether to normalizes the IRF to have unitary area
     win_len : int
         Durarion of the generated IRF in seconds (if irftype is not 'custom')
-    irf : nparray
+    irf : array
         IRF to be used if irftype is 'custom'
     
     Returns
@@ -303,7 +303,7 @@ class ConvolutionalFilter(_Filter):
         if normalize:
             irf = irf / _np.sum(irf)  # TODO (Andrea): account fsamp? TEST
 
-        # TODO: sicuri che dopo questa riga signal rimanga un nparray? No
+        # TODO: sicuri che dopo questa riga signal rimanga un array? No
         # TODO (Andrea): n non dovrebbe essere definita anche in caso di irftype == custom?
         signal_ = _np.r_[_np.ones(n) * signal[0], signal, _np.ones(n) * signal[-1]]  # TESTME
 
@@ -338,14 +338,14 @@ class DeConvolutionalFilter(_Filter):
 
     Parameters
     ----------
-    irf : nparray
+    irf : array
         IRF used to deconvolve the signal
     normalize : boolean
         Whether to normalize the IRF to have unitary area
 
     Returns
     -------
-    filtered_signal : nparray
+    filtered_signal : array
         The filtered signal
 
     Notes
@@ -386,7 +386,7 @@ class DeConvolutionalFilter(_Filter):
 #
 #     Parameters
 #     ----------
-#     signal : nparray
+#     signal : array
 #         The input signal
 #     winlen : int
 #         Size of the window
@@ -395,7 +395,7 @@ class DeConvolutionalFilter(_Filter):
 #
 #     Returns
 #     -------
-#     thresholded_signal : nparray
+#     thresholded_signal : array
 #         The thresholded signal
 #
 #
