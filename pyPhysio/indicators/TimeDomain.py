@@ -153,7 +153,7 @@ class Triang(_Indicator):
         min_ibi = _np.min(data)
         max_ibi = _np.max(data)
         if max_ibi - min_ibi / step + 1 < 10:
-            _PhUI.w("len(bins) < 10")
+            cls.warn("len(bins) < 10")
             return _np.nan
         else:
             bins = _np.arange(min_ibi, max_ibi, step)
@@ -172,7 +172,7 @@ class TINN(_Indicator):
         min_ibi = _np.min(data)
         max_ibi = _np.max(data)
         if max_ibi - min_ibi / step + 1 < 10:
-            _PhUI.w("len(bins) < 10")
+            cls.warn("len(bins) < 10")
             return _np.nan
         else:
             bins = _np.arange(min_ibi, max_ibi, step)

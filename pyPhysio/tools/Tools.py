@@ -46,9 +46,9 @@ class PeakDetection(_Tool):
         maxs = []
 
         if len(signal) < 1:
-            _PhUI.w("signal is too short (len < 1), returning empty.")
+            cls.warn("signal is too short (len < 1), returning empty.")
         elif delta is None and len(deltas) != len(signal):
-            _PhUI.e("deltas vector's length differs from signal's one, returning empty.")
+            cls.error("deltas vector's length differs from signal's one, returning empty.")
         else:
             mn_pos_candidate = mx_pos_candidate = 0
             mn_candidate = mx_candidate = signal[0]
@@ -141,14 +141,14 @@ class PeakSelection(_Tool):
         i_stop = _np.empty(len(i_peaks), int)
 
         if r == 0:
-            _PhUI.e('Empty peaks array, returning empty.')
+            cls.error('Empty peaks array, returning empty.')
         else:
             signal_dt = _Diff()(signal)
             for i in xrange(len(i_peaks)):
                 i_pk = int(i_peaks[i])
 
                 if i_pk < i_pre_max or i_pk >= len(signal_dt) - i_post_max:
-                    _PhUI.i('Peak at start/end of signal, not accounting')
+                    cls.log('Peak at start/end of signal, not accounting')
 
                     # TODO (Andrea): astype(int) converte i nan in -9223372036854775808, l'ho tolto, vanno bene i -1?
                     # Perché il nan non c'è tra gli int
@@ -224,7 +224,7 @@ class SignalRange(_Tool):
         idx_step = int(win_step * fsamp)
 
         if len(signal) < idx_len:
-            _PhUI.w("Input signal is shorter than the window length.")
+            cls.warn("Input signal is shorter than the window length.")
             return _np.max(signal) - _np.min(signal)
         else:
             # TODO (Andrea): con la next line si esclude l'ultima finestra
@@ -243,7 +243,7 @@ class SignalRange(_Tool):
             for start in windows:
                 portion_curr = signal[start:start + idx_len]
                 curr_delta = _np.max(portion_curr) - _np.min(portion_curr)
-                # TODO (Andrea): below
+                # TODO (Andrea): below (anche in Energy
                 # 1) Permettere con l'attriuto win_step > win_len l'overlap delle finestre forse
                 # non ha senso perché la parte di overlap viene sovrascritta dalla prossima riga;
                 # a meno che:
@@ -335,15 +335,12 @@ class PSD(_Tool):
         else:
             win = _np.ones(l)
             if window != 'none':
-                _PhUI.w('Window type not understood, using none.')
+                cls.warn('Window type not understood, using none.')
 
         signal = signal * win
         if method == 'fft':
             spec_tmp = _np.abs(_np.fft.fft(signal, n=nfft)) ** 2  # FFT
             psd = spec_tmp[0:(_np.ceil(len(spec_tmp) / 2))]
-
-        elif method == 'welch':
-            bands_w, psd = _welch(signal, fsamp, nfft=nfft)
 
         elif method == 'ar':
             min_order = params['min_order']
@@ -362,6 +359,11 @@ class PSD(_Tool):
             ar, p, k = _aryule(signal, best_order)
             psd = _arma2psd(ar, NFFT=nfft)
             psd = psd[0: _np.ceil(len(psd) / 2)]
+
+        else:
+            bands_w, psd = _welch(signal, fsamp, nfft=nfft)
+            if method != 'welch':
+                cls.warn('Method not understood, using welch.')
 
         freqs = _np.linspace(start=0, stop=fsamp / 2, num=len(psd))
 
@@ -394,7 +396,7 @@ class Energy(_Tool):
     Parameters
     ----------
     win_len : float
-        The dimension of the window    
+        The dimension of the window
     win_step : float
         The increment indexes to start the next window
     smooth : boolean
@@ -407,27 +409,26 @@ class Energy(_Tool):
     """
 
     @classmethod
-    def algorithm(cls, signal, params):
-        fsamp = signal.get_sampling_freq()
+    def algorithm(cls, signal, params):  # TESTME
         win_len = params['win_len']
         win_step = params['win_step']
-        idx_len = win_len * fsamp
-        idx_step = win_step * fsamp
         smooth = params['smooth']
 
-        windows = _np.arange(0, len(signal) - idx_len, idx_step)
+        fsamp = signal.get_sampling_freq()
+        idx_len = win_len * fsamp
+        idx_step = win_step * fsamp
 
-        energy = []
-        curr_energy = None
-        for start in windows:
+        windows = _np.arange(0, len(signal) - idx_len + 1, idx_step)
+
+        energy = _np.empty(len(windows) + 2)
+        for i in xrange(1, len(windows) + 1):
+            start = windows[i - 1]
             portion_curr = signal[start: start + idx_len]
-            curr_energy = _np.sum(_np.power(portion_curr, 2)) / len(portion_curr)
-            energy.append(curr_energy)
-        energy.append(curr_energy)
-        energy.insert(0, energy[0])
+            energy[i] = _np.sum(_np.power(portion_curr, 2)) / len(portion_curr)
+        energy[0] = energy[1]
+        energy[-1] = energy[-2]
 
         idx_interp = _np.r_[0, windows + round(idx_len / 2), len(signal)]
-        energy = _np.array(energy)
         # TODO (Andrea): assumed ", 1," was the wanted fsamp
         # WAS: energy_out = flt.interpolate_unevenly(energy, idx_interp, 1, kind='linear')
         energy_out = _UnevenlySignal(energy, idx_interp, 1).to_evenly().get_y_values()
@@ -435,7 +436,7 @@ class Energy(_Tool):
         if smooth:
             energy_out = _ConvFlt(irftype='gauss', win_len=2 * win_len, normalize=True)(energy_out)
 
-        return energy_out
+        return energy_out.get_y_values()
 
     _params_descriptors = {
         'win_len': _Par(2, float, 'The length of the window (seconds)', 1, lambda x: x > 0),
@@ -1193,7 +1194,7 @@ class OptimizeBateman(_Tool):
             x0, loss_x0, grid, loss_grid = _opt.brute(OptimizeBateman._loss_function, rranges, args=(signal, delta, min_T1, max_T2),
                                                       finish=None, full_output=True)
         else:
-            _PhUI.e("opt_method not understood")
+            cls.error("opt_method not understood")
             return None
 
         if complete:
@@ -1240,7 +1241,7 @@ class OptimizeBateman(_Tool):
         if len(maxs) != 0:
             idx_maxs = maxs[:, 0]
         else:
-            _PhUI.w('Unable to find peaks in driver signal for computation of Energy. Returning Inf')
+            OptimizeBateman.warn('Unable to find peaks in driver signal for computation of Energy. Returning Inf')
             return _np.Inf  # or 10000 #TODO: check if np.Inf does not raise errors
 
         # STAGE 1: select maxs distant from the others
@@ -1283,10 +1284,10 @@ class OptimizeBateman(_Tool):
 
                 energy += energy_curr
         else:
-            _PhUI.w('Peaks found but too near. Returning Inf')
+            OptimizeBateman.warn('Peaks found but too near. Returning Inf')
             return _np.Inf  # or 10000 # TODO: check if np.Inf does not raise errors
 
-        _PhUI.i('Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(energy))
+        OptimizeBateman.log('Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(energy))
         return energy
 
     _params_descriptors = {

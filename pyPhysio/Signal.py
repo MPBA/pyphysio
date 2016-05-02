@@ -269,7 +269,7 @@ class UnevenlySignal(_XYSignal):
         data_x = self.get_x_values() / new_fsamp
         # check that the computed length is bigger than the data_x one
         if length < len(data_x):
-            _PhUI.w("The signal's original length or passed length is higher than the current.")
+            _PhUI.w("Signal: the original length is higher than the current.")
         data_y = self.get_y_values()
 
         # Add padding
