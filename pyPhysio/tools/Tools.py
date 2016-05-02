@@ -381,7 +381,7 @@ class PSD(_Tool):
                           10,
                           lambda x: x > 0,
                           lambda x, y: "method" in y and y["method"] == "ar"),
-        # 'nfft': _Par(1, int, 'Number of samples in the PSD', 2048, lambda x: x > 0),
+        'nfft': _Par(1, int, 'Number of samples in the PSD', 2048, lambda x: x > 0),
         'window': _Par(1, str, 'Type of window to adapt the signal before estimation of the PSD',
                        'hamming', lambda x: x in PSD._window_list),
         'normalize': _Par(1, bool, 'Whether to normalize the PSD', True),
