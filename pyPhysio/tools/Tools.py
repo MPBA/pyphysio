@@ -243,7 +243,7 @@ class SignalRange(_Tool):
             for start in windows:
                 portion_curr = signal[start:start + idx_len]
                 curr_delta = _np.max(portion_curr) - _np.min(portion_curr)
-                # TODO (Andrea): below
+                # TODO (Andrea): below (anche in Energy
                 # 1) Permettere con l'attriuto win_step > win_len l'overlap delle finestre forse
                 # non ha senso perché la parte di overlap viene sovrascritta dalla prossima riga;
                 # a meno che:
@@ -396,7 +396,7 @@ class Energy(_Tool):
     Parameters
     ----------
     win_len : float
-        The dimension of the window    
+        The dimension of the window
     win_step : float
         The increment indexes to start the next window
     smooth : boolean
@@ -409,27 +409,26 @@ class Energy(_Tool):
     """
 
     @classmethod
-    def algorithm(cls, signal, params):
-        fsamp = signal.get_sampling_freq()
+    def algorithm(cls, signal, params): # TESTME
         win_len = params['win_len']
         win_step = params['win_step']
-        idx_len = win_len * fsamp
-        idx_step = win_step * fsamp
         smooth = params['smooth']
 
-        windows = _np.arange(0, len(signal) - idx_len, idx_step)
+        fsamp = signal.get_sampling_freq()
+        idx_len = win_len * fsamp
+        idx_step = win_step * fsamp
 
-        energy = []
-        curr_energy = None
-        for start in windows:
+        windows = _np.arange(0, len(signal) - idx_len + 1, idx_step)
+
+        energy = _np.empty(len(windows) + 2)
+        for i in xrange(1, len(windows) + 1):
+            start = windows[i - 1]
             portion_curr = signal[start: start + idx_len]
-            curr_energy = _np.sum(_np.power(portion_curr, 2)) / len(portion_curr)
-            energy.append(curr_energy)
-        energy.append(curr_energy)
-        energy.insert(0, energy[0])
+            energy[i] = _np.sum(_np.power(portion_curr, 2)) / len(portion_curr)
+        energy[0] = energy[1]
+        energy[-1] = energy[-2]
 
         idx_interp = _np.r_[0, windows + round(idx_len / 2), len(signal)]
-        energy = _np.array(energy)
         # TODO (Andrea): assumed ", 1," was the wanted fsamp
         # WAS: energy_out = flt.interpolate_unevenly(energy, idx_interp, 1, kind='linear')
         energy_out = _UnevenlySignal(energy, idx_interp, 1).to_evenly().get_y_values()
@@ -437,7 +436,7 @@ class Energy(_Tool):
         if smooth:
             energy_out = _ConvFlt(irftype='gauss', win_len=2 * win_len, normalize=True)(energy_out)
 
-        return energy_out
+        return energy_out.get_y_values()
 
     _params_descriptors = {
         'win_len': _Par(2, float, 'The length of the window (seconds)', 1, lambda x: x > 0),
