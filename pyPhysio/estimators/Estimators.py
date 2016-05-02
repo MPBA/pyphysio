@@ -90,7 +90,7 @@ class BeatFromBP(_Estimator):
                 peak = idx_mins[1]
                 true_peaks.append(start_ + peak_obs + peak)
             else:
-                _PhUI.w('Peak not found; idx_beat: ' + str(idx_beat))
+                cls.warn('Peak not found; idx_beat: ' + str(idx_beat))
                 pass
 
         # STAGE 4 - FINALIZE computing IBI and fixing indexes

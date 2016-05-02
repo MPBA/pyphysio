@@ -46,9 +46,9 @@ class PeakDetection(_Tool):
         maxs = []
 
         if len(signal) < 1:
-            _PhUI.w("signal is too short (len < 1), returning empty.")
+            cls.warn("signal is too short (len < 1), returning empty.")
         elif delta is None and len(deltas) != len(signal):
-            _PhUI.e("deltas vector's length differs from signal's one, returning empty.")
+            cls.error("deltas vector's length differs from signal's one, returning empty.")
         else:
             mn_pos_candidate = mx_pos_candidate = 0
             mn_candidate = mx_candidate = signal[0]
@@ -141,14 +141,14 @@ class PeakSelection(_Tool):
         i_stop = _np.empty(len(i_peaks), int)
 
         if r == 0:
-            _PhUI.e('Empty peaks array, returning empty.')
+            cls.error('Empty peaks array, returning empty.')
         else:
             signal_dt = _Diff()(signal)
             for i in xrange(len(i_peaks)):
                 i_pk = int(i_peaks[i])
 
                 if i_pk < i_pre_max or i_pk >= len(signal_dt) - i_post_max:
-                    _PhUI.i('Peak at start/end of signal, not accounting')
+                    cls.log('Peak at start/end of signal, not accounting')
 
                     # TODO (Andrea): astype(int) converte i nan in -9223372036854775808, l'ho tolto, vanno bene i -1?
                     # Perché il nan non c'è tra gli int
@@ -224,7 +224,7 @@ class SignalRange(_Tool):
         idx_step = int(win_step * fsamp)
 
         if len(signal) < idx_len:
-            _PhUI.w("Input signal is shorter than the window length.")
+            cls.warn("Input signal is shorter than the window length.")
             return _np.max(signal) - _np.min(signal)
         else:
             # TODO (Andrea): con la next line si esclude l'ultima finestra
@@ -335,7 +335,7 @@ class PSD(_Tool):
         else:
             win = _np.ones(l)
             if window != 'none':
-                _PhUI.w('Window type not understood, using none.')
+                cls.warn('Window type not understood, using none.')
 
         signal = signal * win
         if method == 'fft':
@@ -363,7 +363,7 @@ class PSD(_Tool):
         else:
             bands_w, psd = _welch(signal, fsamp, nfft=nfft)
             if method != 'welch':
-                _PhUI.w('Method not understood, using welch.')
+                cls.warn('Method not understood, using welch.')
 
         freqs = _np.linspace(start=0, stop=fsamp / 2, num=len(psd))
 
@@ -409,7 +409,7 @@ class Energy(_Tool):
     """
 
     @classmethod
-    def algorithm(cls, signal, params): # TESTME
+    def algorithm(cls, signal, params):  # TESTME
         win_len = params['win_len']
         win_step = params['win_step']
         smooth = params['smooth']
@@ -1194,7 +1194,7 @@ class OptimizeBateman(_Tool):
             x0, loss_x0, grid, loss_grid = _opt.brute(OptimizeBateman._loss_function, rranges, args=(signal, delta, min_T1, max_T2),
                                                       finish=None, full_output=True)
         else:
-            _PhUI.e("opt_method not understood")
+            cls.error("opt_method not understood")
             return None
 
         if complete:
@@ -1241,7 +1241,7 @@ class OptimizeBateman(_Tool):
         if len(maxs) != 0:
             idx_maxs = maxs[:, 0]
         else:
-            _PhUI.w('Unable to find peaks in driver signal for computation of Energy. Returning Inf')
+            OptimizeBateman.warn('Unable to find peaks in driver signal for computation of Energy. Returning Inf')
             return _np.Inf  # or 10000 #TODO: check if np.Inf does not raise errors
 
         # STAGE 1: select maxs distant from the others
@@ -1284,10 +1284,10 @@ class OptimizeBateman(_Tool):
 
                 energy += energy_curr
         else:
-            _PhUI.w('Peaks found but too near. Returning Inf')
+            OptimizeBateman.warn('Peaks found but too near. Returning Inf')
             return _np.Inf  # or 10000 # TODO: check if np.Inf does not raise errors
 
-        _PhUI.i('Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(energy))
+        OptimizeBateman.log('Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(energy))
         return energy
 
     _params_descriptors = {

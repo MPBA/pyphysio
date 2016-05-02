@@ -14,6 +14,7 @@ class Algorithm(object):
 
     _params_descriptors = {}
     _parameter_error = None
+    _logger = None
 
     def __init__(self, params=None, **kwargs):
         """
@@ -82,23 +83,6 @@ class Algorithm(object):
         else:
             return cls.algorithm(data, kwargs)
 
-    @classmethod
-    def cache_hash(cls, params):
-        """
-        This method computes an hash to use as a part of the key in the cache starting from the parameters used by the
-        feature. Uses the method _utility_hash([par1,...parN])
-        This class is abstract.
-        @return: The hash of the parameters used by the feature.
-        :param params:
-        """
-        p = params.copy()
-        p.update({'': str(cls)})
-        return cls._utility_hash(p)
-
-    @staticmethod
-    def _utility_hash(x):
-        return str(x).replace('\'', '')
-
     def get_params(self):
         """
         Placeholder for the subclasses
@@ -135,9 +119,57 @@ class Algorithm(object):
         """
         pass
 
+    @classmethod
+    def cache_hash(cls, params):
+        """
+        This method computes an hash to use as a part of the key in the cache starting from the parameters used by the
+        feature. Uses the method _utility_hash([par1,...parN])
+        This class is abstract.
+        @return: The hash of the parameters used by the feature.
+        :param params:
+        """
+        p = params.copy()
+        p.update({'': str(cls)})
+        return cls._utility_hash(p)
+
+    @staticmethod
+    def _utility_hash(x):
+        return str(x).replace('\'', '')
+
+    @classmethod
+    def log(cls, message):
+        _PhUI.i(cls.__name__ + ": " + message)
+        cls._logger((_PhUI.i, cls.__name__ + ": " + message))
+
+    @classmethod
+    def warn(cls, message):
+        _PhUI.w(cls.__name__ + ": " + message)
+        if cls._logger is not None:
+            cls._logger((_PhUI.w, cls.__name__ + ": " + message))
+
+    @classmethod
+    def error(cls, message, raise_error=False):
+        _PhUI.e(cls.__name__ + ": " + message)
+        if raise_error:
+            raise
+        else:
+            cls._logger((_PhUI.e, cls.__name__ + ": " + message))
+
+    @classmethod
+    def set_logger(cls, logger):
+        cls._logger = logger
+
+    @classmethod
+    def unset_logger(cls):
+        cls._logger = None
+
+    @classmethod
+    def emulate_log(cls, log):
+        map(lambda (f, m): f(m), log)
+
 
 class Cache(object):
-    """ Class that gives a cache support. Uses Feature."""
+    """ Class that gives a cache support."""
 
     def __init__(self):
         pass
@@ -182,6 +214,15 @@ class Cache(object):
         @return: The data or None
         """
         hh = calculator.cache_hash(params)
+        log = []
+
         if hh not in self._cache:
-            self._cache[hh] = calculator.algorithm(self, params)
-        return self._cache[hh]
+            calculator.set_logger(lambda x: log.append(x))
+            val = calculator.algorithm(self, params)
+            self._cache[hh] = (val, log)
+            calculator.unset_logger()
+        else:
+            val, log = self._cache[hh]
+            calculator.emulate_log(log)
+        return val
+
