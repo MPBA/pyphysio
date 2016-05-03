@@ -14,7 +14,7 @@ class Algorithm(object):
 
     _params_descriptors = {}
     _parameter_error = None
-    _logger = None
+    _log = None
 
     def __init__(self, params=None, **kwargs):
         """
@@ -138,30 +138,36 @@ class Algorithm(object):
 
     @classmethod
     def log(cls, message):
-        _PhUI.i(cls.__name__ + ": " + message)
-        cls._logger((_PhUI.i, cls.__name__ + ": " + message))
+        l = (_PhUI.i, cls.__name__ + ": " + message)
+        cls.emulate_log([l])
+        if cls._log is not None:
+            cls._log.append(l)
 
     @classmethod
     def warn(cls, message):
-        _PhUI.w(cls.__name__ + ": " + message)
-        if cls._logger is not None:
-            cls._logger((_PhUI.w, cls.__name__ + ": " + message))
+        l = (_PhUI.w, cls.__name__ + ": " + message)
+        cls.emulate_log([l])
+        if cls._log is not None:
+            cls._log.append(l)
 
     @classmethod
     def error(cls, message, raise_error=False):
-        _PhUI.e(cls.__name__ + ": " + message)
+        l = (_PhUI.e, cls.__name__ + ": " + message)
+        cls.emulate_log([l])
+        if cls._log is not None:
+            cls._log.append(l)
         if raise_error:
             raise
-        else:
-            cls._logger((_PhUI.e, cls.__name__ + ": " + message))
 
     @classmethod
-    def set_logger(cls, logger):
-        cls._logger = logger
+    def set_logger(cls):
+        cls._log = []
 
     @classmethod
     def unset_logger(cls):
-        cls._logger = None
+        u = cls._log
+        cls._log = None
+        return u
 
     @classmethod
     def emulate_log(cls, log):
@@ -214,13 +220,12 @@ class Cache(object):
         @return: The data or None
         """
         hh = calculator.cache_hash(params)
-        log = []
 
         if hh not in self._cache:
-            calculator.set_logger(lambda x: log.append(x))
+            calculator.set_logger()
             val = calculator.algorithm(self, params)
+            log = calculator.unset_logger()
             self._cache[hh] = (val, log)
-            calculator.unset_logger()
         else:
             val, log = self._cache[hh]
             calculator.emulate_log(log)
