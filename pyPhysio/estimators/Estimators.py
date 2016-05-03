@@ -158,7 +158,7 @@ class BeatFromECG(_Estimator):
 
         refractory = int(fsamp / fmax)
 
-        maxp, minp = _PeakDetection(delta=delta, refractory=refractory, start_max=True)(signal)
+        maxp, minp = _PeakDetection(deltas=delta, refractory=refractory, start_max=True)(signal)
 
         idx_d = maxp[:, 0]
 
