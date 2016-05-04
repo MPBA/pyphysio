@@ -5,6 +5,7 @@ from ..BaseIndicator import Indicator as _Indicator
 from ..tools.Tools import PSD as PSD
 import numpy as _np
 from ..Parameters import Parameter as _Par
+from ..Signal import UnevenlySignal as _UnevenlySignal, EvenlySignal as _EvenlySignal
 
 __author__ = 'AleB'
 
@@ -20,6 +21,7 @@ class InBand(_Indicator):
         i_min = _np.searchsorted(freq, params["freq_min"])
         i_max = _np.searchsorted(freq, params["freq_max"])
 
+
         return freq[i_min:i_max], spec[i_min:i_max]
 
     _params_descriptors = {
@@ -31,10 +33,10 @@ class InBand(_Indicator):
 class PowerInBand(_Indicator):
     @classmethod
     def algorithm(cls, data, params):
-        freq, pow = InBand(params)(data)
+        freq, power = InBand(params)(data) #pow e' una keyword
         df = freq[1] - freq[0]
         # TODO (Andrea) Decidere se e come normalizzare
-        return df * _np.sum(pow)
+        return df * _np.sum(power)
 
     _params_descriptors = InBand.get_params_descriptors()
 

@@ -317,8 +317,9 @@ class PSD(_Tool):
 
         fsamp = signal.get_sampling_freq()
 
-        if not isinstance(signal, _EvenlySignal):
-            signal = signal.to_evenly()
+        if not isinstance(data, _EvenlySignal):
+	    #TODO (new function) lomb scargle
+            data = data.to_evenly(params)
 
         l = len(signal)
         if remove_mean:
