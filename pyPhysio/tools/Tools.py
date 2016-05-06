@@ -1,7 +1,8 @@
 # coding=utf-8
 from __future__ import division
 import numpy as _np
-import asa as _asa
+#import asa as _asa #TODO (Ale): NON USO PIU ASA
+import sys as _sys
 from scipy.signal import welch as _welch
 import scipy.optimize as _opt
 from spectrum import aryule as _aryule, arma2psd as _arma2psd, AIC as _AIC
@@ -1167,39 +1168,40 @@ class OptimizeBateman(_Tool):
     def algorithm(cls, signal, params):
         opt_method = params['opt_method']
         complete = params['complete']
-        par_ranges = params['par_ranegs']
+        par_ranges = params['pars_ranges']
         maxiter = params['maxiter']
         n_step = params['n_step']
         delta = params['delta']
-        min_pars = params['fmin_params']
+        min_pars = params['fmin_params'] #TODO (Ale) :default should be {}
+        min_pars=dict()
 
-        min_T1 = par_ranges[0]
-        max_T1 = par_ranges[1]
+        min_T1 = float(par_ranges[0])
+        max_T1 = float(par_ranges[1])
 
-        min_T2 = par_ranges[2]
-        max_T2 = par_ranges[3]
-
+        min_T2 = float(par_ranges[2])
+        max_T2 = float(par_ranges[3])
+        
         if opt_method == 'asa':
             T1 = 0.75
-            T2 = 2
+            T2 = 2.
             if maxiter == 0:
-                maxiter = 99999
-            x0, loss_x0, exit_code, asa_opts = _asa.asa(OptimizeBateman._loss_function, _np.array([T1, T2]),
-                                                        xmin=_np.array([min_T1, min_T2]),
-                                                        xmax=_np.array([max_T1, max_T2]), full_output=True,
-                                                        limit_generated=maxiter, args=(signal, delta, min_T1, max_T2))
+                maxiter = 200
+            bounds = [(min_T1, max_T1), (min_T2, max_T2)]
+            x_opt = _opt.basinhopping(OptimizeBateman._loss_function, [T1, T2], niter=maxiter, T = 10, stepsize=2, minimizer_kwargs={'method':"L-BFGS-B", 'bounds':bounds, 'args':(signal, delta, min_T1, max_T1, min_T2, max_T2)})
+            x0 = x_opt.x
+            loss_x0 = float(x_opt.fun)
         elif opt_method == 'grid':
             step_T1 = (max_T1 - min_T1) / n_step
             step_T2 = (max_T2 - min_T2) / n_step
             rranges = (slice(min_T1, max_T1 + step_T1, step_T1), slice(min_T2, max_T2 + step_T2, step_T2))
-            x0, loss_x0, grid, loss_grid = _opt.brute(OptimizeBateman._loss_function, rranges, args=(signal, delta, min_T1, max_T2),
+            x0, loss_x0, grid, loss_grid = _opt.brute(OptimizeBateman._loss_function, rranges, args=(signal, delta, min_T1, max_T1, min_T2, max_T2),
                                                       finish=None, full_output=True)
         else:
             cls.error("opt_method not understood")
             return None
 
         if complete:
-            x0_min, l_x0_min, niter, nfuncalls, warnflag = _opt.fmin(OptimizeBateman._loss_function, x0, args=(signal, delta),
+            x0_min, l_x0_min, niter, nfuncalls, warnflag = _opt.fmin(OptimizeBateman._loss_function, x0, args=(signal, delta, min_T1, max_T1, min_T2, max_T2),
                                                                      full_output=True,
                                                                      **min_pars)
             return x0_min, x0
@@ -1207,7 +1209,7 @@ class OptimizeBateman(_Tool):
             return x0
 
     @staticmethod
-    def _loss_function(par_bat, signal, delta, min_T1, max_T2):
+    def _loss_function(par_bat, signal, delta, min_T1, max_T1, min_T2, max_T2):
         """
         Computes the loss for optimization of Bateman parameters.
 
@@ -1221,9 +1223,13 @@ class OptimizeBateman(_Tool):
             Minimum amplitude of the peaks in the driver
         min_T1 : float
             Lower bound for T1
+        max_T1 : float
+            Upper bound for T1
+        min_T2 : float
+            Lower bound for T2
         max_T2 : float
             Upper bound for T2
-        
+       
         Returns
         -------
         loss : float
@@ -1232,18 +1238,18 @@ class OptimizeBateman(_Tool):
         from ..estimators.Estimators import DriverEstim as _DriverEstim
 
         # check if pars hit boudaries
-        if par_bat[0] < min_T1 or par_bat[1] > max_T2 or par_bat[0] >= par_bat[1]:
-            return _np.Inf  # 10000 TODO: check if it raises errors
+        if par_bat[0] < min_T1 or par_bat[0] > max_T1 or par_bat[1] < min_T2 or par_bat[1] > max_T2 or par_bat[0] >= par_bat[1]:
+            return float('inf') # 10000 TODO: check if it raises errors
 
         fsamp = signal.get_sampling_freq()
-        driver = _DriverEstim(par_bat)(signal)
+        driver = _DriverEstim(T1=par_bat[0], T2=par_bat[1])(signal)
         maxs, mins = PeakDetection(delta=delta, refractory=1, start_max=True)(driver)
 
         if len(maxs) != 0:
             idx_maxs = maxs[:, 0]
         else:
             OptimizeBateman.warn('Unable to find peaks in driver signal for computation of Energy. Returning Inf')
-            return _np.Inf  # or 10000 #TODO: check if np.Inf does not raise errors
+            return float('inf')  # or 10000 #TODO: check if np.Inf does not raise errors
 
         # STAGE 1: select maxs distant from the others
         diff_maxs = _np.diff(_np.r_[idx_maxs, len(driver) - 1])
@@ -1286,7 +1292,7 @@ class OptimizeBateman(_Tool):
                 energy += energy_curr
         else:
             OptimizeBateman.warn('Peaks found but too near. Returning Inf')
-            return _np.Inf  # or 10000 # TODO: check if np.Inf does not raise errors
+            return float('inf')  # or 10000 # TODO: check if np.Inf does not raise errors
 
         OptimizeBateman.log('Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(energy))
         return energy
@@ -1295,14 +1301,14 @@ class OptimizeBateman(_Tool):
         'opt_method': _Par(1, str, 'Method to perform the search of optimal parameters.', 'asa',
                            lambda x: x in ['asa', 'grid']),
         'complete': _Par(1, bool, 'Whether to perform a minimization after detecting the optimal parameters', True),
-        'par_range': _Par(1, list, '[min_T1, max_T1, min_T2, max_T2] boundaries for the Bateman parameters',
+        'pars_ranges': _Par(1, list, '[min_T1, max_T1, min_T2, max_T2] boundaries for the Bateman parameters',
                           lambda x: len(x) == 4),
         'maxiter': _Par(1, int, 'Maximum number of iterations ("asa" method).', 0, lambda x: x > 0,
                         lambda x, p: p['opt_method'] == 'asa'),
         'n_step': _Par(1, int, 'Number of increments in the grid search', 10, lambda x: x > 0,
                        lambda x, p: p['opt_method'] == 'grid'),
         'delta': _Par(2, float, 'Minimum amplitude of the peaks in the driver', 0, lambda x: x > 0),
-        'min_pars': _Par(0, dict, 'Additional parameters to pass to the minimization function (when complete = True)',
+        'fmin_params': _Par(0, dict, 'Additional parameters to pass to the minimization function (when complete = True)',
                          activation=lambda x, p: p['complete'])
 
     }

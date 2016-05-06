@@ -364,8 +364,10 @@ class DeConvolutionalFilter(_Filter):
         fft_signal = _np.fft.fft(signal, n=l)
         fft_irf = _np.fft.fft(irf, n=l)
         out = _np.fft.ifft(fft_signal / fft_irf)
+        
+        out_signal = _EvenlySignal(abs(out), signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time(), signal.get_metadata())
 
-        return abs(out)
+        return out_signal
 
     _params_descriptors = {
         'irf': _Par(2, list, 'IRF used to deconvolve the signal'),

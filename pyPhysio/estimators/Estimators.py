@@ -193,8 +193,10 @@ class DriverEstim(_Estimator):
 
     Parameters
     ----------
-    par_bat: list (t1, t2)
-        Parameters of the bateman function
+    T1: float
+        Value of T1 parameters of the bateman function
+    T2: float
+        Value of T2 parameters of the bateman function
 
     Returns
     -------
@@ -212,12 +214,12 @@ class DriverEstim(_Estimator):
 
     @classmethod
     def algorithm(cls, signal, params):
-        t1 = params['t1']
-        t2 = params['t2']
+        t1 = params['T1']
+        t2 = params['T2']
 
         par_bat = [t1, t2]
 
-        fsamp = signal.fsamp
+        fsamp = signal.get_sampling_freq()
 
         bateman = DriverEstim._gen_bateman(fsamp, par_bat)
 
@@ -232,16 +234,17 @@ class DriverEstim(_Estimator):
         bateman_second_half = signal[-1] * (bateman_second_half - _np.min(bateman_second_half)) / (
             _np.max(bateman_second_half) - _np.min(bateman_second_half))
 
-        signal_in = _np.r_[bateman_first_half, signal, bateman_second_half]
+        signal_in = _np.r_[bateman_first_half, signal.get_y_values(), bateman_second_half]
+        signal_in = _EvenlySignal(signal_in, fsamp)
 
         # deconvolution
         driver = _DeConvolutionalFilter(irf=bateman)(signal_in)
         driver = driver[idx_max_bat + 1: idx_max_bat + len(signal)]
 
         # gaussian smoothing
-        driver = _ConvolutionalFilter(irftype='gauss', win_len=0.2 * 8)
+        driver = _ConvolutionalFilter(irftype='gauss', win_len=0.2 * 8)(driver)
 
-        driver = _EvenlySignal(driver, fsamp, "dEDA", signal.get_start_time(), signal.get_metadata())
+        driver = _EvenlySignal(fsamp * driver, fsamp, "dEDA", signal.get_start_time(), signal.get_metadata())
         return driver
 
     _params_descriptors = {

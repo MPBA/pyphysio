@@ -1,5 +1,5 @@
 # coding=utf-8
-from distutils.core import setup
+from setuptools import setup
 from os.path import join, dirname
 
 pkg_path = dirname(__file__)
@@ -30,7 +30,7 @@ setup(
     url='https://github.com/MPBA/pyHRV',
     description=description,
     long_description=long_description,
-    keywords='HRV, heart, rate, variability, analysis, galaxy, project',
+    keywords='HRV, heart, rate, variability, analysis, project',
     author='FBK - MPBA',
     author_email='albattisti@fbk.eu',
     license='GNU GPL version 3',
@@ -44,5 +44,5 @@ setup(
     ],
 
     package_dir={'pyPhysio': 'pyPhysio'},
-    packages=['pyPhysio', 'pyPhysio.indicators', 'pyPhysio.segmentation', 'pyPhysio.galaxy', 'pyPhysio.example_data']
+    packages=['pyPhysio']#, 'pyPhysio.indicators', 'pyPhysio.segmentation', 'pyPhysio.galaxy', 'pyPhysio.example_data']
 )
