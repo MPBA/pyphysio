@@ -114,12 +114,12 @@ driver_pp = driver_estimator(eda_pp)
 # optimized params
 delta = 0.01
 # OLD
-par_bat_old = est_old.optimize_bateman_simple(eda_np, fsamp, 'asa', delta, verbose=True, maxiter=50)
-#par_bat_old = [ 0.51004343, 5.3033562 ]
+#par_bat_old = est_old.optimize_bateman_simple(eda_np, fsamp, 'asa', delta, verbose=True, maxiter=50)
+par_bat_old = [ 0.51004343, 5.3033562 ]
 driver_np = est_old.estimate_driver(eda_np, fsamp, par_bat_old)
 
 # NEW
-par_bat_estimator = tll_new.OptimizeBateman(opt_method='asa', complete=True, pars_ranges=[0.01, 1, 1, 15], maxiter=50, delta=delta)
+par_bat_estimator = tll_new.OptimizeBateman(opt_method='asa', complete=False, pars_ranges=[0.01, 1, 1, 15], maxiter=25, delta=delta)
 par_bat_new = par_bat_estimator(eda_pp)
 
 driver_estimator = est_new.DriverEstim(T1 = T1, T2 = T2)

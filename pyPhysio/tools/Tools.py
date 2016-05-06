@@ -1,7 +1,7 @@
 # coding=utf-8
 from __future__ import division
 import numpy as _np
-#import asa as _asa #TODO (Ale): NON USO PIU ASA
+import asa as _asa
 import sys as _sys
 from scipy.signal import welch as _welch
 import scipy.optimize as _opt
@@ -827,7 +827,7 @@ class BeatOutliers(_Tool):
         ibi = signal.get_y_values()
         for i in range(1, len(idx_ibi)):
             curr_median = _np.median(ibi_cache)
-            curr_idx = idx_ibi[i]
+            
             curr_ibi = ibi[i]
 
             if curr_ibi > curr_median * (1 + sensitivity):  # abnormal peak:
@@ -1187,7 +1187,7 @@ class OptimizeBateman(_Tool):
             if maxiter == 0:
                 maxiter = 200
             bounds = [(min_T1, max_T1), (min_T2, max_T2)]
-            x_opt = _opt.basinhopping(OptimizeBateman._loss_function, [T1, T2], niter=maxiter, T = 10, stepsize=2, minimizer_kwargs={'method':"L-BFGS-B", 'bounds':bounds, 'args':(signal, delta, min_T1, max_T1, min_T2, max_T2)})
+            x_opt = _opt.basinhopping(OptimizeBateman._loss_function, [T1, T2], niter=maxiter, T = 20, stepsize=0.5, minimizer_kwargs={'method':"L-BFGS-B", 'bounds':bounds, 'args':(signal, delta, min_T1, max_T1, min_T2, max_T2)})
             x0 = x_opt.x
             loss_x0 = float(x_opt.fun)
         elif opt_method == 'grid':
