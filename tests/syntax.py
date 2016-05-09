@@ -32,3 +32,5 @@ class SyntaxTest(unittest.TestCase):
         n = 3 + len(algos)
         self.assertTrue(reduce(lambda x, y: x and len(y) == n, r, True))
         self.assertEquals(len(r), l)
+
+        ph.fmap(ph.LengthSegments(step=1, width=1.5)(s), algos)

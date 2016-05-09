@@ -243,7 +243,7 @@ class UnevenlySignal(_XYSignal):
     def get_original_length(self):
         return self.ph[self._MT_ORIGINAL_LENGTH]
 
-    def to_evenly(self, kind='linear', new_fsamp=None, length=None):
+    def to_evenly(self, kind='cubic', new_fsamp=None, length=None):
         """
         Interpolate the UnevenlySignal to obtain an evenly spaced signal
         Parameters
@@ -266,18 +266,19 @@ class UnevenlySignal(_XYSignal):
         length = self.get_original_length() if length is None else length
         if new_fsamp is None:
             new_fsamp = self.get_sampling_freq()
-        data_x = self.get_x_values() / new_fsamp
+            
+        data_x = self.get_x_values() # / new_fsamp -> Sbagliato, dovrebbero essere comunque indici, non tempi.
         # check that the computed length is bigger than the data_x one
         if length < len(data_x):
-            _PhUI.w("The signal's original length or passed length is higher than the current.")
+            _PhUI.w("Signal: the original length is higher than the current.")
         data_y = self.get_y_values()
 
         # Add padding
         if self.get_x_values(0) != 0:
             data_x = _np.r_[0, data_x]
             data_y = _np.r_[data_y[0], data_y]
-        if self.get_x_values(-1) != length:
-            data_x = _np.r_[data_x, length]
+        if self.get_x_values(-1) != length - 1:
+            data_x = _np.r_[data_x, length - 1]
             data_y = _np.r_[data_y, data_y[-1]]
 
         # Cubic if needed

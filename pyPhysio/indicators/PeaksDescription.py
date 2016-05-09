@@ -20,7 +20,7 @@ class PeaksMax(_Indicator):
         maxs, mins = _PeakDetection(params['delta'])(data)
 
         if _np.shape(maxs)[0] == 0:
-            _PhUI.w("_np.shape(maxs)[0] == 0")  # TODO: Put a more explicative message
+            cls.warn("_np.shape(maxs)[0] == 0")  # TODO: Put a more explicative message
             return _np.nan
         else:
             return _np.nanmax(maxs[:, 1])
@@ -39,7 +39,7 @@ class PeaksMin(_Indicator):
 
         maxs, mins = _PeakDetection(params['delta'])(data)
         if _np.shape(maxs)[0] == 0:
-            _PhUI.w("_np.shape(maxs)[0] == 0")  # TODO: Put a more explicative message
+            cls.warn("_np.shape(maxs)[0] == 0")  # TODO: Put a more explicative message
             return _np.nan
         else:
             return _np.nanmin(maxs[:, 1])
@@ -59,7 +59,7 @@ class PeaksMean(_Indicator):
         maxs, mins = _PeakDetection(params['delta'])(data)
 
         if _np.shape(maxs)[0] == 0:
-            _PhUI.w("_np.shape(maxs)[0] == 0")  # TODO: Put a more explicative message
+            cls.warn("_np.shape(maxs)[0] == 0")  # TODO: Put a more explicative message
             return _np.nan
         else:
             return _np.nanmean(maxs[:, 1])
@@ -79,7 +79,7 @@ class PeaksNum(_Indicator):
         maxs, mins = _PeakDetection(params['delta'])(data)
 
         if _np.shape(maxs)[0] == 0:
-            _PhUI.w("_np.shape(maxs)[0] == 0")  # TODO: Put a more explicative message
+            cls.warn("_np.shape(maxs)[0] == 0")  # TODO: Put a more explicative message
             return _np.nan
         else:
             return len(maxs[:, 1])
@@ -101,7 +101,7 @@ class DurationMin(_Indicator):
                                                post_max=params['post_max'])(data)
 
         if len(idxs_start) == 0:
-            _PhUI.w("len(idxs_start) == 0")
+            cls.warn("len(idxs_start) == 0")
             return _np.nan
         else:
             durations = Durations(starts=idxs_start, stops=idxs_stop)(data)
@@ -130,7 +130,7 @@ class DurationMax(_Indicator):
                                                post_max=params['post_max'])(data)
 
         if len(idxs_start) == 0:
-            _PhUI.w("len(idxs_start) == 0")
+            cls.warn("len(idxs_start) == 0")
             return _np.nan
         else:
             durations = Durations(starts=idxs_start, stops=idxs_stop)(data)
@@ -159,7 +159,7 @@ class DurationMean(_Indicator):
                                                post_max=params['post_max'])(data)
 
         if len(idxs_start) == 0:
-            _PhUI.w("len(idxs_start) == 0")
+            cls.warn("len(idxs_start) == 0")
             return _np.nan
         else:
             durations = Durations(starts=idxs_start, stops=idxs_stop)(data)
@@ -188,7 +188,7 @@ class SlopeMin(_Indicator):
                                                post_max=params['post_max'])(data)
 
         if len(idxs_start) == 0:
-            _PhUI.w("len(idxs_start) == 0")
+            cls.warn("len(idxs_start) == 0")
             return _np.nan
         else:
             idxs_peak = maxs[:, 0]
@@ -218,7 +218,7 @@ class SlopeMax(_Indicator):
                                                post_max=params['post_max'])(data)
 
         if len(idxs_start) == 0:
-            _PhUI.w("len(idxs_start) == 0")
+            cls.warn("len(idxs_start) == 0")
             return _np.nan
         else:
             idxs_peak = maxs[:, 0]
@@ -248,7 +248,7 @@ class SlopeMean(_Indicator):
                                                post_max=params['post_max'])(data)
 
         if len(idxs_start) == 0:
-            _PhUI.w("len(idxs_start) == 0")
+            cls.warn("len(idxs_start) == 0")
             return _np.nan
         else:
             idxs_peak = maxs[:, 0]

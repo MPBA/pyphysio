@@ -2,6 +2,7 @@
 from __future__ import division
 import numpy as _np
 import asa as _asa
+import sys as _sys
 from scipy.signal import welch as _welch
 import scipy.optimize as _opt
 from spectrum import aryule as _aryule, arma2psd as _arma2psd, AIC as _AIC
@@ -46,9 +47,9 @@ class PeakDetection(_Tool):
         maxs = []
 
         if len(signal) < 1:
-            _PhUI.w("signal is too short (len < 1), returning empty.")
+            cls.warn("signal is too short (len < 1), returning empty.")
         elif delta is None and len(deltas) != len(signal):
-            _PhUI.e("deltas vector's length differs from signal's one, returning empty.")
+            cls.error("deltas vector's length differs from signal's one, returning empty.")
         else:
             mn_pos_candidate = mx_pos_candidate = 0
             mn_candidate = mx_candidate = signal[0]
@@ -141,14 +142,14 @@ class PeakSelection(_Tool):
         i_stop = _np.empty(len(i_peaks), int)
 
         if r == 0:
-            _PhUI.e('Empty peaks array, returning empty.')
+            cls.error('Empty peaks array, returning empty.')
         else:
             signal_dt = _Diff()(signal)
             for i in xrange(len(i_peaks)):
                 i_pk = int(i_peaks[i])
 
                 if i_pk < i_pre_max or i_pk >= len(signal_dt) - i_post_max:
-                    _PhUI.i('Peak at start/end of signal, not accounting')
+                    cls.log('Peak at start/end of signal, not accounting')
 
                     # TODO (Andrea): astype(int) converte i nan in -9223372036854775808, l'ho tolto, vanno bene i -1?
                     # Perché il nan non c'è tra gli int
@@ -224,7 +225,7 @@ class SignalRange(_Tool):
         idx_step = int(win_step * fsamp)
 
         if len(signal) < idx_len:
-            _PhUI.w("Input signal is shorter than the window length.")
+            cls.warn("Input signal is shorter than the window length.")
             return _np.max(signal) - _np.min(signal)
         else:
             # TODO (Andrea): con la next line si esclude l'ultima finestra
@@ -243,7 +244,7 @@ class SignalRange(_Tool):
             for start in windows:
                 portion_curr = signal[start:start + idx_len]
                 curr_delta = _np.max(portion_curr) - _np.min(portion_curr)
-                # TODO (Andrea): below
+                # TODO (Andrea): below (anche in Energy
                 # 1) Permettere con l'attriuto win_step > win_len l'overlap delle finestre forse
                 # non ha senso perché la parte di overlap viene sovrascritta dalla prossima riga;
                 # a meno che:
@@ -317,8 +318,9 @@ class PSD(_Tool):
 
         fsamp = signal.get_sampling_freq()
 
-        if not isinstance(signal, _EvenlySignal):
-            signal = signal.to_evenly()
+        if not isinstance(data, _EvenlySignal):
+	    #TODO (new function) lomb scargle
+            data = data.to_evenly(params)
 
         l = len(signal)
         if remove_mean:
@@ -335,15 +337,12 @@ class PSD(_Tool):
         else:
             win = _np.ones(l)
             if window != 'none':
-                _PhUI.w('Window type not understood, using none.')
+                cls.warn('Window type not understood, using none.')
 
         signal = signal * win
         if method == 'fft':
             spec_tmp = _np.abs(_np.fft.fft(signal, n=nfft)) ** 2  # FFT
             psd = spec_tmp[0:(_np.ceil(len(spec_tmp) / 2))]
-
-        elif method == 'welch':
-            bands_w, psd = _welch(signal, fsamp, nfft=nfft)
 
         elif method == 'ar':
             min_order = params['min_order']
@@ -363,6 +362,11 @@ class PSD(_Tool):
             psd = _arma2psd(ar, NFFT=nfft)
             psd = psd[0: _np.ceil(len(psd) / 2)]
 
+        else:
+            bands_w, psd = _welch(signal, fsamp, nfft=nfft)
+            if method != 'welch':
+                cls.warn('Method not understood, using welch.')
+
         freqs = _np.linspace(start=0, stop=fsamp / 2, num=len(psd))
 
         # NORMALIZE
@@ -379,7 +383,7 @@ class PSD(_Tool):
                           10,
                           lambda x: x > 0,
                           lambda x, y: "method" in y and y["method"] == "ar"),
-        #'nfft': _Par(1, int, 'Number of samples in the PSD', 2048, lambda x: x > 0),
+        'nfft': _Par(1, int, 'Number of samples in the PSD', 2048, lambda x: x > 0),
         'window': _Par(1, str, 'Type of window to adapt the signal before estimation of the PSD',
                        'hamming', lambda x: x in PSD._window_list),
         'normalize': _Par(1, bool, 'Whether to normalize the PSD', True),
@@ -394,7 +398,7 @@ class Energy(_Tool):
     Parameters
     ----------
     win_len : float
-        The dimension of the window    
+        The dimension of the window
     win_step : float
         The increment indexes to start the next window
     smooth : boolean
@@ -407,27 +411,26 @@ class Energy(_Tool):
     """
 
     @classmethod
-    def algorithm(cls, signal, params):
-        fsamp = signal.get_sampling_freq()
+    def algorithm(cls, signal, params):  # TESTME
         win_len = params['win_len']
         win_step = params['win_step']
-        idx_len = win_len * fsamp
-        idx_step = win_step * fsamp
         smooth = params['smooth']
 
-        windows = _np.arange(0, len(signal) - idx_len, idx_step)
+        fsamp = signal.get_sampling_freq()
+        idx_len = win_len * fsamp
+        idx_step = win_step * fsamp
 
-        energy = []
-        curr_energy = None
-        for start in windows:
+        windows = _np.arange(0, len(signal) - idx_len + 1, idx_step)
+
+        energy = _np.empty(len(windows) + 2)
+        for i in xrange(1, len(windows) + 1):
+            start = windows[i - 1]
             portion_curr = signal[start: start + idx_len]
-            curr_energy = _np.sum(_np.power(portion_curr, 2)) / len(portion_curr)
-            energy.append(curr_energy)
-        energy.append(curr_energy)
-        energy.insert(0, energy[0])
+            energy[i] = _np.sum(_np.power(portion_curr, 2)) / len(portion_curr)
+        energy[0] = energy[1]
+        energy[-1] = energy[-2]
 
         idx_interp = _np.r_[0, windows + round(idx_len / 2), len(signal)]
-        energy = _np.array(energy)
         # TODO (Andrea): assumed ", 1," was the wanted fsamp
         # WAS: energy_out = flt.interpolate_unevenly(energy, idx_interp, 1, kind='linear')
         energy_out = _UnevenlySignal(energy, idx_interp, 1).to_evenly().get_y_values()
@@ -435,7 +438,7 @@ class Energy(_Tool):
         if smooth:
             energy_out = _ConvFlt(irftype='gauss', win_len=2 * win_len, normalize=True)(energy_out)
 
-        return energy_out
+        return energy_out.get_y_values()
 
     _params_descriptors = {
         'win_len': _Par(2, float, 'The length of the window (seconds)', 1, lambda x: x > 0),
@@ -824,7 +827,7 @@ class BeatOutliers(_Tool):
         ibi = signal.get_y_values()
         for i in range(1, len(idx_ibi)):
             curr_median = _np.median(ibi_cache)
-            curr_idx = idx_ibi[i]
+            
             curr_ibi = ibi[i]
 
             if curr_ibi > curr_median * (1 + sensitivity):  # abnormal peak:
@@ -1165,39 +1168,40 @@ class OptimizeBateman(_Tool):
     def algorithm(cls, signal, params):
         opt_method = params['opt_method']
         complete = params['complete']
-        par_ranges = params['par_ranegs']
+        par_ranges = params['pars_ranges']
         maxiter = params['maxiter']
         n_step = params['n_step']
         delta = params['delta']
-        min_pars = params['fmin_params']
+        min_pars = params['fmin_params'] #TODO (Ale) :default should be {}
+        min_pars=dict()
 
-        min_T1 = par_ranges[0]
-        max_T1 = par_ranges[1]
+        min_T1 = float(par_ranges[0])
+        max_T1 = float(par_ranges[1])
 
-        min_T2 = par_ranges[2]
-        max_T2 = par_ranges[3]
-
+        min_T2 = float(par_ranges[2])
+        max_T2 = float(par_ranges[3])
+        
         if opt_method == 'asa':
             T1 = 0.75
-            T2 = 2
+            T2 = 2.
             if maxiter == 0:
-                maxiter = 99999
-            x0, loss_x0, exit_code, asa_opts = _asa.asa(OptimizeBateman._loss_function, _np.array([T1, T2]),
-                                                        xmin=_np.array([min_T1, min_T2]),
-                                                        xmax=_np.array([max_T1, max_T2]), full_output=True,
-                                                        limit_generated=maxiter, args=(signal, delta, min_T1, max_T2))
+                maxiter = 200
+            bounds = [(min_T1, max_T1), (min_T2, max_T2)]
+            x_opt = _opt.basinhopping(OptimizeBateman._loss_function, [T1, T2], niter=maxiter, T = 20, stepsize=0.5, minimizer_kwargs={'method':"L-BFGS-B", 'bounds':bounds, 'args':(signal, delta, min_T1, max_T1, min_T2, max_T2)})
+            x0 = x_opt.x
+            loss_x0 = float(x_opt.fun)
         elif opt_method == 'grid':
             step_T1 = (max_T1 - min_T1) / n_step
             step_T2 = (max_T2 - min_T2) / n_step
             rranges = (slice(min_T1, max_T1 + step_T1, step_T1), slice(min_T2, max_T2 + step_T2, step_T2))
-            x0, loss_x0, grid, loss_grid = _opt.brute(OptimizeBateman._loss_function, rranges, args=(signal, delta, min_T1, max_T2),
+            x0, loss_x0, grid, loss_grid = _opt.brute(OptimizeBateman._loss_function, rranges, args=(signal, delta, min_T1, max_T1, min_T2, max_T2),
                                                       finish=None, full_output=True)
         else:
-            _PhUI.e("opt_method not understood")
+            cls.error("opt_method not understood")
             return None
 
         if complete:
-            x0_min, l_x0_min, niter, nfuncalls, warnflag = _opt.fmin(OptimizeBateman._loss_function, x0, args=(signal, delta),
+            x0_min, l_x0_min, niter, nfuncalls, warnflag = _opt.fmin(OptimizeBateman._loss_function, x0, args=(signal, delta, min_T1, max_T1, min_T2, max_T2),
                                                                      full_output=True,
                                                                      **min_pars)
             return x0_min, x0
@@ -1205,7 +1209,7 @@ class OptimizeBateman(_Tool):
             return x0
 
     @staticmethod
-    def _loss_function(par_bat, signal, delta, min_T1, max_T2):
+    def _loss_function(par_bat, signal, delta, min_T1, max_T1, min_T2, max_T2):
         """
         Computes the loss for optimization of Bateman parameters.
 
@@ -1219,9 +1223,13 @@ class OptimizeBateman(_Tool):
             Minimum amplitude of the peaks in the driver
         min_T1 : float
             Lower bound for T1
+        max_T1 : float
+            Upper bound for T1
+        min_T2 : float
+            Lower bound for T2
         max_T2 : float
             Upper bound for T2
-        
+       
         Returns
         -------
         loss : float
@@ -1230,18 +1238,18 @@ class OptimizeBateman(_Tool):
         from ..estimators.Estimators import DriverEstim as _DriverEstim
 
         # check if pars hit boudaries
-        if par_bat[0] < min_T1 or par_bat[1] > max_T2 or par_bat[0] >= par_bat[1]:
-            return _np.Inf  # 10000 TODO: check if it raises errors
+        if par_bat[0] < min_T1 or par_bat[0] > max_T1 or par_bat[1] < min_T2 or par_bat[1] > max_T2 or par_bat[0] >= par_bat[1]:
+            return float('inf') # 10000 TODO: check if it raises errors
 
         fsamp = signal.get_sampling_freq()
-        driver = _DriverEstim(par_bat)(signal)
+        driver = _DriverEstim(T1=par_bat[0], T2=par_bat[1])(signal)
         maxs, mins = PeakDetection(delta=delta, refractory=1, start_max=True)(driver)
 
         if len(maxs) != 0:
             idx_maxs = maxs[:, 0]
         else:
-            _PhUI.w('Unable to find peaks in driver signal for computation of Energy. Returning Inf')
-            return _np.Inf  # or 10000 #TODO: check if np.Inf does not raise errors
+            OptimizeBateman.warn('Unable to find peaks in driver signal for computation of Energy. Returning Inf')
+            return float('inf')  # or 10000 #TODO: check if np.Inf does not raise errors
 
         # STAGE 1: select maxs distant from the others
         diff_maxs = _np.diff(_np.r_[idx_maxs, len(driver) - 1])
@@ -1283,24 +1291,24 @@ class OptimizeBateman(_Tool):
 
                 energy += energy_curr
         else:
-            _PhUI.w('Peaks found but too near. Returning Inf')
-            return _np.Inf  # or 10000 # TODO: check if np.Inf does not raise errors
+            OptimizeBateman.warn('Peaks found but too near. Returning Inf')
+            return float('inf')  # or 10000 # TODO: check if np.Inf does not raise errors
 
-        _PhUI.i('Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(energy))
+        OptimizeBateman.log('Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(energy))
         return energy
 
     _params_descriptors = {
         'opt_method': _Par(1, str, 'Method to perform the search of optimal parameters.', 'asa',
                            lambda x: x in ['asa', 'grid']),
         'complete': _Par(1, bool, 'Whether to perform a minimization after detecting the optimal parameters', True),
-        'par_range': _Par(1, list, '[min_T1, max_T1, min_T2, max_T2] boundaries for the Bateman parameters',
+        'pars_ranges': _Par(1, list, '[min_T1, max_T1, min_T2, max_T2] boundaries for the Bateman parameters',
                           lambda x: len(x) == 4),
         'maxiter': _Par(1, int, 'Maximum number of iterations ("asa" method).', 0, lambda x: x > 0,
                         lambda x, p: p['opt_method'] == 'asa'),
         'n_step': _Par(1, int, 'Number of increments in the grid search', 10, lambda x: x > 0,
                        lambda x, p: p['opt_method'] == 'grid'),
         'delta': _Par(2, float, 'Minimum amplitude of the peaks in the driver', 0, lambda x: x > 0),
-        'min_pars': _Par(0, dict, 'Additional parameters to pass to the minimization function (when complete = True)',
+        'fmin_params': _Par(0, dict, 'Additional parameters to pass to the minimization function (when complete = True)',
                          activation=lambda x, p: p['complete'])
 
     }

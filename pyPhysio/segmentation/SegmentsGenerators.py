@@ -64,7 +64,7 @@ class TimeSegments(SegmentsGenerator):
     def next_segment(self):
         if self._signal is None:
             _PhUI.w("Can't preview the segments without a signal here. Use the syntax "
-                   + TimeSegments.__name__ + "(p[params])(signal)")
+                    + TimeSegments.__name__ + "(p[params])(signal)")
             raise StopIteration()
         b = e = self._i
         l = len(self._signal)
@@ -183,7 +183,7 @@ class FromEventsSegments(SegmentsGenerator):
     def next_segment(self):
         if self._signal is None:
             _PhUI.w("Can't preview the segments without a signal here. Use the syntax "
-                 + LengthSegments.__name__ + "(**params)(signal)")
+                    + LengthSegments.__name__ + "(**params)(signal)")
             raise StopIteration()
         else:
             l = len(self._signal)

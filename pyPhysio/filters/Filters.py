@@ -98,7 +98,7 @@ class Diff(_Filter):
         Calculates the differences between consecutive values
         """
         if isinstance(signal, _Signal) and not isinstance(signal, _EvenlySignal):
-            _PhUI.i(
+            cls.log(
                 "Computing %s on '%s' may not make sense." % (cls.__name__, signal.__class__.__name__))
         degree = params['degree']
 
@@ -167,7 +167,7 @@ class IIRFilter(_Filter):
         sig_filtered = _EvenlySignal(_filtfilt(b, a, signal), signal.get_sampling_freq(), signal.get_signal_nature(),
                                      signal.get_start_time(), signal.get_metadata())
         if _np.isnan(sig_filtered[0]):
-            _PhUI.w(cls.__name__ + ': Filter parameters allow no solution. Returning original signal.')
+            cls.warn(cls.__name__ + ': Filter parameters allow no solution. Returning original signal.')
             return signal
         else:
             return sig_filtered
@@ -271,13 +271,13 @@ class ConvolutionalFilter(_Filter):
 
         if irftype == 'custom':
             if 'irf' not in params:
-                _PhUI.e("'irf' parameter missing in " + cls.__name__)
+                cls.error("'irf' parameter missing.")
                 return signal
             else:
                 irf = _np.array(params["irf"])
         else:
             if 'win_len' not in params:
-                _PhUI.e("'win_len' parameter missing in " + cls.__name__)
+                cls.error("'win_len' parameter missing.")
                 return signal
             else:
                 n = params['win_len'] * fsamp
@@ -364,8 +364,10 @@ class DeConvolutionalFilter(_Filter):
         fft_signal = _np.fft.fft(signal, n=l)
         fft_irf = _np.fft.fft(irf, n=l)
         out = _np.fft.ifft(fft_signal / fft_irf)
+        
+        out_signal = _EvenlySignal(abs(out), signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time(), signal.get_metadata())
 
-        return abs(out)
+        return out_signal
 
     _params_descriptors = {
         'irf': _Par(2, list, 'IRF used to deconvolve the signal'),
