@@ -52,6 +52,7 @@ class TimeSegments(SegmentsGenerator):
 
     def init_segmentation(self):
         self._step = self._params["step"]
+        self._c_times = self._signal.get_times()
         self._width =\
             self._params["step"] if "width" not in self._params or self._params["width"] == 0 else self._params["width"]
         self._i = 0
@@ -63,14 +64,14 @@ class TimeSegments(SegmentsGenerator):
 
     def next_segment(self):
         if self._signal is None:
-            _PhUI.w("Can't preview the segments without a signal here. Use the syntax "
-                    + TimeSegments.__name__ + "(p[params])(signal)")
+            _PhUI.w("Can't preview the segments without a signal here. Use the syntax " +
+                    TimeSegments.__name__ + "(p[params])(signal)")
             raise StopIteration()
         b = e = self._i
         l = len(self._signal)
-        while self._i < l and self._signal.get_indices(self._i) <= self._signal.get_indices(b) + self._step:
+        while self._i < l and self._c_times(self._i) <= self._c_times(b) + self._step:
             self._i += 1
-        while e < l and self._signal.get_indices(e) <= self._signal.get_indices(b) + self._width:
+        while e < l and self._c_times[e] <= self._c_times[b] + self._width:
             e += 1
         s = Segment(b, e, '', self._signal)
         if s.is_empty():

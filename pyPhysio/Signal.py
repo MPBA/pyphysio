@@ -74,7 +74,7 @@ class Signal(_np.ndarray):
         return self.ph[self._MT_META_DICT]
 
     def plot(self, style=None):
-        _plot(self.get_indices(), self.get_values(), style)
+        _plot(self.get_times(), self.get_values(), style)
 
     def __repr__(self):
         return "<signal: " + self.get_signal_nature() + ", start_time: " + str(self.get_start_time()) + ">"
@@ -177,7 +177,7 @@ class UnevenlySignal(Signal):
 
     def __repr__(self):
         return Signal.__repr__(self) + "\ny-values\n" + self.view(_np.ndarray).__repr__() + \
-            "\nx-times\n" + self.get_indices().__repr__()
+            "\nx-indices\n" + self.get_indices().__repr__()
 
     # unev
 
