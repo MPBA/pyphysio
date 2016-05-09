@@ -10,7 +10,7 @@ from tools.Tools import *
 from segmentation.SegmentsGenerators import *
 import segmentation.SegmentsGenerators
 from BaseSegmentation import Segment
-from Signal import EvenlySignal, UnevenlySignal
+from Signal import EvenlySignal, UnevenlySignal, EventsSignal
 
 __author__ = "AleB"
 

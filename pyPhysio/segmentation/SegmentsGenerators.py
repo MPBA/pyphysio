@@ -20,8 +20,8 @@ class LengthSegments(SegmentsGenerator):
 
     def init_segmentation(self):
         if self._signal is None:
-            raise ValueError("Can't preview the segments without a signal here. Use the syntax "
-                             + LengthSegments.__name__ + "(**params)(signal)")
+            raise ValueError("Can't preview the segments without a signal here. Use the syntax " +
+                             LengthSegments.__name__ + "(**params)(signal)")
         self._step = self._params["step"]
         self._width =\
             self._params["step"] if "width" not in self._params or self._params["width"] == 0 else self._params["width"]
@@ -69,7 +69,7 @@ class TimeSegments(SegmentsGenerator):
             raise StopIteration()
         b = e = self._i
         l = len(self._signal)
-        while self._i < l and self._c_times(self._i) <= self._c_times(b) + self._step:
+        while self._i < l and self._c_times[self._i] <= self._c_times[b] + self._step:
             self._i += 1
         while e < l and self._c_times[e] <= self._c_times[b] + self._width:
             e += 1
@@ -136,23 +136,17 @@ class ExistingSegments(SegmentsGenerator):
         self._ind = None
 
     def init_segmentation(self):
-        self._wins = self._params["segments"]
+        self._wins = iter(self._params["segments"])
         self._ind = 0
 
     def next_segment(self):
-        if self._ind < len(self._wins):
-            w = self._wins[self._ind]
-            if self._signal is not None:
-                assert isinstance(w, Segment), "%s is not a Segment" % str(w)
-                w = Segment(w.get_begin(), w.get_end(), w.get_label(), self._signal)
-                if w.is_empty():
-                    self._ind = 0
-                    raise StopIteration()
-            self._ind += 1
-            return w
-        else:
-            self._ind = 0
-            raise StopIteration()
+        w = self._wins.next()
+        if self._signal is not None:
+            assert isinstance(w, Segment), "%s is not a Segment" % str(w)
+            w = Segment(w.get_begin(), w.get_end(), w.get_label(), self._signal)
+            if w.is_empty():
+                raise StopIteration()
+        return w
 
 
 class FromEventsSegments(SegmentsGenerator):

@@ -281,6 +281,13 @@ class UnevenlySignal(Signal):
     #     return sig_out
 
 
+class EventsSignal(UnevenlySignal):
+    def __new__(cls, values, times, orig_sampling_freq=1, orig_length=None, signal_nature="", start_time=0,
+                meta=None, check=True):
+        return UnevenlySignal.__new__(cls, values, times * orig_sampling_freq, orig_sampling_freq, orig_length, signal_nature, start_time,
+                                      meta, check)
+
+
 # Not used
 # class EventsSignal(UnevenlyTimeSignal):
 #     def __new__(cls, events, times, start_time=0, meta=None, check=True):
