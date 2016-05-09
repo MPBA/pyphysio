@@ -58,7 +58,7 @@ class TimeSegments(SegmentsGenerator):
         # initial seek
         if "start" in self._params:
             start = self._params["start"]
-            while self._i < len(self._signal) and self._signal.get_x_values(self._i) < start:
+            while self._i < len(self._signal) and self._signal.get_indices(self._i) < start:
                 self._i += 1
 
     def next_segment(self):
@@ -68,9 +68,9 @@ class TimeSegments(SegmentsGenerator):
             raise StopIteration()
         b = e = self._i
         l = len(self._signal)
-        while self._i < l and self._signal.get_x_values(self._i) <= self._signal.get_x_values(b) + self._step:
+        while self._i < l and self._signal.get_indices(self._i) <= self._signal.get_indices(b) + self._step:
             self._i += 1
-        while e < l and self._signal.get_x_values(e) <= self._signal.get_x_values(b) + self._width:
+        while e < l and self._signal.get_indices(e) <= self._signal.get_indices(b) + self._width:
             e += 1
         s = Segment(b, e, '', self._signal)
         if s.is_empty():
@@ -105,10 +105,10 @@ class FromStartStopSegments(SegmentsGenerator):
             if self._i < len(self._params['starts']):
                 l = len(self._signal)
                 start = self._params['starts'][self._i]
-                while self._b < l and self._signal.get_x_values(self._b) < start:
+                while self._b < l and self._signal.get_indices(self._b) < start:
                     self._b += 1
                 stop = self._params['stops'][self._i]
-                while self._e < l and self._signal.get_x_values(self._e) < stop:
+                while self._e < l and self._signal.get_indices(self._e) < stop:
                     self._e += 1
 
                 self._i += 1
@@ -174,10 +174,10 @@ class FromEventsSegments(SegmentsGenerator):
         self._events = self._params["events"]
         self._s = 0
         self._i = 0
-        self._t = self._events.get_x_values(0)
+        self._t = self._events.get_indices(0)
 
         # TESTME: May be not so efficient but it is better than searchsorted (small k < n often smaller than log2(n))
-        while self._i < len(self._signal) and self._signal.get_x_values(self._i) < self._t:
+        while self._i < len(self._signal) and self._signal.get_indices(self._i) < self._t:
             self._i += 1
 
     def next_segment(self):
@@ -190,8 +190,8 @@ class FromEventsSegments(SegmentsGenerator):
             if self._i < l:
                 if self._s < len(self._events) - 1:
                     o = self._i
-                    self._t = self._events.get_x_values(self._s + 1)
-                    while self._i < l and self._signal.get_x_values(self._i) < self._t:
+                    self._t = self._events.get_indices(self._s + 1)
+                    while self._i < l and self._signal.get_indices(self._i) < self._t:
                         self._i += 1
                     w = Segment(o, self._i, self._events[self._s], self._signal)
                 elif self._s < len(self._events):

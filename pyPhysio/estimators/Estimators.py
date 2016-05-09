@@ -234,7 +234,7 @@ class DriverEstim(_Estimator):
         bateman_second_half = signal[-1] * (bateman_second_half - _np.min(bateman_second_half)) / (
             _np.max(bateman_second_half) - _np.min(bateman_second_half))
 
-        signal_in = _np.r_[bateman_first_half, signal.get_y_values(), bateman_second_half]
+        signal_in = _np.r_[bateman_first_half, signal.get_values(), bateman_second_half]
         signal_in = _EvenlySignal(signal_in, fsamp)
 
         # deconvolution

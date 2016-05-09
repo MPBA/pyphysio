@@ -30,10 +30,10 @@ class Segment(object):
         return self._end
 
     def get_start_time(self):
-        return self._signal.get_start_time() + self._signal.get_x_values(self._begin)  # TODO this does not work
+        return self._signal.get_start_time() + self._signal.get_indices(self._begin)  # TODO this does not work
 
     def get_end_time(self):
-        return self._signal.get_x_values(self.get_end()) if self.get_end() is not None else None
+        return self._signal.get_indices(self.get_end()) if self.get_end() is not None else None
 
     def get_duration(self):
         return (self.get_end_time() - self.get_start_time()) if self.get_end() is not None else None

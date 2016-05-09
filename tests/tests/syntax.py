@@ -1,10 +1,10 @@
 # coding=utf-8
 
-import numpy as np
 try:
     import pyphysio.pyPhysio as ph
 except ImportError:
     import pyPhysio as ph
+import numpy as np
 import unittest
 
 __author__ = 'AleB'

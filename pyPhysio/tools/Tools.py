@@ -262,7 +262,7 @@ class SignalRange(_Tool):
             if smooth:
                 deltas = _ConvFlt(irftype='gauss', win_len=win_len * 2, normalize=True)(deltas)
 
-            return deltas.get_y_values()
+            return deltas.get_values()
 
     _params_descriptors = {
         'win_len': _Par(2, float, 'The length of the window (seconds)', 1, lambda x: x > 0),
@@ -433,12 +433,12 @@ class Energy(_Tool):
         idx_interp = _np.r_[0, windows + round(idx_len / 2), len(signal)]
         # TODO (Andrea): assumed ", 1," was the wanted fsamp
         # WAS: energy_out = flt.interpolate_unevenly(energy, idx_interp, 1, kind='linear')
-        energy_out = _UnevenlySignal(energy, idx_interp, 1).to_evenly().get_y_values()
+        energy_out = _UnevenlySignal(energy, idx_interp, 1).to_evenly().get_values()
 
         if smooth:
             energy_out = _ConvFlt(irftype='gauss', win_len=2 * win_len, normalize=True)(energy_out)
 
-        return energy_out.get_y_values()
+        return energy_out.get_values()
 
     _params_descriptors = {
         'win_len': _Par(2, float, 'The length of the window (seconds)', 1, lambda x: x > 0),
@@ -823,8 +823,8 @@ class BeatOutliers(_Tool):
         counter_bad = 0
 
         # missings = []
-        idx_ibi = signal.get_x_values()
-        ibi = signal.get_y_values()
+        idx_ibi = signal.get_indices()
+        ibi = signal.get_values()
         for i in range(1, len(idx_ibi)):
             curr_median = _np.median(ibi_cache)
             
@@ -888,8 +888,8 @@ class FixIBI(_Tool):
         assert isinstance(signal, _UnevenlySignal), "IBI can only be represented by an EvenlySignal, %s found." % type(
             signal)
         id_bad = params['id_bad_ibi']
-        idx_ibi = signal.get_x_values()
-        ibi = signal.get_y_values()
+        idx_ibi = signal.get_indices()
+        ibi = signal.get_values()
         idx_ibi_nobad = _np.delete(idx_ibi, id_bad)
         ibi_nobad = _np.delete(ibi, id_bad)
         idx_ibi = idx_ibi_nobad.astype(int)
