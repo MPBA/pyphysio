@@ -1,7 +1,7 @@
 # coding=utf-8
 from __future__ import division
 
-import pyphysio.pyPhysio as ph
+import pyPhysio as ph
 import numpy as np
 
 import unittest
@@ -19,7 +19,7 @@ class SomeIndicatorsTest(unittest.TestCase):
         nature = "una_bif-fa"
         test_string = 'test1235'
 
-        s = ph.EvenlySignal(y_values=np.cumsum(np.random.rand(1, samples) - .5) * 100,
+        s = ph.EvenlySignal(values=np.cumsum(np.random.rand(1, samples) - .5) * 100,
                             sampling_freq=freq,
                             signal_nature=nature,
                             start_time=start,
