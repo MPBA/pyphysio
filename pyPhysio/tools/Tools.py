@@ -173,7 +173,7 @@ class PeakSelection(_Tool):
                     signal_dt_post = signal_dt[i_pk: i_sp]
                     i_post = 0
 
-                    while signal_dt_post[i_post] < 0 and i_post < len(signal_dt_post):
+                    while signal_dt_post[i_post] < 0 and i_post < len(signal_dt_post)-1:
                         i_post += 1
 
                     # i_post_true =
@@ -1186,10 +1186,11 @@ class OptimizeBateman(_Tool):
             T2 = 2.
             if maxiter == 0:
                 maxiter = 200
-            bounds = [(min_T1, max_T1), (min_T2, max_T2)]
-            x_opt = _opt.basinhopping(OptimizeBateman._loss_function, [T1, T2], niter=maxiter, T = 20, stepsize=0.5, minimizer_kwargs={'method':"L-BFGS-B", 'bounds':bounds, 'args':(signal, delta, min_T1, max_T1, min_T2, max_T2)})
-            x0 = x_opt.x
-            loss_x0 = float(x_opt.fun)
+            x0, loss_x0, exit_code, asa_opts = _asa.asa(OptimizeBateman._loss_function, _np.array([T1, T2]), xmin=_np.array([min_T1, min_T2]), xmax=_np.array([max_T1, max_T2]), full_output=True, limit_generated=maxiter, args=(signal, delta, min_T1, max_T1, min_T2, max_T2))
+            #bounds = ((min_T1, max_T1), (min_T2, max_T2))
+            #x_opt = _opt.basinhopping(OptimizeBateman._loss_function, [T1, T2], niter=maxiter, T = 0.01, stepsize=2, niter_success = int(maxiter/10), disp = True, minimizer_kwargs={'options':{'maxiter':1}, 'args':(signal, delta, min_T1, max_T1, min_T2, max_T2)})
+            #x0 = x_opt.x
+            #loss_x0 = float(x_opt.fun)
         elif opt_method == 'grid':
             step_T1 = (max_T1 - min_T1) / n_step
             step_T2 = (max_T2 - min_T2) / n_step
@@ -1236,10 +1237,10 @@ class OptimizeBateman(_Tool):
             The computed loss
         """
         from ..estimators.Estimators import DriverEstim as _DriverEstim
-
+        
         # check if pars hit boudaries
         if par_bat[0] < min_T1 or par_bat[0] > max_T1 or par_bat[1] < min_T2 or par_bat[1] > max_T2 or par_bat[0] >= par_bat[1]:
-            return float('inf') # 10000 TODO: check if it raises errors
+            return 10000 #float('inf') # 10000 TODO: check if it raises errors
 
         fsamp = signal.get_sampling_freq()
         driver = _DriverEstim(T1=par_bat[0], T2=par_bat[1])(signal)
@@ -1249,7 +1250,7 @@ class OptimizeBateman(_Tool):
             idx_maxs = maxs[:, 0]
         else:
             OptimizeBateman.warn('Unable to find peaks in driver signal for computation of Energy. Returning Inf')
-            return float('inf')  # or 10000 #TODO: check if np.Inf does not raise errors
+            return 10000 #float('inf')  # or 10000 #TODO: check if np.Inf does not raise errors
 
         # STAGE 1: select maxs distant from the others
         diff_maxs = _np.diff(_np.r_[idx_maxs, len(driver) - 1])
@@ -1275,7 +1276,6 @@ class OptimizeBateman(_Tool):
                 idx_sel_diff_y = _np.where((diff_y > th_25) & (diff_y < th_75))[0]
                 diff_y_sel = diff_y[idx_sel_diff_y]
 
-                # A2, B = _find_slope(y, half)
                 mean_s = BootstrapEstimation(func=_np.mean, N=100, k=0.5)(diff_y_sel)
 
                 mean_y = BootstrapEstimation(func=_np.median, N=100, k=0.5)(y)
@@ -1292,8 +1292,7 @@ class OptimizeBateman(_Tool):
                 energy += energy_curr
         else:
             OptimizeBateman.warn('Peaks found but too near. Returning Inf')
-            return float('inf')  # or 10000 # TODO: check if np.Inf does not raise errors
-
+            return 10000 # float('inf')  # or 10000 # TODO: check if np.Inf does not raise errors
         OptimizeBateman.log('Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(energy))
         return energy
 

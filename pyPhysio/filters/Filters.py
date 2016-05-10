@@ -371,7 +371,7 @@ class DeConvolutionalFilter(_Filter):
 
     _params_descriptors = {
         'irf': _Par(2, list, 'IRF used to deconvolve the signal'),
-        'normalize': _Par(1, 'Whether to normalize the IRF to have unitary area', True)
+        'normalize': _Par(1, bool, 'Whether to normalize the IRF to have unitary area', True)
     }
 
     @classmethod

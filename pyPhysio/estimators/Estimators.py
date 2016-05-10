@@ -238,13 +238,13 @@ class DriverEstim(_Estimator):
         signal_in = _EvenlySignal(signal_in, fsamp)
 
         # deconvolution
-        driver = _DeConvolutionalFilter(irf=bateman)(signal_in)
+        driver = _DeConvolutionalFilter(irf=bateman, normalize=True)(signal_in)
         driver = driver[idx_max_bat + 1: idx_max_bat + len(signal)]
 
         # gaussian smoothing
-        driver = _ConvolutionalFilter(irftype='gauss', win_len=0.2 * 8)(driver)
+        driver = _ConvolutionalFilter(irftype='gauss', win_len=0.2 * 8, normalize=True)(driver)
 
-        driver = _EvenlySignal(fsamp * driver, fsamp, "dEDA", signal.get_start_time(), signal.get_metadata())
+        driver = _EvenlySignal(driver, fsamp, "dEDA", signal.get_start_time(), signal.get_metadata())
         return driver
 
     _params_descriptors = {
@@ -302,10 +302,10 @@ class PhasicEstim(_Estimator):
 
     Returns
     -------
-    tonic : EvenlySignal
-        The tonic component
     phasic : EvenlySignal
         The phasic component
+    tonic : EvenlySignal
+        The tonic component
     driver_no_peak : EvenlySignal
         The "de-peaked" driver signal used to generate the interpolation grid
     """
@@ -321,10 +321,11 @@ class PhasicEstim(_Estimator):
         pre_max = params['pre_max']
         post_max = params['post_max']
 
-        fsamp = signal.fsamp
+        fsamp = signal.get_sampling_freq()
+        
         max_driv, tmp_ = _PeakDetection(delta=delta, refractory=1, start_max=True)(signal)
 
-        idx_pre, idx_post = _PeakSelection(maxs=max_driv, pre_max=pre_max, post_max=post_max)
+        idx_pre, idx_post = _PeakSelection(maxs=max_driv, pre_max=pre_max, post_max=post_max)(signal)
 
         # Linear interpolation to substitute the peaks
         driver_no_peak = _np.copy(signal)
@@ -345,9 +346,8 @@ class PhasicEstim(_Estimator):
         idx_grid = _np.arange(0, len(driver_no_peak) - 1, grid_size * fsamp)
         idx_grid = _np.r_[idx_grid, len(driver_no_peak) - 1]
 
-        driver_grid = _UnevenlySignal(driver_no_peak, idx_grid, fsamp, "dEDA", signal.get_start_time(),
+        driver_grid = _UnevenlySignal(driver_no_peak[idx_grid], idx_grid, fsamp, len(driver_no_peak), "dEDA", signal.get_start_time(),
                                       signal.get_metadata())
-
         tonic = driver_grid.to_evenly(kind='cubic')
 
         phasic = signal - tonic

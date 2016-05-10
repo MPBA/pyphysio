@@ -115,53 +115,32 @@ driver_pp = driver_estimator(eda_pp)
 delta = 0.01
 # OLD
 #par_bat_old = est_old.optimize_bateman_simple(eda_np, fsamp, 'asa', delta, verbose=True, maxiter=50)
-par_bat_old = [ 0.51004343, 5.3033562 ]
-driver_np = est_old.estimate_driver(eda_np, fsamp, par_bat_old)
-
+#par_bat_old = [ 0.51004343, 5.3033562 ]
+#driver_np = est_old.estimate_driver(eda_np, fsamp, par_bat_old)
 # NEW
-par_bat_estimator = tll_new.OptimizeBateman(opt_method='asa', complete=False, pars_ranges=[0.01, 1, 1, 15], maxiter=25, delta=delta)
+par_bat_estimator = tll_new.OptimizeBateman(opt_method='asa', complete=True, pars_ranges=[0.01, 1, 1, 15], maxiter=50, delta=delta)
+# T1 = 0.098
+# T2 = 8.567
 par_bat_new = par_bat_estimator(eda_pp)
-
+T1, T2 = par_bat_new[0]
 driver_estimator = est_new.DriverEstim(T1 = T1, T2 = T2)
 driver_pp = driver_estimator(eda_pp)
 
-
-##=============================
-## ESTIMATE PARS
-## OLD
-#range_ecg_old = tll_old.estimate_delta(ecg_np, fsamp/2, 2*fsamp, gauss_filt=False)
-#range_ecg_old = np.median(range_ecg_old*0.7)
-## NEW
-#range_estimator = tll_new.SignalRange(win_len = 2, win_step = 0.5, smooth = False)
-#range_ecg_new = range_estimator(ecg_pp)
-#range_ecg_new = np.median(range_ecg_new*0.7)
-#
-##print(np.unique((range_ecg_old - range_ecg_new))) # 0 OK
-
-#=============================
-# PEAK DETECTION
+#==============================
+# ESTIMATE PHASIC COMPONENT
 # OLD
-#idx_ibi_old, ibi_old = est_old.estimate_peaks_ecg(ecg_np, fsamp, range_ecg_old*0.7)
-# NEW
-ibi_estimator = est_new.BeatFromECG()
-
-ibi = ibi_estimator(ecg_pp) #FIXME: "The data is not a Signal." Falso
-#Mi dava errore controlla codice
-s
-#print(np.unique(ibi_old/fsamp - ibi.get_y_values())) # 0 OK
-
-#set ibi for old processing
-#ibi_old_ = np.repeat(np.nan, len(ecg_np))
-#ibi_old_[idx_ibi_old.astype(int)] = ibi_old
-#ibi_old = ibi_old_ 
+phasic_np, tonic_np, driver_no_peak_np = est_old.estimate_components(driver_np, fsamp, delta, 1, fsamp, fsamp)
+#NEW
+phasic_estimator = est_new.PhasicEstim(delta=delta, grid_size = 1, pre_max = 1, post_max = 1)
+phasic_pp, tonic_pp, driver_no_peak_pp = phasic_estimator(driver_pp)
 
 #=============================
 # GENERATE WINDOWS
 #OLD
-#windows_old, labels = sgm_old.get_windows_contiguos(np.zeros(len(ibi_old)), 60*fsamp, 30*fsamp)
+windows_old, labels = sgm_old.get_windows_contiguos(np.zeros(len(phasic_np)), 60*fsamp, 30*fsamp)
 #NEW
 window_generator = sgm_new.LengthSegments(step = 30, width = 60)
-windows_new = window_generator(ibi)
+windows_new = window_generator(phasic_pp)
 
 #============================
 # COMPUTE INDICATORS
