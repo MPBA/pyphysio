@@ -6,11 +6,11 @@ import os
 
 import matplotlib.pyplot as plt
 
-#import pyphysio.Filters as flt_old
-#import pyphysio.Tools as tll_old
-#import pyphysio.Estimators as est_old
-#import pyphysio.Segmentation as sgm_old
-#import pyphysio.Indexes as ind_old
+import pyphysio.Filters as flt_old
+import pyphysio.Tools as tll_old
+import pyphysio.Estimators as est_old
+import pyphysio.Segmentation as sgm_old
+import pyphysio.Indexes as ind_old
 
 PYPHYSIODIR = '/home/andrea/Trento/CODICE/workspaces/pyHRV-AleB/pyHRV/pyHRV'
 
@@ -82,8 +82,6 @@ fs = 1
 f_5_1 = flt_new.IIRFilter(fp = fp, fs = fs)
 ecg_pp = f_5_1(ecg_pp)
 
-#ecg_np = ecg_np_flt
-#ecg_pp = ecg_pp_flt
 
 ##=============================
 ## ESTIMATE DELTA
@@ -106,7 +104,7 @@ ibi_estimator = est_new.BeatFromECG()
 
 ibi = ibi_estimator(ecg_pp) #FIXME: "The data is not a Signal." Falso
 #Mi dava errore controlla codice
-s
+
 #print(np.unique(ibi_old/fsamp - ibi.get_y_values())) # 0 OK
 
 #set ibi for old processing
@@ -128,21 +126,27 @@ windows_new = window_generator(ibi)
 #feat_1, label_col_1 = sgm_old.compute_on_windows(ibi_old/fsamp, fsamp, windows, ind_old.HRVfeatures, **{'method':'welch'})
 #NEW
 
-algos = [td_new.Mean(),
-         td_new.StDev(),
-         td_new.Median(),
-         td_new.Range(),
-         td_new.StDev(),
-         td_new.RMSSD(),
-         td_new.SDSD(),
-         td_new.TINN(),
-#         fd_new.PowerInBand(interp_freq=4, freq_max=0.04, freq_min=0.00001), #VLF
-#         fd_new.PowerInBand(interp_freq=4, freq_max=0.15, freq_min=0.04), #LF
-#         fd_new.PowerInBand(interp_freq=4, freq_max=0.4, freq_min=0.15), #HF
-         nl_new.PNNx(threshold=10), #PNN10
-         nl_new.PNNx(threshold=25), #PNN25
-         nl_new.PNNx(threshold=50) #PNN50
+algos = [fd_new.PowerInBand(interp_freq=4, freq_max=0.04, freq_min=0.00001), #VLF
+         fd_new.PowerInBand(interp_freq=4, freq_max=0.15, freq_min=0.04), #LF
+         fd_new.PowerInBand(interp_freq=4, freq_max=0.4, freq_min=0.15), #HF
          ]
+
+
+#algos = [td_new.Mean(),
+#         td_new.StDev(),
+#         td_new.Median(),
+#         td_new.Range(),
+#         td_new.StDev(),
+#         td_new.RMSSD(),
+#         td_new.SDSD(),
+#         td_new.TINN(),
+##         fd_new.PowerInBand(interp_freq=4, freq_max=0.04, freq_min=0.00001), #VLF
+##         fd_new.PowerInBand(interp_freq=4, freq_max=0.15, freq_min=0.04), #LF
+##         fd_new.PowerInBand(interp_freq=4, freq_max=0.4, freq_min=0.15), #HF
+#         nl_new.PNNx(threshold=10), #PNN10
+#         nl_new.PNNx(threshold=25), #PNN25
+#         nl_new.PNNx(threshold=50) #PNN50
+#         ]
 
 results = ph.fmap(windows_new, algos)
     

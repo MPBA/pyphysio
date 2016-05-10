@@ -187,7 +187,7 @@ class UnevenlySignal(Signal):
     def get_original_length(self):
         return self.ph[self._MT_ORIGINAL_LENGTH]
 
-    def to_evenly(self, kind='linear', length=None):
+    def to_evenly(self, kind='cubic', length=None):
         """
         Interpolate the UnevenlySignal to obtain an evenly spaced signal
         Parameters

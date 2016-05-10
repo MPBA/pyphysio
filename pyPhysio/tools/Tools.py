@@ -315,13 +315,14 @@ class PSD(_Tool):
         window = params['window']
         normalize = params['normalize']
         remove_mean = params['remove_mean']
+        
+        if not isinstance(signal, _EvenlySignal):
+            #TODO (new function) lomb scargle
+            interp_freq = params['interp_freq']
+            signal = signal.to_evenly(kind='cubic') #CUBIC
+            signal = signal.resample(interp_freq)
 
         fsamp = signal.get_sampling_freq()
-
-        if not isinstance(data, _EvenlySignal):
-	    #TODO (new function) lomb scargle
-            data = data.to_evenly(params)
-
         l = len(signal)
         if remove_mean:
             signal = signal - _np.mean(signal)
