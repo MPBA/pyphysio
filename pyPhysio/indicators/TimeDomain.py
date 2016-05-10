@@ -34,7 +34,7 @@ class Mean(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        return _np.nanmean(data)
+        return _np.nanmean(data.get_values())
 
 
 class Min(_Indicator):
@@ -46,7 +46,7 @@ class Min(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        return _np.nanmin(data)
+        return _np.nanmin(data.get_values())
 
 
 class Max(_Indicator):
@@ -58,7 +58,7 @@ class Max(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        return _np.nanmax(data)
+        return _np.nanmax(data.get_values())
 
 
 class Range(_Indicator):
@@ -81,7 +81,7 @@ class Median(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        return _np.median(data)
+        return _np.median(data.get_values())
 
 
 class StDev(_Indicator):
@@ -93,7 +93,7 @@ class StDev(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        return _np.nanstd(data)
+        return _np.nanstd(data.get_values())
 
 
 class Sum(_Indicator):
@@ -105,7 +105,7 @@ class Sum(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        return _np.nansum(data)
+        return _np.nansum(data.get_values())
 
 
 class AUC(_Indicator):

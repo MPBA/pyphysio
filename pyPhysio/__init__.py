@@ -10,7 +10,7 @@ from tools.Tools import *
 from segmentation.SegmentsGenerators import *
 import segmentation.SegmentsGenerators
 from BaseSegmentation import Segment
-from Signal import EvenlySignal, UnevenlySignal, SparseSignal
+from Signal import EvenlySignal, UnevenlySignal, EventsSignal
 
 __author__ = "AleB"
 
@@ -25,7 +25,7 @@ def fmap(segments, algorithms, alt_signal=None):
     :param alt_signal: The signal that will be used instead of the one referenced in the segments
     :return: A list containing a list for each segment containing a value for each algorithm
     """
-    return [[ind(seg(alt_signal)) for ind in algorithms] for seg in segments]
+    return [[seg.get_begin(), seg.get_end(), seg.get_label()] + [alg(seg(alt_signal)) for alg in algorithms] for seg in segments]
 
 
 def algo(function, params=None):

@@ -5,7 +5,10 @@ __author__ = 'AleB'
 # bvp_np is an ndarray with the data in polling format
 # bvp_sf is the sampling frequency of the data
 # bvp_st is the start timestamp of the series
-import pyphysio.pyPhysio as ph
+try:
+    import pyphysio.pyPhysio as ph
+except ImportError:
+    import pyPhysio as ph
 
 sig = ph.EvenlySignal(bvp_np, bvp_sf, bvp_st)
 sig.get_metadata.set_anag("Tito", "Livio", "SUB0524", 42)

@@ -21,7 +21,6 @@ class InBand(_Indicator):
         i_min = _np.searchsorted(freq, params["freq_min"])
         i_max = _np.searchsorted(freq, params["freq_max"])
 
-
         return freq[i_min:i_max], spec[i_min:i_max]
 
     _params_descriptors = {
@@ -33,10 +32,10 @@ class InBand(_Indicator):
 class PowerInBand(_Indicator):
     @classmethod
     def algorithm(cls, data, params):
-        freq, power = InBand(params)(data) #pow e' una keyword
-        df = freq[1] - freq[0]
+        freq, powers = InBand(params)(data)
+        df = freq[1] - freq[0] if len(freq) > 0 else 1
         # TODO (Andrea) Decidere se e come normalizzare
-        return df * _np.sum(power)
+        return df * _np.sum(powers)
 
     _params_descriptors = InBand.get_params_descriptors()
 
