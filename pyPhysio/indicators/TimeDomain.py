@@ -128,7 +128,7 @@ class RMSSD(_Indicator):
     @classmethod
     def algorithm(cls, data, params):
         diff = _Diff()(data)
-        return _np.sqrt(_np.mean(_np.power(diff, 2)))
+        return _np.sqrt(_np.mean(_np.power(diff.get_values(), 2)))
 
 
 class SDSD(_Indicator):
@@ -171,7 +171,7 @@ class TINN(_Indicator):
         step = 1000. / 128
         min_ibi = _np.min(data)
         max_ibi = _np.max(data)
-        if max_ibi - min_ibi / step + 1 < 10:
+        if (max_ibi - min_ibi) / step + 1 < 10:
             cls.warn("len(bins) < 10")
             return _np.nan
         else:

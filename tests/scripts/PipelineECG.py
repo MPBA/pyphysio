@@ -132,21 +132,21 @@ algos = [fd_new.PowerInBand(interp_freq=4, freq_max=0.04, freq_min=0.00001), #VL
          ]
 
 
-#algos = [td_new.Mean(),
-#         td_new.StDev(),
-#         td_new.Median(),
-#         td_new.Range(),
-#         td_new.StDev(),
-#         td_new.RMSSD(),
-#         td_new.SDSD(),
-#         td_new.TINN(),
-##         fd_new.PowerInBand(interp_freq=4, freq_max=0.04, freq_min=0.00001), #VLF
-##         fd_new.PowerInBand(interp_freq=4, freq_max=0.15, freq_min=0.04), #LF
-##         fd_new.PowerInBand(interp_freq=4, freq_max=0.4, freq_min=0.15), #HF
-#         nl_new.PNNx(threshold=10), #PNN10
-#         nl_new.PNNx(threshold=25), #PNN25
-#         nl_new.PNNx(threshold=50) #PNN50
-#         ]
+algos = [td_new.Mean(),
+         td_new.StDev(),
+         td_new.Median(),
+         td_new.Range(),
+         td_new.StDev(),
+         td_new.RMSSD(),
+         td_new.SDSD(),
+         td_new.TINN(),
+#         fd_new.PowerInBand(interp_freq=4, freq_max=0.04, freq_min=0.00001), #VLF
+#         fd_new.PowerInBand(interp_freq=4, freq_max=0.15, freq_min=0.04), #LF
+#         fd_new.PowerInBand(interp_freq=4, freq_max=0.4, freq_min=0.15), #HF
+         nl_new.PNNx(threshold=10), #PNN10
+         nl_new.PNNx(threshold=25), #PNN25
+         nl_new.PNNx(threshold=50) #PNN50
+         ]
 
 results = ph.fmap(windows_new, algos)
     
