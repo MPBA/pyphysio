@@ -13,16 +13,18 @@ __author__ = 'AleB'
 class Signal(_np.ndarray):
     _MT_NATURE = "signal_nature"
     _MT_START_TIME = "start_time"
+    _MT_START_INDEX = "start_index"
     _MT_META_DICT = "metadata"
     _MT_SAMPLING_FREQ = "sampling_freq"
     _MT_INFO_ATTR = "_pyphysio"
 
-    def __new__(cls, values, sampling_freq, signal_nature="", start_time=0, meta=None):
+    def __new__(cls, values, sampling_freq, signal_nature="", start_time=0, meta=None, start_index=0):
         # noinspection PyNoneFunctionAssignment
         obj = _np.asarray(values).view(cls)
         obj._pyphysio = {
             cls._MT_NATURE: signal_nature,
             cls._MT_START_TIME: start_time,
+            cls._MT_START_INDEX: start_index,
             cls._MT_SAMPLING_FREQ: sampling_freq,
             cls._MT_META_DICT: meta if meta is not None else {}
         }
@@ -32,7 +34,7 @@ class Signal(_np.ndarray):
         # __new__ called if obj is None
         if obj is not None and hasattr(obj, self._MT_INFO_ATTR):
             # The cache is not in MT_INFO_ATTR
-            self._pyphysio = getattr(obj, self._MT_INFO_ATTR)
+            self._pyphysio = getattr(obj, self._MT_INFO_ATTR).copy()
 
     def __array_wrap__(self, out_arr, context=None):
         # Just call the parent's
@@ -88,16 +90,15 @@ class EvenlySignal(Signal):
     def get_indices(self, just_one=None):
         # Using future division
         if just_one is None:
-            return _np.arange(len(self))
+            return _np.arange(len(self)) + self.ph[Signal._MT_START_INDEX]
         else:
-            return just_one
+            if just_one >= 0:
+                return just_one + self.ph[Signal._MT_START_INDEX]
+            else:
+                return just_one + self.ph[Signal._MT_START_INDEX] + len(self)
 
     def get_times(self, just_one=None):
-        # Using future division
-        if just_one is None:
-            return _np.arange(len(self)) / self.get_sampling_freq()
-        else:
-            return just_one / self.get_sampling_freq()
+        return self.get_indices(just_one) / self.get_sampling_freq()
 
     # Works with timestamps (OLD)
     def getslice(self, f, l):
@@ -135,7 +136,7 @@ class EvenlySignal(Signal):
         ratio = self.get_sampling_freq() / fout
 
         if fout < self.get_sampling_freq() and ratio.is_integer():  # fast interpolation
-            signal_out = self[::ratio]
+            signal_out = self.get_values()[::ratio]
         else:
             # The last sample is doubled to allow the new size to be correct
             indexes = _np.arange(len(self) + 1)
@@ -149,6 +150,12 @@ class EvenlySignal(Signal):
             signal_out = tck(indexes_out)
 
         return EvenlySignal(signal_out, fout, self.get_signal_nature(), self.get_start_time(), self.get_metadata())
+
+    def __getslice__(self, i, j):
+        o = Signal.__getslice__(self, i, j)
+        if isinstance(o, Signal):
+            o.ph[Signal._MT_START_INDEX] += i
+        return o
 
 
 class UnevenlySignal(Signal):
@@ -179,7 +186,11 @@ class UnevenlySignal(Signal):
         return Signal.__repr__(self) + "\ny-values\n" + self.view(_np.ndarray).__repr__() + \
             "\nx-indices\n" + self.get_indices().__repr__()
 
-    # unev
+    def __getslice__(self, i, j):
+        o = Signal.__getslice__(self, i, j)
+        if isinstance(o, UnevenlySignal):
+            o.ph[UnevenlySignal._MT_X_VALUES] = o.ph[UnevenlySignal._MT_X_VALUES].__getslice__(i, j)
+        return o
 
     def get_duration(self):
         return self.ph[self._MT_ORIGINAL_LENGTH] / self.get_sampling_freq()
