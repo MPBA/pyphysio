@@ -269,76 +269,55 @@ class GeneralTest(unittest.TestCase):
         # cache
         function()
 
-    # def test_sparse_signal_advanced(self):
-    #     samples = 1000
-    #     freq = 13
-    #     start = 1460713373
-    #     nature = "una_bif-fa"
-    #     test_string = 'test1235'
-    #     times = np.cumsum(np.random.rand(1, samples))
-    #     duration = times[-1]
-    #
-    #     s = ph.SparseSignal(y_values=np.cumsum(np.random.rand(1, samples) - .5) * 100,
-    #                         times=times,
-    #                         sampling_freq=freq,
-    #                         signal_nature=nature,
-    #                         start_time=start,
-    #                         meta={'mode': test_string, 'subject': 'Baptist;Alessandro'},
-    #                         check=True
-    #                         )
-    #     # length Y
-    #     self.assertEqual(len(s), samples)
-    #     self.assertEqual(len(s.get_values()), samples)
-    #     # length X
-    #     self.assertEqual(len(s.get_indices()), samples)
-    #     # sampling frequency in Hz
-    #     self.assertEqual(s.get_sampling_freq(), freq)
-    #     # duration in seconds
-    #     self.assertEqual(s.get_duration(), duration)
-    #     # start timestamp
-    #     self.assertEqual(s.get_start_time(), start)
-    #     # end timestamp
-    #     self.assertEqual(s.get_end_time(), start + s.get_duration())
-    #     # meta data present
-    #     self.assertEqual(s.get_metadata()['mode'], test_string)
-    #     # start time
-    #     self.assertEqual(s.get_signal_nature(), nature)
+    def test_evenly_slicing(self):
+        samples = 1000
+        x1 = 200
+        x2 = 201
+        x3 = 590
+        x4 = 999
+        freq_down = 7
+        freq = freq_down * 13
+        start = 1460713373
+        nature = "una_bif-fa"
+        test_string = 'test1235'
 
-    # def test_sparse_signal_base(self):
-    #     samples = 1000
-    #     freq = 13
-    #     start = 1460713373
-    #     nature = "una_bif-fa"
-    #     test_string = 'test1235'
-    #     times = np.cumsum(np.random.rand(1, samples))
-    #     duration = times[-1]
-    #
-    #     s = ph.SparseSignal(y_values=np.cumsum(np.random.rand(1, samples) - .5) * 100,
-    #                         times=times,
-    #                         sampling_freq=freq,
-    #                         signal_nature=nature,
-    #                         start_time=start,
-    #                         meta={'mode': test_string, 'subject': 'Baptist;Alessandro'},
-    #                         check=True
-    #                         )
-    #
-    #     # length Y
-    #     self.assertEqual(len(s), samples)
-    #     self.assertEqual(len(s.get_values()), samples)
-    #     # length X
-    #     self.assertEqual(len(s.get_indices()), samples)
-    #     # sampling frequency in Hz
-    #     self.assertEqual(s.get_sampling_freq(), freq)
-    #     # duration in seconds
-    #     self.assertEqual(s.get_duration(), duration)
-    #     # start timestamp
-    #     self.assertEqual(s.get_start_time(), start)
-    #     # end timestamp
-    #     self.assertEqual(s.get_end_time(), start + s.get_duration())
-    #     # meta data present
-    #     self.assertEqual(s.get_metadata()['mode'], test_string)
-    #     # start time
-    #     self.assertEqual(s.get_signal_nature(), nature)
+        s = ph.EvenlySignal(values=np.cumsum(np.random.rand(1, samples) - .5) * 100,
+                            sampling_freq=freq,
+                            signal_nature=nature,
+                            start_time=start,
+                            meta={'mode': test_string, 'subject': 'Baptist;Alessandro'}
+                            )
+
+        s1 = s[0:x4]
+        s2 = s[x1:x3]
+        s3 = s[x2:-1]
+        s4 = s[x3:samples]
+        s5 = s[0:]
+        s6 = s[:x2]
+        s7 = s[:]
+
+        self.assertEqual(len(s1), x4 - 0)
+        self.assertEqual(len(s2), x3 - x1)
+        self.assertEqual(len(s3), samples - x2 - 1)
+        self.assertEqual(len(s4), samples - x3)
+        self.assertEqual(len(s5), samples)
+        self.assertEqual(len(s6), x2)
+        self.assertEqual(len(s7), samples)
+        self.assertEqual(s1.get_indices(0), 0)
+        self.assertEqual(s2.get_indices(0), x1)
+        self.assertEqual(s3.get_indices(0), x2)
+        self.assertEqual(s4.get_indices(0), x3)
+        self.assertEqual(s5.get_indices(0), 0)
+        self.assertEqual(s6.get_indices(0), 0)
+        self.assertEqual(s7.get_indices(0), 0)
+        self.assertEqual(s1.get_indices(-1), x4 - 1)
+        self.assertEqual(s2.get_indices(-1), x3 - 1)
+        self.assertEqual(s3.get_indices(-1), samples - 1)
+        self.assertEqual(s4.get_indices(-1), samples - 1)
+        self.assertEqual(s5.get_indices(-1), samples - 1)
+        self.assertEqual(s6.get_indices(-1), x2 - 1)
+        self.assertEqual(s7.get_indices(-1), samples - 1)
+
 
 if __name__ == '__main__':
     unittest.main()
