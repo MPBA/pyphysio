@@ -75,8 +75,8 @@ class Signal(_np.ndarray):
     def get_metadata(self):
         return self.ph[self._MT_META_DICT]
 
-    def plot(self, style=None):
-        _plot(self.get_times(), self.get_values(), style)
+    def plot(self, style=""):
+        _plot(self.get_indices(), self.get_values(), style)
 
     def __repr__(self):
         return "<signal: " + self.get_signal_nature() + ", start_time: " + str(self.get_start_time()) + ">"
