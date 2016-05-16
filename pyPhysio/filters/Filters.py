@@ -104,7 +104,7 @@ class Diff(_Filter):
 
         # TODO (Ale): Manage Time references
         sig_1 = signal[:-degree]
-        sig_2 = signal[degree:]
+        sig_2 = signal.get_values()[degree:]
 
         return sig_2 - sig_1
 
