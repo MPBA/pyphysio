@@ -1,3 +1,0 @@
-<component name="DependencyValidationManager">
-  <scope name="MyScope" pattern="file[pyphysio]:*/&amp;&amp;!file[pyphysio]:.idea/*&amp;&amp;!file[pyphysio]:Extra/*&amp;&amp;!file[pyphysio]:.idea//*&amp;&amp;!file[pyphysio]:Extra//*" />
-</component>
