@@ -3,7 +3,7 @@ from __future__ import division
 import numpy as _np
 from scipy.signal import gaussian as _gaussian, filtfilt as _filtfilt, filter_design as _filter_design
 from ..BaseFilter import Filter as _Filter
-from ..Signal import EvenlySignal as _EvenlySignal
+from ..Signal import EvenlySignal as _EvenlySignal, Signal as _Signal
 from ..Utility import PhUI as _PhUI
 from ..Parameters import Parameter as _Par
 from ..Utility import abstractmethod as _abstract
@@ -97,9 +97,9 @@ class Diff(_Filter):
         """
         Calculates the differences between consecutive values
         """
-        if not isinstance(signal, _EvenlySignal):
-            _PhUI.i(
-                "Computing %s on '%s' may not make sense.".format(Diff.__class__.__name__, signal.__class__.__name__))
+        if isinstance(signal, _Signal) and not isinstance(signal, _EvenlySignal):
+            cls.log(
+                "Computing %s on '%s' may not make sense." % (cls.__name__, signal.__class__.__name__))
         degree = params['degree']
 
         # TODO (Ale): Manage Time references
@@ -141,7 +141,7 @@ class IIRFilter(_Filter):
 
     @classmethod
     def algorithm(cls, signal, params):
-        fsamp = signal.fsamp
+        fsamp = signal.get_sampling_freq()
         fp, fs, loss, att, ftype = params["fp"], params["fs"], params["loss"], params["att"], params["ftype"]
 
         # TODO (Ale): if A and B already exist and fsamp is not changed skip the following
@@ -156,12 +156,21 @@ class IIRFilter(_Filter):
         wp = fp / nyq
         ws = fs / nyq
         b, a = _filter_design.iirdesign(wp, ws, loss, att, ftype=ftype)
-        if _np.isnan(b[0]) | _np.isnan(a[0]):
-            _PhUI.w('Filter parameters allow no solution')
-            return signal
+                
+        # TODO (new feature) Trovare metodo per capire se funziona o no
+        #if _np.max(a)>BIG_NUMBER | _np.isnan(_np.sum(a)):
+        #    _PhUI.w('Filter parameters allow no solution')
+        #    return signal
         # ---------
-
-        return _filtfilt(b, a, signal)
+        # FIXME: con _filtfilt signal perde la classe e rimane array
+        # TODO (Andrea): va bene EvenlySignal?
+        sig_filtered = _EvenlySignal(_filtfilt(b, a, signal), signal.get_sampling_freq(), signal.get_signal_nature(),
+                                     signal.get_start_time(), signal.get_metadata())
+        if _np.isnan(sig_filtered[0]):
+            cls.warn(cls.__name__ + ': Filter parameters allow no solution. Returning original signal.')
+            return signal
+        else:
+            return sig_filtered
 
     _params_descriptors = {
         'fp': _Par(2, list, 'The pass frequencies'),
@@ -187,7 +196,7 @@ class MatchedFilter(_Filter):
 
     Parameters
     ----------
-    template : nparray
+    template : array
         The template for matched filter (not reversed)
 
     Returns
@@ -231,7 +240,7 @@ class ConvolutionalFilter(_Filter):
         Whether to normalizes the IRF to have unitary area
     win_len : int
         Durarion of the generated IRF in seconds (if irftype is not 'custom')
-    irf : nparray
+    irf : array
         IRF to be used if irftype is 'custom'
     
     Returns
@@ -257,18 +266,18 @@ class ConvolutionalFilter(_Filter):
         irftype = params["irftype"]
         normalize = params["normalize"]
 
-        fsamp = signal.sampling_freq
+        fsamp = signal.get_sampling_freq()
         irf = None
 
         if irftype == 'custom':
             if 'irf' not in params:
-                _PhUI.e("'irf' parameter missing in " + cls.__name__)
+                cls.error("'irf' parameter missing.")
                 return signal
             else:
                 irf = _np.array(params["irf"])
         else:
             if 'win_len' not in params:
-                _PhUI.e("'win_len' parameter missing in " + cls.__name__)
+                cls.error("'win_len' parameter missing.")
                 return signal
             else:
                 n = params['win_len'] * fsamp
@@ -294,19 +303,22 @@ class ConvolutionalFilter(_Filter):
         if normalize:
             irf = irf / _np.sum(irf)  # TODO (Andrea): account fsamp? TEST
 
-        # TODO (Ale): sicuri che dopo questa riga signal rimanga un nparray? No
+        # TODO: sicuri che dopo questa riga signal rimanga un array? No
         # TODO (Andrea): n non dovrebbe essere definita anche in caso di irftype == custom?
         signal_ = _np.r_[_np.ones(n) * signal[0], signal, _np.ones(n) * signal[-1]]  # TESTME
 
         signal_f = _np.convolve(signal_, irf, mode='same')
-        signal_out = signal_f[n:-n]
+        # TODO (Andrea) va bene evenly signal?
+        signal_out = _EvenlySignal(signal_f[n:-n], signal.get_sampling_freq(), signal.get_signal_nature(),
+                                   signal.get_start_time(), signal.get_metadata())
         return signal_out
 
     _params_descriptors = {
         'irftype': _Par(1, str, 'Type of IRF to be generated.', 'gauss',
                         lambda x: x in ['gauss', 'rect', 'triang', 'dgauss', 'custom']),
         'normalize': _Par(1, bool, 'Whether to normalizes the IRF to have unitary area', True),
-        'win_len': _Par(2, int, "Durarion of the generated IRF in seconds (if irftype is not 'custom')", 1,
+        # TODO (Andrea): win_len was int is it ok float?
+        'win_len': _Par(2, float, "Durarion of the generated IRF in seconds (if irftype is not 'custom')", 1,
                         lambda x: x > 0, lambda x, p: p['irftype'] != 'custom'),
         'irf': _Par(2, list, "IRF to be used if irftype is 'custom'", activation=lambda x, p: p['irftype'] == 'custom')
     }
@@ -326,14 +338,14 @@ class DeConvolutionalFilter(_Filter):
 
     Parameters
     ----------
-    irf : nparray
+    irf : array
         IRF used to deconvolve the signal
     normalize : boolean
         Whether to normalize the IRF to have unitary area
 
     Returns
     -------
-    filtered_signal : nparray
+    filtered_signal : array
         The filtered signal
 
     Notes
@@ -352,12 +364,14 @@ class DeConvolutionalFilter(_Filter):
         fft_signal = _np.fft.fft(signal, n=l)
         fft_irf = _np.fft.fft(irf, n=l)
         out = _np.fft.ifft(fft_signal / fft_irf)
+        
+        out_signal = _EvenlySignal(abs(out), signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time(), signal.get_metadata())
 
-        return abs(out)
+        return out_signal
 
     _params_descriptors = {
         'irf': _Par(2, list, 'IRF used to deconvolve the signal'),
-        'normalize': _Par(1, 'Whether to normalize the IRF to have unitary area', True)
+        'normalize': _Par(1, bool, 'Whether to normalize the IRF to have unitary area', True)
     }
 
     @classmethod
@@ -374,7 +388,7 @@ class DeConvolutionalFilter(_Filter):
 #
 #     Parameters
 #     ----------
-#     signal : nparray
+#     signal : array
 #         The input signal
 #     winlen : int
 #         Size of the window
@@ -383,7 +397,7 @@ class DeConvolutionalFilter(_Filter):
 #
 #     Returns
 #     -------
-#     thresholded_signal : nparray
+#     thresholded_signal : array
 #         The thresholded signal
 #
 #

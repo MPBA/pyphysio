@@ -2,48 +2,27 @@
 from __future__ import division
 
 import numpy as _np
+
 from ..BaseIndicator import Indicator as _Indicator
 from ..filters.Filters import Diff as _Diff
 from ..Utility import PhUI as _PhUI
-from ..Parameters import Parameter as _Par
+from ..tools.Tools import Histogram
+
 
 __author__ = 'AleB'
 
 
-class Histogram(_Indicator):
-    @classmethod
-    def algorithm(cls, signal, params):
-        """
-        Calculates the Histogram data to cache
-        @return: (values, bins)
-        @rtype: (array, array)
-        """
-
-        return _np.histogram(signal, params['histogram_bins'])
-
-    _params_descriptors = {
-        'histogram_bins': _Par(1, list,
-                               'Number of bins (int) or bin edges, including the rightmost edge (list-like).', 100,
-                               lambda x: type(x) is not int or x > 0)
-    }
-
-
-# """
 # class HistogramMax(_Indicator):
-# @classmethod
+#     @classmethod
 #     def algorithm(cls, signal, params):
-#
-# #        Calculates the Histogram's max value
-# #        @return: (values, bins)
-# #        @rtype: (array, array)
+#         """
+#         Computes the size of the biggest Histogram bin
+#         @return: (values, bins)
+#         @rtype: (array, array)
+#         """
 #
 #         h, b = Histogram(params)(signal)
 #         return _np.max(h)
-#
-#     @classmethod
-#     def get_used_params(cls):
-#         return Histogram.get_used_params()
-# """
 
 
 class Mean(_Indicator):
@@ -55,7 +34,7 @@ class Mean(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        return _np.nanmean(data)
+        return _np.nanmean(data.get_values())
 
 
 class Min(_Indicator):
@@ -67,7 +46,7 @@ class Min(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        return _np.nanmin(data)
+        return _np.nanmin(data.get_values())
 
 
 class Max(_Indicator):
@@ -79,7 +58,7 @@ class Max(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        return _np.nanmax(data)
+        return _np.nanmax(data.get_values())
 
 
 class Range(_Indicator):
@@ -102,7 +81,7 @@ class Median(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        return _np.median(data)
+        return _np.median(data.get_values())
 
 
 class StDev(_Indicator):
@@ -114,7 +93,7 @@ class StDev(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        return _np.nanstd(data)
+        return _np.nanstd(data.get_values())
 
 
 class Sum(_Indicator):
@@ -126,7 +105,7 @@ class Sum(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        return _np.nansum(data)
+        return _np.nansum(data.get_values())
 
 
 class AUC(_Indicator):
@@ -143,17 +122,19 @@ class AUC(_Indicator):
 # HRV
 class RMSSD(_Indicator):
     """
-    Calculates the square root of the mean of the squared differences.
+    Computes the square root of the mean of the squared 1st order discrete differences.
     """
 
     @classmethod
     def algorithm(cls, data, params):
         diff = _Diff()(data)
-        return _np.sqrt(_np.sum(_np.power(diff, 2)) / len(diff))
+        return _np.sqrt(_np.mean(_np.power(diff.get_values(), 2)))
 
 
 class SDSD(_Indicator):
-    """Calculates the standard deviation of the differences between each value and its next."""
+    """
+    Calculates the standard deviation of the 1st order discrete differences.
+    """
 
     @classmethod
     def algorithm(cls, data, params):
@@ -162,30 +143,39 @@ class SDSD(_Indicator):
 
 
 class Triang(_Indicator):
-    """Calculates the Triangular index."""
+    """
+    Computes the HRV triangular index.
+    """
 
     @classmethod
     def algorithm(cls, data, params):
+        step = 1000. / 128
         min_ibi = _np.min(data)
         max_ibi = _np.max(data)
-        bins = _np.arange(min_ibi, max_ibi, 1000. / 128)
-        if len(bins) >= 10:
+        if max_ibi - min_ibi / step + 1 < 10:
+            cls.warn("len(bins) < 10")
+            return _np.nan
+        else:
+            bins = _np.arange(min_ibi, max_ibi, step)
             h, b = Histogram(histogram_bins=bins)(data)
             return len(data) / _np.max(h)
-        else:
-            _PhUI.w("len(bins) < 10")
-            return _np.nan
 
 
 class TINN(_Indicator):
-    """Calculates the difference between two histogram-related indicators."""
+    """
+    Computes the triangular interpolation of NN interval histogram.
+    """
 
     @classmethod
     def algorithm(cls, data, params):
+        step = 1000. / 128
         min_ibi = _np.min(data)
         max_ibi = _np.max(data)
-        bins = _np.arange(min_ibi, max_ibi, 1000. / 128)
-        if len(bins) >= 10:
+        if (max_ibi - min_ibi) / step + 1 < 10:
+            cls.warn("len(bins) < 10")
+            return _np.nan
+        else:
+            bins = _np.arange(min_ibi, max_ibi, step)
             h, b = Histogram(histogram_bins=bins)(data)
             max_h = _np.max(h)
             hist_left = _np.array(h[0:_np.argmax(h)])
@@ -219,6 +209,3 @@ class TINN(_Indicator):
 
             m = b[_np.argmax(h) + pos + 1]
             return m - n
-        else:
-            _PhUI.w("len(bins) < 10")
-            return _np.nan

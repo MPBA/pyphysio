@@ -20,20 +20,24 @@ class Parameter(object):
     def check_constraint(self, value):
         return self._constraint is None or self._constraint(value)
 
-    def __call__(self, value):
-        if not self.check_type(value):
-            raise ValueError("Wrong parameter type: " + str(type(value)) + " not sub-dtype of " + str(self._pytype))
-        elif not self.check_constraint(value):
-            raise ValueError("Parameter constraint: " + self._description)
+    def __call__(self, params, name):
+        value = params[name]
+        if self._activation is None or self._activation(value, params):
+            if not self.check_type(value):
+                raise ValueError("Wrong parameter type (" + name + "): " + str(type(value)) + " not sub-dtype of " + str(self._pytype))
+            elif not self.check_constraint(value):
+                raise ValueError("Parameter constraint (" + name + "): " + self._description)
         return True, None
 
-    def not_present(self, name, algo):
-        if self._requirement_level == 0:
-            return True, self._default
-        elif self._requirement_level == 1:
-            _PhUI.i("Using default value for: " + name + " in " + algo.__class__.__name__)
-            return True, self._default
-        elif self._requirement_level == 2:
-            _PhUI.e("Missing parameter: " + name + " in " + algo.__class__.__name__)
-            _PhUI.i("Missing parameter: " + self._description)
-            return False, None
+    def not_present(self, params, name, algo):
+        if self._activation is None or self._activation(None, params):
+            if self._requirement_level == 0:
+                return True, self._default
+            elif self._requirement_level == 1:
+                _PhUI.i("Default value in " + algo.__class__.__name__ + " for " + name + ": " + str(self._default))
+                return True, self._default
+            elif self._requirement_level == 2:
+                _PhUI.e("Missing parameter: " + name + " in " + algo.__class__.__name__ + ", " + self._description)
+                return False, None
+        else:
+            return True, None

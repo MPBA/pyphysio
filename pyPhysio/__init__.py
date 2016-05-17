@@ -10,14 +10,22 @@ from tools.Tools import *
 from segmentation.SegmentsGenerators import *
 import segmentation.SegmentsGenerators
 from BaseSegmentation import Segment
-from WindowsIterator import WindowsIterator
-from Signal import EvenlySignal, UnevenlySignal, SparseSignal
+from Signal import EvenlySignal, UnevenlySignal, EventsSignal
 
 __author__ = "AleB"
 
 
 def fmap(segments, algorithms, alt_signal=None):
-    return [[ind(seg(alt_signal)) for ind in algorithms] for seg in segments]
+    """
+    Generates a list composed of a list of results for each segment.
+
+    [[result for each algorithm] for each segment]
+    :param segments: An iterable of segments (e.g. an initialized SegmentGenerator)
+    :param algorithms: A list of algorithms
+    :param alt_signal: The signal that will be used instead of the one referenced in the segments
+    :return: A list containing a list for each segment containing a value for each algorithm
+    """
+    return [[seg.get_begin(), seg.get_end(), seg.get_label()] + [alg(seg(alt_signal)) for alg in algorithms] for seg in segments]
 
 
 def algo(function, params=None):

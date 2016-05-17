@@ -1,4 +1,5 @@
 # coding=utf-8
+from __future__ import division
 import numpy as _np
 from ..BaseEstimator import Estimator as _Estimator
 from ..Signal import UnevenlySignal as _UnevenlySignal, EvenlySignal as _EvenlySignal
@@ -51,7 +52,7 @@ class BeatFromBP(_Estimator):
 
         fmax = bpm_max / 60
 
-        fsamp = signal.sampling_freq
+        fsamp = signal.get_sampling_freq()
 
         refractory = int(fsamp / fmax)
 
@@ -89,7 +90,7 @@ class BeatFromBP(_Estimator):
                 peak = idx_mins[1]
                 true_peaks.append(start_ + peak_obs + peak)
             else:
-                _PhUI.w('Peak not found; idx_beat: ' + str(idx_beat))
+                cls.warn('Peak not found; idx_beat: ' + str(idx_beat))
                 pass
 
         # STAGE 4 - FINALIZE computing IBI and fixing indexes
@@ -97,7 +98,7 @@ class BeatFromBP(_Estimator):
         ibi_values = _np.r_[ibi_values[0], ibi_values]
         idx_ibi = _np.array(true_peaks)
 
-        ibi = _UnevenlySignal(ibi_values, idx_ibi, fsamp, 'IBI', signal.start_time, signal.meta)
+        ibi = _UnevenlySignal(ibi_values, idx_ibi, fsamp, len(signal), 'IBI', signal.get_start_time(), signal.get_metadata())
         return ibi
 
     _params_descriptors = {
@@ -122,15 +123,15 @@ class BeatFromECG(_Estimator):
     bpm_max : int (>0)
         Maximal expected heart rate (in beats per minute)
         If not given the peak detection will run without refractory period.
-    delta : float or nd.array or Signal (>0 len(delta)=len(signal)
+    delta : float (default=0)
         Threshold for the peak detection.
-        If not given it will be computed.
+        If not given or delta=0 it will be computed from the signal.
 
     Returns
     -------
-    idx_ibi : nparray
+    idx_ibi : array
         Indexes of the input signal corresponding to R peaks
-    ibi : nparray
+    ibi : array
         Inter beat interval values at R peaks
 
     Notes
@@ -149,15 +150,15 @@ class BeatFromECG(_Estimator):
         fmax = bpm_max / 60
 
         if delta == 0:
-            delta = 0.7 * _SignalRange(winlen=2 / fmax, winstep=0.5 / fmax)(signal)
+            delta = 0.7 * _SignalRange(win_len=2 / fmax, win_step=0.5 / fmax)(signal)
         else:
             delta = _np.repeat(delta, len(signal))
 
-        fsamp = signal.fsamp
+        fsamp = signal.get_sampling_freq()
 
         refractory = int(fsamp / fmax)
 
-        maxp, minp = _PeakDetection(delta=delta, refractory=refractory, start_max=True)(signal)
+        maxp, minp = _PeakDetection(deltas=delta, refractory=refractory, start_max=True)(signal)
 
         idx_d = maxp[:, 0]
 
@@ -168,11 +169,12 @@ class BeatFromECG(_Estimator):
         ibi_values = _np.r_[ibi_values[0], ibi_values]
         idx_ibi = _np.array(idx_d)
 
-        ibi = _UnevenlySignal(ibi_values, idx_ibi, fsamp, 'IBI', signal.start_time, signal.meta)
+        ibi = _UnevenlySignal(ibi_values, idx_ibi, fsamp, len(signal), 'IBI', signal.get_start_time(), signal.get_metadata())
         return ibi
 
     _params_descriptors = {
-        'bpm_max': _Par(1, int, 180, 1, 'Maximal expected heart rate (in beats per minute)', lambda x: x > 0),
+        'bpm_max': _Par(1, int, 'Maximal expected heart rate (in beats per minute)',
+                        180, lambda x: x > 0),
         'delta': _Par(1, float, 'Threshold for the peak detection. If delta = 0 (default) the signal range'
                                 ' is automatically computed and used',
                       0, lambda x: x > 0)
@@ -191,8 +193,10 @@ class DriverEstim(_Estimator):
 
     Parameters
     ----------
-    par_bat: list (t1, t2)
-        Parameters of the bateman function
+    T1: float
+        Value of T1 parameters of the bateman function
+    T2: float
+        Value of T2 parameters of the bateman function
 
     Returns
     -------
@@ -210,12 +214,12 @@ class DriverEstim(_Estimator):
 
     @classmethod
     def algorithm(cls, signal, params):
-        t1 = params['t1']
-        t2 = params['t2']
+        t1 = params['T1']
+        t2 = params['T2']
 
         par_bat = [t1, t2]
 
-        fsamp = signal.fsamp
+        fsamp = signal.get_sampling_freq()
 
         bateman = DriverEstim._gen_bateman(fsamp, par_bat)
 
@@ -230,16 +234,17 @@ class DriverEstim(_Estimator):
         bateman_second_half = signal[-1] * (bateman_second_half - _np.min(bateman_second_half)) / (
             _np.max(bateman_second_half) - _np.min(bateman_second_half))
 
-        signal_in = _np.r_[bateman_first_half, signal, bateman_second_half]
+        signal_in = _np.r_[bateman_first_half, signal.get_values(), bateman_second_half]
+        signal_in = _EvenlySignal(signal_in, fsamp)
 
         # deconvolution
-        driver = _DeConvolutionalFilter(irf=bateman)(signal_in)
+        driver = _DeConvolutionalFilter(irf=bateman, normalize=True)(signal_in)
         driver = driver[idx_max_bat + 1: idx_max_bat + len(signal)]
 
         # gaussian smoothing
-        driver = _ConvolutionalFilter(irftype='gauss', win_len=0.2 * 8)
+        driver = _ConvolutionalFilter(irftype='gauss', win_len=0.2 * 8, normalize=True)(driver)
 
-        driver = _EvenlySignal(driver, fsamp, "dEDA", signal.start_time, signal.meta)
+        driver = _EvenlySignal(driver, fsamp, "dEDA", signal.get_start_time(), signal.get_metadata())
         return driver
 
     _params_descriptors = {
@@ -263,7 +268,7 @@ class DriverEstim(_Estimator):
 
         Returns
         -------
-        bateman : nparray
+        bateman : array
             The bateman function
         """
 
@@ -297,10 +302,10 @@ class PhasicEstim(_Estimator):
 
     Returns
     -------
-    tonic : EvenlySignal
-        The tonic component
     phasic : EvenlySignal
         The phasic component
+    tonic : EvenlySignal
+        The tonic component
     driver_no_peak : EvenlySignal
         The "de-peaked" driver signal used to generate the interpolation grid
     """
@@ -316,10 +321,11 @@ class PhasicEstim(_Estimator):
         pre_max = params['pre_max']
         post_max = params['post_max']
 
-        fsamp = signal.fsamp
+        fsamp = signal.get_sampling_freq()
+        
         max_driv, tmp_ = _PeakDetection(delta=delta, refractory=1, start_max=True)(signal)
 
-        idx_pre, idx_post = _PeakSelection(maxs=max_driv, pre_max=pre_max, post_max=post_max)
+        idx_pre, idx_post = _PeakSelection(maxs=max_driv, pre_max=pre_max, post_max=post_max)(signal)
 
         # Linear interpolation to substitute the peaks
         driver_no_peak = _np.copy(signal)
@@ -340,9 +346,8 @@ class PhasicEstim(_Estimator):
         idx_grid = _np.arange(0, len(driver_no_peak) - 1, grid_size * fsamp)
         idx_grid = _np.r_[idx_grid, len(driver_no_peak) - 1]
 
-        driver_grid = _UnevenlySignal(driver_no_peak, idx_grid, fsamp, "dEDA", signal.get_start_time(),
+        driver_grid = _UnevenlySignal(driver_no_peak[idx_grid], idx_grid, fsamp, len(driver_no_peak), "dEDA", signal.get_start_time(),
                                       signal.get_metadata())
-
         tonic = driver_grid.to_evenly(kind='cubic')
 
         phasic = signal - tonic

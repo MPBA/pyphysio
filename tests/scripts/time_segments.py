@@ -1,5 +1,8 @@
 # coding=utf-8
-import pyPhysio as ph
+try:
+    import pyphysio.pyPhysio as ph
+except ImportError:
+    import pyPhysio as ph
 import numpy as np
 
 __author__ = 'AleB'

@@ -2,15 +2,16 @@
 from __future__ import division
 import numpy as _np
 import asa as _asa
+import sys as _sys
 from scipy.signal import welch as _welch
 import scipy.optimize as _opt
 from spectrum import aryule as _aryule, arma2psd as _arma2psd, AIC as _AIC
 import itertools as _itertools
-from ..Parameters import Parameter as _Par
 from ..BaseTool import Tool as _Tool
 from ..Signal import UnevenlySignal as _UnevenlySignal, EvenlySignal as _EvenlySignal
 from ..filters.Filters import Diff as _Diff, ConvolutionalFilter as _ConvFlt
 from ..Utility import PhUI as _PhUI
+from ..Parameters import Parameter as _Par
 
 
 class PeakDetection(_Tool):
@@ -28,65 +29,67 @@ class PeakDetection(_Tool):
 
     Returns
     -------
-    maxs : nparray
+    maxs : array
         Array containing indexes (first column) and values (second column) of the maxima
-    mins : nparray
+    mins : array
         Array containing indexes (first column) and values (second column) of the minima
     """
 
     @classmethod
     def algorithm(cls, signal, params):
-        delta = params['delta']
         refractory = params['refractory']
-        start_max = params['start_max']
+        look_for_max = params['start_max']
 
-        if len(delta) != len(signal):
-            _PhUI.e("delta vector's length differs from signal's one.")
-            return _np.array([[], []]), _np.array([[], []])
+        deltas = params["deltas"] if "deltas" in params else None
+        delta = params["delta"] if "delta" in params else None
 
         mins = []
         maxs = []
 
-        # initialization
-        mn_candidate, mx_candidate = _np.Inf, -_np.Inf
-        mn_pos_candidate, mx_pos_candidate = _np.nan, _np.nan
+        if len(signal) < 1:
+            cls.warn("signal is too short (len < 1), returning empty.")
+        elif delta is None and len(deltas) != len(signal):
+            cls.error("deltas vector's length differs from signal's one, returning empty.")
+        else:
+            mn_pos_candidate = mx_pos_candidate = 0
+            mn_candidate = mx_candidate = signal[0]
 
-        look_for_max = start_max
+            i_activation_min = 0
+            i_activation_max = 0
 
-        i_activation_max = 0
-        i_activation_min = 0
+            d = delta
 
-        i = 0
-        while i <= len(signal) - 1:
-            this = signal[i]
-            dd = delta[i]
+            for i in xrange(1, len(signal)):
+                sample = signal[i]
+                if delta is None:
+                    d = deltas[i]
 
-            if this > mx_candidate:
-                mx_candidate = this
-                mx_pos_candidate = i
-            if this < mn_candidate:
-                mn_candidate = this
-                mn_pos_candidate = i
-
-            if look_for_max:
-                if i >= i_activation_max and this < mx_candidate - dd:  # new max
-                    maxs.append((mx_pos_candidate, mx_candidate))
-                    i_activation_max = i + refractory
-
-                    mn_candidate = this
+                if sample > mx_candidate:
+                    mx_candidate = sample
+                    mx_pos_candidate = i
+                if sample < mn_candidate:
+                    mn_candidate = sample
                     mn_pos_candidate = i
 
-                    look_for_max = False
-            else:
-                if i >= i_activation_min and this > mn_candidate + dd:  # new min
-                    mins.append((mn_pos_candidate, mn_candidate))
-                    i_activation_min = i + refractory
+                if look_for_max:
+                    if i >= i_activation_max and sample < mx_candidate - d:  # new max
+                        maxs.append((mx_pos_candidate, mx_candidate))
+                        i_activation_max = i + refractory
 
-                    mx_candidate = this
-                    mx_pos_candidate = i
+                        mn_candidate = sample
+                        mn_pos_candidate = i
 
-                    look_for_max = True
-            i += 1
+                        look_for_max = False
+                else:
+                    if i >= i_activation_min and sample > mn_candidate + d:  # new min
+                        mins.append((mn_pos_candidate, mn_candidate))
+                        i_activation_min = i + refractory
+
+                        mx_candidate = sample
+                        mx_pos_candidate = i
+
+                        look_for_max = True
+
         return _np.array(maxs), _np.array(mins)
 
     _params_descriptors = {
@@ -95,23 +98,24 @@ class PeakDetection(_Tool):
                       0,
                       lambda x: x > 0,
                       lambda x, y: 'deltas' not in y),
-        'deltas': _Par(2, _np.array,
+        'deltas': _Par(2, list,
                        "Vector of the ranges of the signal to be used as local threshold",
-                       constraint=lambda x, y: 'delta' not in y),
-        'refractory': _Par(1, _np.int64,
+                       activation=lambda x, y: 'delta' not in y),
+        'refractory': _Par(1, int,
                            "Number of samples to skip after detection of a peak",
-                           lambda x: x > 0),
+                           # TODO (Andrea): il refractory a default 0 va bene? O.o
+                           0, lambda x: x > 0),
         'start_max': _Par(0, bool, "Whether to start looking for a max.", True)
     }
 
 
 class PeakSelection(_Tool):
     """
-    Identifies the start and end indexes of each peak in the signal, using derivatives.
+    Identifies the start and the end indexes of each peak in the signal, using derivatives.
 
     Parameters
     ----------
-    maxs : nparray
+    maxs : array
         Array containing indexes (first column) and values (second column) of the maxima
     pre_max : float
         Duration (in seconds) of interval before the peak that is considered to find the start of the peak
@@ -120,72 +124,62 @@ class PeakSelection(_Tool):
     
     Returns
     -------
-    starts : nparray
+    starts : array
         Array containing start indexes
-    ends : nparray
+    ends : array
         Array containing end indexes
     """
 
     @classmethod
     def algorithm(cls, signal, params):
+        i_pre_max = int(params['pre_max'] * signal.get_sampling_freq())
+        i_post_max = int(params['post_max'] * signal.get_sampling_freq())
         maxs = params['maxs']
-        i_pre_max = params['pre_max'] * signal.sampling_freq
-        i_post_max = params['post_max'] * signal.sampling_freq
-        i_peaks = maxs[:, 0].astype(int)
+        r, c = maxs.shape
+        i_peaks = maxs if c == 1 else maxs[:, 0]
 
-        if _np.shape(maxs)[0] == 0:
-            _PhUI.e('No peaks found in the input')
-            return _np.array([]), _np.array([])
+        i_start = _np.empty(len(i_peaks), int)
+        i_stop = _np.empty(len(i_peaks), int)
+
+        if r == 0:
+            cls.error('Empty peaks array, returning empty.')
         else:
             signal_dt = _Diff()(signal)
-            i_start = []
-            i_stop = []
-            for i_pk in i_peaks:
-                if (i_pk < i_pre_max) or (i_pk >= len(signal_dt) - i_post_max):
-                    _PhUI.w('Peak at start/end of signal, not accounting')
-                    i_start.append(_np.nan)
-                    i_stop.append(_np.nan)
+            for i in xrange(len(i_peaks)):
+                i_pk = int(i_peaks[i])
+
+                if i_pk < i_pre_max or i_pk >= len(signal_dt) - i_post_max:
+                    cls.log('Peak at start/end of signal, not accounting')
+
+                    # TODO (Andrea): astype(int) converte i nan in -9223372036854775808, l'ho tolto, vanno bene i -1?
+                    # Perché il nan non c'è tra gli int
+                    i_start[i] = i_stop[i] = -1
                 else:
-                    # TODO: vedere se si puo scrivere un codice meno complesso
                     # TODO: gestire se sorpasso gli intervalli e non ho trovato il minimo
 
                     # find START
                     i_st = i_pk - i_pre_max
-                    signal_dt_pre = signal_dt[i_st: i_pk]
-                    i_pre = len(signal_dt_pre) - 1
+                    signal_dt_pre = signal_dt[i_st:i_pk]
+                    i_pre = i_pk - i_st - 1
 
-                    done = False
-                    while not done:
-                        if signal_dt_pre[i_pre] <= 0:
-                            done = True
-                        else:
-                            i_pre -= 1
-                            if i_pre < 0:
-                                done = True
-                                i_pre = 0
+                    while i_pre > 0 and signal_dt_pre[i_pre] > 0:
+                        i_pre -= 1
 
-                    i_pre_true = i_st + i_pre + 1
-                    i_start.append(i_pre_true)
+                    # i_pre_true =
+                    i_start[i] = i_st + i_pre + 1
 
                     # find STOP
                     i_sp = i_pk + i_post_max
                     signal_dt_post = signal_dt[i_pk: i_sp]
                     i_post = 0
 
-                    done = False
-                    while not done:
-                        if signal_dt_post[i_post] >= 0:
-                            done = True
-                        else:
-                            i_post += 1
-                            if i_post == len(signal_dt_post):
-                                done = True
-                                i_post = len(signal_dt_post)
+                    while signal_dt_post[i_post] < 0 and i_post < len(signal_dt_post)-1:
+                        i_post += 1
 
-                    i_post_true = i_pk + i_post
-                    i_stop.append(i_post_true)
+                    # i_post_true =
+                    i_stop[i] = i_pk + i_post
 
-            return _np.array(i_start).astype(int), _np.array(i_stop).astype(int)
+        return i_start, i_stop
 
     _params_descriptors = {
         'maxs': _Par(2, list,
@@ -207,16 +201,16 @@ class SignalRange(_Tool):
 
     Parameters
     ----------
-    win_len : int
+    win_len : float
         The length of the window (seconds)
-    win_step : int
+    win_step : float
         The increment to start the next window (seconds)
     smooth : boolean
         Whether to convolve the result with a gaussian window
 
     Returns
     -------
-    deltas : nparray
+    deltas : array
         Result of estimation of local range
     """
 
@@ -226,33 +220,53 @@ class SignalRange(_Tool):
         win_step = params['win_step']
         smooth = params['smooth']
 
-        fsamp = signal.sampling_freq
+        fsamp = signal.get_sampling_freq()
         idx_len = int(win_len * fsamp)
         idx_step = int(win_step * fsamp)
 
-        windows = _np.arange(0, len(signal) - idx_len, idx_step)
-        deltas = _np.zeros(len(signal))
+        if len(signal) < idx_len:
+            cls.warn("Input signal is shorter than the window length.")
+            return _np.max(signal) - _np.min(signal)
+        else:
+            # TODO (Andrea): con la next line si esclude l'ultima finestra
+            # se ho np.arange(0, 20-7, 5) -> array([ 0,  5, 10])
+            # escludo infatti 15 che +7 fa 22
+            # ma se ho np.arange(0, 20-5, 5) -> array([ 0,  5, 10])
+            # escludo 15 che +5 fa 20 escluso escludendo quindi una finestra valida
+            #
+            # Penso si possa risolvere con
+            # "len(signal) - idx_len" -> "len(signal) - idx_len + 1"
 
-        # ---
-        curr_delta = None
-        # ---
-        for start in windows:
-            portion_curr = signal[start: start + idx_len]
-            curr_delta = (_np.max(portion_curr) - _np.min(portion_curr))
-            deltas[start:start + idx_len] = curr_delta
-        # ---
-        start = windows[-1]
-        # ---
-        deltas[start + idx_len:] = curr_delta
+            windows = _np.arange(0, len(signal) - idx_len + 1, idx_step)
+            deltas = _np.zeros(len(signal))
 
-        if smooth:
-            deltas = _ConvFlt(irftype='gauss', win_len=win_len * 2, normalize=True)(deltas)  # TODO: check sintax
+            curr_delta = 0
+            for start in windows:
+                portion_curr = signal[start:start + idx_len]
+                curr_delta = _np.max(portion_curr) - _np.min(portion_curr)
+                # TODO (Andrea): below (anche in Energy
+                # 1) Permettere con l'attriuto win_step > win_len l'overlap delle finestre forse
+                # non ha senso perché la parte di overlap viene sovrascritta dalla prossima riga;
+                # a meno che:
+                #   - win_len < win_step (e verrebbero esclusi dei pezzi, se questo ha senso
+                #                         deltas = _np.empty(len(signal)) va cambiato in zeros)
+                #                                      =====                             =====
+                #   - win_len > win_step e l'ultima finestra di deltas è più lunga delle altre
+                # 2) Se len(windows) == 0 curr_delta resta a 0 e anche deltas
+                deltas[start:start + idx_len] = curr_delta
 
-        return deltas
+            deltas[windows[-1] + idx_len:] = curr_delta
+
+            deltas = _EvenlySignal(deltas, signal.get_sampling_freq())
+
+            if smooth:
+                deltas = _ConvFlt(irftype='gauss', win_len=win_len * 2, normalize=True)(deltas)
+
+            return deltas.get_values()
 
     _params_descriptors = {
-        'win_len': _Par(2, int, 'The length of the window (seconds)', 1, lambda x: x > 0),
-        'win_step': _Par(2, int, 'The increment to start the next window (seconds)', 1, lambda x: x > 0),
+        'win_len': _Par(2, float, 'The length of the window (seconds)', 1, lambda x: x > 0),
+        'win_step': _Par(2, float, 'The increment to start the next window (seconds)', 1, lambda x: x > 0),
         'smooth': _Par(1, bool, 'Whether to convolve the result with a gaussian window', True)
     }
 
@@ -292,24 +306,23 @@ class PSD(_Tool):
     # magnitudes are not influenced by the resolution because it is per Hertz. The amplitude
     # spectra on the other hand depend on the chosen frequency resolution.
 
-
     @classmethod
     def algorithm(cls, signal, params):
         # Removed parameters equal to default
 
-        method = params['psd_method']
-        nfft = params['nfft']
+        method = params['method']
+        nfft = params['nfft'] if "nfft" in params else None
         window = params['window']
         normalize = params['normalize']
         remove_mean = params['remove_mean']
-
-        fsamp = signal.sampling_freq
-
-        # TODO: check signal type.
-        # TODO: if unevenly --> interpolate
+        
         if not isinstance(signal, _EvenlySignal):
-            signal = signal.to_evenly()
+            #TODO (new function) lomb scargle
+            interp_freq = params['interp_freq']
+            signal = signal.to_evenly(kind='cubic') #CUBIC
+            signal = signal.resample(interp_freq)
 
+        fsamp = signal.get_sampling_freq()
         l = len(signal)
         if remove_mean:
             signal = signal - _np.mean(signal)
@@ -322,19 +335,15 @@ class PSD(_Tool):
             win = _np.bartlett(l)
         elif window == 'hanning':
             win = _np.hanning(l)
-        elif window == 'none':
-            win = _np.ones(l)
         else:
-            _PhUI.w('Window type not understood, using none.')
             win = _np.ones(l)
+            if window != 'none':
+                cls.warn('Window type not understood, using none.')
 
         signal = signal * win
         if method == 'fft':
             spec_tmp = _np.abs(_np.fft.fft(signal, n=nfft)) ** 2  # FFT
             psd = spec_tmp[0:(_np.ceil(len(spec_tmp) / 2))]
-
-        elif method == 'welch':
-            bands_w, psd = _welch(signal, fsamp, nfft=nfft)
 
         elif method == 'ar':
             min_order = params['min_order']
@@ -354,6 +363,11 @@ class PSD(_Tool):
             psd = _arma2psd(ar, NFFT=nfft)
             psd = psd[0: _np.ceil(len(psd) / 2)]
 
+        else:
+            bands_w, psd = _welch(signal, fsamp, nfft=nfft)
+            if method != 'welch':
+                cls.warn('Method not understood, using welch.')
+
         freqs = _np.linspace(start=0, stop=fsamp / 2, num=len(psd))
 
         # NORMALIZE
@@ -369,7 +383,7 @@ class PSD(_Tool):
         'min_order': _Par(1, int, 'Minimum order of the model (for method="ar")',
                           10,
                           lambda x: x > 0,
-                          lambda x, y: y["method"] == "ar"),
+                          lambda x, y: "method" in y and y["method"] == "ar"),
         'nfft': _Par(1, int, 'Number of samples in the PSD', 2048, lambda x: x > 0),
         'window': _Par(1, str, 'Type of window to adapt the signal before estimation of the PSD',
                        'hamming', lambda x: x in PSD._window_list),
@@ -384,53 +398,52 @@ class Energy(_Tool):
 
     Parameters
     ----------
-    win_len : int
-        The dimension of the window    
-    win_step : int
+    win_len : float
+        The dimension of the window
+    win_step : float
         The increment indexes to start the next window
     smooth : boolean
         Whether to convolve the result with a gaussian window
 
     Returns
     -------
-    energy : nparray
+    energy : array
         Result of estimation of local energy
     """
 
     @classmethod
-    def algorithm(cls, signal, params):
-        fsamp = signal.sampling_freq
+    def algorithm(cls, signal, params):  # TESTME
         win_len = params['win_len']
         win_step = params['win_step']
-        idx_len = win_len * fsamp
-        idx_step = win_step * fsamp
         smooth = params['smooth']
 
-        windows = _np.arange(0, len(signal) - idx_len, idx_step)
+        fsamp = signal.get_sampling_freq()
+        idx_len = win_len * fsamp
+        idx_step = win_step * fsamp
 
-        energy = []
-        curr_energy = None
-        for start in windows:
+        windows = _np.arange(0, len(signal) - idx_len + 1, idx_step)
+
+        energy = _np.empty(len(windows) + 2)
+        for i in xrange(1, len(windows) + 1):
+            start = windows[i - 1]
             portion_curr = signal[start: start + idx_len]
-            curr_energy = _np.sum(_np.power(portion_curr, 2)) / len(portion_curr)
-            energy.append(curr_energy)
-        energy.append(curr_energy)
-        energy.insert(0, energy[0])
+            energy[i] = _np.sum(_np.power(portion_curr, 2)) / len(portion_curr)
+        energy[0] = energy[1]
+        energy[-1] = energy[-2]
 
         idx_interp = _np.r_[0, windows + round(idx_len / 2), len(signal)]
-        energy = _np.array(energy)
-        # TODO: assumed ", 1," was the wanted fsamp
+        # TODO (Andrea): assumed ", 1," was the wanted fsamp
         # WAS: energy_out = flt.interpolate_unevenly(energy, idx_interp, 1, kind='linear')
-        energy_out = _UnevenlySignal(energy, idx_interp, 1).to_evenly(kind='linear').get_y_values()
+        energy_out = _UnevenlySignal(energy, idx_interp, 1).to_evenly().get_values()
 
         if smooth:
             energy_out = _ConvFlt(irftype='gauss', win_len=2 * win_len, normalize=True)(energy_out)
 
-        return energy_out
+        return energy_out.get_values()
 
     _params_descriptors = {
-        'win_len': _Par(2, int, 'The length of the window (seconds)', 1, lambda x: x > 0),
-        'win_step': _Par(2, int, 'The increment to start the next window (seconds)', 1, lambda x: x > 0),
+        'win_len': _Par(2, float, 'The length of the window (seconds)', 1, lambda x: x > 0),
+        'win_step': _Par(2, float, 'The increment to start the next window (seconds)', 1, lambda x: x > 0),
         'smooth': _Par(1, bool, 'Whether to convolve the result with a gaussian window', True)
     }
 
@@ -445,14 +458,14 @@ class Maxima(_Tool):
         Method to detect the maxima
     refractory : int
         Number of samples to skip after detection of a maximum (method = 'complete')
-    win_len : int
+    win_len : float
         Size of window in seconds (method = 'windowing')
     win_step : int
         Increment to start the next window in seconds (method = 'windowing')
 
     Returns
     -------
-    maxs : nparray
+    maxs : array
         Array containing indexes (first column) and values (second column) of the maxima
     """
 
@@ -480,7 +493,7 @@ class Maxima(_Tool):
 
         elif method == 'windowing':
             # TODO: test the algorithm
-            fsamp = signal.sampling_freq
+            fsamp = signal.get_sampling_freq()
             wlen = int(params['win_len'] * fsamp)
             wstep = int(params['win_step'] * fsamp)
 
@@ -508,6 +521,9 @@ class Maxima(_Tool):
         'method': _Par(2, 'Method to detect the maxima',
                        'complete',
                        lambda x: x in ['complete', 'windowing']),
+        
+        # FIX: Mi sembra che manchi il tipo di parametro nei parametri qui sotto:
+        
         'refractory': _Par(1, 'Number of samples to skip after detection of a maximum (method = "complete")',
                            1,
                            lambda x: x > 0,
@@ -533,14 +549,14 @@ class Minima(_Tool):
         Method to detect the minima
     refractory : int
         Number of samples to skip after detection of a maximum (method = 'complete')
-    win_len : int
+    win_len : float
         Size of window (method = 'windowing')
-    win_step : int
+    win_step : float
         Steps to start the next of window (method = 'windowing')
 
     Returns
     -------
-    mins : nparray
+    mins : array
         Array containing indexes (first column) and values (second column) of the minima
     """
 
@@ -595,6 +611,7 @@ class Minima(_Tool):
         'method': _Par(2, 'Method to detect the minima',
                        'complete',
                        lambda x: x in ['complete', 'windowing']),
+        # FIX: Mi sembra che manchi il tipo di parametro nei parametri qui sotto:
         'refractory': _Par(1, 'Number of samples to skip after detection of a maximum (method = "complete")',
                            1,
                            lambda x: x > 0,
@@ -616,7 +633,7 @@ class CreateTemplate(_Tool):
     
     Parameters
     ----------
-    ref_indexes : nparray of int
+    ref_indexes : array of int
         Indexes of the signals to be used as reference point to generate the template
     idx_start : int
         Index of the signal to start the segmentation of the portion used to generate the template
@@ -629,7 +646,7 @@ class CreateTemplate(_Tool):
     
     Returns
     -------
-    template : nparray
+    template : array
         The template
     """
 
@@ -719,6 +736,51 @@ class BootstrapEstimation(_Tool):
     }
 
 
+class Durations(_Tool):
+    @classmethod
+    def algorithm(cls, data, params):
+        starts = params["starts"]
+        stops = params["stops"]
+
+        fsamp = data.get_sampling_freq()
+        durations = []
+        for I in range(len(starts)):
+            if (_np.isnan(stops[I]) is False) & (_np.isnan(starts[I]) is False):
+                durations.append((stops[I] - starts[
+                    I]) / fsamp)
+            else:
+                durations.append(_np.nan)
+        return durations
+
+    _params_descriptors = {
+        "starts": _Par(2, list, "Start indexes along the data"),
+        "stops": _Par(2, list, "Stop indexes along the data")
+    }
+
+
+class Slopes(_Tool):
+    @classmethod
+    def algorithm(cls, data, params):
+        starts = params["starts"]
+        peaks = params["peaks"]
+
+        fsamp = data.get_sampling_freq()
+        slopes = []
+        for I in range(len(starts)):
+            if (_np.isnan(peaks[I]) is False) & (_np.isnan(starts[I]) is False):
+                dy = data[peaks[I]] - data[starts[I]]
+                dt = (peaks[I] - starts[I]) / fsamp
+                slopes.append(dy / dt)
+            else:
+                slopes.append(_np.nan)
+        return slopes
+
+    _params_descriptors = {
+        "starts": _Par(2, list, "Start indexes along the data"),
+        "peaks": _Par(2, list, "Peak indexes along the data")
+    }
+
+
 # IBI Tools
 class BeatOutliers(_Tool):
     """
@@ -736,7 +798,7 @@ class BeatOutliers(_Tool):
     
     Returns
     -------
-    id_bad_ibi : nparray
+    id_bad_ibi : array
         Identifiers of wrong beats
     
     Notes
@@ -762,12 +824,11 @@ class BeatOutliers(_Tool):
         counter_bad = 0
 
         # missings = []
-        # TODO (Ale): giusta la sintassi?
-        idx_ibi = signal.get_x_values()
-        ibi = signal.get_y_values()
+        idx_ibi = signal.get_indices()
+        ibi = signal.get_values()
         for i in range(1, len(idx_ibi)):
             curr_median = _np.median(ibi_cache)
-            curr_idx = idx_ibi[i]
+            
             curr_ibi = ibi[i]
 
             if curr_ibi > curr_median * (1 + sensitivity):  # abnormal peak:
@@ -809,7 +870,7 @@ class FixIBI(_Tool):
     
     Parameters
     ----------
-    id_bad_ibi : nparray
+    id_bad_ibi : array
         Identifiers of abnormal beats
    
     Returns
@@ -828,8 +889,8 @@ class FixIBI(_Tool):
         assert isinstance(signal, _UnevenlySignal), "IBI can only be represented by an EvenlySignal, %s found." % type(
             signal)
         id_bad = params['id_bad_ibi']
-        idx_ibi = signal.get_x_values()
-        ibi = signal.get_y_values()
+        idx_ibi = signal.get_indices()
+        ibi = signal.get_values()
         idx_ibi_nobad = _np.delete(idx_ibi, id_bad)
         ibi_nobad = _np.delete(ibi, id_bad)
         idx_ibi = idx_ibi_nobad.astype(int)
@@ -995,7 +1056,6 @@ class BeatOptimizer(_Tool):
         starts = _np.where(diff_idxs > 0)[0]
         stops = _np.where(diff_idxs < 0)[0] + 1
 
-        # TODO (Ale): is stops an array? It should
         if len(starts) > len(stops):
             stops = _np.r_[stops, starts[-1] + 1]
 
@@ -1056,7 +1116,7 @@ class BeatOptimizer(_Tool):
         ibi_out = _np.r_[ibi_out[0], ibi_out]
 
         return _UnevenlySignal(ibi_out, idx_out, signal.get_sampling_freq(), len(signal), "IBI",
-                               signal.get_start_time(), meta=signal.meta)
+                               signal.get_start_time(), meta=signal.get_metadata())
 
     _params_descriptors = {
         'B': _Par(1, float, 'Ball radius (in seconds) to detect paired beats', 0.25, lambda x: x > 0),
@@ -1109,39 +1169,41 @@ class OptimizeBateman(_Tool):
     def algorithm(cls, signal, params):
         opt_method = params['opt_method']
         complete = params['complete']
-        par_ranges = params['par_ranegs']
+        par_ranges = params['pars_ranges']
         maxiter = params['maxiter']
         n_step = params['n_step']
         delta = params['delta']
-        min_pars = params['fmin_params']
+        min_pars = params['fmin_params'] #TODO (Ale) :default should be {}
+        min_pars=dict()
 
-        min_T1 = par_ranges[0]
-        max_T1 = par_ranges[1]
+        min_T1 = float(par_ranges[0])
+        max_T1 = float(par_ranges[1])
 
-        min_T2 = par_ranges[2]
-        max_T2 = par_ranges[3]
-
+        min_T2 = float(par_ranges[2])
+        max_T2 = float(par_ranges[3])
+        
         if opt_method == 'asa':
             T1 = 0.75
-            T2 = 2
+            T2 = 2.
             if maxiter == 0:
-                maxiter = 99999
-            x0, loss_x0, exit_code, asa_opts = _asa.asa(OptimizeBateman._loss_function, _np.array([T1, T2]),
-                                                        xmin=_np.array([min_T1, min_T2]),
-                                                        xmax=_np.array([max_T1, max_T2]), full_output=True,
-                                                        limit_generated=maxiter, args=(signal, delta, min_T1, max_T2))
+                maxiter = 200
+            x0, loss_x0, exit_code, asa_opts = _asa.asa(OptimizeBateman._loss_function, _np.array([T1, T2]), xmin=_np.array([min_T1, min_T2]), xmax=_np.array([max_T1, max_T2]), full_output=True, limit_generated=maxiter, args=(signal, delta, min_T1, max_T1, min_T2, max_T2))
+            #bounds = ((min_T1, max_T1), (min_T2, max_T2))
+            #x_opt = _opt.basinhopping(OptimizeBateman._loss_function, [T1, T2], niter=maxiter, T = 0.01, stepsize=2, niter_success = int(maxiter/10), disp = True, minimizer_kwargs={'options':{'maxiter':1}, 'args':(signal, delta, min_T1, max_T1, min_T2, max_T2)})
+            #x0 = x_opt.x
+            #loss_x0 = float(x_opt.fun)
         elif opt_method == 'grid':
             step_T1 = (max_T1 - min_T1) / n_step
             step_T2 = (max_T2 - min_T2) / n_step
             rranges = (slice(min_T1, max_T1 + step_T1, step_T1), slice(min_T2, max_T2 + step_T2, step_T2))
-            x0, loss_x0, grid, loss_grid = _opt.brute(OptimizeBateman._loss_function, rranges, args=(signal, delta, min_T1, max_T2),
+            x0, loss_x0, grid, loss_grid = _opt.brute(OptimizeBateman._loss_function, rranges, args=(signal, delta, min_T1, max_T1, min_T2, max_T2),
                                                       finish=None, full_output=True)
         else:
-            _PhUI.e("opt_method not understood")
+            cls.error("opt_method not understood")
             return None
 
         if complete:
-            x0_min, l_x0_min, niter, nfuncalls, warnflag = _opt.fmin(OptimizeBateman._loss_function, x0, args=(signal, delta),
+            x0_min, l_x0_min, niter, nfuncalls, warnflag = _opt.fmin(OptimizeBateman._loss_function, x0, args=(signal, delta, min_T1, max_T1, min_T2, max_T2),
                                                                      full_output=True,
                                                                      **min_pars)
             return x0_min, x0
@@ -1149,7 +1211,7 @@ class OptimizeBateman(_Tool):
             return x0
 
     @staticmethod
-    def _loss_function(par_bat, signal, delta, min_T1, max_T2):
+    def _loss_function(par_bat, signal, delta, min_T1, max_T1, min_T2, max_T2):
         """
         Computes the loss for optimization of Bateman parameters.
 
@@ -1157,35 +1219,39 @@ class OptimizeBateman(_Tool):
         ----------
         par_bat : list
             Bateman parameters to be optimized
-        signal : nparray
+        signal : array
             The EDA signal
         delta : float
             Minimum amplitude of the peaks in the driver
         min_T1 : float
             Lower bound for T1
+        max_T1 : float
+            Upper bound for T1
+        min_T2 : float
+            Lower bound for T2
         max_T2 : float
             Upper bound for T2
-        
+       
         Returns
         -------
         loss : float
             The computed loss
         """
         from ..estimators.Estimators import DriverEstim as _DriverEstim
-
+        
         # check if pars hit boudaries
-        if par_bat[0] < min_T1 or par_bat[1] > max_T2 or par_bat[0] >= par_bat[1]:
-            return _np.Inf  # 10000 TODO: check if it raises errors
+        if par_bat[0] < min_T1 or par_bat[0] > max_T1 or par_bat[1] < min_T2 or par_bat[1] > max_T2 or par_bat[0] >= par_bat[1]:
+            return 10000 #float('inf') # 10000 TODO: check if it raises errors
 
-        fsamp = signal.sampling_freq
-        driver = _DriverEstim(par_bat)(signal)
+        fsamp = signal.get_sampling_freq()
+        driver = _DriverEstim(T1=par_bat[0], T2=par_bat[1])(signal)
         maxs, mins = PeakDetection(delta=delta, refractory=1, start_max=True)(driver)
 
         if len(maxs) != 0:
             idx_maxs = maxs[:, 0]
         else:
-            _PhUI.w('Unable to find peaks in driver signal for computation of Energy. Returning Inf')
-            return _np.Inf  # or 10000 #TODO: check if np.Inf does not raise errors
+            OptimizeBateman.warn('Unable to find peaks in driver signal for computation of Energy. Returning Inf')
+            return 10000 #float('inf')  # or 10000 #TODO: check if np.Inf does not raise errors
 
         # STAGE 1: select maxs distant from the others
         diff_maxs = _np.diff(_np.r_[idx_maxs, len(driver) - 1])
@@ -1211,7 +1277,6 @@ class OptimizeBateman(_Tool):
                 idx_sel_diff_y = _np.where((diff_y > th_25) & (diff_y < th_75))[0]
                 diff_y_sel = diff_y[idx_sel_diff_y]
 
-                # A2, B = _find_slope(y, half)
                 mean_s = BootstrapEstimation(func=_np.mean, N=100, k=0.5)(diff_y_sel)
 
                 mean_y = BootstrapEstimation(func=_np.median, N=100, k=0.5)(y)
@@ -1227,24 +1292,43 @@ class OptimizeBateman(_Tool):
 
                 energy += energy_curr
         else:
-            _PhUI.w('Peaks found but too near. Returning Inf')
-            return _np.Inf  # or 10000 #TODO: check if np.Inf does not raise errors
-
-        _PhUI.i('Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(energy))
+            OptimizeBateman.warn('Peaks found but too near. Returning Inf')
+            return 10000 # float('inf')  # or 10000 # TODO: check if np.Inf does not raise errors
+        OptimizeBateman.log('Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(energy))
         return energy
 
     _params_descriptors = {
         'opt_method': _Par(1, str, 'Method to perform the search of optimal parameters.', 'asa',
                            lambda x: x in ['asa', 'grid']),
         'complete': _Par(1, bool, 'Whether to perform a minimization after detecting the optimal parameters', True),
-        'par_range': _Par(1, list, '[min_T1, max_T1, min_T2, max_T2] boundaries for the Bateman parameters',
+        'pars_ranges': _Par(1, list, '[min_T1, max_T1, min_T2, max_T2] boundaries for the Bateman parameters',
                           lambda x: len(x) == 4),
         'maxiter': _Par(1, int, 'Maximum number of iterations ("asa" method).', 0, lambda x: x > 0,
                         lambda x, p: p['opt_method'] == 'asa'),
         'n_step': _Par(1, int, 'Number of increments in the grid search', 10, lambda x: x > 0,
                        lambda x, p: p['opt_method'] == 'grid'),
         'delta': _Par(2, float, 'Minimum amplitude of the peaks in the driver', 0, lambda x: x > 0),
-        'min_pars': _Par(0, dict, 'Additional parameters to pass to the minimization function (when complete = True)',
+        'fmin_params': _Par(0, dict, 'Additional parameters to pass to the minimization function (when complete = True)',
                          activation=lambda x, p: p['complete'])
 
     }
+
+
+class Histogram(_Tool):
+    @classmethod
+    def algorithm(cls, signal, params):
+        """
+        Compute the histogram of a set of data.
+
+        @return: (values, bins)
+        """
+
+        return _np.histogram(signal, params['histogram_bins'])
+
+    _params_descriptors = {
+        'histogram_bins': _Par(1, list,
+                               'Number of bins (int) or bin edges, including the rightmost edge (list-like).', 100,
+                               lambda x: type(x) is not int or x > 0)
+    }
+
+

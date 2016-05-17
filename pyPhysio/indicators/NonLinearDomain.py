@@ -3,7 +3,7 @@ from __future__ import division
 
 from ..BaseIndicator import Indicator as _Indicator
 from ..filters.Filters import Diff as _Diff
-from ..indicators.TimeDomain import Mean as _Mean
+from ..indicators.TimeDomain import Mean as _Mean, StDev as _StDev
 from scipy.spatial.distance import cdist as _cd
 import numpy as _np
 from ..Parameters import Parameter as _Par
@@ -196,8 +196,7 @@ class SampleEntropy(_Indicator):
             num_elem_m = uj_m.shape[0]
             num_elem_m1 = uj_m1.shape[0]
 
-            # r = r * SD.get(data) #TODO (Ale) use this when merged all?
-            r = r * _np.std(data)
+            r = r * _StDev()(data)
             d_m = _cd(uj_m, uj_m,
                       'chebyshev')  # TODO (Ale): mettere questo come algoritmo esterno per sfruttare la cache (usato anche da approxEntropy)
             d_m1 = _cd(uj_m1, uj_m1,

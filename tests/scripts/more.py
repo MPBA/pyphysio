@@ -1,8 +1,11 @@
 # coding=utf-8
 __author__ = 'AleB'
 
-import pyphysio.pyPhysio as ph
 import numpy as np
+try:
+    import pyphysio.pyPhysio as ph
+except ImportError:
+    import pyPhysio as ph
 
 s = ph.EvenlySignal(np.cumsum(np.random.rand(1, 1000) - .5) * 100, 10)
 

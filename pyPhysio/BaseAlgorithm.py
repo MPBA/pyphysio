@@ -1,5 +1,5 @@
 # coding=utf-8
-from Signal import _Signal
+from Signal import Signal
 from abc import abstractmethod as _abstract, ABCMeta as _ABCMeta
 from Utility import PhUI as _PhUI
 
@@ -14,6 +14,7 @@ class Algorithm(object):
 
     _params_descriptors = {}
     _parameter_error = None
+    _log = None
 
     def __init__(self, params=None, **kwargs):
         """
@@ -35,13 +36,13 @@ class Algorithm(object):
         p = self.get_params_descriptors()
         for n in p:
             if n in self._params:
-                r, e = p[n](self._params[n])
+                r, e = p[n](self._params, n)
                 if not r:
-                    self._parameter_error = ValueError("Parameter error: " + e)
+                    self._parameter_error = ValueError("Error in parameters: " + e)
             else:
-                r, self._params[n] = p[n].not_present(n, self)
+                r, self._params[n] = p[n].not_present(self._params, n, self)
                 if not r:
-                    self._parameter_error = ValueError("Parameter error")
+                    self._parameter_error = ValueError("Error in parameters")
 
     def __call__(self, data):
         """
@@ -70,32 +71,17 @@ class Algorithm(object):
         @type use_cache: bool
         @return: The value of the feature.
         """
-        assert isinstance(data, _Signal), "The data must be a Signal."
         if type(params) is dict:
             kwargs.update(params)
+        if not isinstance(data, Signal):
+            _PhUI.w("The data is not a Signal. Optimization is not available and some errors may be caused by missing meta data (e.g. sampling frequency).")
+            use_cache = False
         if use_cache is True:
             Cache.cache_check(data)
             # noinspection PyTypeChecker
             return Cache.cache_get_data(data, cls, kwargs)
         else:
             return cls.algorithm(data, kwargs)
-
-    @classmethod
-    def cache_hash(cls, params):
-        """
-        This method computes an hash to use as a part of the key in the cache starting from the parameters used by the
-        feature. Uses the method _utility_hash([par1,...parN])
-        This class is abstract.
-        @return: The hash of the parameters used by the feature.
-        :param params:
-        """
-        p = params.copy()
-        p.update({'': str(cls)})
-        return cls._utility_hash(p)
-
-    @staticmethod
-    def _utility_hash(x):
-        return str(x).replace('\'', '')
 
     def get_params(self):
         """
@@ -133,9 +119,63 @@ class Algorithm(object):
         """
         pass
 
+    @classmethod
+    def cache_hash(cls, params):
+        """
+        This method computes an hash to use as a part of the key in the cache starting from the parameters used by the
+        feature. Uses the method _utility_hash([par1,...parN])
+        This class is abstract.
+        @return: The hash of the parameters used by the feature.
+        :param params:
+        """
+        p = params.copy()
+        p.update({'': str(cls)})
+        return cls._utility_hash(p)
+
+    @staticmethod
+    def _utility_hash(x):
+        return str(x).replace('\'', '')
+
+    @classmethod
+    def log(cls, message):
+        l = (_PhUI.i, cls.__name__ + ": " + message)
+        cls.emulate_log([l])
+        if cls._log is not None:
+            cls._log.append(l)
+
+    @classmethod
+    def warn(cls, message):
+        l = (_PhUI.w, cls.__name__ + ": " + message)
+        cls.emulate_log([l])
+        if cls._log is not None:
+            cls._log.append(l)
+
+    @classmethod
+    def error(cls, message, raise_error=False):
+        l = (_PhUI.e, cls.__name__ + ": " + message)
+        cls.emulate_log([l])
+        if cls._log is not None:
+            cls._log.append(l)
+        if raise_error:
+            raise
+
+    @classmethod
+    def set_logger(cls):
+        cls._log = []
+
+    @classmethod
+    def unset_logger(cls):
+        u = cls._log
+        cls._log = None
+        return u
+
+    @classmethod
+    def emulate_log(cls, log):
+        map(lambda (f, m): f(m), log)
+
 
 class Cache(object):
-    """ Class that gives a cache support. Uses Feature."""
+    """ Class that gives a cache support."""
 
     def __init__(self):
         pass
@@ -180,6 +220,14 @@ class Cache(object):
         @return: The data or None
         """
         hh = calculator.cache_hash(params)
+
         if hh not in self._cache:
-            self._cache[hh] = calculator.algorithm(self, params)
-        return self._cache[hh]
+            calculator.set_logger()
+            val = calculator.algorithm(self, params)
+            log = calculator.unset_logger()
+            self._cache[hh] = (val, log)
+        else:
+            val, log = self._cache[hh]
+            calculator.emulate_log(log)
+        return val
+
