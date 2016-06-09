@@ -51,10 +51,7 @@ class Segment(object):
     def __call__(self, data=None):
         if data is None:
             data = self._signal
-        if self._end is None:
-            return data[self._begin:]  # TESTME: used to use the max time but it is with sample number now
-        else:
-            return data[self._begin:self._end]
+        return data[self._begin:self._end]
 
     def islice(self, data, include_partial=False):
         if (include_partial or self._end <= data.index[-1]) and self._begin < data.index[-1]:
