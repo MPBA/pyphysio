@@ -48,6 +48,7 @@ fsamp = 2048
 # NEW
 ecg_pp = sig(ecg1, fsamp, 'ECG')
 
+ecg_pp.plot()
 #===========================
 # RESAMPLE
 fout = 128
@@ -71,7 +72,7 @@ fs = 30
 #ecg_np_flt = flt_old.iir_filter(ecg_np, b, a)
 # NEW
 f_25_35 = flt_new.IIRFilter(fp = fp, fs = fs)
-ecg_pp = f_25_35(ecg_pp) 
+ecg_pp = f_25_35(ecg_pp)
 
 # FILTERING HIGH PASS
 fp = 5

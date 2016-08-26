@@ -186,7 +186,56 @@ class IIRFilter(_Filter):
         # TODO (new feature)
         # WARNING 'not implemented'
         pass
+'''
+class DenoiseEDA(_Filter):
+    """
+    DenoiseEDA
+    
+    Removes noise due to sensor displacement from the EDA signal.
+    
+    Parameters
+    ----------
+    signal : nparray
+        The EDA signal
+    TH : float
+        Threshold to detect the noise
+   
+    Returns
+    -------
+    signal_out : nparray
+        De-noised signal
+            
+    Notes
+    -----
+    See paper
+    """
 
+    @classmethod
+    def algorithm(cls, signal, threshold):
+        fsamp = signal.get_sampling_freq()
+        #TODO: detect the long periods of drop
+        noise = ConvolutionalFilter(abs(_np.diff(signal)), fsamp, wintype='rect', winsize = 2)
+        idx_ok = _np.where(noise <= threshold)[0]
+        
+        if idx_ok[0] != 0:
+            idx_ok = _np.r_[0, idx_ok].astype(int)
+        
+        if idx_ok[-1] != len(signal)-1:
+            idx_ok = _np.r_[idx_ok, len(signal)-1].astype(int)
+            
+        
+        signal_out = signal.resample(signal[idx_ok], idx_ok, 1, 'cubic')
+        return(signal_out)
+
+    _params_descriptors = {
+        'threshold': _Par(2, float, 'Threshold to detect the noise')
+    }
+
+    def plot(self):
+        # TODO (new feature)
+        # WARNING 'not implemented'
+        pass
+'''
 
 class MatchedFilter(_Filter):
     """
