@@ -6,6 +6,7 @@ from indicators.FrequencyDomain import *
 from indicators.NonLinearDomain import *
 from indicators.PeaksDescription import *
 from filters.Filters import *
+from estimators.Estimators import *
 from tools.Tools import *
 from segmentation.SegmentsGenerators import *
 import segmentation.SegmentsGenerators

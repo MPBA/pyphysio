@@ -222,8 +222,8 @@ class UnevenlySignal(Signal):
         if length < len(data_x):
             _PhUI.w("Signal: the original signal is shorter than the current (that should be a subset, so that original_length <= len(get_indices()) but this is false).")
         data_y = self.get_values()
-        print(len(data_x))
-        print(len(data_y))
+        #print(len(data_x))
+        #print(len(data_y))
 
         # Add padding
         if self.get_indices(0) != 0:

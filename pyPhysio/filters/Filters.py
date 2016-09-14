@@ -3,7 +3,7 @@ from __future__ import division
 import numpy as _np
 from scipy.signal import gaussian as _gaussian, filtfilt as _filtfilt, filter_design as _filter_design
 from ..BaseFilter import Filter as _Filter
-from ..Signal import EvenlySignal as _EvenlySignal, Signal as _Signal
+from ..Signal import EvenlySignal as _EvenlySignal, UnevenlySignal as _UnevenlySignal, Signal as _Signal
 from ..Utility import PhUI as _PhUI
 from ..Parameters import Parameter as _Par
 from ..Utility import abstractmethod as _abstract
@@ -58,7 +58,7 @@ class Normalize(_Filter):
         if method == Normalize.Types.Mean:
             return signal - _Mean()(signal)
         elif method == Normalize.Types.MeanSd:
-            return signal - _Mean()(signal) / _StDev()(signal)
+            return (signal - _Mean()(signal)) / _StDev()(signal)
         elif method == Normalize.Types.Min:
             return signal - _np.min(signal)
         elif method == Normalize.Types.MaxMin:
@@ -104,7 +104,7 @@ class Diff(_Filter):
 
         # TODO (Ale): Manage Time references
         sig_1 = signal[:-degree]
-        sig_2 = signal.get_values()[degree:]
+        sig_2 = signal[degree:]
 
         return sig_2 - sig_1
 
@@ -186,7 +186,7 @@ class IIRFilter(_Filter):
         # TODO (new feature)
         # WARNING 'not implemented'
         pass
-'''
+
 class DenoiseEDA(_Filter):
     """
     DenoiseEDA
@@ -195,8 +195,6 @@ class DenoiseEDA(_Filter):
     
     Parameters
     ----------
-    signal : nparray
-        The EDA signal
     TH : float
         Threshold to detect the noise
    
@@ -211,10 +209,13 @@ class DenoiseEDA(_Filter):
     """
 
     @classmethod
-    def algorithm(cls, signal, threshold):
-        fsamp = signal.get_sampling_freq()
+    def algorithm(cls, signal, params):
+        
+        threshold = params['threshold']
+        win_len = params['win_len']
         #TODO: detect the long periods of drop
-        noise = ConvolutionalFilter(abs(_np.diff(signal)), fsamp, wintype='rect', winsize = 2)
+        noise = ConvolutionalFilter(irftype ='triang', win_len = win_len, normalize=True)(abs(_np.diff(signal)))
+        
         idx_ok = _np.where(noise <= threshold)[0]
         
         if idx_ok[0] != 0:
@@ -223,19 +224,20 @@ class DenoiseEDA(_Filter):
         if idx_ok[-1] != len(signal)-1:
             idx_ok = _np.r_[idx_ok, len(signal)-1].astype(int)
             
-        
-        signal_out = signal.resample(signal[idx_ok], idx_ok, 1, 'cubic')
+        denoised = _UnevenlySignal(signal[idx_ok], idx_ok, signal.get_sampling_freq(), len(signal))
+        signal_out = denoised.to_evenly('linear')
         return(signal_out)
 
     _params_descriptors = {
-        'threshold': _Par(2, float, 'Threshold to detect the noise')
+        'threshold': _Par(2, float, 'Threshold to detect the noise'),
+        'win_len': _Par(1, float, 'Length of the window', 2, lambda x: x > 0)
     }
 
     def plot(self):
         # TODO (new feature)
         # WARNING 'not implemented'
         pass
-'''
+
 
 class MatchedFilter(_Filter):
     """
@@ -324,6 +326,7 @@ class ConvolutionalFilter(_Filter):
                 return signal
             else:
                 irf = _np.array(params["irf"])
+                n = len(irf)
         else:
             if 'win_len' not in params:
                 cls.error("'win_len' parameter missing.")
@@ -344,7 +347,7 @@ class ConvolutionalFilter(_Filter):
                     else:
                         irf = _np.r_[irf_1, irf_1[-1] + 1, irf_2]
                 elif irftype == 'dgauss':
-                    std = n // 8
+                    std = _np.round(n / 8)
                     g = _gaussian(n, std)
                     irf = _np.diff(g)
                 

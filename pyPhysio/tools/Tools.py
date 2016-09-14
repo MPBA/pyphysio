@@ -277,7 +277,7 @@ class PSD(_Tool):
 
     Parameters
     ----------
-    psd_method : str
+    method : str
         Method to estimate the PSD
     nfft : int
         Number of samples of the PSD
@@ -358,6 +358,7 @@ class PSD(_Tool):
                 except AssertionError:  # TODO (Andrea): check whether to start from higher orders
                     break
             best_order = orders[_np.argmin(aics)]
+            print('test')
 
             ar, p, k = _aryule(signal, best_order)
             psd = _arma2psd(ar, NFFT=nfft)
@@ -376,12 +377,16 @@ class PSD(_Tool):
         return freqs, psd
 
     _method_list = ['welch', 'fft', 'ar']
-    _window_list = ['hamming', 'blackman', 'hanning', 'none']
+    _window_list = ['hamming', 'blackman', 'hanning', 'bartlett', 'none']
 
     _params_descriptors = {
         'method': _Par(1, str, 'Method to estimate the PSD', 'welch', lambda x: x in PSD._method_list),
         'min_order': _Par(1, int, 'Minimum order of the model (for method="ar")',
                           10,
+                          lambda x: x > 0,
+                          lambda x, y: "method" in y and y["method"] == "ar"),
+        'max_order': _Par(1, int, 'Maximum order of the model (for method="ar")',
+                          25,
                           lambda x: x > 0,
                           lambda x, y: "method" in y and y["method"] == "ar"),
         'nfft': _Par(1, int, 'Number of samples in the PSD', 2048, lambda x: x > 0),
@@ -430,14 +435,12 @@ class Energy(_Tool):
             energy[i] = _np.sum(_np.power(portion_curr, 2)) / len(portion_curr)
         energy[0] = energy[1]
         energy[-1] = energy[-2]
-
+        
         idx_interp = _np.r_[0, windows + round(idx_len / 2), len(signal)]
-        # TODO (Andrea): assumed ", 1," was the wanted fsamp
-        # WAS: energy_out = flt.interpolate_unevenly(energy, idx_interp, 1, kind='linear')
-        energy_out = _UnevenlySignal(energy, idx_interp, 1).to_evenly().get_values()
+        energy_out = _UnevenlySignal(energy, idx_interp, signal.get_sampling_freq(), len(signal)).to_evenly('linear')
 
         if smooth:
-            energy_out = _ConvFlt(irftype='gauss', win_len=2 * win_len, normalize=True)(energy_out)
+            energy_out = _ConvFlt(irftype='gauss', win_len=2, normalize=True)(energy_out)
 
         return energy_out.get_values()
 
@@ -477,7 +480,7 @@ class Maxima(_Tool):
             maxima = []
             prev = signal[0]
             k = 1
-            while k < len(signal) - 1:
+            while k < len(signal) - 1 - refractory:
                 curr = signal[k]
                 nxt = signal[k + 1]
                 if (curr >= prev) and (curr >= nxt):
@@ -494,15 +497,15 @@ class Maxima(_Tool):
         elif method == 'windowing':
             # TODO: test the algorithm
             fsamp = signal.get_sampling_freq()
-            wlen = int(params['win_len'] * fsamp)
-            wstep = int(params['win_step'] * fsamp)
+            win_len = int(params['win_len'] * fsamp)
+            win_step = int(params['win_step'] * fsamp)
 
             idx_maxs = [0]
             maxs = [0]
 
-            idx_start = _np.arange(0, len(signal), wstep)
+            idx_start = _np.arange(0, len(signal)-win_len+1, win_step)
             for idx_st in idx_start:
-                idx_sp = idx_st + wlen
+                idx_sp = idx_st + win_len
                 if idx_sp > len(signal):
                     idx_sp = len(signal)
                 curr_win = signal[idx_st:idx_sp]
@@ -518,24 +521,10 @@ class Maxima(_Tool):
             return _np.c_[idx_maxs, maxs]
 
     _params_descriptors = {
-        'method': _Par(2, 'Method to detect the maxima',
-                       'complete',
-                       lambda x: x in ['complete', 'windowing']),
-        
-        # FIX: Mi sembra che manchi il tipo di parametro nei parametri qui sotto:
-        
-        'refractory': _Par(1, 'Number of samples to skip after detection of a maximum (method = "complete")',
-                           1,
-                           lambda x: x > 0,
-                           lambda x, p: p['method'] == 'complete'),
-        'win_len': _Par(1, 'Size of window in seconds (method = "windowing")',
-                        1,
-                        lambda x: x > 0,
-                        lambda x, p: p['method'] == 'windowing'),
-        'win_step': _Par(1, 'Increment to start the next window in seconds (method = "windowing")',
-                         1,
-                         lambda x: x > 0,
-                         lambda x, p: p['method'] == 'windowing'),
+        'method': _Par(2, str, 'Method to detect the maxima', 'complete', lambda x: x in ['complete', 'windowing']),        
+        'refractory': _Par(1, int, 'Number of samples to skip after detection of a maximum (method = "complete")', 1, lambda x: x > 0, lambda x, p: p['method'] == 'complete'),
+        'win_len': _Par(1, float, 'Size of window in seconds (method = "windowing")', 1, lambda x: x > 0, lambda x, p: p['method'] == 'windowing'),
+        'win_step': _Par(1, float, 'Increment to start the next window in seconds (method = "windowing")', 1, lambda x: x > 0, lambda x, p: p['method'] == 'windowing'),
     }
 
 
@@ -568,7 +557,7 @@ class Minima(_Tool):
             minima = []
             prev = signal[0]
             k = 1
-            while k < len(signal) - 1:
+            while k < len(signal) - 1 - refractory:
                 curr = signal[k]
                 nxt = signal[k + 1]
                 if (curr <= prev) and (curr <= nxt):
@@ -580,17 +569,18 @@ class Minima(_Tool):
                     k += 1
             minima = _np.array(minima).astype(int)
             peaks = signal[minima]
-            return _np.c_[peaks, minima]
+            return _np.c_[minima, peaks]
 
         elif method == 'windowing':
             # TODO: test the algorithm
-            winlen = params['win_len']
-            winstep = params['win_step']
+            fsamp = signal.get_sampling_freq()
+            winlen = int(params['win_len'] * fsamp)
+            winstep = int(params['win_step'] * fsamp)
 
             idx_mins = [0]
             mins = [0]
 
-            idx_starts = _np.arange(0, len(signal), winstep)
+            idx_starts = _np.arange(0, len(signal)-winlen+1, winstep)
             for idx_st in idx_starts:
                 idx_sp = idx_st + winlen
                 if idx_sp > len(signal):
@@ -608,19 +598,19 @@ class Minima(_Tool):
             return _np.c_[idx_mins, mins]
 
     _params_descriptors = {
-        'method': _Par(2, 'Method to detect the minima',
+        'method': _Par(2, str, 'Method to detect the minima',
                        'complete',
                        lambda x: x in ['complete', 'windowing']),
         # FIX: Mi sembra che manchi il tipo di parametro nei parametri qui sotto:
-        'refractory': _Par(1, 'Number of samples to skip after detection of a maximum (method = "complete")',
+        'refractory': _Par(1, float, 'Number of samples to skip after detection of a maximum (method = "complete")',
                            1,
                            lambda x: x > 0,
                            lambda x, p: p['method'] == 'complete'),
-        'win_len': _Par(1, 'Size of window in seconds (method = "windowing")',
+        'win_len': _Par(1, float, 'Size of window in seconds (method = "windowing")',
                         1,
                         lambda x: x > 0,
                         lambda x, p: p['method'] == 'windowing'),
-        'win_step': _Par(1, 'Increment to start the next window in seconds (method = "windowing")',
+        'win_step': _Par(1, float, 'Increment to start the next window in seconds (method = "windowing")',
                          1,
                          lambda x: x > 0,
                          lambda x, p: p['method'] == 'windowing'),
@@ -936,8 +926,8 @@ class BeatOptimizer(_Tool):
     def algorithm(cls, signal, params):
         b, cache, sensitivity, ibi_median = params["B"], params["cache"], params["sensitivity"], params["ibi_median"]
 
-        idx_ibi = signal.indexes
-        fsamp = signal.fsamp
+        idx_ibi = signal.get_indices()
+        fsamp = signal.get_sampling_freq()
 
         if ibi_median == 0:
             ibi_expected = _np.median(_Diff()(idx_ibi))
@@ -1312,7 +1302,6 @@ class OptimizeBateman(_Tool):
                          activation=lambda x, p: p['complete'])
 
     }
-
 
 class Histogram(_Tool):
     @classmethod

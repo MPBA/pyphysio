@@ -1,6 +1,7 @@
 # coding=utf-8
 from __future__ import division
 import numpy as _np
+from scipy.signal import gaussian as _gaussian
 from ..BaseEstimator import Estimator as _Estimator
 from ..Signal import UnevenlySignal as _UnevenlySignal, EvenlySignal as _EvenlySignal
 from ..Utility import PhUI as _PhUI
@@ -59,7 +60,7 @@ class BeatFromBP(_Estimator):
         # STAGE 1 - EXTRACT BEAT POSITION SIGNAL
         signal_f = _IIRFilter(fp=1.2 * fmax, fs=3 * fmax)(signal)
 
-        deltas = 0.5 * _SignalRange(win_len=3 / fmax, win_step=1 / fmax)(signal)
+        deltas = 0.7 * _SignalRange(win_len=2 / fmax, win_step=1 / fmax)(signal)
 
         # detection of candidate peaks
         maxp, minp = _PeakDetection(deltas=deltas, refractory=refractory, start_max=True)(signal_f)  # Tools
@@ -84,7 +85,7 @@ class BeatFromBP(_Estimator):
             true_obs = dxdt[start_ + peak_obs: idx_beat]
 
             # find the 'first minimum' (zero) the derivative (peak)
-            mins = _Minima(win_len=0.05, win_step=0.0025, method='windowing')(abs(true_obs))
+            mins = _Minima(win_len=0.5, win_step=0.025, method='windowing')(abs(true_obs))
             idx_mins = mins[:, 0]
             if len(idx_mins) >= 2:
                 peak = idx_mins[1]
@@ -92,7 +93,7 @@ class BeatFromBP(_Estimator):
             else:
                 cls.warn('Peak not found; idx_beat: ' + str(idx_beat))
                 pass
-
+        true_peaks = _np.array(true_peaks)
         # STAGE 4 - FINALIZE computing IBI and fixing indexes
         ibi_values = _Diff()(true_peaks) / fsamp
         ibi_values = _np.r_[ibi_values[0], ibi_values]

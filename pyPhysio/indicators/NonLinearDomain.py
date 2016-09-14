@@ -88,7 +88,7 @@ class NNx(_Indicator):
     def algorithm(cls, data, params):
         th = params['threshold']
         diff = _Diff()(data)
-        return sum(1.0 for x in diff if x > th)
+        return sum(1.0 for x in diff*1000 if x > th)
 
     _params_descriptors = {
         'threshold': _Par(2, float, 'Threshold to select the subsequent differences', 10, lambda x: x > 0),

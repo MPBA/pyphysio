@@ -112,7 +112,7 @@ class AUC(_Indicator):
     """
     Computes the Area Under the Curve of the data, treating Not a Numbers (NaNs) as zero.
     """
-
+    #TODO: check that signal is Evenly
     @classmethod
     def algorithm(cls, data, params):
         fsamp = data.get_sampling_freq()
@@ -146,6 +146,7 @@ class Triang(_Indicator):
     """
     Computes the HRV triangular index.
     """
+    #TODO: check
 
     @classmethod
     def algorithm(cls, data, params):
@@ -165,6 +166,7 @@ class TINN(_Indicator):
     """
     Computes the triangular interpolation of NN interval histogram.
     """
+    #TODO: check
 
     @classmethod
     def algorithm(cls, data, params):

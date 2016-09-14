@@ -34,10 +34,12 @@ class PowerInBand(_Indicator):
     def algorithm(cls, data, params):
         freq, powers = InBand(params)(data)
         df = freq[1] - freq[0] if len(freq) > 0 else 1
-        # TODO (Andrea) Decidere se e come normalizzare
+        # TODO: normalization
         return df * _np.sum(powers)
 
     _params_descriptors = InBand.get_params_descriptors()
+    # TODO: add normalize option (total, length)
+    
 
 
 class PeakInBand(_Indicator):
