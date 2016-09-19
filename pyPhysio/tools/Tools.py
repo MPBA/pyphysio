@@ -29,10 +29,14 @@ class PeakDetection(_Tool):
 
     Returns
     -------
-    maxs : array
-        Array containing indexes (first column) and values (second column) of the maxima
-    mins : array
-        Array containing indexes (first column) and values (second column) of the minima
+    maxp : ndarray
+        Array containing indexes of the maxima
+    minp : ndarray
+        Array containing indexes of the minima
+    maxv : ndarray
+        Array containing values of the maxima
+    minv : ndarray
+        Array containing values of the minima
     """
 
     @classmethod
@@ -43,8 +47,11 @@ class PeakDetection(_Tool):
         deltas = params["deltas"] if "deltas" in params else None
         delta = params["delta"] if "delta" in params else None
 
-        mins = []
-        maxs = []
+        minp = []
+        maxp = []
+
+        minv = []
+        maxv = []
 
         if len(signal) < 1:
             cls.warn("signal is too short (len < 1), returning empty.")
@@ -73,7 +80,8 @@ class PeakDetection(_Tool):
 
                 if look_for_max:
                     if i >= i_activation_max and sample < mx_candidate - d:  # new max
-                        maxs.append((mx_pos_candidate, mx_candidate))
+                        maxp.append(mx_pos_candidate)
+                        maxv.append(mx_candidate)
                         i_activation_max = i + refractory
 
                         mn_candidate = sample
@@ -82,7 +90,8 @@ class PeakDetection(_Tool):
                         look_for_max = False
                 else:
                     if i >= i_activation_min and sample > mn_candidate + d:  # new min
-                        mins.append((mn_pos_candidate, mn_candidate))
+                        minp.append(mn_pos_candidate)
+                        minv.append(mn_candidate)
                         i_activation_min = i + refractory
 
                         mx_candidate = sample
@@ -90,7 +99,7 @@ class PeakDetection(_Tool):
 
                         look_for_max = True
 
-        return _np.array(maxs), _np.array(mins)
+        return _np.array(maxp), _np.array(minp), _np.array(maxv), _np.array(minv)
 
     _params_descriptors = {
         'delta': _Par(2, float,
@@ -653,7 +662,7 @@ class CreateTemplate(_Tool):
         total_samples = smp_pre + smp_post
         templates = _np.zeros(total_samples)
 
-        for i in range(1, len(ref_indexes) - 1):
+        for i in xrange(1, len(ref_indexes) - 1):
             idx_peak = ref_indexes[i]
             tmp = sig[idx_peak - smp_pre: idx_peak + smp_post]
             tmp = (tmp - _np.min(tmp)) / (_np.max(tmp) - _np.min(tmp))
@@ -709,7 +718,7 @@ class BootstrapEstimation(_Tool):
         k = params['k']
 
         estim = []
-        for i in range(niter):
+        for i in xrange(niter):
             ixs = _np.arange(l)
             ixs_p = _np.random.permutation(ixs)
             sampled_data = signal[ixs_p[:round(k * l)]]
@@ -734,7 +743,7 @@ class Durations(_Tool):
 
         fsamp = data.get_sampling_freq()
         durations = []
-        for I in range(len(starts)):
+        for I in xrange(len(starts)):
             if (_np.isnan(stops[I]) is False) & (_np.isnan(starts[I]) is False):
                 durations.append((stops[I] - starts[
                     I]) / fsamp)
@@ -756,7 +765,7 @@ class Slopes(_Tool):
 
         fsamp = data.get_sampling_freq()
         slopes = []
-        for I in range(len(starts)):
+        for I in xrange(len(starts)):
             if (_np.isnan(peaks[I]) is False) & (_np.isnan(starts[I]) is False):
                 dy = data[peaks[I]] - data[starts[I]]
                 dt = (peaks[I] - starts[I]) / fsamp
@@ -816,7 +825,7 @@ class BeatOutliers(_Tool):
         # missings = []
         idx_ibi = signal.get_indices()
         ibi = signal.get_values()
-        for i in range(1, len(idx_ibi)):
+        for i in xrange(1, len(idx_ibi)):
             curr_median = _np.median(ibi_cache)
             
             curr_ibi = ibi[i]
@@ -946,7 +955,7 @@ class BeatOptimizer(_Tool):
         ibi_1 = []
 
         prev_idx = idx_ibi[0]
-        for i in range(1, len(idx_ibi)):
+        for i in xrange(1, len(idx_ibi)):
             curr_median = _np.median(ibi_cache)
             curr_idx = idx_ibi[i]
             curr_ibi = curr_idx - prev_idx
@@ -1013,7 +1022,7 @@ class BeatOptimizer(_Tool):
         ###
         # add indexes of idx_ibi_2 which are not in idx_ibi_1 but close enough
         b = b * fsamp
-        for i_2 in range(1, len(idx_2)):
+        for i_2 in xrange(1, len(idx_2)):
             curr_idx_2 = idx_2[i_2]
             if not (curr_idx_2 in idx_1):
                 i_1 = _np.where((idx_1 >= curr_idx_2 - b) & (idx_1 <= curr_idx_2 + b))[0]
@@ -1024,7 +1033,7 @@ class BeatOptimizer(_Tool):
         ###
         # create pairs for each beat
         pairs = []
-        for i_1 in range(1, len(idx_1)):
+        for i_1 in xrange(1, len(idx_1)):
             curr_idx_1 = idx_1[i_1]
             if curr_idx_1 in idx_2:
                 pairs.append([curr_idx_1, curr_idx_1])
@@ -1055,7 +1064,7 @@ class BeatOptimizer(_Tool):
 
         add_index = 0
         lens = stops - starts
-        for i in range(len(starts)):
+        for i in xrange(len(starts)):
             l = lens[i]
             if l > 10:
                 curr_st = starts[i]
@@ -1075,7 +1084,7 @@ class BeatOptimizer(_Tool):
         ########################################
         # find best combination
         idx_out = _np.copy(pairs[:, 0])
-        for i in range(len(starts)):
+        for i in xrange(len(starts)):
             i_st = starts[i]
             i_sp = stops[i]
 
@@ -1090,7 +1099,7 @@ class BeatOptimizer(_Tool):
             combinations = list(_itertools.product([0, 1], repeat=i_sp - i_st - 1))
             for comb in combinations:
                 cand_portion = _np.copy(curr_portion[:, 0])
-                for k in range(len(comb)):
+                for k in xrange(len(comb)):
                     bit = comb[k]
                     cand_portion[k + 2] = curr_portion[k + 2, bit]
                 cand_error = sum(abs(_np.diff(_np.diff(cand_portion))))
@@ -1235,57 +1244,55 @@ class OptimizeBateman(_Tool):
 
         fsamp = signal.get_sampling_freq()
         driver = _DriverEstim(T1=par_bat[0], T2=par_bat[1])(signal)
-        maxs, mins = PeakDetection(delta=delta, refractory=1, start_max=True)(driver)
+        maxp, minp, ignored, ignored = PeakDetection(delta=delta, refractory=1, start_max=True)(driver)
 
-        if len(maxs) != 0:
-            idx_maxs = maxs[:, 0]
-        else:
+        if len(maxp) == 0:
             OptimizeBateman.warn('Unable to find peaks in driver signal for computation of Energy. Returning Inf')
-            return 10000 #float('inf')  # or 10000 #TODO: check if np.Inf does not raise errors
-
-        # STAGE 1: select maxs distant from the others
-        diff_maxs = _np.diff(_np.r_[idx_maxs, len(driver) - 1])
-        th_diff = 15 * fsamp
-
-        # TODO (new feature): select th such as to have enough maxs, e.g. diff_maxs_tentative = np.median(diff_maxs)
-        idx_selected_maxs = _np.where(diff_maxs > th_diff)[0]
-        selected_maxs = idx_maxs[idx_selected_maxs]
-
-        energy = _np.Inf
-        if len(selected_maxs) != 0:
-            energy = 0
-            for idx_max in selected_maxs:
-                driver_portion = driver[idx_max:idx_max + 15 * fsamp]
-
-                half = len(driver_portion) - 5 * fsamp
-
-                y = driver_portion[half:]
-                diff_y = _np.diff(y)
-                th_75 = _np.percentile(diff_y, 75)
-                th_25 = _np.percentile(diff_y, 25)
-
-                idx_sel_diff_y = _np.where((diff_y > th_25) & (diff_y < th_75))[0]
-                diff_y_sel = diff_y[idx_sel_diff_y]
-
-                mean_s = BootstrapEstimation(func=_np.mean, N=100, k=0.5)(diff_y_sel)
-
-                mean_y = BootstrapEstimation(func=_np.median, N=100, k=0.5)(y)
-
-                b_mean_s = mean_y - mean_s * (half + (len(driver_portion) - half) / 2)
-
-                line_mean_s = mean_s * _np.arange(len(driver_portion)) + b_mean_s
-
-                driver_detrended = driver_portion - line_mean_s
-
-                driver_detrended /= _np.max(driver_detrended)
-                energy_curr = (1 / fsamp) * _np.sum(driver_detrended[fsamp:] ** 2) / (len(driver_detrended) - fsamp)
-
-                energy += energy_curr
+            return 10000  # float('inf')  # or 10000  # TODO: check if np.Inf does not raise errors
         else:
-            OptimizeBateman.warn('Peaks found but too near. Returning Inf')
-            return 10000 # float('inf')  # or 10000 # TODO: check if np.Inf does not raise errors
-        OptimizeBateman.log('Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(energy))
-        return energy
+            # STAGE 1: select maxs distant from the others
+            diff_maxs = _np.diff(_np.r_[maxp, len(driver) - 1])
+            th_diff = 15 * fsamp
+
+            # TODO (new feature): select th such as to have enough maxs, e.g. diff_maxs_tentative = np.median(diff_maxs)
+            idx_selected_maxs = _np.where(diff_maxs > th_diff)[0]
+            selected_maxs = maxp[idx_selected_maxs]
+
+            energy = _np.Inf
+            if len(selected_maxs) != 0:
+                energy = 0
+                for idx_max in selected_maxs:
+                    driver_portion = driver[idx_max:idx_max + 15 * fsamp]
+
+                    half = len(driver_portion) - 5 * fsamp
+
+                    y = driver_portion[half:]
+                    diff_y = _np.diff(y)
+                    th_75 = _np.percentile(diff_y, 75)
+                    th_25 = _np.percentile(diff_y, 25)
+
+                    idx_sel_diff_y = _np.where((diff_y > th_25) & (diff_y < th_75))[0]
+                    diff_y_sel = diff_y[idx_sel_diff_y]
+
+                    mean_s = BootstrapEstimation(func=_np.mean, N=100, k=0.5)(diff_y_sel)
+
+                    mean_y = BootstrapEstimation(func=_np.median, N=100, k=0.5)(y)
+
+                    b_mean_s = mean_y - mean_s * (half + (len(driver_portion) - half) / 2)
+
+                    line_mean_s = mean_s * _np.arange(len(driver_portion)) + b_mean_s
+
+                    driver_detrended = driver_portion - line_mean_s
+
+                    driver_detrended /= _np.max(driver_detrended)
+                    energy_curr = (1 / fsamp) * _np.sum(driver_detrended[fsamp:] ** 2) / (len(driver_detrended) - fsamp)
+
+                    energy += energy_curr
+            else:
+                OptimizeBateman.warn('Peaks found but too near. Returning Inf')
+                return 10000 # float('inf')  # or 10000 # TODO: check if np.Inf does not raise errors
+            OptimizeBateman.log('Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(energy))
+            return energy
 
     _params_descriptors = {
         'opt_method': _Par(1, str, 'Method to perform the search of optimal parameters.', 'asa',

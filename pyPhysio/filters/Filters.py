@@ -155,10 +155,10 @@ class IIRFilter(_Filter):
         # TODO: Try (nyq=0)?
         wp = fp / nyq
         ws = fs / nyq
-        b, a = _filter_design.iirdesign(wp, ws, loss, att, ftype=ftype)
+        b, a = _filter_design.iirdesign(wp, ws, loss, att, ftype=ftype, output="ba")
                 
         # TODO (new feature) Trovare metodo per capire se funziona o no
-        #if _np.max(a)>BIG_NUMBER | _np.isnan(_np.sum(a)):
+        # if _np.max(a)>BIG_NUMBER | _np.isnan(_np.sum(a)):
         #    _PhUI.w('Filter parameters allow no solution')
         #    return signal
         # ---------
@@ -332,7 +332,7 @@ class ConvolutionalFilter(_Filter):
                 cls.error("'win_len' parameter missing.")
                 return signal
             else:
-                n = params['win_len'] * fsamp
+                n = int(params['win_len']) * fsamp
 
                 if irftype == 'gauss':
                     std = _np.floor(n / 8)

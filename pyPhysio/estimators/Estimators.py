@@ -1,10 +1,10 @@
 # coding=utf-8
+from __future__ import print_function
 from __future__ import division
 import numpy as _np
 from scipy.signal import gaussian as _gaussian
 from ..BaseEstimator import Estimator as _Estimator
 from ..Signal import UnevenlySignal as _UnevenlySignal, EvenlySignal as _EvenlySignal
-from ..Utility import PhUI as _PhUI
 from ..filters.Filters import IIRFilter as _IIRFilter, Diff as _Diff, DeConvolutionalFilter as _DeConvolutionalFilter, \
     ConvolutionalFilter as _ConvolutionalFilter
 from ..tools.Tools import SignalRange as _SignalRange, PeakDetection as _PeakDetection, Minima as _Minima, \
@@ -63,19 +63,18 @@ class BeatFromBP(_Estimator):
         deltas = 0.7 * _SignalRange(win_len=2 / fmax, win_step=1 / fmax)(signal)
 
         # detection of candidate peaks
-        maxp, minp = _PeakDetection(deltas=deltas, refractory=refractory, start_max=True)(signal_f)  # Tools
-        idx_d = maxp[:, 0]
+        maxp, minp, ignored, ignored = _PeakDetection(deltas=deltas, refractory=refractory, start_max=True)(signal_f)  # Tools
 
-        if idx_d[0] == 0:
-            idx_d = idx_d[1:]
+        if maxp[0] == 0:
+            maxp = maxp[1:]
 
         # STAGE 3 - IDENTIFY PEAKS using the signal derivative
         dxdt = _Diff()(signal)
         true_peaks = []
 
-        WIN = 0.25 * fsamp
-        for idx_beat in idx_d:
-            start_ = idx_beat - WIN
+        win = 0.25 * fsamp
+        for idx_beat in maxp:
+            start_ = int(idx_beat - win)
             if start_ < 0:
                 start_ = 0
 
@@ -93,9 +92,8 @@ class BeatFromBP(_Estimator):
             else:
                 cls.warn('Peak not found; idx_beat: ' + str(idx_beat))
                 pass
-        true_peaks = _np.array(true_peaks)
         # STAGE 4 - FINALIZE computing IBI and fixing indexes
-        ibi_values = _Diff()(true_peaks) / fsamp
+        ibi_values = _np.diff(true_peaks) / fsamp
         ibi_values = _np.r_[ibi_values[0], ibi_values]
         idx_ibi = _np.array(true_peaks)
 
@@ -159,16 +157,14 @@ class BeatFromECG(_Estimator):
 
         refractory = int(fsamp / fmax)
 
-        maxp, minp = _PeakDetection(deltas=delta, refractory=refractory, start_max=True)(signal)
+        maxp, minp, maxv, minv = _PeakDetection(deltas=delta, refractory=refractory, start_max=True)(signal)
 
-        idx_d = maxp[:, 0]
+        if maxp[0] == 0:
+            maxp = maxp[1:]
 
-        if idx_d[0] == 0:
-            idx_d = idx_d[1:]
-
-        ibi_values = _Diff()(idx_d) / fsamp
+        ibi_values = _np.diff(maxp) / fsamp
         ibi_values = _np.r_[ibi_values[0], ibi_values]
-        idx_ibi = _np.array(idx_d)
+        idx_ibi = _np.array(maxp)
 
         ibi = _UnevenlySignal(ibi_values, idx_ibi, fsamp, len(signal), 'IBI', signal.get_start_time(), signal.get_metadata())
         return ibi

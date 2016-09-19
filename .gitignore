@@ -43,6 +43,7 @@ htmlcov/
 nosetests.xml
 coverage.xml
 *,cover
+.hypothesis/
 
 # Translations
 *.mo
@@ -50,6 +51,14 @@ coverage.xml
 
 # Django stuff:
 *.log
+local_settings.py
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
 
 # Sphinx documentation
 docs/_build/
@@ -57,10 +66,27 @@ docs/_build/
 # PyBuilder
 target/
 
-# Emacs file tmp
-*~
-.#*
-\#*#
+# IPython Notebook
+.ipynb_checkpoints
 
-#Pycharm
-.idea*
+# pyenv
+.python-version
+
+# celery beat schedule file
+celerybeat-schedule
+
+# dotenv
+.env
+
+# virtualenv
+.venv/
+venv/
+ENV/
+
+# PyCharm
+.idea/
+
+# Spyder project settings
+.spyderproject
+.spyderproject.bak
+.spyderworkspace
