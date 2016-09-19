@@ -1,9 +1,8 @@
 # coding=utf-8
 from __future__ import division
 
-import pyPhysio as ph
+from context import ph
 import numpy as np
-
 import unittest
 
 __author__ = 'aleb'

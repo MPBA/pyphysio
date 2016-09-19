@@ -1,12 +1,9 @@
 # coding=utf-8
 from __future__ import division
 
-try:
-    import pyphysio.pyPhysio as ph
-except ImportError:
-    import pyPhysio as ph
-import numpy as np
+from context import ph
 from math import ceil as _ceil
+import numpy as np
 
 import unittest
 

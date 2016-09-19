@@ -136,7 +136,7 @@ class EvenlySignal(Signal):
         ratio = self.get_sampling_freq() / fout
 
         if fout < self.get_sampling_freq() and ratio.is_integer():  # fast interpolation
-            signal_out = self.get_values()[::ratio]
+            signal_out = self.get_values()[::int(ratio)]
         else:
             # The last sample is doubled to allow the new size to be correct
             indexes = _np.arange(len(self) + 1)

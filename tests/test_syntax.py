@@ -1,9 +1,6 @@
 # coding=utf-8
 
-try:
-    import pyphysio.pyPhysio as ph
-except ImportError:
-    import pyPhysio as ph
+from context import ph
 import numpy as np
 import unittest
 
