@@ -25,7 +25,10 @@ TSTART = 0
 data = np.array(pd.read_csv(FILE))
 bvp = ph.EvenlySignal(data[:,1], FSAMP, 'BVP', TSTART)
 
-ibi = ph.BeatFromBP()(bvp)  # TODO: ibi should have the same indexes of original signal
+ibi = ph.BeatFromBP()(bvp)  # TODO: ibi should have the same indexes of original signal /// it does, try this:
+# plt.plot(bvp)
+# plt.plot(ibi.get_indices(), bvp[np.asarray(ibi.get_indices(), 'i')], 'ro')
+# plt.show()
 
 '''
 #EDA

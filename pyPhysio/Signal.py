@@ -76,7 +76,7 @@ class Signal(_np.ndarray):
         return self.ph[self._MT_META_DICT]
 
     def plot(self, style=""):
-        _plot(self.get_indices(), self.get_values(), style)
+        _plot(self.get_times(), self.get_values(), style)
 
     def __repr__(self):
         return "<signal: " + self.get_signal_nature() + ", start_time: " + str(self.get_start_time()) + ">"
@@ -99,18 +99,6 @@ class EvenlySignal(Signal):
 
     def get_times(self, just_one=None):
         return self.get_indices(just_one) / self.get_sampling_freq()
-
-    # Works with timestamps (OLD)
-    def getslice(self, f, l):
-        # Using future division
-        # find base_signal's indexes
-        f = (f - self.get_start_time()) / self.get_sampling_freq()
-        l = (l - self.get_start_time()) / self.get_sampling_freq()
-        # clip the end
-        # [:] has exclusive end
-        if l > len(self):
-            l = len(self)
-        return EvenlySignal(self[f:l], self.get_sampling_freq(), self.get_signal_nature(), f)
 
     def __repr__(self):
         return Signal.__repr__(self)[:-1] + " freq:" + str(self.get_sampling_freq()) + "Hz>\n" + self.view(

@@ -12,7 +12,7 @@ s = ph.EvenlySignal(np.cumsum(np.random.rand(1, 1000) - .5) * 100, 10)
 w1 = ph.TimeSegments(step=2, width=3)(s)
 w2 = ph.LengthSegments(step=100, width=121)(s)
 w3 = ph.FromEventsSegments(events=ph.UnevenlySignal(
-    ['a', 'a', 'b', 'a', 'r', 's', 'r', 'b'], [10, 12, 13.5, 14.3, 15.6, 20.1123, 25, 36.8]))(s)
+    ['a', 'a', 'b', 'a', 'r', 's', 'r', 'b'], [10, 12, 13.5, 14.3, 15.6, 20.1123, 25, 36.8], 10, 40))(s)
 w4 = ph.ExistingSegments(segments=w3)(s)
 
 y1 = [x for x in w1]

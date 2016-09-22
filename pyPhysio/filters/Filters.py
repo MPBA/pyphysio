@@ -262,10 +262,11 @@ class MatchedFilter(_Filter):
     """
 
     @classmethod
-    def algorithm(cls, signal, template):  # TODO (Andrea): check normalization TEST
+    def algorithm(cls, signal, params):  # TODO (Andrea): check normalization TEST
+        template = params["template"]
         filtered_signal = _np.convolve(signal, template)
         filtered_signal = filtered_signal[_np.argmax(template):]
-        return filtered_signal
+        return filtered_signal  # TODO (Andrea): Deve tornare signal, fsamp? start_time? etc..
 
     _params_descriptors = {
         'template': _Par(2, list, 'The template for matched filter (not reversed)')
@@ -335,7 +336,7 @@ class ConvolutionalFilter(_Filter):
                 n = int(params['win_len']) * fsamp
 
                 if irftype == 'gauss':
-                    std = _np.floor(n / 8)
+                    std = _np.floor(n / 8)  # TODO (Andrea): error if win len < 8 samples
                     irf = _gaussian(n, std)
                 elif irftype == 'rect':
                     irf = _np.ones(n)
