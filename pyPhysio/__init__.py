@@ -44,15 +44,6 @@ def algo(function, params=None):
     from BaseAlgorithm import Algorithm
 
     class Custom(Algorithm):
-        # def __call__(self, data):
-        #     """
-        #     Executes the algorithm using the parameters saved by the constructor.
-        #     @param data: The data.
-        #     @type data: TimeSeries
-        #     @return: The result.
-        #     """
-        #     return self.get(data, self._params, use_cache=False)
-
         @classmethod
         def algorithm(cls, data, params):
             return function(data, params)

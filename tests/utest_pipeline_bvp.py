@@ -5,34 +5,39 @@ import pandas as pd
 
 import matplotlib.pyplot as plt
 
-import pyPhysio as ph
+from context import ph, Asset
 
-#BVP
-FILE = '/home/andrea/Trento/DATI/FCA/NightsAndrea/18-19_Ago/CsvOutput-CSV/data_EmpaticaDevice-Empatica E4 - A0051F/BVP.csv'
+# BVP
+FILE = Asset.BVP
 FSAMP = 64
 TSTART = 0
 
 data = np.array(pd.read_csv(FILE))
-bvp = ph.EvenlySignal(data[:,1], FSAMP, 'BVP', TSTART)
+bvp = ph.EvenlySignal(data[:, 1], FSAMP, 'BVP', TSTART)
 
-#=============================
+# =============================
 # DETECT IBI
-ibi = ph.BeatFromBP()(bvp) #TODO: ibi should have the same indexes of original signal
-# TODO: strange warning "data is not a Signal"
+ibi = ph.BeatFromBP()(bvp)  # TODO: ibi should have the same indexes of original signal /// it does, try this:
+# plt.plot(bvp)
+# plt.plot(ibi.get_indices(), bvp[np.asarray(ibi.get_indices(), 'i')], 'ro')
+# plt.show()
+# TODO: strange warning "data is not a Signal" ///
+# that's because of the Diff()(x) where x is not a signal in the implementations, _np.diff should be used instead
+# the last commit fixed this issue
 
-#=============================
+# =============================
 # DETECT BAD IBI
-id_bad_ibi = ph.BeatOutliers(cache = 5, sensitivity = 0.5)(ibi)
+id_bad_ibi = ph.BeatOutliers(cache=5, sensitivity=0.5)(ibi)
 
 bvp.plot()
 plt.vlines(ibi.get_indices(), np.min(bvp), np.max(bvp))
 plt.vlines(ibi.get_indices()[id_bad_ibi], np.min(bvp), np.max(bvp), 'r')
 
-#=============================
+# =============================
 # OPTIMIZE IBI
-ibi_opt = ph.BeatOptimizer()(ibi)/FSAMP
+ibi_opt = ph.BeatOptimizer()(ibi) / FSAMP
 
-ax1=plt.subplot(211)
+ax1 = plt.subplot(211)
 bvp.plot()
 plt.vlines(ibi.get_indices(), np.min(bvp), np.max(bvp), 'r')
 plt.vlines(ibi_opt.get_indices(), np.min(bvp), np.max(bvp))

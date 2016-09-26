@@ -42,6 +42,7 @@ median = ph.Median()(ibi)
 rng = ph.Range()(ibi)
 rmssd = ph.RMSSD()(ibi)
 sdsd = ph.SDSD()(ibi)
+# TODO (Andrea): Variables contain tuples because of the ending comma of the line
 VLF = ph.PowerInBand(interp_freq=4, freq_max=0.04, freq_min=0.00001)(ibi),  # TODO: Should return a scalar
 LF = ph.PowerInBand(interp_freq=4, freq_max=0.15, freq_min=0.04)(ibi),  # TODO: Should return a scalar
 HF = ph.PowerInBand(interp_freq=4, freq_max=0.4, freq_min=0.15)(ibi),  # TODO: Should return a scalar
