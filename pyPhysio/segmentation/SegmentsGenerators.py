@@ -52,7 +52,7 @@ class TimeSegments(SegmentsGenerator):
 
     def init_segmentation(self):
         self._step = self._params["step"]
-        self._c_times = self._signal.get_times()
+        self._c_times = self._signal.get_times() if self._signal is not None else []
         self._width =\
             self._params["step"] if "width" not in self._params or self._params["width"] == 0 else self._params["width"]
         self._i = 0
@@ -65,7 +65,7 @@ class TimeSegments(SegmentsGenerator):
     def next_segment(self):
         if self._signal is None:
             _PhUI.w("Can't preview the segments without a signal here. Use the syntax " +
-                    TimeSegments.__name__ + "(p[params])(signal)")
+                    TimeSegments.__name__ + "(**params])(signal)")
             raise StopIteration()
         b = e = self._i
         l = len(self._signal)
@@ -100,7 +100,7 @@ class FromStartStopSegments(SegmentsGenerator):
     def next_segment(self):
         if self._signal is None:
             _PhUI.w("Can't preview the segments without a signal here. Use the syntax "
-                 + TimeSegments.__name__ + "(p[params])(signal)")
+                 + TimeSegments.__name__ + "(**params)(signal)")
             raise StopIteration()
         else:
             if self._i < len(self._params['starts']):
@@ -171,9 +171,10 @@ class FromEventsSegments(SegmentsGenerator):
         self._i = 0
         self._t = self._events.get_indices(0)
 
-        # TESTME: May be not so efficient but it is better than searchsorted (small k < n often smaller than log2(n))
-        while self._i < len(self._signal) and self._signal.get_indices(self._i) < self._t:
-            self._i += 1
+        if self._signal is not None:
+            # TODO TESTME: May be not so efficient but it is better than searchsorted (small k < n often smaller than log2(n))
+            while self._i < len(self._signal) and self._signal.get_indices(self._i) < self._t:
+                self._i += 1
 
     def next_segment(self):
         if self._signal is None:
