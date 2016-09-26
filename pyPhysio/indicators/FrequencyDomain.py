@@ -33,7 +33,7 @@ class PowerInBand(_Indicator):
     @classmethod
     def algorithm(cls, data, params):
         freq, powers = InBand(params)(data)
-        df = freq[1] - freq[0] if len(freq) > 0 else 1
+        df = freq[1] - freq[0] if len(freq) > 1 else 1
         # TODO: normalization
         return df * _np.sum(powers)
 

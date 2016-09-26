@@ -85,9 +85,9 @@ class NNx(_Indicator):
     """
 
     @classmethod
-    def algorithm(cls, data, params):
+    def algorithm(cls, signal, params):
         th = params['threshold']
-        diff = _Diff()(data)
+        diff = _Diff()(signal)
         return sum(1.0 for x in diff*1000 if x > th)
 
     _params_descriptors = {
@@ -97,7 +97,7 @@ class NNx(_Indicator):
 
 class Embed(_Indicator):
     @classmethod
-    def algorithm(cls, data, params):
+    def algorithm(cls, signal, params):
         """
         Calculates the the vector of the sequences of length 'subset_size' of the data
         @return: Data array with shape (l - n + 1, n) having l=len(data) and n=subset_size
@@ -107,11 +107,11 @@ class Embed(_Indicator):
         n = params['dimension']
         t = params['delay']
         # ...
-        num = len(data) - n + 1
+        num = len(signal) - n + 1
         if num > 0:
             emb = _np.zeros([num, n])
             for i in xrange(num):
-                emb[i, :] = data[i:i + n]
+                emb[i, :] = signal[i:i + n]
             return emb
         else:
             return []

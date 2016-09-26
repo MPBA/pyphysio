@@ -126,8 +126,8 @@ class RMSSD(_Indicator):
     """
 
     @classmethod
-    def algorithm(cls, data, params):
-        diff = _Diff()(data)
+    def algorithm(cls, signal, params):
+        diff = _Diff()(signal)
         return _np.sqrt(_np.mean(_np.power(diff.get_values(), 2)))
 
 
@@ -137,8 +137,8 @@ class SDSD(_Indicator):
     """
 
     @classmethod
-    def algorithm(cls, data, params):
-        diff = _Diff()(data)
+    def algorithm(cls, signal, params):
+        diff = _Diff()(signal)
         return StDev()(diff)
 
 

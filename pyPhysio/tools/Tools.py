@@ -939,7 +939,7 @@ class BeatOptimizer(_Tool):
         fsamp = signal.get_sampling_freq()
 
         if ibi_median == 0:
-            ibi_expected = _np.median(_Diff()(idx_ibi))
+            ibi_expected = _np.median(_np.diff(idx_ibi))
         else:
             ibi_expected = ibi_median
 
@@ -1111,7 +1111,7 @@ class BeatOptimizer(_Tool):
         ###
         # finalize arrays
         idx_out = _np.array(idx_out) + idx_st
-        ibi_out = _Diff()(idx_out)
+        ibi_out = _np.diff(idx_out)
         ibi_out = _np.r_[ibi_out[0], ibi_out]
 
         return _UnevenlySignal(ibi_out, idx_out, signal.get_sampling_freq(), len(signal), "IBI",
