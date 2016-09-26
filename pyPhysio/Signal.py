@@ -168,7 +168,7 @@ class UnevenlySignal(Signal):
             return self.ph[self._MT_X_VALUES][just_one]
 
     def get_times(self, just_one=None):
-        self.get_indices(just_one) / self.get_sampling_freq()
+        return self.get_indices(just_one) / self.get_sampling_freq()
 
     def __repr__(self):
         return Signal.__repr__(self) + "\ny-values\n" + self.view(_np.ndarray).__repr__() + \
