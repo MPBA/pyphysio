@@ -11,7 +11,7 @@ import numpy as np
 from context import ph
 
 FSAMP = 10
-TSTART = 10
+TSTART = 5
 TYPE = ''
 
 data = np.arange(1000)
@@ -22,15 +22,14 @@ s = ph.EvenlySignal(data, FSAMP, TYPE, TSTART)
 ## TEST GETS ATTRIBUTES
 ###############
 
-s.get_duration()  # TODO: 1/fsamp in piu' /// a me risulta 100.0 che è 1000 samples a 10 Hz, non è giusto?
+s.get_duration()  # OK
 s.get_indices()  # OK
-s.get_times()  ## TODO: non tiene conto dello start time /// esatto perché sono salvati così, serve un bel po di tempo e/o memoria in più per averli con lo start_time.
-## TODO: just one non serve /// serve a me internamente e non ci sonon motivi per nasconderlo
+s.get_times()  ## TODO: non tiene conto dello start time
 s.get_values()  # OK
 s.get_signal_nature()  # OK
 s.get_sampling_freq()  # OK
 s.get_start_time()  # OK
-s.get_end_time()  # TODO: ritorna un dt=1/fsamp in piu' /// vedi duration
+s.get_end_time()  # TODO: get the get_times[-1]
 s.get_metadata()
 
 s.plot()
@@ -59,7 +58,7 @@ s_down.get_values()  # OK
 s_down.get_signal_nature()  # OK
 s_down.get_sampling_freq()  # OK
 s_down.get_start_time()  # OK
-s_down.get_end_time()  # TODO: ritorna un dt=1/fsamp in piu' /// (vedi get_duration)
+s_down.get_end_time()  # TODO: get the get_times[-1]
 s_down.get_metadata()
 s_down.plot()
 
@@ -71,6 +70,6 @@ s_up.get_values()  # OK
 s_up.get_signal_nature()  # OK
 s_up.get_sampling_freq()  # OK
 s_up.get_start_time()  # OK
-s_up.get_end_time()  # TODO: ritorna un dt=1/fsamp in piu' /// (vedi get_duration)
+s_up.get_end_time()  # TODO:  get the get_times[-1]
 s_up.get_metadata()
 s_up.plot()
