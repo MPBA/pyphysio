@@ -145,14 +145,14 @@ class IIRFilter(_Filter):
         fp, fs, loss, att, ftype = params["fp"], params["fs"], params["loss"], params["att"], params["ftype"]
 
         # TODO (Ale): if A and B already exist and fsamp is not changed skip the following
-
+        # TODO (Ale): check that the signal is EvenlySignal (so fsamp is not 0)
         # ---------
         # TODO (new feature): check that fs and fp are meaningful
         # TODO (new feature): check if fs, fp, fsamp allow no solution for the filter
         nyq = 0.5 * fsamp
         fp = _np.array(fp)
         fs = _np.array(fs)
-        # TODO: Try (nyq=0)?
+        
         wp = fp / nyq
         ws = fs / nyq
         b, a = _filter_design.iirdesign(wp, ws, loss, att, ftype=ftype, output="ba")
@@ -164,8 +164,7 @@ class IIRFilter(_Filter):
         # ---------
         # FIXME: con _filtfilt signal perde la classe e rimane array
         # TODO (Andrea): va bene EvenlySignal?
-        sig_filtered = _EvenlySignal(_filtfilt(b, a, signal), signal.get_sampling_freq(), signal.get_signal_nature(),
-                                     signal.get_start_time(), signal.get_metadata())
+        sig_filtered = _EvenlySignal(_filtfilt(b, a, signal.get_values()), signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time(), signal.get_metadata())
         if _np.isnan(sig_filtered[0]):
             cls.warn(cls.__name__ + ': Filter parameters allow no solution. Returning original signal.')
             return signal
@@ -262,11 +261,11 @@ class MatchedFilter(_Filter):
     """
 
     @classmethod
-    def algorithm(cls, signal, params):  # TODO (Andrea): check normalization TEST
+    def algorithm(cls, signal, params):  # TODO (Andrea): check normalization TEST // ???
         template = params["template"]
         filtered_signal = _np.convolve(signal, template)
         filtered_signal = filtered_signal[_np.argmax(template):]
-        return filtered_signal  # TODO (Andrea): Deve tornare signal, fsamp? start_time? etc..
+        return filtered_signal  # TODO: should return an EvenlySignal
 
     _params_descriptors = {
         'template': _Par(2, list, 'The template for matched filter (not reversed)')
@@ -333,10 +332,12 @@ class ConvolutionalFilter(_Filter):
                 cls.error("'win_len' parameter missing.")
                 return signal
             else:
-                n = int(params['win_len']) * fsamp
+                n = int(params['win_len'] * fsamp)
 
                 if irftype == 'gauss':
-                    std = _np.floor(n / 8)  # TODO (Andrea): error if win len < 8 samples
+                    if n<8:
+                        cls.error("'win_len' too short for gaussian type, expected > 8.")
+                    std = _np.floor(n / 8) 
                     irf = _gaussian(n, std)
                 elif irftype == 'rect':
                     irf = _np.ones(n)
@@ -409,22 +410,30 @@ class DeConvolutionalFilter(_Filter):
     def algorithm(cls, signal, params):
         irf = params["irf"]
         normalize = params["normalize"]
-
-        # TODO (Andrea): normalize?
+        deconvolution_method = params["deconv_method"]
+        # TODO (Andrea): check normalization: use also fsamp?
         if normalize:
             irf = irf / _np.sum(irf)
-        l = len(signal)
-        fft_signal = _np.fft.fft(signal, n=l)
-        fft_irf = _np.fft.fft(irf, n=l)
-        out = _np.fft.ifft(fft_signal / fft_irf)
-        
+        if deconvolution_method == 'fft':
+            l = len(signal)
+            fft_signal = _np.fft.fft(signal, n=l)
+            fft_irf = _np.fft.fft(irf, n=l)
+            out = _np.fft.ifft(fft_signal / fft_irf)
+        else:
+            print('Not implemented')
+            # TODO: finish
+            out = signal.get_values()
+            
         out_signal = _EvenlySignal(abs(out), signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time(), signal.get_metadata())
 
         return out_signal
 
     _params_descriptors = {
         'irf': _Par(2, list, 'IRF used to deconvolve the signal'),
-        'normalize': _Par(1, bool, 'Whether to normalize the IRF to have unitary area', True)
+        'normalize': _Par(1, bool, 'Whether to normalize the IRF to have unitary area', True),
+        'deconv_method': _Par(1, str, 'Deconvolution method.', 'fft',
+                        lambda x: x in ['fft', 'deconv'])
+
     }
 
     @classmethod

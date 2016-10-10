@@ -20,7 +20,7 @@ class Signal(_np.ndarray):
 
     def __new__(cls, values, sampling_freq, signal_nature="", start_time=0, meta=None, start_index=0):
         # noinspection PyNoneFunctionAssignment
-        obj = _np.asarray(values).view(cls)
+        obj = _np.asarray(_np.ravel(values)).view(cls)
         obj._pyphysio = {
             cls._MT_NATURE: signal_nature,
             cls._MT_START_TIME: start_time,

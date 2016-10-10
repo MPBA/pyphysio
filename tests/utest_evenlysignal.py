@@ -10,12 +10,15 @@ import numpy as np
 
 from context import ph
 
-FSAMP = 10
+FSAMP = 0
 TSTART = 5
 TYPE = ''
 
 data = np.arange(1000)
 
+s = ph.EvenlySignal(data, FSAMP, TYPE, TSTART) # TODO: check sui parametri del segnale: FSAMP > 0
+
+FSAMP = 10
 s = ph.EvenlySignal(data, FSAMP, TYPE, TSTART)
 
 ###############
@@ -25,7 +28,7 @@ s = ph.EvenlySignal(data, FSAMP, TYPE, TSTART)
 s.get_duration()  # OK
 s.get_indices()  # OK
 s.get_times()  ## TODO: non tiene conto dello start time
-s.get_values()  # OK
+s.get_values()  # TODO: (issue 3: SOLVED) check changes on the Signal class
 s.get_signal_nature()  # OK
 s.get_sampling_freq()  # OK
 s.get_start_time()  # OK
