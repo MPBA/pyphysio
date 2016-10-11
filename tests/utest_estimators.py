@@ -15,7 +15,7 @@ TSTART = 0
 
 ecg = ph.EvenlySignal(ecg1, FSAMP, 'ECG', TSTART)  # OK
 
-ibi = ph.BeatFromECG()(ecg)
+ibi = ph.BeatFromECG()(ecg) # OK
 
 # BVP
 FILE = Asset.BVP
@@ -25,16 +25,17 @@ TSTART = 0
 data = np.array(pd.read_csv(FILE))
 bvp = ph.EvenlySignal(data[:,1], FSAMP, 'BVP', TSTART)
 
-ibi = ph.BeatFromBP()(bvp)  # TODO: ibi should have the same indexes of original signal /// it does, try this:
-# plt.plot(bvp)
-# plt.plot(ibi.get_indices(), bvp[np.asarray(ibi.get_indices(), 'i')], 'ro')
-# plt.show()
+ibi = ph.BeatFromBP(bpm_max=120)(bvp)  # OK
 
-'''
+
 #EDA
 FILE = Asset.GSR
 data = np.array(pd.read_csv(FILE))
 eda = ph.EvenlySignal(data[:,1], 4, 'EDA', 0)
 
 eda_f = ph.DenoiseEDA(threshold = 0.2)(eda) #OK
-'''
+eda_f = eda_f.resample(8)
+
+driver = ph.DriverEstim(T1=0.75, T2=2)(eda_f) # OK
+
+phasic, tonic, driver_no_peak = ph.PhasicEstim(delta=0.1)(driver) # OK

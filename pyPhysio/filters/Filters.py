@@ -1,7 +1,7 @@
 # coding=utf-8
 from __future__ import division
 import numpy as _np
-from scipy.signal import gaussian as _gaussian, filtfilt as _filtfilt, filter_design as _filter_design
+from scipy.signal import gaussian as _gaussian, filtfilt as _filtfilt, filter_design as _filter_design, deconvolve as _deconvolve
 from ..BaseFilter import Filter as _Filter
 from ..Signal import EvenlySignal as _EvenlySignal, UnevenlySignal as _UnevenlySignal, Signal as _Signal
 from ..Utility import PhUI as _PhUI
@@ -194,8 +194,10 @@ class DenoiseEDA(_Filter):
     
     Parameters
     ----------
-    TH : float
+    threshold : float
         Threshold to detect the noise
+    win_len : float
+        Length of the window
    
     Returns
     -------
@@ -355,14 +357,12 @@ class ConvolutionalFilter(_Filter):
                 
         # NORMALIZE
         if normalize:
-            irf = irf / _np.sum(irf)  # TODO (Andrea): account fsamp? TEST
+            irf = irf / _np.sum(irf)
 
-        # TODO: sicuri che dopo questa riga signal rimanga un array? No
-        # TODO (Andrea): n non dovrebbe essere definita anche in caso di irftype == custom?
         signal_ = _np.r_[_np.ones(n) * signal[0], signal, _np.ones(n) * signal[-1]]  # TESTME
 
         signal_f = _np.convolve(signal_, irf, mode='same')
-        # TODO (Andrea) va bene evenly signal?
+
         signal_out = _EvenlySignal(signal_f[n:-n], signal.get_sampling_freq(), signal.get_signal_nature(),
                                    signal.get_start_time(), signal.get_metadata())
         return signal_out
@@ -411,7 +411,7 @@ class DeConvolutionalFilter(_Filter):
         irf = params["irf"]
         normalize = params["normalize"]
         deconvolution_method = params["deconv_method"]
-        # TODO (Andrea): check normalization: use also fsamp?
+        
         if normalize:
             irf = irf / _np.sum(irf)
         if deconvolution_method == 'fft':
@@ -419,20 +419,24 @@ class DeConvolutionalFilter(_Filter):
             fft_signal = _np.fft.fft(signal, n=l)
             fft_irf = _np.fft.fft(irf, n=l)
             out = _np.fft.ifft(fft_signal / fft_irf)
+        elif deconvolution_method == 'sps':
+            #TODO: Test needed
+            print('This method needs to be tested. Use carefully.')
+            out, _  = _deconvolve(signal, irf)
         else:
-            print('Not implemented')
-            # TODO: finish
+            print('Deconvolution method not implemented. Returning original signal.')
             out = signal.get_values()
+                
             
         out_signal = _EvenlySignal(abs(out), signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time(), signal.get_metadata())
 
         return out_signal
 
     _params_descriptors = {
-        'irf': _Par(2, list, 'IRF used to deconvolve the signal'),
+        'irf': _Par(2, list, 'IRF used to deconvolve the signal'),#TODO: check that irf[0]>0 to avoid scipy BUG
         'normalize': _Par(1, bool, 'Whether to normalize the IRF to have unitary area', True),
         'deconv_method': _Par(1, str, 'Deconvolution method.', 'fft',
-                        lambda x: x in ['fft', 'deconv'])
+                        lambda x: x in ['fft', 'sps'])
 
     }
 

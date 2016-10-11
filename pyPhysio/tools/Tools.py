@@ -143,56 +143,48 @@ class PeakSelection(_Tool):
     def algorithm(cls, signal, params):
         i_pre_max = int(params['pre_max'] * signal.get_sampling_freq())
         i_post_max = int(params['post_max'] * signal.get_sampling_freq())
-        maxs = params['maxs']
-        r, c = maxs.shape
-        i_peaks = maxs if c == 1 else maxs[:, 0]
-
+        i_peaks = params['maxs']
+        
+        ZERO = 0.01 
+        # TEST (feature): adjust to allow low values for dt to be considered as zero
         i_start = _np.empty(len(i_peaks), int)
         i_stop = _np.empty(len(i_peaks), int)
 
-        if r == 0:
-            cls.error('Empty peaks array, returning empty.')
-        else:
-            signal_dt = _Diff()(signal)
-            for i in xrange(len(i_peaks)):
-                i_pk = int(i_peaks[i])
+        signal_dt = _Diff()(signal)
+        for i in xrange(len(i_peaks)):
+            i_pk = int(i_peaks[i])
 
-                if i_pk < i_pre_max or i_pk >= len(signal_dt) - i_post_max:
-                    cls.log('Peak at start/end of signal, not accounting')
+            if i_pk < i_pre_max or i_pk >= len(signal_dt) - i_post_max:
+                cls.log('Peak at start/end of signal, not accounting')
 
-                    # TODO (Andrea): astype(int) converte i nan in -9223372036854775808, l'ho tolto, vanno bene i -1?
-                    # Perché il nan non c'è tra gli int
-                    i_start[i] = i_stop[i] = -1
-                else:
-                    # TODO: gestire se sorpasso gli intervalli e non ho trovato il minimo
+                i_start[i] = i_stop[i] = -1
+            else:
+                
+                # find START
+                i_st = i_pk - i_pre_max
+                signal_dt_pre = signal_dt[i_st:i_pk]
+                i_pre = len(signal_dt_pre) - 1
 
-                    # find START
-                    i_st = i_pk - i_pre_max
-                    signal_dt_pre = signal_dt[i_st:i_pk]
-                    i_pre = i_pk - i_st - 1
+                while i_pre > 0 and (signal_dt_pre[i_pre] > 0 or abs(signal_dt_pre[i_pre]) <= ZERO):
+                    i_pre -= 1
 
-                    while i_pre > 0 and signal_dt_pre[i_pre] > 0:
-                        i_pre -= 1
+                i_start[i] = i_st + i_pre + 1
 
-                    # i_pre_true =
-                    i_start[i] = i_st + i_pre + 1
+                # find STOP
+                i_sp = i_pk + i_post_max
+                signal_dt_post = signal_dt[i_pk: i_sp]
+                i_post = 1
 
-                    # find STOP
-                    i_sp = i_pk + i_post_max
-                    signal_dt_post = signal_dt[i_pk: i_sp]
-                    i_post = 0
+                while i_post < len(signal_dt_post)-1 and (signal_dt_post[i_post] < 0 or abs(signal_dt_post[i_post]) <= ZERO):
+                    i_post += 1
 
-                    while signal_dt_post[i_post] < 0 and i_post < len(signal_dt_post)-1:
-                        i_post += 1
-
-                    # i_post_true =
-                    i_stop[i] = i_pk + i_post
+                i_stop[i] = i_pk + i_post
 
         return i_start, i_stop
 
     _params_descriptors = {
         'maxs': _Par(2, list,
-                     'Array containing indexes (first column) and values (second column) of the maxima'),
+                     'Array containing indexes (first column) and values (second column) of the maxima'), # TODO: len(maxs)>0
         'pre_max':
             _Par(2, float,
                  'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
@@ -737,16 +729,15 @@ class BootstrapEstimation(_Tool):
 
 class Durations(_Tool):
     @classmethod
-    def algorithm(cls, data, params):
+    def algorithm(cls, signal, params):
         starts = params["starts"]
         stops = params["stops"]
 
-        fsamp = data.get_sampling_freq()
+        fsamp = signal.get_sampling_freq()
         durations = []
         for I in xrange(len(starts)):
-            if (_np.isnan(stops[I]) is False) & (_np.isnan(starts[I]) is False):
-                durations.append((stops[I] - starts[
-                    I]) / fsamp)
+            if (stops[I] > 0) & (starts[I] >= 0):
+                durations.append((stops[I] - starts[I]) / fsamp)
             else:
                 durations.append(_np.nan)
         return durations
@@ -766,7 +757,7 @@ class Slopes(_Tool):
         fsamp = data.get_sampling_freq()
         slopes = []
         for I in xrange(len(starts)):
-            if (_np.isnan(peaks[I]) is False) & (_np.isnan(starts[I]) is False):
+            if (peaks[I] > 0 & starts[I]>=0):
                 dy = data[peaks[I]] - data[starts[I]]
                 dt = (peaks[I] - starts[I]) / fsamp
                 slopes.append(dy / dt)

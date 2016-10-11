@@ -40,12 +40,17 @@ ecg_m = ph.MatchedFilter(template=template.get_values())(ecg)
 # TODO (Andrea): error, win_len=0.1 is too few. See ConvolutionalFilter TODOs
 ecg_cf1 = ph.ConvolutionalFilter(irftype='gauss', win_len=0.1)(ecg)  # OK
 ecg_cf2 = ph.ConvolutionalFilter(irftype='rect', win_len=0.1)(ecg)  # OK
-ecg_cf3 = ph.ConvolutionalFilter(irftype='triang', win_len=0.1)(ecg)  # OK
+ecg_cf3 = ph.ConvolutionalFilter(irftype='triang', win_len=0.01)(ecg)  # OK
 ecg_cf4 = ph.ConvolutionalFilter(irftype='dgauss', win_len=0.1)(ecg)  # TODO: Check results
 ecg_cf5 = ph.ConvolutionalFilter(irftype='custom', irf=[0, 1, 2, 1, 0], normalize=True)(ecg)  # OK
 
-# TEST DeConvolutionalFilter (VERY SLOW!!!)
-ecg_df1 = ph.DeConvolutionalFilter(irf=[0, 0, 2, 0, 0], normalize=True)(ecg)  # OK
+irf = template[::-1]
+ecg_conv = np.convolve(ecg.get_values()[0:2048*100], irf)
+ecg_conv = ph.EvenlySignal(ecg_conv - np.min(ecg_conv), FSAMP, 'ECG', TSTART)  # OK
+
+# TEST DeConvolutionalFilter 
+ecg_df1 = ph.DeConvolutionalFilter(irf=irf, normalize=False, deconv_method = 'sps')(ecg_conv)  # TO BE TESTED
+ecg_df2 = ph.DeConvolutionalFilter(irf=irf, normalize=True, deconv_method = 'fft')(ecg_conv)  # OK
 
 # TEST DenoiseEDA
 FILE = Asset.GSR

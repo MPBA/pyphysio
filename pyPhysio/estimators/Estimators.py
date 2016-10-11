@@ -235,11 +235,11 @@ class DriverEstim(_Estimator):
         signal_in = _EvenlySignal(signal_in, fsamp)
 
         # deconvolution
-        driver = _DeConvolutionalFilter(irf=bateman, normalize=True)(signal_in)
+        driver = _DeConvolutionalFilter(irf=bateman, normalize=True, deconv_method='fft')(signal_in)
         driver = driver[idx_max_bat + 1: idx_max_bat + len(signal)]
 
         # gaussian smoothing
-        driver = _ConvolutionalFilter(irftype='gauss', win_len=0.2 * 8, normalize=True)(driver)
+        driver = _ConvolutionalFilter(irftype='gauss', win_len=0.2*8, normalize=True)(driver)
 
         driver = _EvenlySignal(driver, fsamp, "dEDA", signal.get_start_time(), signal.get_metadata())
         return driver
@@ -317,12 +317,14 @@ class PhasicEstim(_Estimator):
         grid_size = params["grid_size"]
         pre_max = params['pre_max']
         post_max = params['post_max']
+        
+        # TODO (feature): compute correct delta given the bateman parameters
 
         fsamp = signal.get_sampling_freq()
         
-        max_driv, tmp_ = _PeakDetection(delta=delta, refractory=1, start_max=True)(signal)
+        idx_max, idx_min, val_max, val_min = _PeakDetection(delta=delta, refractory=1, start_max=True)(signal)
 
-        idx_pre, idx_post = _PeakSelection(maxs=max_driv, pre_max=pre_max, post_max=post_max)(signal)
+        idx_pre, idx_post = _PeakSelection(maxs=idx_max, pre_max=pre_max, post_max=post_max)(signal)
 
         # Linear interpolation to substitute the peaks
         driver_no_peak = _np.copy(signal)

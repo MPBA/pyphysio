@@ -4,7 +4,7 @@ from __future__ import division
 import numpy as _np
 from ..BaseIndicator import Indicator as _Indicator
 from ..Utility import PhUI as _PhUI
-from ..tools.Tools import PeakDetection as _PeakDetection, PeakSelection as _PeakSelection, Durations, Slopes
+from ..tools.Tools import PeakDetection as _PeakDetection, PeakSelection as _PeakSelection, Durations as _Durations, Slopes as _Slopes
 from ..Parameters import Parameter as _Par
 
 __author__ = 'AleB'
@@ -12,18 +12,19 @@ __author__ = 'AleB'
 
 class PeaksMax(_Indicator):
     @classmethod
-    def algorithm(cls, data, params):
+    def algorithm(cls, signal, params):
         """
         Peaks Max
         """
+        delta = params['delta']
 
-        maxs, mins = _PeakDetection(params['delta'])(data)
+        idx_maxs, idx_mins, val_maxs, val_mins = _PeakDetection(delta=delta)(signal)
 
-        if _np.shape(maxs)[0] == 0:
-            cls.warn("_np.shape(maxs)[0] == 0")  # TODO: Put a more explicative message
+        if len(idx_maxs) == 0:
+            cls.warn("No peak found")
             return _np.nan
         else:
-            return _np.nanmax(maxs[:, 1])
+            return _np.nanmax(val_maxs)
 
     _params_descriptors = {
         'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0)
@@ -36,13 +37,15 @@ class PeaksMin(_Indicator):
         """
         Peaks Min
         """
+        delta = params['delta']
 
-        maxs, mins = _PeakDetection(params['delta'])(data)
-        if _np.shape(maxs)[0] == 0:
-            cls.warn("_np.shape(maxs)[0] == 0")  # TODO: Put a more explicative message
+        idx_maxs, idx_mins, val_maxs, val_mins = _PeakDetection(delta=delta)(data)
+
+        if len(idx_maxs) == 0:
+            cls.warn("No peak found")
             return _np.nan
         else:
-            return _np.nanmin(maxs[:, 1])
+            return _np.nanmin(val_maxs)
 
     _params_descriptors = {
         'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0)
@@ -55,14 +58,15 @@ class PeaksMean(_Indicator):
         """
         Peaks Mean
         """
+        delta = params['delta']
 
-        maxs, mins = _PeakDetection(params['delta'])(data)
+        idx_maxs, idx_mins, val_maxs, val_mins = _PeakDetection(delta=delta)(data)
 
-        if _np.shape(maxs)[0] == 0:
-            cls.warn("_np.shape(maxs)[0] == 0")  # TODO: Put a more explicative message
+        if len(idx_maxs) == 0:
+            cls.warn("No peak found")
             return _np.nan
         else:
-            return _np.nanmean(maxs[:, 1])
+            return _np.nanmean(val_maxs)
 
     _params_descriptors = {
         'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0)
@@ -71,18 +75,19 @@ class PeaksMean(_Indicator):
 
 class PeaksNum(_Indicator):
     @classmethod
-    def algorithm(cls, data, params):
+    def algorithm(cls, signal, params):
         """
         Number of Peaks
         """
+        delta = params['delta']
 
-        maxs, mins = _PeakDetection(params['delta'])(data)
+        idx_maxs, idx_mins, val_maxs, val_mins = _PeakDetection(delta=delta)(signal)
 
-        if _np.shape(maxs)[0] == 0:
-            cls.warn("_np.shape(maxs)[0] == 0")  # TODO: Put a more explicative message
+        if len(idx_maxs) == 0:
+            cls.warn("No peak found")
             return _np.nan
         else:
-            return len(maxs[:, 1])
+            return len(idx_maxs)
 
     _params_descriptors = {
         'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0)
@@ -95,24 +100,31 @@ class DurationMin(_Indicator):
     """
 
     @classmethod
-    def algorithm(cls, data, params):
-        maxs, mins = _PeakDetection(params['delta'])(data)
-        idxs_start, idxs_stop = _PeakSelection(maxs=maxs, pre_max=params['pre_max'],
-                                               post_max=params['post_max'])(data)
+    def algorithm(cls, signal, params):
+        delta = params['delta']
+        pre_max = params['pre_max']
+        post_max = params['post_max']
+
+        idx_maxs, idx_mins, val_maxs, val_mins = _PeakDetection(delta=delta)(signal)
+        if len(idx_maxs)==0:
+            cls.warn("No peaks found")
+            return _np.nan
+            
+        idxs_start, idxs_stop = _PeakSelection(maxs=idx_maxs, pre_max=pre_max, post_max=post_max)(signal)
 
         if len(idxs_start) == 0:
-            cls.warn("len(idxs_start) == 0")
+            cls.warn("Unable to detect the start of the peaks")
             return _np.nan
         else:
-            durations = Durations(starts=idxs_start, stops=idxs_stop)(data)
+            durations = _Durations(starts=idxs_start, stops=idxs_stop)(signal)
             return _np.nanmin(_np.array(durations))
 
     _params_descriptors = {
         'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0),
-        'pre_max': _Par(2, float,
+        'pre_max': _Par(1, float,
                         'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
                         1, lambda x: x > 0),
-        'post_max': _Par(2, float,
+        'post_max': _Par(1, float,
                          'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
                          1, lambda x: x > 0)
     }
@@ -124,24 +136,32 @@ class DurationMax(_Indicator):
     """
 
     @classmethod
-    def algorithm(cls, data, params):
-        maxs, mins = _PeakDetection(delta=params['delta'])(data)
-        idxs_start, idxs_stop = _PeakSelection(maxs=maxs, pre_max=params['pre_max'],
-                                               post_max=params['post_max'])(data)
+    def algorithm(cls, signal, params):
+        
+        delta = params['delta']
+        pre_max = params['pre_max']
+        post_max = params['post_max']
+
+        idx_maxs, idx_mins, val_maxs, val_mins = _PeakDetection(delta=delta)(signal)
+        if len(idx_maxs)==0:
+            cls.warn("No peaks found")
+            return _np.nan
+            
+        idxs_start, idxs_stop = _PeakSelection(maxs=idx_maxs, pre_max=pre_max, post_max=post_max)(signal)
 
         if len(idxs_start) == 0:
-            cls.warn("len(idxs_start) == 0")
+            cls.warn("Unable to detect the start of the peaks")
             return _np.nan
         else:
-            durations = Durations(starts=idxs_start, stops=idxs_stop)(data)
+            durations = _Durations(starts=idxs_start, stops=idxs_stop)(signal)
             return _np.nanmax(_np.array(durations))
 
     _params_descriptors = {
         'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0),
-        'pre_max': _Par(2, float,
+        'pre_max': _Par(1, float,
                         'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
                         1, lambda x: x > 0),
-        'post_max': _Par(2, float,
+        'post_max': _Par(1, float,
                          'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
                          1, lambda x: x > 0)
     }
@@ -153,24 +173,31 @@ class DurationMean(_Indicator):
     """
 
     @classmethod
-    def algorithm(cls, data, params):
-        maxs, mins = _PeakDetection(delta=params['delta'])(data)
-        idxs_start, idxs_stop = _PeakSelection(maxs=maxs, pre_max=params['pre_max'],
-                                               post_max=params['post_max'])(data)
+    def algorithm(cls, signal, params):
+        delta = params['delta']
+        pre_max = params['pre_max']
+        post_max = params['post_max']
+
+        idx_maxs, idx_mins, val_maxs, val_mins = _PeakDetection(delta=delta)(signal)
+        if len(idx_maxs)==0:
+            cls.warn("No peaks found")
+            return _np.nan
+            
+        idxs_start, idxs_stop = _PeakSelection(maxs=idx_maxs, pre_max=pre_max, post_max=post_max)(signal)
 
         if len(idxs_start) == 0:
-            cls.warn("len(idxs_start) == 0")
+            cls.warn("Unable to detect the start of the peaks")
             return _np.nan
         else:
-            durations = Durations(starts=idxs_start, stops=idxs_stop)(data)
+            durations = _Durations(starts=idxs_start, stops=idxs_stop)(signal)
             return _np.nanmean(_np.array(durations))
 
     _params_descriptors = {
         'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0),
-        'pre_max': _Par(2, float,
+        'pre_max': _Par(1, float,
                         'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
                         1, lambda x: x > 0),
-        'post_max': _Par(2, float,
+        'post_max': _Par(1, float,
                          'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
                          1, lambda x: x > 0)
     }
@@ -182,17 +209,23 @@ class SlopeMin(_Indicator):
     """
 
     @classmethod
-    def algorithm(cls, data, params):
-        maxs, mins = _PeakDetection(delta=params['delta'])(data)
-        idxs_start, idxs_stop = _PeakSelection(maxs=maxs, pre_max=params['pre_max'],
-                                               post_max=params['post_max'])(data)
+    def algorithm(cls, signal, params):
+        
+        delta = params['delta']
+        pre_max = params['pre_max']
+        post_max = params['post_max']
 
+        idx_maxs, idx_mins, val_maxs, val_mins = _PeakDetection(delta=delta)(signal)
+        if len(idx_maxs)==0:
+            cls.warn("No peaks found")
+            return _np.nan
+            
+        idxs_start, idxs_stop = _PeakSelection(maxs=idx_maxs, pre_max=pre_max, post_max=post_max)(signal)     
         if len(idxs_start) == 0:
-            cls.warn("len(idxs_start) == 0")
+            cls.warn("Unable to detect the start of the peaks")
             return _np.nan
         else:
-            idxs_peak = maxs[:, 0]
-            slopes = Slopes(starts=idxs_start, peaks=idxs_peak)(data)
+            slopes = _Slopes(starts=idxs_start, peaks=idx_maxs)(signal)
             return _np.nanmin(_np.array(slopes))
 
     _params_descriptors = {
@@ -212,17 +245,22 @@ class SlopeMax(_Indicator):
     """
 
     @classmethod
-    def algorithm(cls, data, params):
-        maxs, mins = _PeakDetection(delta=params['delta'])(data)
-        idxs_start, idxs_stop = _PeakSelection(maxs=maxs, pre_max=params['pre_max'],
-                                               post_max=params['post_max'])(data)
+    def algorithm(cls, signal, params):
+        delta = params['delta']
+        pre_max = params['pre_max']
+        post_max = params['post_max']
 
+        idx_maxs, idx_mins, val_maxs, val_mins = _PeakDetection(delta=delta)(signal)
+        if len(idx_maxs)==0:
+            cls.warn("No peaks found")
+            return _np.nan
+            
+        idxs_start, idxs_stop = _PeakSelection(maxs=idx_maxs, pre_max=pre_max, post_max=post_max)(signal)     
         if len(idxs_start) == 0:
-            cls.warn("len(idxs_start) == 0")
+            cls.warn("Unable to detect the start of the peaks")
             return _np.nan
         else:
-            idxs_peak = maxs[:, 0]
-            slopes = Slopes(starts=idxs_start, peaks=idxs_peak)(data)
+            slopes = _Slopes(starts=idxs_start, peaks=idx_maxs)(signal)
             return _np.nanmax(_np.array(slopes))
 
     _params_descriptors = {
@@ -242,17 +280,22 @@ class SlopeMean(_Indicator):
     """
 
     @classmethod
-    def algorithm(cls, data, params):
-        maxs, mins = _PeakDetection(delta=params['delta'])(data)
-        idxs_start, idxs_stop = _PeakSelection(maxs=maxs, pre_max=params['pre_max'],
-                                               post_max=params['post_max'])(data)
+    def algorithm(cls, signal, params):
+        delta = params['delta']
+        pre_max = params['pre_max']
+        post_max = params['post_max']
 
+        idx_maxs, idx_mins, val_maxs, val_mins = _PeakDetection(delta=delta)(signal)
+        if len(idx_maxs)==0:
+            cls.warn("No peaks found")
+            return _np.nan
+            
+        idxs_start, idxs_stop = _PeakSelection(maxs=idx_maxs, pre_max=pre_max, post_max=post_max)(signal)     
         if len(idxs_start) == 0:
-            cls.warn("len(idxs_start) == 0")
+            cls.warn("Unable to detect the start of the peaks")
             return _np.nan
         else:
-            idxs_peak = maxs[:, 0]
-            slopes = Slopes(starts=idxs_start, peaks=idxs_peak)(data)
+            slopes = _Slopes(starts=idxs_start, peaks=idx_maxs)(signal)
             return _np.nanmean(_np.array(slopes))
 
     _params_descriptors = {
