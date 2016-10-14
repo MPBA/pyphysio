@@ -71,3 +71,10 @@ mn = ph.Min()(ibi)
 mx = ph.Max()(ibi)
 
 sm = ph.Sum()(ibi)
+
+window_generator = ph.TimeSegments(step=30, width=60)
+windows_new = window_generator(ibi)
+
+indicators = [ph.Mean(), ph.StDev(), ph.Median(), ph.Range(), ph.StDev(), ph.RMSSD(), ph.SDSD(), ph.TINN(), ph.PowerInBand(interp_freq=4, freq_max=0.04, freq_min=0.00001), ph.PowerInBand(interp_freq=4, freq_max=0.15, freq_min=0.04), ph.PowerInBand(interp_freq=4, freq_max=0.4, freq_min=0.15), ph.PNNx(threshold=10), ph.PNNx(threshold=25), ph.PNNx(threshold=50)]
+
+results, col_names = ph.fmap(windows_new, indicators) #TODO: return results (matrix of indicators), labels (column of labels), column names
