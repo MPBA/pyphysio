@@ -318,9 +318,12 @@ class PSD(_Tool):
         remove_mean = params['remove_mean']
         
         if not isinstance(signal, _EvenlySignal):
-            #TODO (new function) lomb scargle
+            #TODO (feature) lomb scargle
+            if len(signal) < 2: #zero or one sample: interpolation not allowed
+                return _np.repeat(_np.nan, 2), _np.repeat(_np.nan, 2)
+        
             interp_freq = params['interp_freq']
-            signal = signal.to_evenly(kind='cubic') #CUBIC
+            signal = signal.to_evenly(kind='cubic')
             signal = signal.resample(interp_freq)
 
         fsamp = signal.get_sampling_freq()

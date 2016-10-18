@@ -2,12 +2,13 @@ from __future__ import division
 
 import numpy as np
 import pandas as pd
+import os
 
-import matplotlib.pyplot as plt
-
+os.chdir('/home/andrea/Trento/CODICE/workspaces/pyHRV/pyHRV/tests')
 from context import ph, Asset
 
-FILE = Asset.F18
+#FILE = Asset.F18
+FILE  = '/home/andrea/Downloads/tmp/F18.txt'
 
 data = np.array(pd.read_csv(FILE, skiprows=8, header=None))
 
@@ -18,8 +19,8 @@ fsamp = 2048
 # ===========================
 # INITIALIZING
 ecg = ph.EvenlySignal(ecg1, fsamp, 'ECG', 0)
-ecg = ecg[1000000:1500000]
-ecg.plot()
+ecg = ecg[100000:500000]
+#ecg.plot()
 
 # =============================
 # ESTIMATE DELTA
@@ -30,31 +31,31 @@ range_ecg = ph.SignalRange(win_len=2, win_step=0.5, smooth=False)(ecg)
 ibi = ph.BeatFromECG(deltas=range_ecg * 0.7)(ecg)
 
 # PLOT
-plt.plot(ecg)
-plt.vlines(ibi.get_indices(), np.min(ecg), np.max(ecg))
-
-mean = ph.Mean()(ibi)
-std = ph.StDev()(ibi)
-median = ph.Median()(ibi)
-rng = ph.Range()(ibi)
-rmssd = ph.RMSSD()(ibi)
-sdsd = ph.SDSD()(ibi)
-VLF = ph.PowerInBand(interp_freq=4, freq_max=0.04, freq_min=0.00001)(ibi)
-LF = ph.PowerInBand(interp_freq=4, freq_max=0.15, freq_min=0.04)(ibi)
-HF = ph.PowerInBand(interp_freq=4, freq_max=0.4, freq_min=0.15)(ibi)
-
-pnn10 = ph.PNNx(threshold=10)(ibi)
-pnn25 = ph.PNNx(threshold=25)(ibi)
-pnn50 = ph.PNNx(threshold=50)(ibi)
-
-# FAKE IBI
-idx_ibi = np.arange(0, 101, 10).astype(float)
-ibi = ph.UnevenlySignal(np.diff(idx_ibi), idx_ibi[1:], 10, 90, 'IBI')
-ibi[-1] = 10.011
-mean = ph.Mean()(ibi)  # OK
-std = ph.StDev()(ibi)  # OK
-median = ph.Median()(ibi)  # OK
-rng = ph.Range()(ibi)  # OK
+#plt.plot(ecg)
+#plt.vlines(ibi.get_indices(), np.min(ecg), np.max(ecg))
+#
+#mean = ph.Mean()(ibi)
+#std = ph.StDev()(ibi)
+#median = ph.Median()(ibi)
+#rng = ph.Range()(ibi)
+#rmssd = ph.RMSSD()(ibi)
+#sdsd = ph.SDSD()(ibi)
+#VLF = ph.PowerInBand(interp_freq=4, freq_max=0.04, freq_min=0.00001)(ibi)
+#LF = ph.PowerInBand(interp_freq=4, freq_max=0.15, freq_min=0.04)(ibi)
+#HF = ph.PowerInBand(interp_freq=4, freq_max=0.4, freq_min=0.15)(ibi)
+#
+#pnn10 = ph.PNNx(threshold=10)(ibi)
+#pnn25 = ph.PNNx(threshold=25)(ibi)
+#pnn50 = ph.PNNx(threshold=50)(ibi)
+#
+## FAKE IBI
+#idx_ibi = np.arange(0, 101, 10).astype(float)
+#ibi = ph.UnevenlySignal(np.diff(idx_ibi), idx_ibi[1:], 10, 90, 'IBI')
+#ibi[-1] = 10.011
+#mean = ph.Mean()(ibi)  # OK
+#std = ph.StDev()(ibi)  # OK
+#median = ph.Median()(ibi)  # OK
+#rng = ph.Range()(ibi)  # OK
 
 VLF = ph.PowerInBand(interp_freq=4, freq_max=0.04, freq_min=0.00001)(ibi) # OK
 LF = ph.PowerInBand(interp_freq=4, freq_max=0.15, freq_min=0.04)(ibi) # OK
@@ -77,4 +78,5 @@ windows_new = window_generator(ibi)
 
 indicators = [ph.Mean(), ph.StDev(), ph.Median(), ph.Range(), ph.StDev(), ph.RMSSD(), ph.SDSD(), ph.TINN(), ph.PowerInBand(interp_freq=4, freq_max=0.04, freq_min=0.00001), ph.PowerInBand(interp_freq=4, freq_max=0.15, freq_min=0.04), ph.PowerInBand(interp_freq=4, freq_max=0.4, freq_min=0.15), ph.PNNx(threshold=10), ph.PNNx(threshold=25), ph.PNNx(threshold=50)]
 
-results, col_names = ph.fmap(windows_new, indicators) #TODO: return results (matrix of indicators), labels (column of labels), column names
+results, labels, col_names = ph.fmap(windows_new, indicators) #TODO: return results (matrix of indicators), labels (column of labels), column names
+# TODO: add name of indicator as parameter: es mean_hrv = ph.Mean('RRmean'), mean_eda = ph.Mean('EDAmean'), HF = ph.PowerInBand(interp_freq=4, freq_max=0.4, freq_min=0.15)(ibi) # OK to be returned as column name

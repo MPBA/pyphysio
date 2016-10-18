@@ -33,9 +33,10 @@ class PowerInBand(_Indicator):
     @classmethod
     def algorithm(cls, data, params):
         freq, powers = InBand(params)(data)
-        df = freq[1] - freq[0] if len(freq) > 1 else 1
-        # TODO: normalization
-        return df * _np.sum(powers)
+#        df = freq[1] - freq[0] if len(freq) > 1 else 1
+        
+        # TODO (Andrea): normalization
+        return _np.sum(powers)
 
     _params_descriptors = InBand.get_params_descriptors()
     # TODO: add normalize option (total, length)
