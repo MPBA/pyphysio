@@ -98,7 +98,7 @@ class EvenlySignal(Signal):
                 return just_one + self.ph[Signal._MT_START_INDEX] + len(self)
 
     def get_times(self, just_one=None):
-        return self.get_indices(just_one) / self.get_sampling_freq()
+        return self.get_indices(just_one) / self.get_sampling_freq() + self.get_start_time()
 
     def __repr__(self):
         return Signal.__repr__(self)[:-1] + " freq:" + str(self.get_sampling_freq()) + "Hz>\n" + self.view(
@@ -168,7 +168,7 @@ class UnevenlySignal(Signal):
             return self.ph[self._MT_X_VALUES][just_one]
 
     def get_times(self, just_one=None):
-        return self.get_indices(just_one) / self.get_sampling_freq()
+        return self.get_indices(just_one) / self.get_sampling_freq() + self.get_start_time()
 
     def __repr__(self):
         return Signal.__repr__(self) + "\ny-values\n" + self.view(_np.ndarray).__repr__() + \
@@ -232,6 +232,8 @@ class UnevenlySignal(Signal):
         sig_out = EvenlySignal(sig_out, self.get_sampling_freq(), self.get_signal_nature(), self.get_start_time(),
                                self.get_metadata())
         return sig_out
+        
+    # TODO (feature): function to_csv
 
     # # ex sparse
     # def zto_evenly(self, kind='linear', new_fsamp=None, length=None):
