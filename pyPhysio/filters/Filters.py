@@ -102,11 +102,12 @@ class Diff(_Filter):
                 "Computing %s on '%s' may not make sense." % (cls.__name__, signal.__class__.__name__))
         degree = params['degree']
 
-        # TODO (Ale): Manage Time references
         sig_1 = signal[:-degree]
         sig_2 = signal[degree:]
+        
+        out = _EvenlySignal(sig_2 - sig_1, signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time()+ degree/signal.get_sampling_freq(), signal.get_metadata())
 
-        return sig_2 - sig_1
+        return out
 
     _params_descriptors = {
         'degree': _Par(default=1, requirement_level=0, description='Degree of the differences', pytype=float)
@@ -144,11 +145,12 @@ class IIRFilter(_Filter):
         fsamp = signal.get_sampling_freq()
         fp, fs, loss, att, ftype = params["fp"], params["fs"], params["loss"], params["att"], params["ftype"]
 
-        # TODO (Ale): if A and B already exist and fsamp is not changed skip the following
-        # TODO (Ale): check that the signal is EvenlySignal (so fsamp is not 0)
-        # ---------
-        # TODO (new feature): check that fs and fp are meaningful
-        # TODO (new feature): check if fs, fp, fsamp allow no solution for the filter
+        if isinstance(signal, _Signal) and not isinstance(signal, _EvenlySignal):
+            cls.warn(cls.__name__ + ': Filtering Unevenly signal is undefined. Returning original signal.')
+        
+        # TODO (feature): check that fs and fp are meaningful
+        # TODO (feature): if A and B already exist and fsamp is not changed skip the following
+        # TODO (feature): check if fs, fp, fsamp allow no solution for the filter
         nyq = 0.5 * fsamp
         fp = _np.array(fp)
         fs = _np.array(fs)
@@ -157,13 +159,7 @@ class IIRFilter(_Filter):
         ws = fs / nyq
         b, a = _filter_design.iirdesign(wp, ws, loss, att, ftype=ftype, output="ba")
                 
-        # TODO (new feature) Trovare metodo per capire se funziona o no
-        # if _np.max(a)>BIG_NUMBER | _np.isnan(_np.sum(a)):
-        #    _PhUI.w('Filter parameters allow no solution')
-        #    return signal
-        # ---------
-        # FIXME: con _filtfilt signal perde la classe e rimane array
-        # TODO (Andrea): va bene EvenlySignal?
+        
         sig_filtered = _EvenlySignal(_filtfilt(b, a, signal.get_values()), signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time(), signal.get_metadata())
         if _np.isnan(sig_filtered[0]):
             cls.warn(cls.__name__ + ': Filter parameters allow no solution. Returning original signal.')
@@ -181,9 +177,7 @@ class IIRFilter(_Filter):
 
     @_abstract
     def plot(self):
-        # plot frequency response
-        # TODO (new feature)
-        # WARNING 'not implemented'
+        # TODO (feature): plot frequency response
         pass
 
 class DenoiseEDA(_Filter):
@@ -214,7 +208,8 @@ class DenoiseEDA(_Filter):
         
         threshold = params['threshold']
         win_len = params['win_len']
-        #TODO: detect the long periods of drop
+        
+        #TODO (feature): detect the long periods of drop
         noise = ConvolutionalFilter(irftype ='triang', win_len = win_len, normalize=True)(abs(_np.diff(signal)))
         
         idx_ok = _np.where(noise <= threshold)[0]
@@ -263,11 +258,11 @@ class MatchedFilter(_Filter):
     """
 
     @classmethod
-    def algorithm(cls, signal, params):  # TODO (Andrea): check normalization TEST // ???
+    def algorithm(cls, signal, params):
         template = params["template"]
-        filtered_signal = _np.convolve(signal, template)
-        filtered_signal = filtered_signal[_np.argmax(template):]
-        return filtered_signal  # TODO: should return an EvenlySignal
+        filtered_signal = _np.convolve(signal, template)[_np.argmax(template):]
+        filtered_signal = _EvenlySignal(filtered_signal, signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time(), signal.get_metadata())
+        return filtered_signal
 
     _params_descriptors = {
         'template': _Par(2, list, 'The template for matched filter (not reversed)')
@@ -371,7 +366,6 @@ class ConvolutionalFilter(_Filter):
         'irftype': _Par(1, str, 'Type of IRF to be generated.', 'gauss',
                         lambda x: x in ['gauss', 'rect', 'triang', 'dgauss', 'custom']),
         'normalize': _Par(1, bool, 'Whether to normalizes the IRF to have unitary area', True),
-        # TODO (Andrea): win_len was int is it ok float?
         'win_len': _Par(2, float, "Durarion of the generated IRF in seconds (if irftype is not 'custom')", 1,
                         lambda x: x > 0, lambda x, p: p['irftype'] != 'custom'),
         'irf': _Par(2, list, "IRF to be used if irftype is 'custom'", activation=lambda x, p: p['irftype'] == 'custom')
@@ -420,8 +414,7 @@ class DeConvolutionalFilter(_Filter):
             fft_irf = _np.fft.fft(irf, n=l)
             out = _np.fft.ifft(fft_signal / fft_irf)
         elif deconvolution_method == 'sps':
-            #TODO: Test needed
-            print('This method needs to be tested. Use carefully.')
+            cls.warn(cls.__name__+': sps based deconvolution needs to be tested. Use carefully.')
             out, _  = _deconvolve(signal, irf)
         else:
             print('Deconvolution method not implemented. Returning original signal.')
@@ -445,48 +438,3 @@ class DeConvolutionalFilter(_Filter):
         # WARNING 'Not implemented'
         # TODO (new feature) plot irf
         pass
-
-
-# class AdaptiveThresholding(_Filter): #TODO: possiamo nascondere per il momento
-#
-#     Adaptively (windowing) threshold the signal using C*std(signal) as thresholding value.
-#     See Raju 2014.
-#
-#     Parameters
-#     ----------
-#     signal : array
-#         The input signal
-#     winlen : int
-#         Size of the window
-#     C : float
-#         Coefficient for the threshold
-#
-#     Returns
-#     -------
-#     thresholded_signal : array
-#         The thresholded signal
-#
-#
-#     @classmethod
-#     def algorithm(cls, signal, params):
-#         winlen = params['win_len']
-#         C = params['C']
-#         winlen = int(_np.round(winlen))
-#         signal = _np.array(signal)
-#         signal_out = _np.zeros(len(signal))
-#         for i in range(0, len(signal), winlen):
-#             curr_block = signal[i:i + winlen]
-#             eta = C * _np.std(curr_block)
-#             curr_block[curr_block < eta] = 0
-#             signal_out[i:i + winlen] = curr_block
-#         return signal_out
-#
-#     @classmethod
-#     def check_params(cls, params):
-#         if 'win_len' not in params:
-#             # default = 100 # GRAVE
-#             pass
-#         if 'C' not in params:
-#             # default = 1 # OK
-#             pass
-#         return params

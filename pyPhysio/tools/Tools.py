@@ -22,8 +22,8 @@ class PeakDetection(_Tool):
     ----------
     delta : float or np.array
         The threshold for the detection of the peaks. If array it must have the same length of the signal.
-    refractory : int
-        Number of samples to skip after detection of a peak
+    refractory : float
+        Seconds to skip after detection of a peak.
     start_max : boolean
         Whether to start looking for a max.
 
@@ -42,6 +42,10 @@ class PeakDetection(_Tool):
     @classmethod
     def algorithm(cls, signal, params):
         refractory = params['refractory']
+        if refractory == 0:
+            refractory = 1
+        else:
+            refractory = refractory * signal.get_sampling_freq()
         look_for_max = params['start_max']
 
         deltas = params["deltas"] if "deltas" in params else None
@@ -110,9 +114,8 @@ class PeakDetection(_Tool):
         'deltas': _Par(2, list,
                        "Vector of the ranges of the signal to be used as local threshold",
                        activation=lambda x, y: 'delta' not in y),
-        'refractory': _Par(1, int,
-                           "Number of samples to skip after detection of a peak",
-                           # TODO (Andrea): il refractory a default 0 va bene? O.o
+        'refractory': _Par(1, float,
+                           "Seconds to skip after detection of a peak",
                            0, lambda x: x > 0),
         'start_max': _Par(0, bool, "Whether to start looking for a max.", True)
     }
@@ -146,10 +149,14 @@ class PeakSelection(_Tool):
         i_peaks = params['maxs']
         
         ZERO = 0.01 
-        # TEST (feature): adjust to allow low values for dt to be considered as zero
+        
         i_start = _np.empty(len(i_peaks), int)
         i_stop = _np.empty(len(i_peaks), int)
 
+        if len(i_peaks)==0:
+            cls.warn(cls.__name__, ': No peaks given.')
+            return i_start, i_stop
+            
         signal_dt = _Diff()(signal)
         for i in xrange(len(i_peaks)):
             i_pk = int(i_peaks[i])
@@ -184,7 +191,7 @@ class PeakSelection(_Tool):
 
     _params_descriptors = {
         'maxs': _Par(2, list,
-                     'Array containing indexes (first column) and values (second column) of the maxima'), # TODO: len(maxs)>0
+                     'Array containing indexes (first column) and values (second column) of the maxima'),
         'pre_max':
             _Par(2, float,
                  'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
@@ -229,15 +236,6 @@ class SignalRange(_Tool):
             cls.warn("Input signal is shorter than the window length.")
             return _np.max(signal) - _np.min(signal)
         else:
-            # TODO (Andrea): con la next line si esclude l'ultima finestra
-            # se ho np.arange(0, 20-7, 5) -> array([ 0,  5, 10])
-            # escludo infatti 15 che +7 fa 22
-            # ma se ho np.arange(0, 20-5, 5) -> array([ 0,  5, 10])
-            # escludo 15 che +5 fa 20 escluso escludendo quindi una finestra valida
-            #
-            # Penso si possa risolvere con
-            # "len(signal) - idx_len" -> "len(signal) - idx_len + 1"
-
             windows = _np.arange(0, len(signal) - idx_len + 1, idx_step)
             deltas = _np.zeros(len(signal))
 
@@ -245,15 +243,6 @@ class SignalRange(_Tool):
             for start in windows:
                 portion_curr = signal[start:start + idx_len]
                 curr_delta = _np.max(portion_curr) - _np.min(portion_curr)
-                # TODO (Andrea): below (anche in Energy
-                # 1) Permettere con l'attriuto win_step > win_len l'overlap delle finestre forse
-                # non ha senso perché la parte di overlap viene sovrascritta dalla prossima riga;
-                # a meno che:
-                #   - win_len < win_step (e verrebbero esclusi dei pezzi, se questo ha senso
-                #                         deltas = _np.empty(len(signal)) va cambiato in zeros)
-                #                                      =====                             =====
-                #   - win_len > win_step e l'ultima finestra di deltas è più lunga delle altre
-                # 2) Se len(windows) == 0 curr_delta resta a 0 e anche deltas
                 deltas[start:start + idx_len] = curr_delta
 
             deltas[windows[-1] + idx_len:] = curr_delta
@@ -301,7 +290,7 @@ class PSD(_Tool):
         The Power Spectrum Density
     """
 
-    # TODO: consider point below:
+    # TODO (feature): consider point below:
     # A density spectrum considers the amplitudes per unit frequency.
     # Density spectra are used to compare spectra with different frequency resolution as the
     # magnitudes are not influenced by the resolution because it is per Hertz. The amplitude
@@ -359,7 +348,7 @@ class PSD(_Tool):
                 try:
                     ar, p, k = _aryule(signal, order=order)
                     aics.append(_AIC(l, p, order))
-                except AssertionError:  # TODO (Andrea): check whether to start from higher orders
+                except AssertionError:
                     break
             best_order = orders[_np.argmin(aics)]
             print('test')
@@ -463,8 +452,8 @@ class Maxima(_Tool):
     ----------
     method : 'complete' or 'windowing'
         Method to detect the maxima
-    refractory : int
-        Number of samples to skip after detection of a maximum (method = 'complete')
+    refractory : float
+        Seconds to skip after detection of a maximum (method = 'complete').
     win_len : float
         Size of window in seconds (method = 'windowing')
     win_step : int
@@ -480,6 +469,11 @@ class Maxima(_Tool):
     def algorithm(cls, signal, params):
         method = params['method']
         refractory = params['refractory']
+        if refractory == 0:
+            refractory = 1
+        else:
+            refractory = refractory * signal.get_sampling_freq()
+            
         if method == 'complete':
             maxima = []
             prev = signal[0]
@@ -499,7 +493,6 @@ class Maxima(_Tool):
             return _np.c_[maxima, peaks]
 
         elif method == 'windowing':
-            # TODO: test the algorithm
             fsamp = signal.get_sampling_freq()
             win_len = int(params['win_len'] * fsamp)
             win_step = int(params['win_step'] * fsamp)
@@ -526,7 +519,7 @@ class Maxima(_Tool):
 
     _params_descriptors = {
         'method': _Par(2, str, 'Method to detect the maxima', 'complete', lambda x: x in ['complete', 'windowing']),        
-        'refractory': _Par(1, int, 'Number of samples to skip after detection of a maximum (method = "complete")', 1, lambda x: x > 0, lambda x, p: p['method'] == 'complete'),
+        'refractory': _Par(1, int, 'Seconds to skip after detection of a maximum (method = "complete")', 0, lambda x: x > 0, lambda x, p: p['method'] == 'complete'),
         'win_len': _Par(1, float, 'Size of window in seconds (method = "windowing")', 1, lambda x: x > 0, lambda x, p: p['method'] == 'windowing'),
         'win_step': _Par(1, float, 'Increment to start the next window in seconds (method = "windowing")', 1, lambda x: x > 0, lambda x, p: p['method'] == 'windowing'),
     }
@@ -540,8 +533,8 @@ class Minima(_Tool):
     ----------
     method : 'complete' or 'windowing'
         Method to detect the minima
-    refractory : int
-        Number of samples to skip after detection of a maximum (method = 'complete')
+    refractory : float
+        Seconds to skip after detection of a maximum (method = 'complete')
     win_len : float
         Size of window (method = 'windowing')
     win_step : float
@@ -557,6 +550,11 @@ class Minima(_Tool):
     def algorithm(cls, signal, params):
         method = params['method']
         refractory = params['refractory']
+        if refractory == 0:
+            refractory = 1
+        else:
+            refractory = refractory * signal.get_sampling_freq()
+            
         if method == 'complete':
             minima = []
             prev = signal[0]
@@ -576,7 +574,6 @@ class Minima(_Tool):
             return _np.c_[minima, peaks]
 
         elif method == 'windowing':
-            # TODO: test the algorithm
             fsamp = signal.get_sampling_freq()
             winlen = int(params['win_len'] * fsamp)
             winstep = int(params['win_step'] * fsamp)
@@ -605,7 +602,6 @@ class Minima(_Tool):
         'method': _Par(2, str, 'Method to detect the minima',
                        'complete',
                        lambda x: x in ['complete', 'windowing']),
-        # FIX: Mi sembra che manchi il tipo di parametro nei parametri qui sotto:
         'refractory': _Par(1, float, 'Number of samples to skip after detection of a maximum (method = "complete")',
                            1,
                            lambda x: x > 0,
@@ -834,11 +830,9 @@ class BeatOutliers(_Tool):
                 counter_bad += 1
             else:
                 ibi_cache = _np.r_[ibi_cache[-cache + 1:], curr_ibi]
-                counter_bad = 0  # TODO: check
-
+                counter_bad = 0
             if counter_bad == cache:  # ibi cache probably corrupted, reinitialize
                 ibi_cache = _np.repeat(ibi_expected, cache)
-                # MESSAGE 'Cache re-initialized - '+ str(curr_idx)
                 counter_bad = 0
 
         return id_bad_ibi
@@ -1166,8 +1160,8 @@ class OptimizeBateman(_Tool):
         maxiter = params['maxiter']
         n_step = params['n_step']
         delta = params['delta']
-        min_pars = params['fmin_params'] #TODO (Ale) :default should be {}
-        min_pars=dict()
+        min_pars = params['fmin_params']
+        
 
         min_T1 = float(par_ranges[0])
         max_T1 = float(par_ranges[1])
@@ -1234,7 +1228,7 @@ class OptimizeBateman(_Tool):
         
         # check if pars hit boudaries
         if par_bat[0] < min_T1 or par_bat[0] > max_T1 or par_bat[1] < min_T2 or par_bat[1] > max_T2 or par_bat[0] >= par_bat[1]:
-            return 10000 #float('inf') # 10000 TODO: check if it raises errors
+            return 10000 
 
         fsamp = signal.get_sampling_freq()
         driver = _DriverEstim(T1=par_bat[0], T2=par_bat[1])(signal)
@@ -1242,13 +1236,13 @@ class OptimizeBateman(_Tool):
 
         if len(maxp) == 0:
             OptimizeBateman.warn('Unable to find peaks in driver signal for computation of Energy. Returning Inf')
-            return 10000  # float('inf')  # or 10000  # TODO: check if np.Inf does not raise errors
+            return 10000
         else:
             # STAGE 1: select maxs distant from the others
             diff_maxs = _np.diff(_np.r_[maxp, len(driver) - 1])
             th_diff = 15 * fsamp
 
-            # TODO (new feature): select th such as to have enough maxs, e.g. diff_maxs_tentative = np.median(diff_maxs)
+            # TODO (feature): select th such as to have enough maxs, e.g. diff_maxs_tentative = np.median(diff_maxs)
             idx_selected_maxs = _np.where(diff_maxs > th_diff)[0]
             selected_maxs = maxp[idx_selected_maxs]
 
@@ -1284,7 +1278,7 @@ class OptimizeBateman(_Tool):
                     energy += energy_curr
             else:
                 OptimizeBateman.warn('Peaks found but too near. Returning Inf')
-                return 10000 # float('inf')  # or 10000 # TODO: check if np.Inf does not raise errors
+                return 10000
             OptimizeBateman.log('Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(energy))
             return energy
 

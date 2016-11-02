@@ -13,8 +13,6 @@ __author__ = 'AleB'
 class InBand(_Indicator):
     @classmethod
     def algorithm(cls, data, params):
-        # TODO (Andrea): ?pass the PSD estimator instance as parameter? Yes, or only its name, discuss?
-
         freq, spec = PSD(params)(data)
 
         # freq is sorted so
@@ -33,13 +31,10 @@ class PowerInBand(_Indicator):
     @classmethod
     def algorithm(cls, data, params):
         freq, powers = InBand(params)(data)
-#        df = freq[1] - freq[0] if len(freq) > 1 else 1
-        
-        # TODO (Andrea): normalization
         return _np.sum(powers)
 
     _params_descriptors = InBand.get_params_descriptors()
-    # TODO: add normalize option (total, length)
+    # TODO (feature): add normalize option (total, length)
     
 
 

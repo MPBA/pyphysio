@@ -48,8 +48,6 @@ class BeatFromBP(_Estimator):
     @classmethod
     def algorithm(cls, signal, params):  # FIX others TODO Andrea: ?
         bpm_max = params["bpm_max"]
-        # method = params["method"]
-        # sigma = params["sigma"]
 
         fmax = bpm_max / 60
 
@@ -92,6 +90,7 @@ class BeatFromBP(_Estimator):
             else:
                 cls.warn('Peak not found; idx_beat: ' + str(idx_beat))
                 pass
+        
         # STAGE 4 - FINALIZE computing IBI and fixing indexes
         ibi_values = _np.diff(true_peaks) / fsamp
         ibi_values = _np.r_[ibi_values[0], ibi_values]
@@ -106,7 +105,6 @@ class BeatFromBP(_Estimator):
 
     @staticmethod
     def _generate_gaussian_derivative(M, S):
-        # TODO (Andrea): _gaussian not found
         g = _gaussian(M, S)
         gaussian_derivative_model = _np.diff(g)
 
@@ -332,15 +330,11 @@ class PhasicEstim(_Estimator):
             i_st = idx_pre[I]
             i_sp = idx_post[I]
 
-            # TODO: if i_st or i_sp = _np.nan
-
-            idx_base = _np.arange(i_sp - i_st)
-
-            coeff = (signal[i_sp] - signal[i_st]) / len(idx_base)
-
-            driver_base = idx_base * coeff + signal[i_st]
-
-            driver_no_peak[i_st:i_sp] = driver_base
+            if _np.isnan(i_st)==False and _np.isnan(i_sp)==False:
+                idx_base = _np.arange(i_sp - i_st)
+                coeff = (signal[i_sp] - signal[i_st]) / len(idx_base)
+                driver_base = idx_base * coeff + signal[i_st]
+                driver_no_peak[i_st:i_sp] = driver_base
 
         idx_grid = _np.arange(0, len(driver_no_peak) - 1, grid_size * fsamp)
         idx_grid = _np.r_[idx_grid, len(driver_no_peak) - 1]

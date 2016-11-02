@@ -17,6 +17,8 @@ class Signal(_np.ndarray):
     _MT_META_DICT = "metadata"
     _MT_SAMPLING_FREQ = "sampling_freq"
     _MT_INFO_ATTR = "_pyphysio"
+    
+    # TODO (Ale): check sui parametri del segnale: FSAMP > 0
 
     def __new__(cls, values, sampling_freq, signal_nature="", start_time=0, meta=None, start_index=0):
         # noinspection PyNoneFunctionAssignment
@@ -235,70 +237,8 @@ class UnevenlySignal(Signal):
         
     # TODO (feature): function to_csv
 
-    # # ex sparse
-    # def zto_evenly(self, kind='linear', new_fsamp=None, length=None):
-    #     """
-    #     Interpolate the UnevenlySignal to obtain an evenly spaced signal
-    #     Parameters
-    #     ----------
-    #     kind : str
-    #         Method for interpolation: 'linear', 'nearest', 'zero', 'slinear', 'quadratic, 'cubic'
-    #
-    #     new_fsamp : number
-    #         Frequency of the resulting signal. If not specified the original signal's will be used.
-    #
-    #     length : number
-    #         Length in samples of the resulting signal. If not specified the last sample will be one after the last input point.
-    #
-    #     Returns
-    #     -------
-    #     interpolated_signal: ndarray
-    #         The interpolated signal
-    #     """
-    #
-    #     if new_fsamp is None:
-    #         new_fsamp = self.get_sampling_freq()
-    #     if length is None:
-    #         length = self.get_duration() * new_fsamp
-    #     data_x = self.get_indices()
-    #     data_y = self.get_values()
-    #
-    #     # Add padding
-    #     if self.get_indices(0) != 0:
-    #         data_x = _np.r_[0, data_x]
-    #         data_y = _np.r_[data_y[0], data_y]
-    #     if self.get_indices(-1) != length - 1:
-    #         data_x = _np.r_[data_x, length - 1]
-    #         data_y = _np.r_[data_y, data_y[-1]]
-    #
-    #     # Cubic if needed
-    #     if kind == 'cubic':
-    #         tck = _interp.InterpolatedUnivariateSpline(data_x, data_y)
-    #     else:
-    #         tck = _interp.interp1d(data_x, data_y, kind=kind)
-    #     sig_out = tck(_np.arange(length))
-    #
-    #     # Init new signal
-    #     sig_out = EvenlySignal(sig_out, new_fsamp, self.get_signal_nature(), self.get_start_time(),
-    #                            self.get_metadata())
-    #     return sig_out
-
-
 class EventsSignal(UnevenlySignal):
     def __new__(cls, values, times, orig_sampling_freq=1, orig_length=None, signal_nature="", start_time=0,
                 meta=None, check=True):
         return UnevenlySignal.__new__(cls, values, times * orig_sampling_freq, orig_sampling_freq, orig_length, signal_nature, start_time,
                                       meta, check)
-
-
-# Not used
-# class EventsSignal(UnevenlyTimeSignal):
-#     def __new__(cls, events, times, start_time=0, meta=None, check=True):
-#         return UnevenlySignal(events, times, 0, 0, "events", start_time, meta, check)
-#
-#     # Works with timestamps
-#     def getslice(self, f, l):
-#         # find f & l indexes of indexes
-#         f = _np.searchsorted(self.get_x_values(), f)
-#         l = _np.searchsorted(self.get_x_values(), l)
-#         return EventsSignal(self.get_x_values()[f:l], self.view(_np.ndarray)[f:l], check=False)

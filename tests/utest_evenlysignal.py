@@ -16,7 +16,7 @@ TYPE = ''
 
 data = np.arange(1000)
 
-s = ph.EvenlySignal(data, FSAMP, TYPE, TSTART) # TODO: check sui parametri del segnale: FSAMP > 0
+s = ph.EvenlySignal(data, FSAMP, TYPE, TSTART) 
 
 FSAMP = 10
 s = ph.EvenlySignal(data, FSAMP, TYPE, TSTART)
