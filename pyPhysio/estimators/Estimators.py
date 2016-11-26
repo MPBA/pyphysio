@@ -53,12 +53,12 @@ class BeatFromBP(_Estimator):
 
         fsamp = signal.get_sampling_freq()
 
-        refractory = int(fsamp / fmax)
+        refractory =  1 / fmax
 
         # STAGE 1 - EXTRACT BEAT POSITION SIGNAL
-        signal_f = _IIRFilter(fp=1.2 * fmax, fs=3 * fmax)(signal)
-
-        deltas = 0.7 * _SignalRange(win_len=2 / fmax, win_step=1 / fmax)(signal)
+        signal_f = _IIRFilter(fp=1.2*fmax, fs=3*fmax, ftype='ellip')(signal)
+        
+        deltas = 0.5 * _SignalRange(win_len=1.5 / fmax, win_step = 1 / fmax)(signal_f)
 
         # detection of candidate peaks
         maxp, minp, ignored, ignored = _PeakDetection(deltas=deltas, refractory=refractory, start_max=True)(signal_f)  # Tools
@@ -82,13 +82,13 @@ class BeatFromBP(_Estimator):
             true_obs = dxdt[start_ + peak_obs: idx_beat]
 
             # find the 'first minimum' (zero) the derivative (peak)
-            mins = _Minima(win_len=0.5, win_step=0.025, method='windowing')(abs(true_obs))
+            mins = _Minima(win_len=0.1, win_step=0.025, method='windowing')(abs(true_obs))
             idx_mins = mins[:, 0]
-            if len(idx_mins) >= 2:
-                peak = idx_mins[1]
-                true_peaks.append(start_ + peak_obs + peak)
+            if len(idx_mins) >= 1:
+                peak = idx_mins[0]
+                true_peaks.append(start_ + peak_obs + peak+1)
             else:
-                cls.warn('Peak not found; idx_beat: ' + str(idx_beat))
+#                cls.warn('Peak not found; idx_beat: ' + str(idx_beat))
                 pass
         
         # STAGE 4 - FINALIZE computing IBI and fixing indexes
@@ -100,7 +100,7 @@ class BeatFromBP(_Estimator):
         return ibi
 
     _params_descriptors = {
-        'bpm_max': _Par(1, int, 'Maximal expected heart rate (in beats per minute)', 180, lambda x: 1 < x <= 400)
+        'bpm_max': _Par(1, int, 'Maximal expected heart rate (in beats per minute)', 120, lambda x: 1 < x <= 400)
     }
 
     @staticmethod
@@ -153,7 +153,7 @@ class BeatFromECG(_Estimator):
 
         fsamp = signal.get_sampling_freq()
 
-        refractory = int(fsamp / fmax)
+        refractory = 1 / fmax
 
         maxp, minp, maxv, minv = _PeakDetection(deltas=delta, refractory=refractory, start_max=True)(signal)
 
@@ -169,7 +169,7 @@ class BeatFromECG(_Estimator):
 
     _params_descriptors = {
         'bpm_max': _Par(1, int, 'Maximal expected heart rate (in beats per minute)',
-                        180, lambda x: x > 0),
+                        120, lambda x: x > 0),
         'delta': _Par(1, float, 'Threshold for the peak detection. If delta = 0 (default) the signal range'
                                 ' is automatically computed and used',
                       0, lambda x: x > 0)

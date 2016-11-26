@@ -468,13 +468,14 @@ class Maxima(_Tool):
     @classmethod
     def algorithm(cls, signal, params):
         method = params['method']
-        refractory = params['refractory']
-        if refractory == 0:
-            refractory = 1
-        else:
-            refractory = refractory * signal.get_sampling_freq()
-            
+        method = params['method']
+        
         if method == 'complete':
+            refractory = params['refractory']
+            if refractory == 0:
+                refractory = 1
+            else:
+                refractory = refractory * signal.get_sampling_freq()
             maxima = []
             prev = signal[0]
             k = 1
@@ -494,15 +495,22 @@ class Maxima(_Tool):
 
         elif method == 'windowing':
             fsamp = signal.get_sampling_freq()
-            win_len = int(params['win_len'] * fsamp)
-            win_step = int(params['win_step'] * fsamp)
+            winlen = int(params['win_len'] * fsamp)
+            winstep = int(params['win_step'] * fsamp)
 
-            idx_maxs = [0]
-            maxs = [0]
+            #TODO: winlen > 2
+            #TODO: winstep >= 1
 
-            idx_start = _np.arange(0, len(signal)-win_len+1, win_step)
+            idx_maxs = [_np.nan]
+            maxs = [_np.nan]
+            
+            if winlen<len(signal):
+                idx_start = _np.arange(0, len(signal)-winlen+1, winstep)
+            else:
+                idx_start = [0]
+
             for idx_st in idx_start:
-                idx_sp = idx_st + win_len
+                idx_sp = idx_st + winlen
                 if idx_sp > len(signal):
                     idx_sp = len(signal)
                 curr_win = signal[idx_st:idx_sp]
@@ -513,13 +521,14 @@ class Maxima(_Tool):
                 if curr_idx_max != idx_maxs[-1] and curr_idx_max != idx_st and curr_idx_max != idx_sp - 1:
                     idx_maxs.append(curr_idx_max)
                     maxs.append(curr_max)
-            idx_maxs.append(len(signal) - 1)
-            maxs.append(signal[-1])
+            idx_maxs = idx_maxs[1:]
+            maxs = maxs[1:]
             return _np.c_[idx_maxs, maxs]
 
+    #TODO: errors in definition of refractory below
     _params_descriptors = {
         'method': _Par(2, str, 'Method to detect the maxima', 'complete', lambda x: x in ['complete', 'windowing']),        
-        'refractory': _Par(1, int, 'Seconds to skip after detection of a maximum (method = "complete")', 0, lambda x: x > 0, lambda x, p: p['method'] == 'complete'),
+        'refractory': _Par(1, float, 'Seconds to skip after detection of a maximum (method = "complete")', 0, lambda x: x > 0, lambda x, p: p['method'] == 'complete'),
         'win_len': _Par(1, float, 'Size of window in seconds (method = "windowing")', 1, lambda x: x > 0, lambda x, p: p['method'] == 'windowing'),
         'win_step': _Par(1, float, 'Increment to start the next window in seconds (method = "windowing")', 1, lambda x: x > 0, lambda x, p: p['method'] == 'windowing'),
     }
@@ -549,13 +558,13 @@ class Minima(_Tool):
     @classmethod
     def algorithm(cls, signal, params):
         method = params['method']
-        refractory = params['refractory']
-        if refractory == 0:
-            refractory = 1
-        else:
-            refractory = refractory * signal.get_sampling_freq()
-            
+        
         if method == 'complete':
+            refractory = params['refractory']
+            if refractory == 0:
+                refractory = 1
+            else:
+                refractory = refractory * signal.get_sampling_freq()
             minima = []
             prev = signal[0]
             k = 1
@@ -577,12 +586,19 @@ class Minima(_Tool):
             fsamp = signal.get_sampling_freq()
             winlen = int(params['win_len'] * fsamp)
             winstep = int(params['win_step'] * fsamp)
+            
+            #TODO: winlen > 2
+            #TODO: winstep >= 1
 
-            idx_mins = [0]
-            mins = [0]
-
-            idx_starts = _np.arange(0, len(signal)-winlen+1, winstep)
-            for idx_st in idx_starts:
+            idx_mins = [_np.nan]
+            mins = [_np.nan]
+            
+            if winlen<len(signal):
+                idx_start = _np.arange(0, len(signal)-winlen+1, winstep)
+            else:
+                idx_start = [0]
+                
+            for idx_st in idx_start:
                 idx_sp = idx_st + winlen
                 if idx_sp > len(signal):
                     idx_sp = len(signal)
@@ -594,26 +610,16 @@ class Minima(_Tool):
                 if curr_idx_min != idx_mins[-1] and curr_idx_min != idx_st and curr_idx_min != idx_sp - 1:
                     idx_mins.append(curr_idx_min)
                     mins.append(curr_min)
-            idx_mins.append(len(signal) - 1)
-            mins.append(signal[-1])
+            idx_mins = idx_mins[1:]
+            mins = mins[1:]
+
             return _np.c_[idx_mins, mins]
 
     _params_descriptors = {
-        'method': _Par(2, str, 'Method to detect the minima',
-                       'complete',
-                       lambda x: x in ['complete', 'windowing']),
-        'refractory': _Par(1, float, 'Number of samples to skip after detection of a maximum (method = "complete")',
-                           1,
-                           lambda x: x > 0,
-                           lambda x, p: p['method'] == 'complete'),
-        'win_len': _Par(1, float, 'Size of window in seconds (method = "windowing")',
-                        1,
-                        lambda x: x > 0,
-                        lambda x, p: p['method'] == 'windowing'),
-        'win_step': _Par(1, float, 'Increment to start the next window in seconds (method = "windowing")',
-                         1,
-                         lambda x: x > 0,
-                         lambda x, p: p['method'] == 'windowing'),
+        'method': _Par(2, str, 'Method to detect the maxima', 'complete', lambda x: x in ['complete', 'windowing']),        
+        'refractory': _Par(1, float, 'Seconds to skip after detection of a maximum (method = "complete")', 0, lambda x: x >= 0, lambda x, p: p['method'] == 'complete'),
+        'win_len': _Par(1, float, 'Size of window in seconds (method = "windowing")', 1, lambda x: x > 0, lambda x, p: p['method'] == 'windowing'),
+        'win_step': _Par(1, float, 'Increment to start the next window in seconds (method = "windowing")', 1, lambda x: x > 0, lambda x, p: p['method'] == 'windowing'),
     }
 
 
@@ -703,16 +709,17 @@ class BootstrapEstimation(_Tool):
 
     @classmethod
     def algorithm(cls, signal, params):
+        signal = _np.asarray(signal)
         l = len(signal)
         func = params['func']
-        niter = params['N']
+        niter = int(params['N'])
         k = params['k']
 
         estim = []
         for i in xrange(niter):
             ixs = _np.arange(l)
             ixs_p = _np.random.permutation(ixs)
-            sampled_data = signal[ixs_p[:round(k * l)]]
+            sampled_data = signal[ixs_p[:int(round(k * l))]]
             curr_est = func(sampled_data)
             estim.append(curr_est)
         return _np.mean(estim)
@@ -882,7 +889,7 @@ class FixIBI(_Tool):
         ibi_nobad = _np.delete(ibi, id_bad)
         idx_ibi = idx_ibi_nobad.astype(int)
         ibi = ibi_nobad
-        return _UnevenlySignal(ibi, idx_ibi, signal.get_sampling_freq(), len(signal), signal.get_signal_nature(),
+        return _UnevenlySignal(ibi, idx_ibi, signal.get_sampling_freq(), signal.get_original_length(), signal.get_signal_nature(),
                                signal.get_start_time())
 
     _params_descriptors = {

@@ -141,6 +141,70 @@ class EvenlySignal(Signal):
 
         return EvenlySignal(signal_out, fout, self.get_signal_nature(), self.get_start_time(), self.get_metadata())
 
+    def segment_time(self, t_start, t_stop = None):
+        """
+        Segment the signal given a time interval
+
+        Parameters
+        ----------
+        t_start : float
+            The instant of the start of the interval
+        t_stop : float 
+            The instant of the end of the interval. By default is the end of the signal
+
+        Returns
+        -------
+        portion : EvenlySignal
+            The selected portion
+        """
+        
+        #TODO: check
+        signal_times = self.get_times()
+        signal_values = self.get_values()
+        
+        if t_stop is None:
+            t_stop = signal_times[-1]
+        
+        idx_start = _np.where(signal_times>=t_start)[0][0]
+        idx_stop = _np.where(signal_times<=t_stop)[0][-1]
+        
+        portion_values = signal_values[idx_start:idx_stop+1]
+        t_0 = signal_times[idx_start]
+        
+        out_signal = EvenlySignal(portion_values, self.get_sampling_freq(), self.get_signal_nature(), t_0, self.get_metadata(), idx_start)
+        
+        return(out_signal)
+    
+    def segment_idx(self, idx_start, idx_stop):
+        """
+        Segment the signal given the indexes
+
+        Parameters
+        ----------
+        idx_start : int
+            The index of the start of the interval
+        idx_stop : float 
+            The index of the end of the interval. By default is the length of the signal 
+
+        Returns
+        -------
+        portion : EvenlySignal
+            The selected portion
+        """
+        #TODO: check
+        signal_times = self.get_times()
+        signal_values = self.get_values()
+        
+        if idx_stop is None:
+            idx_stop = len(self)
+            
+        portion_values = signal_values[idx_start:idx_stop]
+        t_0 = signal_times[idx_start]
+        
+        out_signal = EvenlySignal(portion_values, self.get_sampling_freq(), self.get_signal_nature(), t_0, self.get_metadata(), idx_start)
+        
+        return(out_signal)
+        
     def __getslice__(self, i, j):
         o = Signal.__getslice__(self, i, j)
         if isinstance(o, Signal):
@@ -234,7 +298,75 @@ class UnevenlySignal(Signal):
         sig_out = EvenlySignal(sig_out, self.get_sampling_freq(), self.get_signal_nature(), self.get_start_time(),
                                self.get_metadata())
         return sig_out
+    
+    '''
+    
+    def segment_time(self, t_start, t_stop = None):
+        """
+        Segment the signal given a time interval
+
+        Parameters
+        ----------
+        t_start : float
+            The instant of the start of the interval
+        t_stop : float 
+            The instant of the end of the interval. By default is the end of the signal
+
+        Returns
+        -------
+        portion : UnEvenlySignal
+            The selected portion
+        """
         
+        #TODO: check
+        signal_times = self.get_times()
+        signal_values = self.get_values()
+        signal_indices = self.get_indices()
+        
+        if t_stop is None:
+            t_stop = signal_times[-1]
+        
+        idx_start = _np.where(signal_times>=t_start)[0][0]
+        idx_stop = _np.where(signal_times<=t_stop)[0][-1]
+        
+        portion_values = signal_values[idx_start:idx_stop+1]
+        t_0 = signal_times[idx_start]
+        portion_indices = signal_indices[idx_start:idx_stop+1]
+        
+        out_signal = UnevenlySignal(portion_values, portion_indices, self.get_sampling_freq(), self.get_signal_nature(), t_0, self.get_metadata(), portion_indices[0])
+        
+        return(out_signal)
+    
+    def segment_idx(self, idx_start, idx_stop):
+        """
+        Segment the signal given the indexes
+
+        Parameters
+        ----------
+        idx_start : int
+            The index of the start of the interval
+        idx_stop : float 
+            The index of the end of the interval. By default is the length of the signal 
+
+        Returns
+        -------
+        portion : EvenlySignal
+            The selected portion
+        """
+        #TODO: check
+        signal_times = self.get_times()
+        signal_values = self.get_values()
+        
+        if idx_stop is None:
+            idx_stop = len(self)
+            
+        portion_values = signal_values[idx_start:idx_stop]
+        t_0 = signal_times[idx_start]
+        
+        out_signal = EvenlySignal(portion_values, self.get_sampling_freq(), self.get_signal_nature(), t_0, self.get_metadata(), idx_start)
+        
+        return(out_signal)
+    '''    
     # TODO (feature): function to_csv
 
 class EventsSignal(UnevenlySignal):
