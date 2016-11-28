@@ -76,7 +76,7 @@ class Signal(_np.ndarray):
 
     def get_metadata(self):
         return self.ph[self._MT_META_DICT]
-
+    
     def plot(self, style=""):
         _plot(self.get_times(), self.get_values(), style)
 
@@ -100,7 +100,7 @@ class EvenlySignal(Signal):
                 return just_one + self.ph[Signal._MT_START_INDEX] + len(self)
 
     def get_times(self, just_one=None):
-        return self.get_indices(just_one) / self.get_sampling_freq() + self.get_start_time()
+        return (self.get_indices(just_one) - self.get_indices(0)) / self.get_sampling_freq() + self.get_start_time()
 
     def __repr__(self):
         return Signal.__repr__(self)[:-1] + " freq:" + str(self.get_sampling_freq()) + "Hz>\n" + self.view(
@@ -140,7 +140,7 @@ class EvenlySignal(Signal):
             signal_out = tck(indexes_out)
 
         return EvenlySignal(signal_out, fout, self.get_signal_nature(), self.get_start_time(), self.get_metadata())
-
+        
     def segment_time(self, t_start, t_stop = None):
         """
         Segment the signal given a time interval
@@ -166,7 +166,7 @@ class EvenlySignal(Signal):
             t_stop = signal_times[-1]
         
         idx_start = _np.where(signal_times>=t_start)[0][0]
-        idx_stop = _np.where(signal_times<=t_stop)[0][-1]
+        idx_stop = _np.where(signal_times<t_stop)[0][-1]
         
         portion_values = signal_values[idx_start:idx_stop+1]
         t_0 = signal_times[idx_start]
@@ -216,13 +216,13 @@ class UnevenlySignal(Signal):
     _MT_X_VALUES = "x_values"
     _MT_ORIGINAL_LENGTH = "original_length"
 
-    def __new__(cls, values, indices, orig_sampling_freq, orig_length, signal_nature="", start_time=0, meta=None, check=True):
+    def __new__(cls, values, indices, orig_sampling_freq, orig_length, signal_nature="", start_time=0, meta=None, start_index = 0, check=True):
         assert not check or len(values) == len(indices), \
             "Length mismatch (y:%d vs. x:%d)" % (len(values), len(indices))
         indices = _np.array(indices)
         # assert not check or x_values.all(x_values.argsort()), \
         #     "x_values array not monotonic."
-        obj = Signal.__new__(cls, values, orig_sampling_freq, signal_nature, start_time, meta)
+        obj = Signal.__new__(cls, values, orig_sampling_freq, signal_nature, start_time, meta, start_index)
         obj.ph[cls._MT_X_VALUES] = indices
         obj.ph[cls._MT_ORIGINAL_LENGTH] = orig_length
         return obj
@@ -234,7 +234,7 @@ class UnevenlySignal(Signal):
             return self.ph[self._MT_X_VALUES][just_one]
 
     def get_times(self, just_one=None):
-        return self.get_indices(just_one) / self.get_sampling_freq() + self.get_start_time()
+        return (self.get_indices(just_one) - self.ph[self._MT_START_INDEX]) / self.get_sampling_freq() + self.get_start_time()
 
     def __repr__(self):
         return Signal.__repr__(self) + "\ny-values\n" + self.view(_np.ndarray).__repr__() + \
@@ -299,8 +299,6 @@ class UnevenlySignal(Signal):
                                self.get_metadata())
         return sig_out
     
-    '''
-    
     def segment_time(self, t_start, t_stop = None):
         """
         Segment the signal given a time interval
@@ -314,7 +312,7 @@ class UnevenlySignal(Signal):
 
         Returns
         -------
-        portion : UnEvenlySignal
+        portion : UnvenlySignal
             The selected portion
         """
         
@@ -327,13 +325,14 @@ class UnevenlySignal(Signal):
             t_stop = signal_times[-1]
         
         idx_start = _np.where(signal_times>=t_start)[0][0]
-        idx_stop = _np.where(signal_times<=t_stop)[0][-1]
+        idx_stop = _np.where(signal_times<t_stop)[0][-1]
         
         portion_values = signal_values[idx_start:idx_stop+1]
-        t_0 = signal_times[idx_start]
         portion_indices = signal_indices[idx_start:idx_stop+1]
         
-        out_signal = UnevenlySignal(portion_values, portion_indices, self.get_sampling_freq(), self.get_signal_nature(), t_0, self.get_metadata(), portion_indices[0])
+        t_0 = signal_times[idx_start]
+        
+        out_signal = UnevenlySignal(portion_values, portion_indices, self.get_sampling_freq(), self.get_original_length(), self.get_signal_nature(), t_0, self.get_metadata(), idx_start)
         
         return(out_signal)
     
@@ -356,18 +355,25 @@ class UnevenlySignal(Signal):
         #TODO: check
         signal_times = self.get_times()
         signal_values = self.get_values()
+        signal_indices = self.get_indices()
         
         if idx_stop is None:
             idx_stop = len(self)
-            
-        portion_values = signal_values[idx_start:idx_stop]
-        t_0 = signal_times[idx_start]
         
-        out_signal = EvenlySignal(portion_values, self.get_sampling_freq(), self.get_signal_nature(), t_0, self.get_metadata(), idx_start)
+        i_start = _np.where(signal_indices>=idx_start)[0][0]
+        i_stop = _np.where(signal_indices<idx_stop)[0][-1]
+        
+        portion_times = signal_times[i_start:i_stop]
+        portion_values = signal_values[i_start:i_stop]
+        portion_indices = signal_indices[i_start:i_stop]
+        
+        t_0 = portion_times[0]
+        
+        out_signal = UnevenlySignal(portion_values, portion_indices, self.get_sampling_freq(), self.get_original_length(), self.get_signal_nature(), t_0, self.get_metadata(), idx_start)
         
         return(out_signal)
-    '''    
-    # TODO (feature): function to_csv
+        
+
 
 class EventsSignal(UnevenlySignal):
     def __new__(cls, values, times, orig_sampling_freq=1, orig_length=None, signal_nature="", start_time=0,
