@@ -60,7 +60,7 @@ class Algorithm(object):
         return self.__class__.__name__ + str(self._params)
 
     @classmethod
-    def get(cls, data, params=None, use_cache=True, **kwargs):
+    def get(cls, data, params=None, use_cache=False, **kwargs):
         """
         Gets the data from the cache or calculates, caches and returns it.
         @param data: Source data
