@@ -96,7 +96,7 @@ class BeatFromBP(_Estimator):
         ibi_values = _np.r_[ibi_values[0], ibi_values]
         idx_ibi = _np.array(true_peaks)
 
-        ibi = _UnevenlySignal(ibi_values, idx_ibi, fsamp, len(signal), 'IBI', signal.get_start_time(), signal.get_metadata())
+        ibi = _UnevenlySignal(ibi_values, fsamp, 'IBI', signal.get_start_time(), indices = idx_ibi)
         return ibi
 
     _params_descriptors = {
@@ -164,7 +164,7 @@ class BeatFromECG(_Estimator):
         ibi_values = _np.r_[ibi_values[0], ibi_values]
         idx_ibi = _np.array(maxp)
 
-        ibi = _UnevenlySignal(ibi_values, idx_ibi, fsamp, len(signal), 'IBI', signal.get_start_time(), signal.get_metadata())
+        ibi = _UnevenlySignal(ibi_values, fsamp, 'IBI', signal.get_start_time(), indices = idx_ibi)
         return ibi
 
     _params_descriptors = {
@@ -339,8 +339,7 @@ class PhasicEstim(_Estimator):
         idx_grid = _np.arange(0, len(driver_no_peak) - 1, grid_size * fsamp)
         idx_grid = _np.r_[idx_grid, len(driver_no_peak) - 1]
 
-        driver_grid = _UnevenlySignal(driver_no_peak[idx_grid], idx_grid, fsamp, len(driver_no_peak), "dEDA", signal.get_start_time(),
-                                      signal.get_metadata())
+        driver_grid = _UnevenlySignal(driver_no_peak[idx_grid], fsamp, "dEDA", signal.get_start_time(), indices = idx_grid)
         tonic = driver_grid.to_evenly(kind='cubic')
 
         phasic = signal - tonic

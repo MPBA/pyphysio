@@ -220,7 +220,7 @@ class DenoiseEDA(_Filter):
         if idx_ok[-1] != len(signal)-1:
             idx_ok = _np.r_[idx_ok, len(signal)-1].astype(int)
             
-        denoised = _UnevenlySignal(signal[idx_ok], idx_ok, signal.get_sampling_freq(), len(signal))
+        denoised = _UnevenlySignal(signal[idx_ok], signal.get_sampling_freq(), indices = idx_ok)
         signal_out = denoised.to_evenly('linear')
         return(signal_out)
 

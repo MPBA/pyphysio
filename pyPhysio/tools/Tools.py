@@ -430,7 +430,7 @@ class Energy(_Tool):
         energy[-1] = energy[-2]
         
         idx_interp = _np.r_[0, windows + round(idx_len / 2), len(signal)]
-        energy_out = _UnevenlySignal(energy, idx_interp, signal.get_sampling_freq(), len(signal)).to_evenly('linear')
+        energy_out = _UnevenlySignal(energy, signal.get_sampling_freq(), indices = idx_interp).to_evenly('linear')
 
         if smooth:
             energy_out = _ConvFlt(irftype='gauss', win_len=2, normalize=True)(energy_out)
@@ -467,7 +467,6 @@ class Maxima(_Tool):
 
     @classmethod
     def algorithm(cls, signal, params):
-        method = params['method']
         method = params['method']
         
         if method == 'complete':
@@ -880,7 +879,7 @@ class FixIBI(_Tool):
 
     @classmethod
     def algorithm(cls, signal, params):
-        assert isinstance(signal, _UnevenlySignal), "IBI can only be represented by an EvenlySignal, %s found." % type(
+        assert isinstance(signal, _UnevenlySignal), "IBI can only be represented by an UnevenlySignal, %s found." % type(
             signal)
         id_bad = params['id_bad_ibi']
         idx_ibi = signal.get_indices()
@@ -889,8 +888,7 @@ class FixIBI(_Tool):
         ibi_nobad = _np.delete(ibi, id_bad)
         idx_ibi = idx_ibi_nobad.astype(int)
         ibi = ibi_nobad
-        return _UnevenlySignal(ibi, idx_ibi, signal.get_sampling_freq(), signal.get_original_length(), signal.get_signal_nature(),
-                               signal.get_start_time())
+        return _UnevenlySignal(ibi, signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time(), indices = idx_ibi)
 
     _params_descriptors = {
         'id_bad_ibi': _Par(2, list, 'Identifiers of abnormal beats')
@@ -1109,8 +1107,7 @@ class BeatOptimizer(_Tool):
         ibi_out = _np.diff(idx_out)
         ibi_out = _np.r_[ibi_out[0], ibi_out]
 
-        return _UnevenlySignal(ibi_out, idx_out, signal.get_sampling_freq(), len(signal), "IBI",
-                               signal.get_start_time(), meta=signal.get_metadata())
+        return _UnevenlySignal(ibi_out, signal.get_sampling_freq(), "IBI", signal.get_start_time(), indices = idx_out)
 
     _params_descriptors = {
         'B': _Par(1, float, 'Ball radius (in seconds) to detect paired beats', 0.25, lambda x: x > 0),
