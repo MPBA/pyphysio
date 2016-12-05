@@ -225,6 +225,9 @@ class UnevenlySignal(Signal):
 
     def get_times(self):
         return (self.ph[self._MT_X_VALUES]) / self.get_sampling_freq() + self.get_start_time()
+    
+    def get_indices(self):
+        return(self.ph[self._MT_X_VALUES])
 
     def __repr__(self):
 #        return Signal.__repr__(self)[:-1] + " freq:" + str(self.get_sampling_freq()) + "Hz>\n" + self.view(_np.ndarray).__repr__()
@@ -235,7 +238,15 @@ class UnevenlySignal(Signal):
         if isinstance(o, UnevenlySignal):
             o.ph[UnevenlySignal._MT_X_VALUES] = o.ph[UnevenlySignal._MT_X_VALUES].__getslice__(i, j)
         return o
-
+        
+    def to_csv(self, filename, comment = ''):
+        values = self.get_values()
+        times = self.get_times()
+        idxs = self.get_indices()
+        header = self.get_signal_nature() + ' \n' + 'Fsamp: '+ str(self.get_sampling_freq()) +'\n' + comment + '\nidx,time,value'
+        
+        _np.savetxt(filename, _np.c_[idxs, times, values], delimiter=',', header=header, comments='')
+        
     def to_evenly(self, kind='cubic'):
         """
         Interpolate the UnevenlySignal to obtain an evenly spaced signal

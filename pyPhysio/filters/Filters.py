@@ -105,7 +105,7 @@ class Diff(_Filter):
         sig_1 = signal[:-degree]
         sig_2 = signal[degree:]
         
-        out = _EvenlySignal(sig_2 - sig_1, signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time()+ degree/signal.get_sampling_freq(), signal.get_metadata())
+        out = _EvenlySignal(sig_2 - sig_1, signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time()+ degree/signal.get_sampling_freq())
 
         return out
 
@@ -160,7 +160,7 @@ class IIRFilter(_Filter):
         b, a = _filter_design.iirdesign(wp, ws, loss, att, ftype=ftype, output="ba")
                 
         
-        sig_filtered = _EvenlySignal(_filtfilt(b, a, signal.get_values()), signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time(), signal.get_metadata())
+        sig_filtered = _EvenlySignal(_filtfilt(b, a, signal.get_values()), signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time())
         if _np.isnan(sig_filtered[0]):
             cls.warn(cls.__name__ + ': Filter parameters allow no solution. Returning original signal.')
             return signal
@@ -261,7 +261,7 @@ class MatchedFilter(_Filter):
     def algorithm(cls, signal, params):
         template = params["template"]
         filtered_signal = _np.convolve(signal, template)[_np.argmax(template):]
-        filtered_signal = _EvenlySignal(filtered_signal, signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time(), signal.get_metadata())
+        filtered_signal = _EvenlySignal(filtered_signal, signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time())
         return filtered_signal
 
     _params_descriptors = {
@@ -359,7 +359,7 @@ class ConvolutionalFilter(_Filter):
         signal_f = _np.convolve(signal_, irf, mode='same')
 
         signal_out = _EvenlySignal(signal_f[n:-n], signal.get_sampling_freq(), signal.get_signal_nature(),
-                                   signal.get_start_time(), signal.get_metadata())
+                                   signal.get_start_time())
         return signal_out
 
     _params_descriptors = {
@@ -421,7 +421,7 @@ class DeConvolutionalFilter(_Filter):
             out = signal.get_values()
                 
             
-        out_signal = _EvenlySignal(abs(out), signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time(), signal.get_metadata())
+        out_signal = _EvenlySignal(abs(out), signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time())
 
         return out_signal
 
