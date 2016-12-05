@@ -1,13 +1,6 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Aug 30 15:01:23 2016
-
-@author: andrea
-"""
-
 from __future__ import division
 import numpy as np
-from context import ph
+import pyPhysio as ph
 
 FSAMP = 10
 TSTART = 10
@@ -17,7 +10,7 @@ data = np.array([45, 90, 120])
 indices = np.array([5, 10, 14])
 
 # TODO: decidere se indices sono tempi o indici di array
-s = ph.UnevenlySignal(data, indices, FSAMP, 15, TYPE, TSTART)
+s = ph.UnevenlySignal(data, FSAMP, TYPE, TSTART, indices = indices)
 # TODO: original length se non data e' il massimo indice + 1
 # TODO: original sampling frequency se non data e' 1
 # TODO: check sempre
@@ -28,62 +21,60 @@ s = ph.UnevenlySignal(data, indices, FSAMP, 15, TYPE, TSTART)
 ###############
 ## TEST GETS ATTRIBUTES
 ###############
+assert len(s) == 3, "Wrong length"
+assert s.get_times()[0] == 10.5, "Error in get_times() / start"  #OK
+assert s.get_times()[-1] == 11.4, "Error in get_times() / end"  #OK
+assert len(s.get_times()) == len(data), "Error in get_times() / length"  #OK
 
-s.get_duration() # OK
+assert s.get_values()[0] == 45, "Error in get_values() / start"  #OK
+assert s.get_values()[-1] == 120, "Error in get_values() / end"  #OK
+assert len(s.get_values()) == len(data), "Error in get_values() / length"  #OK
 
-s.get_indices() # OK
+assert s.get_signal_nature() == '', "Error in get_signal_nature" # OK
+assert s.get_sampling_freq() == 10, "Error in get_sampling_freq" # OK
+assert s.get_start_time() == 10
+assert s.get_end_time() == 11.4
 
-s.get_times() ## TODO: non funziona, dipende da decisioni prima
-## TODO: just one non serve
+# TEST SEGMENTATION
+print('Testing time segmentation')
+s_ = s.segment_time(10.5, 11)
+assert len(s_) == 1, "Wrong length"
+assert s_.get_duration() == 0, "Duration not correct" # OK
+assert s_.get_times()[0] == s_.get_start_time(), "Error in get_times() / start"  #OK
+assert s_.get_times()[-1] == s_.get_end_time(), "Error in get_times() / end"  #OK
+assert s_.get_times()[-1] == s_.get_times()[0]
 
-s.get_values() # OK
+assert len(s_.get_times()) == len(s_), "Error in get_times() / length"  #OK
 
-s.get_signal_nature() # OK
+assert s_.get_values()[0] == 45, "Error in get_values() / start"  #OK
+assert s_.get_values()[-1] == 45, "Error in get_values() / end"  #OK
 
-s.get_sampling_freq() # OK
+assert s_.get_signal_nature() == s.get_signal_nature(), "Error in get_signal_nature" # OK
+assert s_.get_sampling_freq() == s.get_sampling_freq(), "Error in get_sampling_freq" # OK
 
-s.get_start_time() # TODO: vedi decisioni prima
+print('Testing index segmentation')
+s_ = s.segment_idx(8,20)
+assert len(s_) == 2, "Wrong length"
+assert s_.get_times()[0] == s_.get_start_time(), "Error in get_times() / start"  #OK
+assert s_.get_times()[-1] == s_.get_end_time(), "Error in get_times() / end"  #OK
+assert len(s_.get_times()) == len(s_), "Error in get_times() / length"  #OK
 
-s.get_end_time() # TODO: vedi decisioni prima
+assert s_.get_values()[0] == 90, "Error in get_values() / start"  #OK
+assert s_.get_values()[-1] == 120, "Error in get_values() / end"  #OK
 
-s.get_metadata()
-
-s.plot() # TODO: dovrebbe mettere sulle x il tempo
-
-# TEST SLICING
-s_ = s[:2]
-
-s_.get_duration() # TODO: risultato errato
-
-s_.get_indices() # OK
-
-s_.get_times() # Vedi sopra
-
-s_.get_values() # OK
-
-s_.get_signal_nature() # OK
-
-s_.get_sampling_freq() # OK
-
-s_.get_start_time() # TODO: dovrebbe dare lo start della slice
-
-s_.get_end_time() # TODO: non corrisponde
-
-s_.get_metadata()
-
-s_.plot() #OK
+assert s_.get_signal_nature() == s.get_signal_nature(), "Error in get_signal_nature" # OK
+assert s_.get_sampling_freq() == s.get_sampling_freq(), "Error in get_sampling_freq" # OK
 
 ###############
-## TEST to_evenly
+## TEST TO EVENLY
 ###############
-s_evenly = s.to_evenly() # TODO: remove prints
-s_evenly.get_duration() # 1/fsamp in piu'
-s_evenly.get_indices() # OK
-s_evenly.get_times() # vedi sopra e non tiene conto dello start time
-s_evenly.get_values() # OK
-s_evenly.get_signal_nature() # OK
-s_evenly.get_sampling_freq() # OK
-s_evenly.get_start_time() # OK
-s_evenly.get_end_time() # TODO: ritorna un dt=1/fsamp in piu' 
-s_evenly.get_metadata()
-s_evenly.plot() # TODO: dovrebbe mettere sulle x il tempo
+print('testing to evenly')
+
+s_evenly = s.to_evenly(kind = 'linear') # TODO: remove prints
+assert len(s_evenly) == 10, "Wrong length"
+assert s_evenly.get_times()[0] == s_evenly.get_start_time(), "Error in get_times() / start"  #OK
+assert s_evenly.get_times()[-1] == s_evenly.get_end_time(), "Error in get_times() / end"  #OK
+assert len(s_evenly.get_times()) == len(s_evenly), "Error in get_times() / length"  #OK
+
+assert s_evenly.get_signal_nature() == s.get_signal_nature(), "Error in get_signal_nature" # OK
+assert s_evenly.get_sampling_freq() == FSAMP, "Error in get_sampling_freq" # OK
