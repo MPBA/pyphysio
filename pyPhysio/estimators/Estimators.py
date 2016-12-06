@@ -147,7 +147,7 @@ class BeatFromECG(_Estimator):
         fmax = bpm_max / 60
 
         if delta == 0:
-            delta = 0.7 * _SignalRange(win_len=2 / fmax, win_step=0.5 / fmax)(signal)
+            delta = 0.5 * _SignalRange(win_len= 2 / fmax, win_step=0.5 / fmax, smooth = False)(signal)
         else:
             delta = _np.repeat(delta, len(signal))
 

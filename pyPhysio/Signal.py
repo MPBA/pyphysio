@@ -146,13 +146,13 @@ class EvenlySignal(Signal):
         if t_stop is None:
             t_stop = signal_times[-1]
         
-        idx_start = _np.ceil((t_start - self.get_start_time()) * self.get_sampling_freq())
-        idx_stop = _np.ceil((t_stop  - self.get_start_time()) * self.get_sampling_freq())
+        idx_start = int(_np.ceil((t_start - self.get_start_time()) * self.get_sampling_freq()))
+        idx_stop = int(_np.ceil((t_stop  - self.get_start_time()) * self.get_sampling_freq()))
         
         portion_values = signal_values[idx_start:idx_stop]
         t_0 = signal_times[idx_start]
         
-        out_signal = EvenlySignal(portion_values, self.get_sampling_freq(), self.get_signal_nature(), t_0)#, self.get_metadata(), idx_start)
+        out_signal = EvenlySignal(portion_values, self.get_sampling_freq(), self.get_signal_nature(), t_0)
         
         return(out_signal)
     
@@ -179,17 +179,17 @@ class EvenlySignal(Signal):
         if idx_stop is None:
             idx_stop = len(self)
             
-        portion_values = signal_values[idx_start:idx_stop]
+        portion_values = signal_values[int(idx_start):int(idx_stop)]
         t_0 = signal_times[idx_start]
         
-        out_signal = EvenlySignal(portion_values, self.get_sampling_freq(), self.get_signal_nature(), t_0)#, self.get_metadata(), idx_start)
+        out_signal = EvenlySignal(portion_values, self.get_sampling_freq(), self.get_signal_nature(), t_0)
         
         return(out_signal)
         
     def __getslice__(self, i, j):
         o = Signal.__getslice__(self, i, j)
-        if isinstance(o, Signal):
-            o.ph[Signal._MT_START_INDEX] += i
+#        if isinstance(o, Signal):
+#            o.ph[Signal._MT_START_INDEX] += i
         return o
 
 
@@ -306,8 +306,8 @@ class UnevenlySignal(Signal):
         if t_stop is None:
             t_stop = signal_times[-1]
         
-        idx_start = _np.where(signal_times>=t_start)[0][0]
-        idx_stop = _np.where(signal_times<=t_stop)[0][-1]
+        idx_start = int(_np.where(signal_times>=t_start)[0][0])
+        idx_stop = int(_np.where(signal_times<=t_stop)[0][-1])
         
         portion_values = signal_values[idx_start:idx_stop]
         portion_times = signal_times[idx_start:idx_stop]

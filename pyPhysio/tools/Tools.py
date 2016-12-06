@@ -241,7 +241,7 @@ class SignalRange(_Tool):
 
             curr_delta = 0
             for start in windows:
-                portion_curr = signal.segment_idx(start, start + idx_len)
+                portion_curr = signal[start: start + idx_len]
                 curr_delta = _np.max(portion_curr) - _np.min(portion_curr)
                 deltas[start:start + idx_len] = curr_delta
 
@@ -424,7 +424,7 @@ class Energy(_Tool):
         energy = _np.empty(len(windows) + 2)
         for i in xrange(1, len(windows) + 1):
             start = windows[i - 1]
-            portion_curr = signal.segment_idx(start, start + idx_len)
+            portion_curr = signal[start: start + idx_len]
             energy[i] = _np.sum(_np.power(portion_curr, 2)) / len(portion_curr)
         energy[0] = energy[1]
         energy[-1] = energy[-2]
@@ -512,7 +512,7 @@ class Maxima(_Tool):
                 idx_sp = idx_st + winlen
                 if idx_sp > len(signal):
                     idx_sp = len(signal)
-                curr_win = signal.segment_idx(idx_st, idx_sp)
+                curr_win = signal[idx_st: idx_sp]
                 curr_idx_max = _np.argmax(curr_win) + idx_st
                 curr_max = _np.max(curr_win)
 
@@ -601,7 +601,7 @@ class Minima(_Tool):
                 idx_sp = idx_st + winlen
                 if idx_sp > len(signal):
                     idx_sp = len(signal)
-                curr_win = signal.segment_idx(idx_st, idx_sp)
+                curr_win = signal[idx_st: idx_sp]
                 curr_idx_min = _np.argmin(curr_win) + idx_st
                 curr_min = _np.min(curr_win)
 
@@ -652,7 +652,7 @@ class CreateTemplate(_Tool):
         smp_pre = params['smp_pre']
         smp_post = params['smp_post']
         ref_indexes = params['ref_indexes']
-        sig = _np.array(signal.segment_idx(idx_start, idx_end))
+        sig = _np.array(signal[idx_start: idx_end])
         ref_indexes = _np.array(
             ref_indexes[_np.where((ref_indexes > idx_start) & (ref_indexes <= idx_end))[0]]) - idx_start
         total_samples = smp_pre + smp_post
@@ -676,10 +676,10 @@ class CreateTemplate(_Tool):
                             'Indexes of the signals to be used as reference point to generate the template'),
         'idx_start': _Par(2, int,
                           'Index of the signal to start the segmentation of the portion used to generate the template',
-                          constraint=lambda x: x > 0),
+                          constraint=lambda x: x >= 0),
         'idx_stop': _Par(2, int,
                          'Index of the signal to end the segmentation of the portion used to generate the template',
-                         constraint=lambda x: x > 0),
+                         constraint=lambda x: x >= 0),
         'smp_pre': _Par(2, int, 'Number of samples before the reference point to be used to generate the template',
                         constraint=lambda x: x > 0),
         'smp_post': _Par(2, int, 'Number of samples after the reference point to be used to generate the template',
@@ -1107,7 +1107,7 @@ class BeatOptimizer(_Tool):
         ibi_out = _np.diff(idx_out)
         ibi_out = _np.r_[ibi_out[0], ibi_out]
 
-        return _UnevenlySignal(ibi_out, signal.get_sampling_freq(), "IBI", signal.get_start_time(), indices = idx_out)
+        return _UnevenlySignal(ibi_out/signal.get_sampling_freq(), signal.get_sampling_freq(), "IBI", signal.get_start_time(), indices = idx_out)
 
     _params_descriptors = {
         'B': _Par(1, float, 'Ball radius (in seconds) to detect paired beats', 0.25, lambda x: x > 0),
