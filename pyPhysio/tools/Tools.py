@@ -1046,7 +1046,18 @@ class BeatOptimizer(_Tool):
         diff_idxs = _np.diff(diff_idxs)
 
         starts = _np.where(diff_idxs > 0)[0]
-        stops = _np.where(diff_idxs < 0)[0] + 1
+        stops = _np.where(diff_idxs < 0)[0]
+        
+        if len(starts)==0: # no differences
+            return(signal)
+        
+        if len(stops)==0:
+            stops = _np.array([starts[-1] + 1])
+            
+        if starts[0] >= stops[0]:
+            stops = stops[1:]
+            
+        stops = stops + 1
 
         if len(starts) > len(stops):
             stops = _np.r_[stops, starts[-1] + 1]
@@ -1118,7 +1129,7 @@ class BeatOptimizer(_Tool):
         'cache':
             _Par(1, int,
                  'Nuber of IBI to be stored in the cache for adaptive computation of the interval of accepted values',
-                 3, lambda x: x > 0),
+                 5, lambda x: x > 0),
         'sensitivity': _Par(1, float, 'Relative variation from the current median that is accepted', 0.25,
                             lambda x: x > 0)
     }

@@ -47,12 +47,14 @@ class BeatFromBP(_Estimator):
 
     @classmethod
     def algorithm(cls, signal, params):  # FIX others TODO Andrea: ?
-        bpm_max = params["bpm_max"]
-
-        fmax = bpm_max / 60
-
         fsamp = signal.get_sampling_freq()
-
+        
+        bpm_max = params["bpm_max"]
+        win_pre = params["win_pre"] * fsamp
+        win_post = params["win_post"] * fsamp
+        
+        fmax = bpm_max / 60
+        
         refractory =  1 / fmax
 
         # STAGE 1 - EXTRACT BEAT POSITION SIGNAL
@@ -70,16 +72,21 @@ class BeatFromBP(_Estimator):
         dxdt = _Diff()(signal)
         true_peaks = []
 
-        win = 0.25 * fsamp
+        win_pre = 0.25 * fsamp
+        win_post = 0.05 * fsamp
         for idx_beat in maxp:
-            start_ = int(idx_beat - win)
+            start_ = int(idx_beat - win_pre)
             if start_ < 0:
                 start_ = 0
+                
+            stop_ = int(idx_beat + win_post)
+            if stop_ > len(dxdt):
+                stop_ = -1
 
             # select portion of derivative where to search
-            obs = dxdt[start_:idx_beat]
+            obs = dxdt[start_:stop_]
             peak_obs = _np.argmax(obs)
-            true_obs = dxdt[start_ + peak_obs: idx_beat]
+            true_obs = dxdt[start_ + peak_obs: stop_]
 
             # find the 'first minimum' (zero) the derivative (peak)
             mins = _Minima(win_len=0.1, win_step=0.025, method='windowing')(abs(true_obs))
@@ -88,19 +95,20 @@ class BeatFromBP(_Estimator):
                 peak = idx_mins[0]
                 true_peaks.append(start_ + peak_obs + peak+1)
             else:
-#                cls.warn('Peak not found; idx_beat: ' + str(idx_beat))
+                cls.warn('Peak not found; idx_beat: ' + str(idx_beat))
                 pass
         
         # STAGE 4 - FINALIZE computing IBI and fixing indexes
         ibi_values = _np.diff(true_peaks) / fsamp
-        ibi_values = _np.r_[ibi_values[0], ibi_values]
         idx_ibi = _np.array(true_peaks)
 
-        ibi = _UnevenlySignal(ibi_values, fsamp, 'IBI', signal.get_start_time(), indices = idx_ibi)
+        ibi = _UnevenlySignal(ibi_values, fsamp, 'IBI', signal.get_start_time(), indices = idx_ibi[1:])
         return ibi
 
     _params_descriptors = {
-        'bpm_max': _Par(1, int, 'Maximal expected heart rate (in beats per minute)', 120, lambda x: 1 < x <= 400)
+        'bpm_max': _Par(1, int, 'Maximal expected heart rate (in beats per minute)', 120, lambda x: 1 < x <= 400),
+        'win_pre': _Par(1, float, 'Portion to consider before the candidate beat position', 0.25, lambda x: 0 < x <= 1),
+        'win_post': _Par(1, float, 'Portion to consider after the candidate beat position', 0.05, lambda x: 0 < x <= 1)
     }
 
     @staticmethod

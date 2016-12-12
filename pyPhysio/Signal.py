@@ -145,8 +145,16 @@ class EvenlySignal(Signal):
         
         if t_stop is None:
             t_stop = signal_times[-1]
-        
+
+        #FIXME: selected interval outside the signal
+        if t_start > self.get_end_time() or t_stop < self.get_start_time():
+            print('Error segmenting the signal: selected segment is outside the signal. Returning the original signal')
+            return(self)
+            
         idx_start = int(_np.ceil((t_start - self.get_start_time()) * self.get_sampling_freq()))
+        if idx_start < 0: #the signal starts after the segmentation start 
+            idx_start = 0
+        
         idx_stop = int(_np.ceil((t_stop  - self.get_start_time()) * self.get_sampling_freq()))
         
         portion_values = signal_values[idx_start:idx_stop]
@@ -305,9 +313,15 @@ class UnevenlySignal(Signal):
         
         if t_stop is None:
             t_stop = signal_times[-1]
+
+        #FIXME: selected interval outside the signal
+        if t_start > self.get_end_time() or t_stop < self.get_start_time():
+            print('Error segmenting the signal: selected segment is outside the signal. Returning the original signal')
+            return(self)
         
         idx_start = int(_np.where(signal_times>=t_start)[0][0])
         idx_stop = int(_np.where(signal_times<=t_stop)[0][-1])
+        
         
         portion_values = signal_values[idx_start:idx_stop]
         portion_times = signal_times[idx_start:idx_stop]
