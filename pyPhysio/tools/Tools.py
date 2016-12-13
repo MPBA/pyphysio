@@ -299,7 +299,7 @@ class PSD(_Tool):
     @classmethod
     def algorithm(cls, signal, params):
         # Removed parameters equal to default
-
+        # FIXME: min_order is None by default and not 10 as requested
         method = params['method']
         nfft = params['nfft'] if "nfft" in params else None
         window = params['window']
@@ -351,7 +351,6 @@ class PSD(_Tool):
                 except AssertionError:
                     break
             best_order = orders[_np.argmin(aics)]
-            print('test')
 
             ar, p, k = _aryule(signal, best_order)
             psd = _arma2psd(ar, NFFT=nfft)
@@ -373,7 +372,7 @@ class PSD(_Tool):
     _window_list = ['hamming', 'blackman', 'hanning', 'bartlett', 'none']
 
     _params_descriptors = {
-        'method': _Par(1, str, 'Method to estimate the PSD', 'welch', lambda x: x in PSD._method_list),
+        'method': _Par(1, str, 'Method to estimate the PSD', 'ar', lambda x: x in PSD._method_list),
         'min_order': _Par(1, int, 'Minimum order of the model (for method="ar")',
                           10,
                           lambda x: x > 0,
