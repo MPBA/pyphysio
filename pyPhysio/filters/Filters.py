@@ -21,28 +21,35 @@ class Normalize(_Filter):
 
     Parameters
     ----------
-    norm_method : 
-        Method for the normalization: 
+    norm_method : str, default = 'standard'
+        Method for the normalization. Available methods are:
         'mean' - remove the mean [ BIAS = mean(signal); RANGE = 1 ]
         'standard' - standardization [ BIAS = mean(signal); RANGE = std(signal) ]
         'min' - remove the minimum [ BIAS = min(signal); RANGE = 1 ]
         'maxmin' - maxmin normalization [ BIAS = min(signal); RANGE = ( max(signal) - min(signal ) ]
-        'custom' - custom [ BIAS = bias, RANGE = range ]
+        'custom' - custom, bias and range are manually defined [ BIAS = bias, RANGE = range ]
 
-    bias:
+    bias : float, default = 0
         Bias for custom normalization
-    range:
+    range : float, !=0, default = 1
         Range for custom normalization
 
     Returns
     -------
-    Signal : the normalized signal. 
+    signal: 
+        The normalized signal. 
 
     Notes
     -----
         ...
     """
-
+    _params_descriptors = {
+        'norm_method': _Par(1, str, 'Method for the normalization.', 'standard', lambda x: x in ['mean', 'standard', 'min', 'maxmin', 'custom']),
+        'norm_bias': _Par(2, float, 'Bias for custom normalization', activation=lambda x, p: p['norm_method'] == 'custom'),
+        'norm_range': _Par(2, float, 'Range for custom normalization', activation=lambda x, p: p['norm_method'] == 'custom')
+        #TODO: check norm_range !=0
+    }
+    
     class Types(object):
         Mean = 'mean'
         MeanSd = 'standard'
@@ -66,13 +73,6 @@ class Normalize(_Filter):
         elif method == Normalize.Types.Custom:
             return (signal - params['norm_bias']) / params['norm_range']
 
-    _params_descriptors = {
-        'norm_method': _Par(2, str, 'Method for the normalization.', 'standard',
-                            lambda x: x in ['mean', 'standard', 'min', 'maxmin', 'custom']),
-        'norm_bias': _Par(2, float, 'Bias for custom normalization', 0, activation=lambda x, p: p['norm_method'] == 'custom'),
-        'norm_range': _Par(2, float, 'Range for custom normalization', 0, activation=lambda x, p: p['norm_method'] == 'custom')
-    }
-
 
 class Diff(_Filter):
     """
@@ -80,18 +80,25 @@ class Diff(_Filter):
 
     Parameters
     ----------
-    degree : int > 0
-        The degree of the differences
+    
+    Optional:
+    degree : int, >0, default = 1
+        Sample interval to compute the differences
     
     Returns
     -------
-    Signal : the differences signal. 
+    signal : 
+        Differences signal. 
 
     Notes
     -----
-    Note that the length of the returned signal is: len(input_signal) - degree
+    Note that the length of the returned signal is the lenght of the input_signal minus degree.
     """
-
+    
+    _params_descriptors = {
+        'degree': _Par(0, int, 'Degree of the differences', 1, lambda x: x>0)
+    }
+    
     @classmethod
     def algorithm(cls, signal, params):
         """
@@ -105,13 +112,10 @@ class Diff(_Filter):
         sig_1 = signal[:-degree]
         sig_2 = signal[degree:]
         
+        #TODO: should return the same signal type of the input, with same characteristics
         out = _EvenlySignal(sig_2 - sig_1, signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time()+ degree/signal.get_sampling_freq())
 
         return out
-
-    _params_descriptors = {
-        'degree': _Par(default=1, requirement_level=0, description='Degree of the differences', pytype=float)
-    }
 
 
 class IIRFilter(_Filter):
@@ -124,22 +128,33 @@ class IIRFilter(_Filter):
         The pass frequencies
     fs : list
         The stop frequencies
-    loss : float (default=)
+    
+    Optional:
+    loss : float, >0, default = 0.1
         Loss tolerance in the pass band
-    att : float (default=)
+    att : float, >0, default = 40
         Minimum attenuation required in the stop band.
-    ftype : str (default=)
-        Type of filter.
+    ftype : str, default = 'butter'
+        Type of filter. Available types: 'butter', 'cheby1', 'cheby2', 'ellip', 'bessel'
 
     Returns
     -------
-    Signal : the filtered signal
+    signal: EvenlySignal
+        Filtered signal
 
     Notes
     -----
-    See : func:`scipy.signal.filter_design.iirdesign` for additional information
+    This is a wrapper of `scipy.signal.filter_design.iirdesign`. Refer to `scipy.signal.filter_design.iirdesign` for additional information
     """
-
+    
+    _params_descriptors = {
+        'fp': _Par(2, list, 'The pass frequencies'),
+        'fs': _Par(2, list, 'The stop frequencies'),
+        'loss': _Par(0, float, 'Loss tolerance in the pass band', 0.1, lambda x: x > 0),
+        'att': _Par(0, float, 'Minimum attenuation required in the stop band.', 40, lambda x: x > 0),
+        'ftype': _Par(0, str, 'Type of filter', 'butter', lambda x: x in ['butter', 'cheby1', 'cheby2', 'ellip', 'bessel'])
+    }
+    
     @classmethod
     def algorithm(cls, signal, params):
         fsamp = signal.get_sampling_freq()
@@ -159,21 +174,12 @@ class IIRFilter(_Filter):
         ws = fs / nyq
         b, a = _filter_design.iirdesign(wp, ws, loss, att, ftype=ftype, output="ba")
                 
-        
         sig_filtered = _EvenlySignal(_filtfilt(b, a, signal.get_values()), signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time())
         if _np.isnan(sig_filtered[0]):
             cls.warn(cls.__name__ + ': Filter parameters allow no solution. Returning original signal.')
             return signal
         else:
             return sig_filtered
-
-    _params_descriptors = {
-        'fp': _Par(2, list, 'The pass frequencies'),
-        'fs': _Par(2, list, 'The stop frequencies'),
-        'loss': _Par(1, float, 'Loss tolerance in the pass band', 0.1, lambda x: x > 0),
-        'att': _Par(1, float, 'Minimum attenuation required in the stop band.', 40, lambda x: x > 0),
-        'ftype': _Par(1, str, 'Type of filter', 'butter', lambda x: x in ['butter', 'cheby1', 'cheby2', 'ellip', 'bessel'])
-    }
 
     @_abstract
     def plot(self):
@@ -182,27 +188,33 @@ class IIRFilter(_Filter):
 
 class DenoiseEDA(_Filter):
     """
-    DenoiseEDA
-    
     Removes noise due to sensor displacement from the EDA signal.
     
     Parameters
     ----------
-    threshold : float
+    threshold : float, >0
         Threshold to detect the noise
-    win_len : float
+        
+    Optional:
+    win_len : float, >0, default=2
         Length of the window
    
     Returns
     -------
-    signal_out : nparray
+    signal : EvenlySignal
         De-noised signal
             
     Notes
     -----
-    See paper
+    See REF for more infos.
+    #TODO: insert ref
     """
-
+    
+    _params_descriptors = {
+        'threshold': _Par(2, float, 'Threshold to detect the noise', constraint=lambda x: x > 0),
+        'win_len': _Par(0, float, 'Length of the window', 2, lambda x: x > 0)
+    }
+    
     @classmethod
     def algorithm(cls, signal, params):
         
@@ -210,105 +222,65 @@ class DenoiseEDA(_Filter):
         win_len = params['win_len']
         
         #TODO (feature): detect the long periods of drop
+        #remove fluctiations
         noise = ConvolutionalFilter(irftype ='triang', win_len = win_len, normalize=True)(abs(_np.diff(signal)))
         
+        #identify noisy portions        
         idx_ok = _np.where(noise <= threshold)[0]
         
+        #fix start and stop of the signal for the followinf interpolation
         if idx_ok[0] != 0:
             idx_ok = _np.r_[0, idx_ok].astype(int)
         
         if idx_ok[-1] != len(signal)-1:
             idx_ok = _np.r_[idx_ok, len(signal)-1].astype(int)
-            
+
         denoised = _UnevenlySignal(signal[idx_ok], signal.get_sampling_freq(), indices = idx_ok)
+        
+        #interpolation
         signal_out = denoised.to_evenly('linear')
         return(signal_out)
 
-    _params_descriptors = {
-        'threshold': _Par(2, float, 'Threshold to detect the noise'),
-        'win_len': _Par(1, float, 'Length of the window', 2, lambda x: x > 0)
-    }
-
-    def plot(self):
-        # TODO (new feature)
-        # WARNING 'not implemented'
-        pass
-
-
-class MatchedFilter(_Filter):
-    """
-    Matched filter
-
-    It generates a template using reference indexes and filters the signal.
-
-    Parameters
-    ----------
-    template : array
-        The template for matched filter (not reversed)
-
-    Returns
-    -------
-    Signal : 
-        The filtered signal
-
-    Notes
-    -----
-        ...
-
-    """
-
-    @classmethod
-    def algorithm(cls, signal, params):
-        template = params["template"]
-        filtered_signal = _np.convolve(signal, template)[_np.argmax(template):]
-        filtered_signal = _EvenlySignal(filtered_signal, signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time())
-        return filtered_signal
-
-    _params_descriptors = {
-        'template': _Par(2, list, 'The template for matched filter (not reversed)')
-    }
-
-    def plot(self):
-        # TODO (new feature)
-        # WARNING 'not implemented'
-        pass
-
-
 class ConvolutionalFilter(_Filter):
     """
-    Convolution-based filter
-
-    It filters a signal by convolution with a given impulse response function (IRF).
+    Filter a signal by convolution with a given impulse response function (IRF).
 
     Parameters
     ----------
     irftype : str
         Type of IRF to be generated. 'gauss', 'rect', 'triang', 'dgauss', 'custom'.
-    normalize : boolean
-        Whether to normalizes the IRF to have unitary area
-    win_len : int
+    win_len : float, >0 (>8 for 'gaussian")
         Durarion of the generated IRF in seconds (if irftype is not 'custom')
-    irf : array
+    irf : numpy.array
         IRF to be used if irftype is 'custom'
+    
+    Optional:
+    normalize : boolean, default = True
+        Whether to normalizes the IRF to have unitary area
     
     Returns
     -------
-    Signal : 
-        The filtered signal
+    signal : EvenlySignal
+        Filtered signal
 
-    Notes
-    -----
-    ...
     """
-
-    class Types(object):
-        Same = 'none'
-        Gauss = 'gauss'
-        Rect = 'rect'
-        Triang = 'triang'
-        Dgauss = 'dgauss'
-        Custom = 'custom'
-
+    
+    _params_descriptors = {
+        'irftype': _Par(2, str, 'Type of IRF to be generated.', constraint=lambda x: x in ['gauss', 'rect', 'triang', 'dgauss', 'custom']), 
+        'win_len': _Par(2, float, "Durarion of the generated IRF in seconds (if irftype is not 'custom')", constraint=lambda x: x > 0, activation=lambda x, p: p['irftype'] != 'custom'),        
+        'irf': _Par(2, list, "IRF to be used if irftype is 'custom'", activation=lambda x, p: p['irftype'] == 'custom'),
+        'normalize': _Par(1, bool, 'Whether to normalizes the IRF to have unitary area', True)
+    }
+    
+#    class Types(object):
+#        Same = 'none'
+#        Gauss = 'gauss'
+#        Rect = 'rect'
+#        Triang = 'triang'
+#        Dgauss = 'dgauss'
+#        Custom = 'custom'
+    
+    #TODO: TEST normalization and results
     @classmethod
     def algorithm(cls, signal, params):
         irftype = params["irftype"]
@@ -333,7 +305,7 @@ class ConvolutionalFilter(_Filter):
 
                 if irftype == 'gauss':
                     if n<8:
-                        cls.error("'win_len' too short for gaussian type, expected > 8.")
+                        cls.error("'win_len' too short to generate a gaussian IRF, expected > 8.")
                     std = _np.floor(n / 8) 
                     irf = _gaussian(n, std)
                 elif irftype == 'rect':
@@ -362,44 +334,40 @@ class ConvolutionalFilter(_Filter):
                                    signal.get_start_time())
         return signal_out
 
-    _params_descriptors = {
-        'irftype': _Par(1, str, 'Type of IRF to be generated.', 'gauss',
-                        lambda x: x in ['gauss', 'rect', 'triang', 'dgauss', 'custom']),
-        'normalize': _Par(1, bool, 'Whether to normalizes the IRF to have unitary area', True),
-        'win_len': _Par(2, float, "Durarion of the generated IRF in seconds (if irftype is not 'custom')", 1,
-                        lambda x: x > 0, lambda x, p: p['irftype'] != 'custom'),
-        'irf': _Par(2, list, "IRF to be used if irftype is 'custom'", activation=lambda x, p: p['irftype'] == 'custom')
-    }
-
     @classmethod
     def plot(cls):
-        # TODO (new feature)
-        # WARNING 'not implemented'
+        # TODO (feature): plot the IRF
         pass
 
 
 class DeConvolutionalFilter(_Filter):
     """
-    Convolution-based filter
-
-    It filters a signal by deconvolution with a given impulse response function (IRF).
+    Filter a signal by deconvolution with a given impulse response function (IRF).
 
     Parameters
     ----------
-    irf : array
+    irf : numpy.array
         IRF used to deconvolve the signal
-    normalize : boolean
+    
+    Optional:    
+    normalize : boolean, default = True
         Whether to normalize the IRF to have unitary area
-
+    method : str
+        Available methods: 'fft', 'sps'. 'fft' uses the fourier transform, 'sps' uses the scipy.signal.deconvolve function
+        
     Returns
     -------
-    filtered_signal : array
-        The filtered signal
+    signal : EvenlySignal
+        Filtered signal
 
-    Notes
-    -----
     """
 
+    _params_descriptors = {
+        'irf': _Par(2, list, 'IRF used to deconvolve the signal'),#TODO: check that irf[0]>0 to avoid scipy BUG
+        'normalize': _Par(0, bool, 'Whether to normalize the IRF to have unitary area', True),
+        'deconv_method': _Par(0, str, 'Deconvolution method.', 'fft', lambda x: x in ['fft', 'sps'])
+    }
+    
     @classmethod
     def algorithm(cls, signal, params):
         irf = params["irf"]
@@ -425,16 +393,7 @@ class DeConvolutionalFilter(_Filter):
 
         return out_signal
 
-    _params_descriptors = {
-        'irf': _Par(2, list, 'IRF used to deconvolve the signal'),#TODO: check that irf[0]>0 to avoid scipy BUG
-        'normalize': _Par(1, bool, 'Whether to normalize the IRF to have unitary area', True),
-        'deconv_method': _Par(1, str, 'Deconvolution method.', 'fft',
-                        lambda x: x in ['fft', 'sps'])
-
-    }
-
     @classmethod
     def plot(cls):
-        # WARNING 'Not implemented'
-        # TODO (new feature) plot irf
+        # TODO (new feature): plot the irf
         pass

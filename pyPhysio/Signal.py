@@ -18,7 +18,7 @@ class Signal(_np.ndarray):
     _MT_SAMPLING_FREQ = "sampling_freq"
     _MT_INFO_ATTR = "_pyphysio"
     
-    # TODO (Ale): check sui parametri del segnale: FSAMP > 0
+    # TODO: check sui parametri del segnale: FSAMP > 0
 
     def __new__(cls, values, sampling_freq, signal_nature="", start_time=0):#, start_index=0):
         # noinspection PyNoneFunctionAssignment
