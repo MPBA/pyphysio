@@ -117,7 +117,7 @@ class BeatFromBP(_Estimator):
         ibi_values = _np.diff(true_peaks) / fsamp
         idx_ibi = _np.array(true_peaks)
 
-        ibi = _UnevenlySignal(ibi_values, fsamp, 'IBI', signal.get_start_time(), indices = idx_ibi[1:])
+        ibi = _UnevenlySignal(ibi_values, fsamp, 'IBI', signal.get_start_time(), x_values = idx_ibi[1:], x_type = 'indices')
         return ibi
 
 class BeatFromECG(_Estimator):
@@ -177,7 +177,7 @@ class BeatFromECG(_Estimator):
         ibi_values = _np.r_[ibi_values[0], ibi_values]
         idx_ibi = _np.array(maxp)
 
-        ibi = _UnevenlySignal(ibi_values, fsamp, 'IBI', signal.get_start_time(), indices = idx_ibi)
+        ibi = _UnevenlySignal(ibi_values, fsamp, 'IBI', signal.get_start_time(), x_values = idx_ibi, x_type = 'indices')
         return ibi
 
 
@@ -362,7 +362,7 @@ class PhasicEstim(_Estimator):
         idx_grid = _np.arange(0, len(driver_no_peak) - 1, grid_size * fsamp)
         idx_grid = _np.r_[idx_grid, len(driver_no_peak) - 1]
 
-        driver_grid = _UnevenlySignal(driver_no_peak[idx_grid], fsamp, "dEDA", signal.get_start_time(), indices = idx_grid)
+        driver_grid = _UnevenlySignal(driver_no_peak[idx_grid], fsamp, "dEDA", signal.get_start_time(), x_values = idx_grid, x_type = 'indices')
         tonic = driver_grid.to_evenly(kind='cubic')
 
         phasic = signal - tonic
@@ -417,7 +417,7 @@ class Energy(_Estimator):
         energy[-1] = energy[-2]
         
         idx_interp = _np.r_[0, windows + round(idx_len / 2), len(signal)]
-        energy_out = _UnevenlySignal(energy, signal.get_sampling_freq(), indices = idx_interp).to_evenly('linear')
+        energy_out = _UnevenlySignal(energy, signal.get_sampling_freq(), x_values = idx_interp, x_type = 'indices').to_evenly('linear')
 
         if smooth:
             energy_out = _ConvolutionalFilter(irftype='gauss', win_len=2, normalize=True)(energy_out)

@@ -808,7 +808,7 @@ class FixIBI(_Tool):
         ibi_nobad = _np.delete(ibi, id_bad)
         idx_ibi = idx_ibi_nobad.astype(int)
         ibi = ibi_nobad
-        return _UnevenlySignal(ibi, signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time(), indices = idx_ibi)
+        return _UnevenlySignal(ibi, signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time(), x_values = idx_ibi, x_type = 'indices')
 
 
 class BeatOptimizer(_Tool):
@@ -1047,7 +1047,7 @@ class BeatOptimizer(_Tool):
         ibi_out = _np.diff(idx_out)
         ibi_out = _np.r_[ibi_out[0], ibi_out]
 
-        return _UnevenlySignal(ibi_out/signal.get_sampling_freq(), signal.get_sampling_freq(), "IBI", signal.get_start_time(), indices = idx_out)
+        return _UnevenlySignal(ibi_out/signal.get_sampling_freq(), signal.get_sampling_freq(), "IBI", signal.get_start_time(), x_values = idx_out, x_type = 'indices')
 
 
 # EDA Tools

@@ -79,7 +79,22 @@ class Signal(_np.ndarray):
 
 
 class EvenlySignal(Signal):
-   
+    '''
+    Evenly spaced signal
+    
+    Attributes:
+    -----------
+    
+    data : numpy.array
+        Values of the signal
+    sampling_freq : float, >0
+        Sampling frequency
+    signal_nature : str, default = ''
+        Type of signal (e.g. 'ECG', 'EDA')
+    start_time: float,
+        Instant of signal start
+    '''
+    
     def get_times(self):
         return _np.arange(len(self)) / self.get_sampling_freq() + self.get_start_time()
     
@@ -202,15 +217,43 @@ class EvenlySignal(Signal):
 
 
 class UnevenlySignal(Signal):
-    _MT_X_VALUES = "x_values"
+    '''
+    Unevenly spaced signal
+    
+    Attributes:
+    -----------
+    
+    data : numpy.array
+        Values of the signal
+    sampling_freq : float, >0
+        Sampling frequency
+    signal_nature : str, default = ''
+        Type of signal (e.g. 'ECG', 'EDA')
+    start_time: float,
+        Instant of signal start
+    
+    Required one of the following:    
+    x : numpy.array of int
+        Instants, or indices when the values are measured.
+    x_type : str
+        Type of x values given.
+        Can be 'indices' or 'instants'
+    '''
+    _MT_X_INDICES = "x_values"
     _MT_ORIGINAL_LENGTH = "original_length"
 
-    def __new__(cls, values, sampling_freq=1000, signal_nature="", start_time=None, indices = None, instants = None):#meta=None, start_index = 0, check=True):
+    def __new__(cls, values, sampling_freq=1000, signal_nature="", start_time=None, x_values = None, x_type = None):#meta=None, start_index = 0, check=True):
         
-        assert ((indices is not None) or (instants is not None)), "indices OR instants are required"
+        assert x_values is not None, "x_values are missing"
+        assert x_type is not None, "x_type is missing"
+        assert len(x_values) == len(values), "Length mismatch (y:%d vs. x:%d)" % (len(values), len(x_values))
+        indices = None
+        instants = None
         
-        assert not ((indices is not None) and (instants is not None)), "indices OR instants shold be given, not both"
-        
+        if x_type == 'indices':
+            indices = x_values
+        elif x_type == 'instants':
+            instants = x_values
         
         if indices is not None:
             assert len(values) == len(indices), "Length mismatch (y:%d vs. x:%d)" % (len(values), len(indices))
@@ -228,14 +271,14 @@ class UnevenlySignal(Signal):
             indices = _np.round((instants - start_time)*sampling_freq).astype(int)
             
         obj = Signal.__new__(cls, values, sampling_freq, signal_nature, start_time)
-        obj.ph[cls._MT_X_VALUES] = indices
+        obj.ph[cls._MT_X_INDICES] = indices
         return obj
 
     def get_times(self):
-        return (self.ph[self._MT_X_VALUES]) / self.get_sampling_freq() + self.get_start_time()
+        return (self.ph[self._MT_X_INDICES]) / self.get_sampling_freq() + self.get_start_time()
     
     def get_indices(self):
-        return(self.ph[self._MT_X_VALUES])
+        return(self.ph[self._MT_X_INDICES])
 
     def __repr__(self):
 #        return Signal.__repr__(self)[:-1] + " freq:" + str(self.get_sampling_freq()) + "Hz>\n" + self.view(_np.ndarray).__repr__()
@@ -244,7 +287,7 @@ class UnevenlySignal(Signal):
     def __getslice__(self, i, j):
         o = Signal.__getslice__(self, i, j)
         if isinstance(o, UnevenlySignal):
-            o.ph[UnevenlySignal._MT_X_VALUES] = o.ph[UnevenlySignal._MT_X_VALUES].__getslice__(i, j)
+            o.ph[UnevenlySignal._MT_X_INDICES] = o.ph[UnevenlySignal._MT_X_INDICES].__getslice__(i, j)
         return o
         
     def to_csv(self, filename, comment = ''):
@@ -274,7 +317,7 @@ class UnevenlySignal(Signal):
         
         assert not (kind == 'cubic' and len(self)<=3), 'At least 4 samples needed for cubic interpolation' 
 
-        data_x = self.ph[self._MT_X_VALUES]  # From a constant freq range
+        data_x = self.ph[self._MT_X_INDICES]  # From a constant freq range
 
         data_y = self.get_values()
 
@@ -350,7 +393,7 @@ class UnevenlySignal(Signal):
         """
         #TODO: check
         signal_values = self.get_values()
-        signal_indices = self.ph[self._MT_X_VALUES]
+        signal_indices = self.ph[self._MT_X_INDICES]
         
         if idx_stop is None:
             idx_stop = len(self)
@@ -364,7 +407,7 @@ class UnevenlySignal(Signal):
         t_0 = self.get_times()[i_start]
         portion_indices = portion_indices - portion_indices[0]
         
-        out_signal = UnevenlySignal(portion_values, self.get_sampling_freq(), self.get_signal_nature(), t_0, indices = portion_indices)
+        out_signal = UnevenlySignal(portion_values, self.get_sampling_freq(), self.get_signal_nature(), t_0, x_values = portion_indices, x_type = 'indices')
         
         return(out_signal)
         
