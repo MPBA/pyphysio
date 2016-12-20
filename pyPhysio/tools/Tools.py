@@ -43,7 +43,7 @@ class PeakDetection(_Tool):
     
     #TODO: deltas and delta are now merged, fix Par
     _params_descriptors = {
-        'delta': _Par(2, list, "Threshold for the detection of the peaks", constraint= lambda x: x > 0),
+        'delta': _Par(2, list, "Threshold for the detection of the peaks"),
         'refractory': _Par(0, float, "Seconds to skip after detection of a peak", 0, lambda x: x > 0),
         'start_max': _Par(0, bool, "Whether to start looking for a max.", True)
     }
@@ -504,7 +504,7 @@ class Minima(_Tool):
     @classmethod
     def algorithm(cls, signal, params):
         signal = -1*signal
-        idx_mins, mins = Maxima(signal, params)
+        idx_mins, mins = Maxima(params)(signal)
         return idx_mins, -1*mins
 
     _params_descriptors = {

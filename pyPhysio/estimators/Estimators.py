@@ -78,7 +78,7 @@ class BeatFromBP(_Estimator):
         #find range for the adaptive peak detection
         deltas = 0.5 * _SignalRange(win_len=1.5 / fmax, win_step = 1 / fmax)(signal_f)
         # detection of candidate peaks
-        maxp, minp, ignored, ignored = _PeakDetection(deltas=deltas, refractory=refractory, start_max=True)(signal_f)  # Tools
+        maxp, minp, ignored, ignored = _PeakDetection(delta=deltas, refractory=refractory, start_max=True)(signal_f)  # Tools
 
         if maxp[0] == 0:
             maxp = maxp[1:]
@@ -104,8 +104,8 @@ class BeatFromBP(_Estimator):
             true_obs = dxdt[start_ + peak_obs: stop_]
 
             # find the 'first minimum' (zero) the derivative (peak)
-            mins = _Minima(win_len=0.1, win_step=0.025, method='windowing')(abs(true_obs))
-            idx_mins = mins[:, 0]
+            idx_mins, mins = _Minima(win_len=0.1, win_step=0.025, method='windowing')(abs(true_obs))
+            
             if len(idx_mins) >= 1:
                 peak = idx_mins[0]
                 true_peaks.append(start_ + peak_obs + peak+1)
@@ -168,7 +168,7 @@ class BeatFromECG(_Estimator):
 
         refractory = 1 / fmax
 
-        maxp, minp, maxv, minv = _PeakDetection(deltas=delta, refractory=refractory, start_max=True)(signal)
+        maxp, minp, maxv, minv = _PeakDetection(delta=delta, refractory=refractory, start_max=True)(signal)
 
         if maxp[0] == 0:
             maxp = maxp[1:]

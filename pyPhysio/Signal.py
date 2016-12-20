@@ -232,8 +232,9 @@ class UnevenlySignal(Signal):
     start_time: float,
         Instant of signal start
     
-    Required one of the following:    
-    x : numpy.array of int
+    Required one of the following:
+    
+    x_values : numpy.array of int
         Instants, or indices when the values are measured.
     x_type : str
         Type of x values given.
