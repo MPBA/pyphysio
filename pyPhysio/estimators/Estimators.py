@@ -196,6 +196,7 @@ class DriverEstim(_Estimator):
     ----------
     
     Optional:
+    
     T1: float, >0, default = 0.75
         Value of T1 parameters of the bateman function
     T2: float, >0, default = 2
@@ -252,9 +253,9 @@ class DriverEstim(_Estimator):
         driver = driver[idx_max_bat + 1: idx_max_bat + len(signal)]
 
         # gaussian smoothing
-        driver = _ConvolutionalFilter(irftype='gauss', win_len=0.2*8, normalize=True)(driver)
+        driver = _ConvolutionalFilter(irftype='gauss', win_len=_np.max([0.2, 1/fsamp])*8, normalize=True)(driver)
 
-        driver = _EvenlySignal(driver, fsamp, "dEDA", signal.get_start_time(), signal.get_metadata())
+        driver = _EvenlySignal(driver, fsamp, "dEDA", signal.get_start_time())
         return driver
 
     @staticmethod
@@ -282,7 +283,7 @@ class DriverEstim(_Estimator):
         len_bat = idx_T2 * 10
         idx_bat = _np.arange(len_bat)
         bateman = _np.exp(-idx_bat / idx_T2) - _np.exp(-idx_bat / idx_T1)
-
+        
         # normalize
         bateman = fsamp * bateman / _np.sum(bateman)
         return bateman
@@ -295,12 +296,13 @@ class PhasicEstim(_Estimator):
     See REF for more infos
     #TODO: insert ref
     
-    Parameters
-    ----------
+    Parameters:
+    -----------
     delta : float, >0
         Minimum amplitude of the peaks in the driver
         
     Optional:
+    
     grid_size : float, >0, default = 1
         Sampling size of the interpolation grid
     pre_max : float, >0, 2
@@ -308,8 +310,8 @@ class PhasicEstim(_Estimator):
     post_max : float, >0, 2
         Duration (in seconds) of interval after the peak that is considered to find the end of the peak
 
-    Returns
-    -------
+    Returns:
+    --------
     phasic : EvenlySignal
         The phasic component
     tonic : EvenlySignal

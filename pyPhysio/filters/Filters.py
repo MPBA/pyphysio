@@ -305,7 +305,8 @@ class ConvolutionalFilter(_Filter):
 
                 if irftype == 'gauss':
                     if n<8:
-                        cls.error("'win_len' too short to generate a gaussian IRF, expected > 8.")
+                        #TODO: test, sometimes it returns nan
+                        cls.error("'win_len' too short to generate a gaussian IRF, expected > "+str(_np.ceil(8/fsamp)))
                     std = _np.floor(n / 8) 
                     irf = _gaussian(n, std)
                 elif irftype == 'rect':
