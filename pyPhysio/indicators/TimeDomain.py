@@ -5,8 +5,7 @@ import numpy as _np
 
 from ..BaseIndicator import Indicator as _Indicator
 from ..filters.Filters import Diff as _Diff
-from ..Utility import PhUI as _PhUI
-from ..Signal import EvenlySignal as _EvenlySignal, UnevenlySignal as _UnevenlySignal, Signal as _Signal
+from ..Signal import EvenlySignal as _EvenlySignal, Signal as _Signal
 from ..tools.Tools import Histogram
 
 
@@ -113,6 +112,7 @@ class AUC(_Indicator):
     """
     Computes the Area Under the Curve of the data, treating Not a Numbers (NaNs) as zero.
     """
+
     @classmethod
     def algorithm(cls, signal, params):
         if isinstance(signal, _Signal) and not isinstance(signal, _EvenlySignal):

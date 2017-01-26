@@ -1,21 +1,42 @@
 # coding=utf-8
 from __future__ import division
 
+from abc import abstractmethod as _abstract, ABCMeta as _ABCMeta
+
 import numpy as _np
 from ..BaseIndicator import Indicator as _Indicator
-from ..Utility import PhUI as _PhUI
 from ..tools.Tools import PeakDetection as _PeakDetection, PeakSelection as _PeakSelection, Durations as _Durations, Slopes as _Slopes
 from ..Parameters import Parameter as _Par
 
 __author__ = 'AleB'
 
 
-class PeaksMax(_Indicator):
+class _Peaks(_Indicator):
+    """
+    Peaks base class
+    """
+    __metaclass__ = _ABCMeta
+
+    def __init__(self, delta, **kwargs):
+        _Indicator.__init__(self, delta=delta, params=kwargs)
+
+    @classmethod
+    @_abstract
+    def algorithm(cls, data, params):
+        pass
+
+    _params_descriptors = {
+        'delta': _Par(2, float, 'Amplitude of the minimum peak (>0)', 0, lambda x: x > 0)
+    }
+
+
+class PeaksMax(_Peaks):
+    """
+    Peaks Max
+    """
+
     @classmethod
     def algorithm(cls, signal, params):
-        """
-        Peaks Max
-        """
         delta = params['delta']
 
         idx_maxs, idx_mins, val_maxs, val_mins = _PeakDetection(delta=delta)(signal)
@@ -26,17 +47,14 @@ class PeaksMax(_Indicator):
         else:
             return _np.nanmax(val_maxs)
 
-    _params_descriptors = {
-        'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0)
-    }
 
+class PeaksMin(_Peaks):
+    """
+    Peaks Min
+    """
 
-class PeaksMin(_Indicator):
     @classmethod
     def algorithm(cls, data, params):
-        """
-        Peaks Min
-        """
         delta = params['delta']
 
         idx_maxs, idx_mins, val_maxs, val_mins = _PeakDetection(delta=delta)(data)
@@ -47,17 +65,14 @@ class PeaksMin(_Indicator):
         else:
             return _np.nanmin(val_maxs)
 
-    _params_descriptors = {
-        'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0)
-    }
 
+class PeaksMean(_Peaks):
+    """
+    Peaks Mean
+    """
 
-class PeaksMean(_Indicator):
     @classmethod
     def algorithm(cls, data, params):
-        """
-        Peaks Mean
-        """
         delta = params['delta']
 
         idx_maxs, idx_mins, val_maxs, val_mins = _PeakDetection(delta=delta)(data)
@@ -68,17 +83,14 @@ class PeaksMean(_Indicator):
         else:
             return _np.nanmean(val_maxs)
 
-    _params_descriptors = {
-        'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0)
-    }
 
+class PeaksNum(_Peaks):
+    """
+    Number of Peaks
+    """
 
-class PeaksNum(_Indicator):
     @classmethod
     def algorithm(cls, signal, params):
-        """
-        Number of Peaks
-        """
         delta = params['delta']
 
         idx_maxs, idx_mins, val_maxs, val_mins = _PeakDetection(delta=delta)(signal)
@@ -89,12 +101,35 @@ class PeaksNum(_Indicator):
         else:
             return len(idx_maxs)
 
+
+class _PeaksInterval(_Indicator):
+    """
+    Peaks base class
+    """
+    __metaclass__ = _ABCMeta
+
+    def __init__(self, delta, pre_max, post_max, **kwargs):
+        _Indicator.__init__(self, delta=delta, pre_max=pre_max, post_max=post_max, params=kwargs)
+
+    @classmethod
+    @_abstract
+    def algorithm(cls, data, params):
+        pass
+
     _params_descriptors = {
-        'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0)
+        'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0),
+        'pre_max': _Par(1, float,
+                        'Duration (in seconds) of interval before the peak that is considered to find the start of the '
+                        'peak (>0)',
+                        1, lambda x: x > 0),
+        'post_max': _Par(1, float,
+                         'Duration (in seconds) of interval after the peak that is considered to find the start of the '
+                         'peak (>0)',
+                         1, lambda x: x > 0)
     }
 
 
-class DurationMin(_Indicator):
+class DurationMin(_PeaksInterval):
     """
     Min duration of Peaks
     """
@@ -119,18 +154,8 @@ class DurationMin(_Indicator):
             durations = _Durations(starts=idxs_start, stops=idxs_stop)(signal)
             return _np.nanmin(_np.array(durations))
 
-    _params_descriptors = {
-        'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0),
-        'pre_max': _Par(1, float,
-                        'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
-                        1, lambda x: x > 0),
-        'post_max': _Par(1, float,
-                         'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
-                         1, lambda x: x > 0)
-    }
 
-
-class DurationMax(_Indicator):
+class DurationMax(_PeaksInterval):
     """
     Max duration of Peaks
     """
@@ -156,18 +181,8 @@ class DurationMax(_Indicator):
             durations = _Durations(starts=idxs_start, stops=idxs_stop)(signal)
             return _np.nanmax(_np.array(durations))
 
-    _params_descriptors = {
-        'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0),
-        'pre_max': _Par(1, float,
-                        'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
-                        1, lambda x: x > 0),
-        'post_max': _Par(1, float,
-                         'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
-                         1, lambda x: x > 0)
-    }
 
-
-class DurationMean(_Indicator):
+class DurationMean(_PeaksInterval):
     """
     Mean duration of Peaks
     """
@@ -192,18 +207,8 @@ class DurationMean(_Indicator):
             durations = _Durations(starts=idxs_start, stops=idxs_stop)(signal)
             return _np.nanmean(_np.array(durations))
 
-    _params_descriptors = {
-        'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0),
-        'pre_max': _Par(1, float,
-                        'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
-                        1, lambda x: x > 0),
-        'post_max': _Par(1, float,
-                         'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
-                         1, lambda x: x > 0)
-    }
 
-
-class SlopeMin(_Indicator):
+class SlopeMin(_PeaksInterval):
     """
     Min slope of Peaks
     """
@@ -228,18 +233,8 @@ class SlopeMin(_Indicator):
             slopes = _Slopes(starts=idxs_start, peaks=idx_maxs)(signal)
             return _np.nanmin(_np.array(slopes))
 
-    _params_descriptors = {
-        'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0),
-        'pre_max': _Par(2, float,
-                        'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
-                        1, lambda x: x > 0),
-        'post_max': _Par(2, float,
-                         'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
-                         1, lambda x: x > 0)
-    }
 
-
-class SlopeMax(_Indicator):
+class SlopeMax(_PeaksInterval):
     """
     Max slope of Peaks
     """
@@ -263,18 +258,8 @@ class SlopeMax(_Indicator):
             slopes = _Slopes(starts=idxs_start, peaks=idx_maxs)(signal)
             return _np.nanmax(_np.array(slopes))
 
-    _params_descriptors = {
-        'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0),
-        'pre_max': _Par(2, float,
-                        'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
-                        1, lambda x: x > 0),
-        'post_max': _Par(2, float,
-                         'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
-                         1, lambda x: x > 0)
-    }
 
-
-class SlopeMean(_Indicator):
+class SlopeMean(_PeaksInterval):
     """
     Min slope of Peaks
     """
@@ -297,13 +282,3 @@ class SlopeMean(_Indicator):
         else:
             slopes = _Slopes(starts=idxs_start, peaks=idx_maxs)(signal)
             return _np.nanmean(_np.array(slopes))
-
-    _params_descriptors = {
-        'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0),
-        'pre_max': _Par(2, float,
-                        'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
-                        1, lambda x: x > 0),
-        'post_max': _Par(2, float,
-                         'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
-                         1, lambda x: x > 0)
-    }
