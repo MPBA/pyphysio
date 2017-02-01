@@ -15,7 +15,99 @@ from Signal import EvenlySignal, UnevenlySignal
 
 __author__ = "AleB"
 
+def compute_hrv(ibi):
+    labels = ['VLF', 'LF', 'HF', 'rmssd', 'sdsd', 'RRmean', 'RRstd', 'RRmedian', 'pnn10', 'pnn25',
+              'pnn50', 'mn', 'mx', 'sd1', 'sd2', 'sd12', 'sdell', 'DFA1', 'DFA2']
 
+    hrv = []
+    
+    if len(ibi)>= 10: #require at least 10 beats
+        #initialize Frequency domain indicators
+        VLF = PowerInBand(interp_freq=4, freq_max=0.04, freq_min=0.00001, method = 'ar')
+        LF = PowerInBand(interp_freq=4, freq_max=0.15, freq_min=0.04, method = 'ar')
+        HF = PowerInBand(interp_freq=4, freq_max=0.4, freq_min=0.15, method = 'ar')
+        Total = PowerInBand(interp_freq=4, freq_max=2, freq_min=0.00001, method = 'ar')
+        
+        FD_indexes = [VLF, LF, HF, Total]
+        
+        #compute Frequency domain indicators and normalize
+        tmp = []
+        for x in FD_indexes:
+            curr_idx = x(ibi)
+            tmp.append(curr_idx)
+        for i in range(3):
+            hrv.append(tmp[i]/tmp[3])
+    else:
+        for i in range(4):
+            hrv.append(np.nan)
+    
+    #initialize Time domain + non-linear indicators
+    rmssd = RMSSD()
+    sdsd = SDSD()
+    RRmean = Mean()
+    RRstd = StDev()
+    RRmedian = Median()
+    
+    pnn10 = PNNx(threshold=10)
+    pnn25 = PNNx(threshold=25)
+    pnn50 = PNNx(threshold=50)
+    
+    mn = Min()
+    mx = Max()
+    
+    sd1 = PoincareSD1()
+    sd2 = PoincareSD2()
+    sd12 = PoincareSD1SD2()
+    sdell = PoinEll()        
+    
+    DFA1 = DFAShortTerm()
+    DFA2 = DFALongTerm()
+        
+#        triang = Triang()
+#        TINN = TINN()
+        
+    TD_indexes = [rmssd, sdsd, RRmean, RRstd, RRmedian, pnn10, pnn25, pnn50, mn, mx, sd1, sd2, sd12, sdell, DFA1, DFA2]
+    #compute Time domain + non-linear indicators
+    for x in TD_indexes:
+        curr_idx = x(ibi)
+        hrv.append(curr_idx)
+    return(hrv, labels)
+
+def compute_pha_ton_indicators(phasic, driver, delta):
+    mean = Mean()
+    std = StDev()
+    rng = Range()
+
+    pks_max = PeaksMax(delta=delta)
+    pks_min = PeaksMin(delta=delta)
+    pks_mean = PeaksMean(delta=delta)
+    n_peaks = PeaksNum(delta=delta)
+
+    dur_mean = DurationMean(delta = 0.1, pre_max=2, post_max=2)
+    
+    slopes_mean = SlopeMean(delta = 0.1, pre_max=2, post_max=2)
+    
+    auc = AUC()
+    
+    phasic_indexes = [mean, std, rng, pks_max, pks_min, pks_mean, n_peaks, dur_mean, slopes_mean, auc]
+    tonic_indexes = [mean, std, rng, auc]
+    
+    labels = ['pha_mean', 'pha_std', 'pha_rng', 'pks_max', 'pks_min', 'pks_mean', 'n_peaks', 'dur_mean', 'slopes_mean', 'pha_auc', 'ton_mean', 'ton_std', 'ton_rng', 'ton_auc']
+    
+    indicators = []
+        
+    for x in phasic_indexes:
+        curr_ind = x(phasic)
+        indicators.append(curr_ind)
+    
+    tonic = driver - phasic
+    
+    for x in tonic_indexes:
+        curr_ind = x(tonic)
+        indicators.append(curr_ind)
+        
+    return(indicators, labels)
+    
 def fmap(segments, algorithms, alt_signal=None):
     """
     Generates a list composed of a list of results for each segment.

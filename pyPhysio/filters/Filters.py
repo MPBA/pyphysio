@@ -44,7 +44,7 @@ class Normalize(_Filter):
         ...
     """
     _params_descriptors = {
-        'norm_method': _Par(1, str, 'Method for the normalization.', 'standard', lambda x: x in ['mean', 'standard', 'min', 'maxmin', 'custom']),
+        'norm_method': _Par(0, str, 'Method for the normalization.', 'standard', lambda x: x in ['mean', 'standard', 'min', 'maxmin', 'custom']),
         'norm_bias': _Par(2, float, 'Bias for custom normalization', activation=lambda x, p: p['norm_method'] == 'custom'),
         'norm_range': _Par(2, float, 'Range for custom normalization', activation=lambda x, p: p['norm_method'] == 'custom')
         #TODO: check norm_range !=0
@@ -104,9 +104,8 @@ class Diff(_Filter):
         """
         Calculates the differences between consecutive values
         """
-        if isinstance(signal, _Signal) and not isinstance(signal, _EvenlySignal):
-            cls.log(
-                "Computing %s on '%s' may not make sense." % (cls.__name__, signal.__class__.__name__))
+#        if isinstance(signal, _Signal) and not isinstance(signal, _EvenlySignal):
+#            cls.log("Computing %s on '%s' may not make sense." % (cls.__name__, signal.__class__.__name__))
         degree = params['degree']
 
         sig_1 = signal[:-degree]
@@ -196,6 +195,7 @@ class DenoiseEDA(_Filter):
         Threshold to detect the noise
         
     Optional:
+    
     win_len : float, >0, default=2
         Length of the window
    

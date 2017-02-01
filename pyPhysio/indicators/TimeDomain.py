@@ -154,7 +154,7 @@ class Triang(_Indicator):
         step = 1000. / 128
         min_ibi = _np.min(data)
         max_ibi = _np.max(data)
-        if max_ibi - min_ibi / step + 1 < 10:
+        if (max_ibi - min_ibi) / step + 1 < 10:
             cls.warn("len(bins) < 10")
             return _np.nan
         else:

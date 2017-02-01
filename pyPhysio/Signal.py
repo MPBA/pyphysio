@@ -232,8 +232,6 @@ class UnevenlySignal(Signal):
     start_time: float,
         Instant of signal start
     
-    Required one of the following:
-    
     x_values : numpy.array of int
         Instants, or indices when the values are measured.
     x_type : str
@@ -372,7 +370,7 @@ class UnevenlySignal(Signal):
                 
         t_0 = signal_times[idx_start]
         
-        out_signal = UnevenlySignal(portion_values, self.get_sampling_freq(), self.get_signal_nature(), t_0, instants = portion_times)
+        out_signal = UnevenlySignal(portion_values, self.get_sampling_freq(), self.get_signal_nature(), t_0, x_values = portion_times, x_type='instants')
         
         return(out_signal)
     

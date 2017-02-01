@@ -47,7 +47,7 @@ class PoincareSD1SD2(_Indicator):
         @rtype: (array, array)
         """
         sd1 = PoincareSD1()(data)
-        sd2 = PoincareSD1()(data)
+        sd2 = PoincareSD2()(data)
         return sd1 / sd2
 
 
@@ -213,7 +213,7 @@ class SampleEntropy(_Indicator):
             return _np.log(cm / cm1)
 
     _params_descriptors = {
-        'radius': _Par(2, float, 'Radius', 0.5, lambda x: x > 0),
+        'radius': _Par(0, float, 'Radius', 0.5, lambda x: x > 0),
     }
 
 

@@ -5,14 +5,14 @@ import pandas as pd
 
 import matplotlib.pyplot as plt
 
-from context import ph, Asset
+import pyPhysio as ph
 
 # BVP
-FILE = Asset.BVP
+FILE = '/home/andrea/Trento/DATI/Dataset_ABP/trials/2016-10-19_test_full_03/BVP.csv'
 FSAMP = 64
 TSTART = 0
 
-data = np.array(pd.read_csv(FILE))
+data = np.array(pd.read_csv(FILE,sep='\t'))
 bvp = ph.EvenlySignal(data[:, 1], FSAMP, 'BVP', TSTART)
 
 # =============================

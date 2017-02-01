@@ -7,6 +7,7 @@ import scipy.optimize as _opt
 from spectrum import aryule as _aryule, arma2psd as _arma2psd, AIC as _AIC
 import itertools as _itertools
 from ..BaseTool import Tool as _Tool
+
 from ..Signal import UnevenlySignal as _UnevenlySignal, EvenlySignal as _EvenlySignal
 from ..filters.Filters import Diff as _Diff, ConvolutionalFilter as _ConvFlt
 from ..Utility import PhUI as _PhUI
@@ -345,7 +346,6 @@ class PSD(_Tool):
             
             # FIXME: min_order is None by default and not 18 as requested            
             #WORKAROUND for min_order = None by default
-            print(min_order)
             if min_order is None:
                 min_order = 18
             #END WORKAROUND
@@ -423,22 +423,22 @@ class Maxima(_Tool):
                 refractory = 1
             else:
                 refractory = refractory * signal.get_sampling_freq()
-            maxima = []
+            idx_maxs = []
             prev = signal[0]
             k = 1
             while k < len(signal) - 1 - refractory:
                 curr = signal[k]
                 nxt = signal[k + 1]
                 if (curr >= prev) and (curr >= nxt):
-                    maxima.append(k)
+                    idx_maxs.append(k)
                     prev = signal[k + 1 + refractory]
                     k = k + 2 + refractory
                 else:  # continue
                     prev = signal[k]
                     k += 1
-            maxima = _np.array(maxima).astype(int)
-            peaks = signal[maxima]
-            return _np.c_[maxima, peaks]
+            idx_maxs = _np.array(idx_maxs).astype(int)
+            maxs = signal[idx_maxs]
+            return idx_maxs, maxs
 
         elif method == 'windowing':
             fsamp = signal.get_sampling_freq()
@@ -1091,8 +1091,8 @@ class OptimizeBateman(_Tool):
     #TODO: fix parameters
     _params_descriptors = {
         'delta': _Par(2, float, 'Minimum amplitude of the peaks in the driver', default = None, constraint=lambda x: x > 0),
-        'loss_func': _Par(0, str, 'Loss function to be used', default='bizzego', constraint=lambda x: x in ['bizzego', 'benedek']),
-        'opt_method': _Par(0, str, 'Method to perform the search of optimal parameters.', default='asa', constraint=lambda x: x in ['asa', 'grid', 'bsh']),
+        'loss_func': _Par(0, str, 'Loss function to be used', default='bizzego', constraint=lambda x: x in ['bizzego', 'benedek', 'all']),
+        'opt_method': _Par(0, str, 'Method to perform the search of optimal parameters.', default='asa', constraint=lambda x: x in ['grid', 'bsh']),
         'complete': _Par(0, bool, 'Whether to perform a minimization after detecting the optimal parameters', default=True), 
         'par_ranges': _Par(0, list, '[min_T1, max_T1, min_T2, max_T2] boundaries for the Bateman parameters', default=[0.1, 0.99, 1.5, 5], constraint = lambda x: len(x) == 4),
         'maxiter': _Par(0, int, 'Maximum number of iterations ("asa" method).', default=99999, constraint=lambda x: x > 0, activation=lambda x, p: p['opt_method'] == 'asa'),
@@ -1115,6 +1115,8 @@ class OptimizeBateman(_Tool):
         
         if params['loss_func'] == 'benedek':
             loss_function = OptimizeBateman._loss_benedek
+        elif params['loss_func'] == 'all':
+            loss_function = OptimizeBateman._loss_function_all
         else:
             loss_function = OptimizeBateman._loss_function
 
@@ -1152,116 +1154,6 @@ class OptimizeBateman(_Tool):
         else:
             return x0, loss, exit_code
 
-#    @staticmethod
-#    def _loss_function(par_bat, signal, delta, min_T1, max_T1, min_T2, max_T2, weight):
-#        """
-#        Computes the loss for optimization of Bateman parameters.
-#
-#        Parameters
-#        ----------
-#        par_bat : list
-#            Bateman parameters to be optimized
-#        signal : array
-#            The EDA signal
-#        delta : float
-#            Minimum amplitude of the peaks in the driver
-#        min_T1 : float
-#            Lower bound for T1
-#        max_T1 : float
-#            Upper bound for T1
-#        min_T2 : float
-#            Lower bound for T2
-#        max_T2 : float
-#            Upper bound for T2
-#        weight : str, default = 'none'
-#            How to weight the errors in the driver function before computing the loss: 'exp', 'lin' o 'none'
-#       
-#        Returns
-#        -------
-#        loss : float
-#            The computed loss
-#        """
-#        
-#        from ..estimators.Estimators import DriverEstim as _DriverEstim
-#        
-#        # TODO: return np.Inf instead of 10000
-#        
-#        # check if pars hit boudaries
-#        
-#        if par_bat[0] < min_T1 or par_bat[0] > max_T1 or par_bat[1] < min_T2 or par_bat[1] > max_T2 or par_bat[0] >= par_bat[1]:
-#            return 10000 
-#
-#        fsamp = signal.get_sampling_freq()
-#        driver = _DriverEstim(T1=par_bat[0], T2=par_bat[1])(signal)
-#        maxp, minp, ignored, ignored = PeakDetection(delta=delta, start_max=True)(driver)
-#
-#        if len(maxp) == 0:
-#            OptimizeBateman.warn('Unable to find peaks in driver signal for computation of Energy. Returning Inf')
-#            return 10000
-#        else:
-#            # STAGE 1: select maxs distant from the others
-#            diff_maxs = _np.diff(_np.r_[maxp, len(driver) - 1])
-#            th_diff = 15 * fsamp
-#
-#            # TODO (feature): select th such as to have enough maxs, e.g. diff_maxs_tentative = np.median(diff_maxs)
-#            idx_selected_maxs = _np.where(diff_maxs > th_diff)[0]
-#            selected_maxs = maxp[idx_selected_maxs]
-#
-#            energy = _np.Inf
-#            if len(selected_maxs) != 0:
-#                energy = 0
-#                for idx_max in selected_maxs:
-#                    #extract 15 seconds after the peak
-#                    driver_portion = driver[idx_max:idx_max + 15 * fsamp]
-#
-#                    #extract final 5 seconds
-#                    half = len(driver_portion) - 5 * fsamp
-#                    
-#                    #estimate slope to detrend driver
-#                    y = driver_portion[half:]
-#                    diff_y = _np.diff(y)
-#                    th_75 = _np.percentile(diff_y, 75)
-#                    th_25 = _np.percentile(diff_y, 25)
-#
-#                    idx_sel_diff_y = _np.where((diff_y > th_25) & (diff_y < th_75))[0]
-#                    diff_y_sel = diff_y[idx_sel_diff_y]
-#
-#                    mean_s = BootstrapEstimation(func=_np.mean, N=100, k=0.5)(diff_y_sel)
-#
-#                    mean_y = BootstrapEstimation(func=_np.median, N=100, k=0.5)(y)
-#
-#                    b_mean_s = mean_y - mean_s * (half + (len(driver_portion) - half) / 2)
-#
-#                    line_mean_s = mean_s * _np.arange(len(driver_portion)) + b_mean_s
-#
-#                    driver_detrended = driver_portion - line_mean_s
-#
-#                    #normalize detrended driver
-#                    driver_detrended /= _np.max(driver_detrended)
-#                    
-#                    #weighting
-#                    if weight == 'exp':
-#                        idxs = _np.arange(len(driver_detrended))
-#                        exp_weigths = _np.exp(-idxs / (par_bat[0]*fsamp))
-#                        driver_detrended = driver_detrended * exp_weigths
-#                    elif weight == 'lin':
-#                        lin_weigths = _np.arange(1, 0, -1/len(driver_detrended))
-#                        driver_detrended = driver_detrended * lin_weigths
-#
-#                    energy_curr = (1 / fsamp) * _np.sum(driver_detrended[1:] ** 2) / (len(driver_detrended) - 1)
-##                    energy_curr = (1 / fsamp) * _np.sum(driver_detrended[fsamp:] ** 2) / (len(driver_detrended) - fsamp)
-#
-#                    energy += energy_curr
-#            else:
-##                OptimizeBateman.warn('Peaks found but too near. Returning Inf')
-#                #TODO: return Inf instead of 10000
-#                return 10000
-#            
-#            #normalize to the number of peaks
-#            energy /= len(selected_maxs)
-#            OptimizeBateman.log('Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(energy))
-#            return energy
-
     @staticmethod
     def _loss_function(par_bat, signal, delta, min_T1, max_T1, min_T2, max_T2, weight):
         """
@@ -1291,14 +1183,14 @@ class OptimizeBateman(_Tool):
         loss : float
             The computed loss
         """
-
         from ..estimators.Estimators import DriverEstim as _DriverEstim
         
-        # TODO: return np.Inf instead of 10000
+        if _np.isnan(par_bat[0]) | _np.isnan(par_bat[1]):
+            return _np.Inf
         
+        WLEN = 10
         # check if pars hit boudaries
-        
-        #if par_bat[0] < min_T1 or par_bat[0] > max_T1 or par_bat[1] < min_T2 or par_bat[1] > max_T2 or par_bat[0] >= par_bat[1]: 
+#        if par_bat[0] < min_T1 or par_bat[0] > max_T1 or par_bat[1] < min_T2 or par_bat[1] > max_T2 or par_bat[0] >= par_bat[1]:
 #            return 10000 
 
         fsamp = signal.get_sampling_freq()
@@ -1307,27 +1199,26 @@ class OptimizeBateman(_Tool):
 
         if len(maxp) == 0:
             OptimizeBateman.warn('Unable to find peaks in driver signal for computation of Energy. Returning Inf')
-            return 10000
+            return _np.inf
         else:
-            energy = _np.Inf
-            if len(maxp) != 0:
-                energy = 0
-                for idx_max in maxp:
-                    #extract 15 seconds after the peak
-                    driver_portion = driver[idx_max:idx_max + 10 * fsamp]
+            # STAGE 1: select maxs distant from the others
+            diff_maxs = _np.diff(_np.r_[maxp, len(driver) - 1])
+            th_diff = WLEN * fsamp
 
-                    lin_weigths = _np.arange(1, 0, -1/len(driver_portion))
-                    driver_portion = (driver_portion - _np.mean(driver_portion)) * lin_weigths + _np.mean(driver_portion)
-#
-#                    idxs = _np.arange(len(driver_portion))
-#                    exp_weigths = _np.exp(-idxs / (par_bat[0]*fsamp))
-#                    driver_portion = (driver_portion - _np.mean(driver_portion)) * exp_weigths + _np.mean(driver_portion)
-                    
-                    ##estimate trend
+            # TODO (feature): select th such as to have enough maxs, e.g. diff_maxs_tentative = np.median(diff_maxs)
+            idx_selected_maxs = _np.where(diff_maxs > th_diff)[0]
+            selected_maxs = maxp[idx_selected_maxs]
+
+            if len(selected_maxs) != 0:
+                energy = 0
+                for idx_max in selected_maxs:
+                    #extract WLEN seconds after the peak
+                    driver_portion = driver[idx_max:idx_max + WLEN * fsamp]
+
                     #extract final 5 seconds
                     half = len(driver_portion) - 5 * fsamp
                     
-                    #estimate slope from final part
+                    #estimate slope to detrend driver
                     y = driver_portion[half:]
                     diff_y = _np.diff(y)
                     th_75 = _np.percentile(diff_y, 75)
@@ -1347,19 +1238,140 @@ class OptimizeBateman(_Tool):
                     driver_detrended = driver_portion - line_mean_s
 
                     #normalize detrended driver
-                    driver_detrended /= float(_np.max(driver_detrended))
+                    driver_detrended /= _np.max(driver_detrended)
                     
+                    #weighting
+                    if weight == 'exp':
+                        idxs = _np.arange(len(driver_detrended))
+                        exp_weigths = _np.exp(-idxs / (par_bat[0]*fsamp))
+                        driver_detrended = (driver_detrended - _np.mean(driver_detrended)) * exp_weigths + _np.mean(driver_detrended)
+                    elif weight == 'lin':
+                        lin_weigths = _np.arange(1, 0, -1/len(driver_detrended))
+                        driver_detrended = (driver_detrended - _np.mean(driver_detrended)) * lin_weigths + _np.mean(driver_detrended)
+
                     energy_curr = (1 / fsamp) * _np.sum(driver_detrended[1:] ** 2) / (len(driver_detrended) - 1)
 #                    energy_curr = (1 / fsamp) * _np.sum(driver_detrended[fsamp:] ** 2) / (len(driver_detrended) - fsamp)
 
                     energy += energy_curr
+
             else:
-#                OptimizeBateman.warn('Peaks found but too near. Returning Inf')
+                OptimizeBateman.warn('Peaks found but too near. Returning Inf')
                 #TODO: return Inf instead of 10000
-                return 10000
+                return _np.inf
+            
             #normalize to the number of peaks
-            energy /= len(maxp)
-            OptimizeBateman.log('Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(energy))
+            energy /= len(selected_maxs)
+            OptimizeBateman.log('BIZZEGO. Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(energy))
+            
+            return energy
+
+    @staticmethod
+    def _loss_function_all(par_bat, signal, delta, min_T1, max_T1, min_T2, max_T2, weight):
+        """
+        Computes the loss for optimization of Bateman parameters.
+
+        Parameters
+        ----------
+        par_bat : list
+            Bateman parameters to be optimized
+        signal : array
+            The EDA signal
+        delta : float
+            Minimum amplitude of the peaks in the driver
+        min_T1 : float
+            Lower bound for T1
+        max_T1 : float
+            Upper bound for T1
+        min_T2 : float
+            Lower bound for T2
+        max_T2 : float
+            Upper bound for T2
+        weight : str, default = 'none'
+            How to weight the errors in the driver function before computing the loss: 'exp', 'lin' o 'none'
+       
+        Returns
+        -------
+        loss : float
+            The computed loss
+        """
+
+        from ..estimators.Estimators import DriverEstim as _DriverEstim
+        # check if pars hit boudaries
+        #if par_bat[0] < min_T1 or par_bat[0] > max_T1 or par_bat[1] < min_T2 or par_bat[1] > max_T2 or par_bat[0] >= par_bat[1]: 
+#            return 10000 
+
+        WLEN = 10
+        if _np.isnan(par_bat[0]) | _np.isnan(par_bat[1]):
+            return _np.Inf
+            
+        fsamp = signal.get_sampling_freq()
+
+        driver = _DriverEstim(T1=par_bat[0], T2=par_bat[1])(signal)
+        maxp, minp, ignored, ignored = PeakDetection(delta=delta, start_max=True)(driver[:-15*fsamp])
+
+        if len(maxp) == 0:
+            OptimizeBateman.warn('Unable to find peaks in driver signal for computation of Energy. Returning Inf')
+            return _np.inf
+        else:
+            energy = 0
+            peak_counts = 0
+        
+            for idx_max in maxp:
+                #extract WLEN seconds after the peak
+                driver_portion = driver[idx_max:idx_max + WLEN * fsamp]
+                
+#                lin_weigths = _np.arange(1, 0, -1/len(driver_portion))
+#                driver_portion = (driver_portion - _np.mean(driver_portion)) * lin_weigths + _np.mean(driver_portion)
+#
+#                idxs = _np.arange(len(driver_portion))
+#                exp_weigths = _np.exp(-idxs / (par_bat[0]*fsamp))
+#                driver_portion = (driver_portion - _np.mean(driver_portion)) * exp_weigths + _np.mean(driver_portion)
+                
+                ##estimate trend
+                #extract final 5 seconds
+#                half = len(driver_portion) - 10 * fsamp
+                
+                #estimate slope from final part
+                
+                maxp, minp, ignored, minv = PeakDetection(delta=delta/10, start_max=True)(driver_portion)
+                if len(minp)>4:
+                    y = driver_portion[minp]
+                    t = minp
+                    
+                    diff_y = (y[1:] - y[:-1])/(t[1:] - t[:-1])
+
+                    th_75 = _np.percentile(diff_y, 75)
+                    th_25 = _np.percentile(diff_y, 25)
+    
+                    idx_sel_diff_y = _np.where((diff_y > th_25) & (diff_y < th_75))[0]
+                    diff_y_sel = diff_y[idx_sel_diff_y]
+    
+                    mean_s = BootstrapEstimation(func=_np.mean, N=10, k=0.5)(diff_y_sel)
+    
+                    mean_y = BootstrapEstimation(func=_np.median, N=10, k=0.5)(y)
+    
+                    b_mean_s = mean_y - mean_s * len(driver_portion)/2
+    
+                    line_mean_s = mean_s * _np.arange(len(driver_portion)) + b_mean_s
+    
+                    driver_detrended = driver_portion - line_mean_s
+    
+                    #normalize detrended driver
+                    driver_detrended /= float(_np.max(driver_detrended))
+                    
+                    energy_curr = (1 / fsamp) * _np.sum(driver_detrended[1:] ** 2) / (len(driver_detrended) - 1)
+                    
+                    energy += energy_curr
+                    peak_counts +=1
+
+            if peak_counts == 0:
+                return _np.Inf
+            energy /= peak_counts
+            OptimizeBateman.log('ALL. Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(energy))
+            
+            if _np.isnan(energy):
+                return _np.Inf
+
             return energy
 
     @staticmethod
@@ -1392,17 +1404,94 @@ class OptimizeBateman(_Tool):
         loss : float
             The computed loss
         """
-        ALPHA = 6
         
-#        from ..estimators.Estimators import DriverEstim as _DriverEstim, PhasicEstim as _PhasicEstim
-        from pyPhysio import DriverEstim as _DriverEstim, PhasicEstim as _PhasicEstim
-        
-        if par_bat[0] < min_T1 or par_bat[0] > max_T1 or par_bat[1] < min_T2 or par_bat[1] > max_T2 or par_bat[0] >= par_bat[1]:
-            return 10000 
+        from ..estimators.Estimators import DriverEstim as _DriverEstim
 
+        if _np.isnan(par_bat[0]) | _np.isnan(par_bat[1]):
+            return _np.Inf
+            
+        def phasic_estim_benedek(driver, delta):
+            #find peaks in the driver
+            fsamp = driver.get_sampling_freq()
+            i_peaks, idx_min, val_max, val_min = PeakDetection(delta=delta, refractory=1, start_max=True)(driver)
+            
+            i_pre_max = 10 * fsamp
+            i_post_max = 10 * fsamp
+                
+            
+            i_start = _np.empty(len(i_peaks), int)
+            i_stop = _np.empty(len(i_peaks), int)
+        
+            if len(i_peaks)==0:
+                print('No peaks found.')
+                return driver
+                
+            for i in xrange(len(i_peaks)):
+                i_pk = int(i_peaks[i])
+        
+                # find START
+                i_st = i_pk - i_pre_max
+                if i_st < 0:
+                    i_st=0
+        
+                driver_pre = driver[i_st:i_pk]
+                i_pre = len(driver_pre) -2
+        
+                while i_pre > 0 and (driver_pre[i_pre] >= driver_pre[i_pre-1]):
+                    i_pre -= 1
+        
+                i_start[i] = i_st + i_pre + 1
+                
+        
+                # find STOP
+                i_sp = i_pk + i_post_max
+                if i_sp >= len(driver):
+                    i_sp = len(driver) - 1
+                    
+                driver_post = driver[i_pk: i_sp]
+                i_post = 1
+        
+                while i_post < len(driver_post)-2 and (driver_post[i_post] >= driver_post[i_post+1]):
+                    i_post += 1
+        
+                i_stop[i] = i_pk + i_post
+            
+            idxs_peak = _np.array([])
+            
+            for i_st, i_sp in zip(i_start, i_stop):
+                idxs_peak = _np.r_[idxs_peak, _np.arange(i_st, i_sp)]
+            
+            idxs_peak = idxs_peak.astype(int)
+            
+            #generate the grid for the interpolation
+            idx_grid_candidate = _np.arange(0, len(driver) - 1, 10 * fsamp)
+        
+            idx_grid = []
+            for i in idx_grid_candidate:
+                if i not in idxs_peak:
+                    idx_grid.append(i)
+            
+            if len(idx_grid)==0:
+                idx_grid.append(0)
+            
+            if idx_grid[0] != 0:
+                idx_grid = _np.r_[0, idx_grid]
+            if idx_grid[-1] != len(driver) - 1:
+                idx_grid = _np.r_[idx_grid, len(driver) - 1]
+        
+            driver_grid = _UnevenlySignal(driver[idx_grid], fsamp, "dEDA", driver.get_start_time(), x_values = idx_grid, x_type = 'indices')
+            if len(idx_grid)>=4:
+                tonic = driver_grid.to_evenly(kind='cubic')
+            else:
+                tonic = driver_grid.to_evenly(kind='linear')
+            phasic = driver - tonic
+            return phasic
+        
+        ALPHA = 6
         driver = _DriverEstim(T1=par_bat[0], T2=par_bat[1])(signal)
         
-        phasic, __, _ = _PhasicEstim(delta=delta)(driver)
+        phasic = phasic_estim_benedek(driver, delta)
+        print(len(phasic))
         
         TH = float(_np.max(phasic)*0.05)
         
@@ -1415,14 +1504,17 @@ class OptimizeBateman(_Tool):
         starts = _np.where(dpeaks_dt==1)[0]
         ends = _np.where(dpeaks_dt==-1)[0]
         
-        if ends[0] < starts[0]: #phasic starts with a peak
-            starts = _np.r_[0, starts]
-        
-        if ends[-1] < starts[-1]: #phasic ends with a peak
-            ends = _np.r_[ends, len(peaks)-1]
+        if (len(starts) == 0) | (len(ends) == 0):
+            indist = _np.Inf
+        else:
+            if ends[0] < starts[0]: #phasic starts with a peak
+                starts = _np.r_[0, starts]
             
-        #at this point is should be len(starts)==len(ends)
-        indist = _np.sum((ends - starts)**2)/phasic.get_duration()
+            if ends[-1] < starts[-1]: #phasic ends with a peak
+                ends = _np.r_[ends, len(peaks)-1]
+                
+            #at this point is should be len(starts)==len(ends)
+            indist = _np.sum((ends - starts)**2)/phasic.get_duration()
         
         # compute negativeness
         negatives = phasic[phasic<0]
@@ -1430,7 +1522,7 @@ class OptimizeBateman(_Tool):
     
         # compute loss
         LOSS = indist + ALPHA * neg
-#        OptimizeBateman.log('Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(LOSS))
+        OptimizeBateman.log('BENEDEK. Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(LOSS))
         return LOSS
 
 #TODO: remove Histogram class
