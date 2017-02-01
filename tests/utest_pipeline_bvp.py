@@ -8,12 +8,18 @@ import matplotlib.pyplot as plt
 import pyPhysio as ph
 
 # BVP
-FILE = '/home/andrea/Trento/DATI/Dataset_ABP/trials/2016-10-19_test_full_03/BVP.csv'
+FILE = '/home/andrea/Trento/DATI/Dataset_ABP/experiment/sub01//BVP.csv'
 FSAMP = 64
 TSTART = 0
 
-data = np.array(pd.read_csv(FILE,sep='\t'))
+data = np.array(pd.read_csv(FILE))
 bvp = ph.EvenlySignal(data[:, 1], FSAMP, 'BVP', TSTART)
+
+ibi = ph.BeatFromBP()(bvp)  
+
+
+
+
 
 # =============================
 # DETECT IBI
@@ -44,3 +50,12 @@ plt.vlines(ibi_opt.get_indices(), np.min(bvp), np.max(bvp))
 plt.subplot(212, sharex=ax1)
 ibi.plot('or')
 ibi_opt.plot('ob')
+
+g = ph.TimeSegments(width=60, step=10)(ibi)
+
+h = ph.PowerInBand(method="ar", interp_freq = 4, freq_min=1, freq_max=3)
+
+values, labels, colnames = ph.fmap(g, [h])
+
+plt.plot(values[:,2])
+plt.show()
