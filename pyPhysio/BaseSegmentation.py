@@ -1,8 +1,8 @@
 # coding=utf-8
 from abc import abstractmethod as _abstract, ABCMeta as _ABCMeta
 from copy import copy as _cpy
-from BaseAlgorithm import Algorithm as _Algorithm
-from Signal import EvenlySignal as _EvenlySignal
+from pyPhysio.BaseAlgorithm import Algorithm as _Algorithm
+from pyPhysio.Signal import EvenlySignal as _EvenlySignal
 
 __author__ = 'AleB'
 

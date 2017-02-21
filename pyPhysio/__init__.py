@@ -1,17 +1,17 @@
 # coding=utf-8
 from __future__ import division
-import filters.Filters
-from indicators.TimeDomain import *
-from indicators.FrequencyDomain import *
-from indicators.NonLinearDomain import *
-from indicators.PeaksDescription import *
-from filters.Filters import *
-from estimators.Estimators import *
-from tools.Tools import *
-from segmentation.SegmentsGenerators import *
-import segmentation.SegmentsGenerators
-from BaseSegmentation import Segment
-from Signal import EvenlySignal, UnevenlySignal
+import pyPhysio.filters.Filters
+from pyPhysio.indicators.TimeDomain import *
+from pyPhysio.indicators.FrequencyDomain import *
+from pyPhysio.indicators.NonLinearDomain import *
+from pyPhysio.indicators.PeaksDescription import *
+from pyPhysio.filters.Filters import *
+from pyPhysio.estimators.Estimators import *
+from pyPhysio.tools.Tools import *
+from pyPhysio.segmentation.SegmentsGenerators import *
+import pyPhysio.segmentation.SegmentsGenerators
+from pyPhysio.BaseSegmentation import Segment
+from pyPhysio.Signal import EvenlySignal, UnevenlySignal
 
 __author__ = "AleB"
 

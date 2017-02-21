@@ -1,6 +1,6 @@
 # coding=utf-8
 import numpy as _np
-from Utility import PhUI as _PhUI
+from pyPhysio.Utility import PhUI as _PhUI
 
 
 class Parameter(object):

@@ -1,7 +1,7 @@
 # coding=utf-8
-from Signal import Signal
+from pyPhysio.Signal import Signal
 from abc import abstractmethod as _abstract, ABCMeta as _ABCMeta
-from Utility import PhUI as _PhUI
+from pyPhysio.Utility import PhUI as _PhUI
 
 __author__ = 'AleB'
 
@@ -171,7 +171,7 @@ class Algorithm(object):
 
     @classmethod
     def emulate_log(cls, log):
-        map(lambda (f, m): f(m), log)
+        map(lambda f, m: f(m), log)
 
 
 class Cache(object):

@@ -2,7 +2,7 @@
 from __future__ import division
 import numpy as _np
 from scipy import interpolate as _interp
-from Utility import abstractmethod as _abstract, PhUI as _PhUI
+from pyPhysio.Utility import abstractmethod as _abstract
 from matplotlib.pyplot import plot as _plot
 
 __author__ = 'AleB'

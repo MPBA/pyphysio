@@ -24,7 +24,7 @@ def abstractmethod(funcobj):
         #
         #
 
-    funcobj.func_code = abstract_error.func_code
+#    funcobj._func_code = abstract_error.func_code
     return abstract_error
 
 

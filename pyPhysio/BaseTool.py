@@ -1,5 +1,5 @@
 # coding=utf-8
-from BaseAlgorithm import Algorithm
+from pyPhysio.BaseAlgorithm import Algorithm
 
 __author__ = 'AleB'
 
