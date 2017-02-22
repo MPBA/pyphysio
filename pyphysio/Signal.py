@@ -47,7 +47,7 @@ class Signal(_np.ndarray):
         return self.get_end_time() - self.get_start_time()
 
     @_abstract
-    def get_times(self, just_one=None):
+    def get_times(self):
         pass
 
     def get_values(self):
@@ -63,7 +63,15 @@ class Signal(_np.ndarray):
         return self.ph[self._MT_START_TIME]
 
     def get_end_time(self):
-        return self.get_times()[-1]
+        return self.get_time(len(self) - 1)
+
+    @_abstract
+    def get_idx(self, time):
+        pass
+
+    @_abstract
+    def get_time(self, idx):
+        pass
 
     def plot(self, style=""):
         # TODO (feature) verical lines if style='|'
@@ -92,6 +100,12 @@ class EvenlySignal(Signal):
 
     def get_times(self):
         return _np.arange(len(self)) / self.get_sampling_freq() + self.get_start_time()
+
+    def get_idx(self, time):
+        return (time - self.get_start_time()) * self.get_sampling_freq() if time < self.get_duration() else None
+
+    def get_time(self, idx):
+        return idx / self.get_sampling_freq() + self.get_start_time() if idx < len(self) else None
 
     def __repr__(self):
         return Signal.__repr__(self)[:-1] + " freq:" + str(self.get_sampling_freq()) + "Hz>\n" + self.view(
@@ -277,7 +291,16 @@ class UnevenlySignal(Signal):
         return (self.ph[self._MT_X_INDICES]) / self.get_sampling_freq() + self.get_start_time()
 
     def get_indices(self):
-        return (self.ph[self._MT_X_INDICES])
+        return self.ph[self._MT_X_INDICES]
+
+    def get_idx(self, time):
+        i = (time - self.get_start_time()) * self.get_sampling_freq()
+        # TODO betterize code
+        return _np.searchsorted(self.get_indices(), i) if time < self.get_duration() else None
+
+    def get_time(self, idx):
+        return self.ph[self._MT_X_INDICES][idx] / self.get_sampling_freq() + self.get_start_time() if idx < len(self) \
+            else None
 
     def __repr__(self):
         return Signal.__repr__(self)[:-1] + " time resolution:" + str(

@@ -9,7 +9,7 @@ __author__ = 'AleB'
 
 class Segment(object):
     """
-    Base Segment, a begin-end pair with a reference to the base signal and a name.
+    Base Segment, a time begin-end pair with a reference to the base signal and a name.
     """
 
     def __init__(self, begin, end, label=None, signal=None):
@@ -23,44 +23,42 @@ class Segment(object):
         self._label = label
         self._signal = signal
 
-    def get_begin(self):
+    def get_begin_time(self):
         return self._begin
 
-    def get_end(self):
+    def get_end_time(self):
         return self._end
 
-    def get_start_time(self):
-        return self._signal.get_start_time() + self._signal.get_times(self._begin)
+    def get_begin(self):
+        return self._signal.get_idx(self.get_begin_time())
 
-    def get_end_time(self):
-        return self._signal.get_times(self.get_end()) if self.get_end() is not None else None
+    def get_end(self):
+        return self._signal.get_idx(self.get_end_time()) if self.get_end_time() is not None else None
 
     def get_duration(self):
-        return (self.get_end_time() - self.get_start_time()) if self.get_end() is not None else None
+        return (self.get_end_time() - self.get_begin_time()) if self.get_end_time() is not None else None
 
     def get_label(self):
         return self._label
 
     def is_empty(self):
-        return self._signal is None or self._begin >= len(self._signal)
-
-    # from datetime import datetime as dt, MAXYEAR
-    #
-    # _mdt = dt(MAXYEAR, 12, 31, 23, 59, 59, 999999)
+        return self._signal is None or self.get_begin_time() >= len(self._signal.get_end_time())
 
     def __call__(self, data=None):
         if data is None:
             data = self._signal
+            # TODO 7 check __slice__ and segment_*
         return data[self._begin:self._end]
 
     def islice(self, data, include_partial=False):
+        # TODO 7 check __slice__ and segment_*
         if (include_partial or self._end <= data.index[-1]) and self._begin < data.index[-1]:
             return self(data)
         else:
             raise StopIteration()
 
     def __repr__(self):
-        return '[%s:%s' % (str(self.get_begin()), str(self.get_end())) + (
+        return '[%s:%s' % (str(self.get_begin_time()), str(self.get_end_time())) + (
             ":%s]" % self._label) if self._label is not None else "]"
 
 

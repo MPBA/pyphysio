@@ -1,154 +1,168 @@
 # coding=utf-8
 from ..Utility import PhUI as _PhUI
 from ..BaseSegmentation import SegmentsGenerator, Segment
+from ..Signal import Signal as _Signal
+from pyphysio.Utility import abstractmethod as _abstract
+from numpy import nan as _nan
 
 __author__ = 'AleB'
 
 
 # WAS: class LengthSegments(SegmentsGenerator):
 
-class FixedSegments(SegmentsGenerator):
-    """
-    Constant length (time) segments specifying segment step and segment width in seconds.
-    __init__(self, step, width=0, start=0)
-    """
+class _SegmentsWithLabelSignal(SegmentsGenerator):
 
-    # TODO: add label signal (drop_mixed = False -> drop segments with mixed label, drop_mixed  = True -> nan)
-    def __init__(self, params=None, **kwargs):
-        super(FixedSegments, self).__init__(params, **kwargs)
-        assert "step" in self._params, "Need the parameter 'step' for the segmentation."
-        self._step = None
-        self._width = None
-        self._i = None
-        self._c_times = None
+    def __init__(self, **kwargs):
+        super(_SegmentsWithLabelSignal, self).__init__(**kwargs)
+        self._labsig = None
 
+    @_abstract
     def init_segmentation(self):
-        self._step = self._params["step"]
-        self._c_times = self._signal.get_times() if self._signal is not None else []
-        self._width = \
-            self._params["step"] if "width" not in self._params or self._params["width"] == 0 else self._params["width"]
-        self._i = 0
-        # initial seek
-        if "start" in self._params:
-            start = self._params["start"]
-            while self._i < len(self._signal) and self._signal.get_indices(self._i) < start:
-                self._i += 1
+        pass
 
     def next_segment(self):
         if self._signal is None:
             _PhUI.w("Can't preview the segments without a signal here. Use the syntax " +
-                    FixedSegments.__name__ + "(**params])(signal)")
+                    FixedSegments.__name__ + "(**params)(signal)")
             raise StopIteration()
-        b = e = self._i
-        l = len(self._signal)
-        while self._i < l and self._c_times[self._i] <= self._c_times[b] + self._step:
-            self._i += 1
-        while e < l and self._c_times[e] <= self._c_times[b] + self._width:
-            e += 1
-        s = Segment(b, e, '', self._signal)
-        if s.is_empty():
-            raise StopIteration()
+
+        b, e, label = self.next_segment_mix_labels()
+
+        s = Segment(b, e, label, self._signal)
         return s
 
+    @_abstract
+    def next_times(self):
+        pass
 
-class CustomSegments(SegmentsGenerator):
+    def next_segment_mix_labels(self):
+        label = b = e = None
+        while label is None:
+            b, e = self.next_times()
+
+            # signal segment bounds
+            first_idx = self._signal.get_idx(b)
+            last_idx = self._signal.get_idx(e)
+
+            # in-range check b,e
+            if first_idx is None:
+                # out of range
+                raise StopIteration()
+            elif last_idx is None:
+                # half out of range, cut to last idx
+                e = self._signal.get_end_time()
+
+            # labels segment bounds
+            first_idx = self._labsig.get_idx(b)
+            last_idx = self._labsig.get_idx(e)
+
+            if first_idx is None:
+                label = self._labsig[-1]
+            else:
+                # first label
+                first = self._labsig[first_idx]
+
+                if last_idx is None:
+                    last_idx = self._labsig.get_end_time()
+
+                # For each label in b,e from the second sample
+                for i in range(first_idx + 1, last_idx):
+                    if first != self._labsig[i]:
+                        # This is a mixed segment
+                        if self._params['drop_mixed']:
+                            # goto next segment
+                            label = None
+                        else:
+                            # keep
+                            label = _nan
+                        break
+        return b, e, label
+
+
+class FixedSegments(_SegmentsWithLabelSignal):
     """
-    Constant length (time) segments
-    __init__(self, step, width=0, start=0)
+    Constant length (time) segments specifying segment step and segment width in seconds. A label signal from which to
+    take labels can be specified.
+    __init__(self, step, width=0, start=0, labels=None, drop_mixed=True)
     """
 
-    # TODO: correct docs
-    # TODO: add label vector
-    def __init__(self, params=None, **kwargs):
-        super(CustomSegments, self).__init__(params, **kwargs)
-        assert "starts" in self._params, "Need the parameter 'start' (array of times) for the segmentation."
-        assert "stops" in self._params, "Need the parameter 'stop' (array of times) for the segmentation."
-        self._b = None
-        self._e = None
-        self._i = None
+    def __init__(self, step, width=0, start=0, labels=None, drop_mixed=True, **kwargs):
+        super(FixedSegments, self).__init__(step=step, width=width, start=start, labels=labels,
+                                            drop_mixed=drop_mixed, **kwargs)
+        assert labels is None or isinstance(labels, _Signal), "Parameter labels must be a Signal"
+        self._step = None
+        self._width = None
+        self._t = None
 
     def init_segmentation(self):
-        self._b = 0
-        self._e = 0
-        self._i = 0
+        self._step = self._params["step"]
+        self._width = self._params["width"]
+        self._labsig = self._params["labels"]
+        self._t = self._params["start"]
 
-    def next_segment(self):
-        if self._signal is None:
-            _PhUI.w("Can't preview the segments without a signal here. Use the syntax "
-                    + FixedSegments.__name__ + "(**params)(signal)")
-            raise StopIteration()
+    def next_times(self):
+        b = self._t
+        self._t += self._step
+        e = b + self._width
+        return b, e
+
+
+class CustomSegments(_SegmentsWithLabelSignal):
+    """
+    Custom begin-end time-segments.
+    __init__(self, begins, ends, labels=None, drop_mixed=True)
+    """
+
+    def __init__(self, begins, ends, labels=None, drop_mixed=True, **kwargs):
+        super(CustomSegments, self).__init__(begins=begins, ends=ends, labels=labels, drop_mixed=drop_mixed, **kwargs)
+        assert len(begins) == len(ends), "The number of begins has to be equal to the number of ends :)"
+        self._i = None
+        self._b = None
+        self._e = None
+
+    def init_segmentation(self):
+        self._i = -1
+        self._b = self._params['begins']
+        self._e = self._params['ends']
+
+    def next_times(self):
+        self._i += 1
+        if self._i < len(self._b):
+            return self._b[self._i], self._e[self._i]
         else:
-            if self._i < len(self._params['starts']):
-                l = len(self._signal)
-                start = self._params['starts'][self._i]
-                while self._b < l and self._signal.get_indices(self._b) < start:
-                    self._b += 1
-                stop = self._params['stops'][self._i]
-                while self._e < l and self._signal.get_indices(self._e) < stop:
-                    self._e += 1
-
-                self._i += 1
-
-                s = Segment(self._b, self._e, '', self._signal)
-
-                if s.is_empty():
-                    raise StopIteration()
-                else:
-                    return s
-            else:
-                raise StopIteration()
+            raise StopIteration()
 
 
 # WAS: class ExistingSegments(SegmentsGenerator):
 
 
-class LabelSegments(SegmentsGenerator):
+class LabelSegments(_SegmentsWithLabelSignal):
     """
-    Generates a list of windows from a label signal.
+    Generates a list of segments from a label signal, allowing to collapse subsequent equal labels.
+    __init__(labels, collapse=True)
     """
-    # TODO: check that it does
 
-    def __init__(self, params=None, **kwargs):
-        super(LabelSegments, self).__init__(params, **kwargs)
-        assert "labels" in self._params, "Need the parameter 'labels' (Signal) to generate segments from."
+    def __init__(self, labels, collapse=False, **kwargs):
+        super(LabelSegments, self).__init__(labels=labels, collapse=collapse, **kwargs)
+        assert isinstance(labels, _Signal), "The parameter 'labels' should be a Signal."
         self._i = None
-        self._t = None
-        self._s = None
-        self._ibn = None
-        self._events = None
-        self._c_times = None
+        self._labsig = None
+        self._collapse = collapse
 
     def init_segmentation(self):
-        self._events = self._params["labels"]
-        self._s = 0
-        self._i = 0
-        self._t = self._events.get_indices(0)
+        self._i = -1
+        self._labsig = self._params['labels']
 
-        if self._signal is not None:
-            # TODO TESTME: May be not so efficient but it is better than searchsorted (small k < n often smaller than log2(n))
-            # TODO: check on Even and Unev signals
-            while self._i < len(self._signal) and self._signal.get_indices(self._i) < self._t:
+    def next_times(self):
+        if self._collapse:
+            bi = self._i
+            b = self._labsig.get_time(self._i)
+            self._i += 1
+            while self._labsig[bi] == self._labsig[self._i]:
                 self._i += 1
-
-    def next_segment(self):
-        if self._signal is None:
-            _PhUI.w("Can't preview the segments without a signal here. Use the syntax "
-                    + LabelSegments.__name__ + "(**params)(signal)")
-            raise StopIteration()
+            e = self._labsig.get_time(self._i + 1)
         else:
-            l = len(self._signal)
-            if self._i < l:
-                if self._s < len(self._events) - 1:
-                    o = self._i
-                    self._t = self._events.get_indices(self._s + 1)
-                    while self._i < l and self._signal.get_indices(self._i) < self._t:
-                        self._i += 1
-                    w = Segment(o, self._i, self._events[self._s], self._signal)
-                elif self._s < len(self._events):
-                    w = Segment(self._i, l, self._events[self._s], self._signal)
-                else:
-                    raise StopIteration()
-            else:
-                raise StopIteration()
-        self._s += 1
-        return w
+            b = self._labsig.get_time(self._i)
+            e = self._labsig.get_time(self._i + 1)
+            self._i += 1
+        return b, e
