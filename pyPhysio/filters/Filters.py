@@ -2,11 +2,11 @@
 from __future__ import division
 import numpy as _np
 from scipy.signal import gaussian as _gaussian, filtfilt as _filtfilt, filter_design as _filter_design, deconvolve as _deconvolve
-from pyPhysio.BaseFilter import Filter as _Filter
-from pyPhysio.Signal import EvenlySignal as _EvenlySignal, UnevenlySignal as _UnevenlySignal, Signal as _Signal
-from pyPhysio.Utility import PhUI as _PhUI
-from pyPhysio.Parameters import Parameter as _Par
-from pyPhysio.Utility import abstractmethod as _abstract
+from ..BaseFilter import Filter as _Filter
+from ..Signal import EvenlySignal as _EvenlySignal, UnevenlySignal as _UnevenlySignal, Signal as _Signal
+from ..Utility import PhUI as _PhUI
+from ..Parameters import Parameter as _Par
+from ..Utility import abstractmethod as _abstract
 
 __author__ = 'AleB'
 

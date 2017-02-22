@@ -20,5 +20,5 @@ setup(
     ],
 
     package_dir={'pyPhysio': 'pyPhysio'},
-    packages=['pyPhysio', 'pyPhysio.filters', 'pyPhysio.estimators', 'pyPhysio.indicators', 'pyPhysio.segmentation']
+    packages=['pyPhysio']#, 'pyPhysio.filters', 'pyPhysio.tools', 'pyPhysio.estimators', 'pyPhysio.indicators', 'pyPhysio.segmentation']
 )
