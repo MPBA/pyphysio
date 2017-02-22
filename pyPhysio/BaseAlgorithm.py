@@ -16,6 +16,7 @@ class Algorithm(object):
     _parameter_error = None
     _log = None
 
+    # TODO : name as ...
     def __init__(self, params=None, **kwargs):
         """
         Incorporates the parameters and saves them in the instance.

@@ -111,7 +111,7 @@ class Diff(_Filter):
         sig_1 = signal[:-degree]
         sig_2 = signal[degree:]
         
-        #TODO: should return the same signal type of the input, with same characteristics
+        # TODO: should return the same signal type of the input, with same characteristics
         out = _EvenlySignal(sig_2 - sig_1, signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time()+ degree/signal.get_sampling_freq())
 
         return out

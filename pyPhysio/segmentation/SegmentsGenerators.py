@@ -5,6 +5,7 @@ from ..BaseSegmentation import SegmentsGenerator, Segment
 __author__ = 'AleB'
 
 
+'''
 class LengthSegments(SegmentsGenerator):
     """
     Constant length (samples number) segments
@@ -35,13 +36,15 @@ class LengthSegments(SegmentsGenerator):
         if s.is_empty():
             raise StopIteration()
         return s
+'''
 
-
-class TimeSegments(SegmentsGenerator):
+# TODO : rename FixedSegments
+class TimeSegments(SegmentsGenerator): 
     """
     Constant length (time) segments
     __init__(self, step, width=0, start=0)
     """
+    # TODO: add label signal (drop_mixed = False -> drop segments with mixed label, drop_mixed  = True -> nan)  
     def __init__(self, params=None, **kwargs):
         super(TimeSegments, self).__init__(params, **kwargs)
         assert "step" in self._params, "Need the parameter 'step' for the segmentation."
@@ -79,11 +82,14 @@ class TimeSegments(SegmentsGenerator):
         return s
 
 
+# TODO : rename CustomSegments
 class FromStartStopSegments(SegmentsGenerator):
     """
     Constant length (time) segments
     __init__(self, step, width=0, start=0)
     """
+    # TODO : correct docs
+    # TODO: add label vector
     def __init__(self, params=None, **kwargs):
         super(FromStartStopSegments, self).__init__(params, **kwargs)
         assert "starts" in self._params, "Need the parameter 'start' (array of times) for the segmentation."
@@ -123,7 +129,7 @@ class FromStartStopSegments(SegmentsGenerator):
             else:
                 raise StopIteration()
 
-
+'''
 class ExistingSegments(SegmentsGenerator):
     """
     Wraps a list of windows from an existing collection.
@@ -148,8 +154,10 @@ class ExistingSegments(SegmentsGenerator):
                 raise StopIteration()
         return w
 
+'''
 
 class FromEventsSegments(SegmentsGenerator):
+    # TODO : rename LabelSegment
     """
     Generates a list of windows from a labels list.
     """

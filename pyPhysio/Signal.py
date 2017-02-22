@@ -7,29 +7,21 @@ from matplotlib.pyplot import plot as _plot
 
 __author__ = 'AleB'
 
-# Everything in SECONDS (s) !!!
-
-
 class Signal(_np.ndarray):
-    #FIXME: Make the following attributes "pickable"
+    # TODO: Make the following attributes "pickable"
     _MT_NATURE = "signal_nature"
     _MT_START_TIME = "start_time"
-    _MT_START_INDEX = "start_index"
     _MT_SAMPLING_FREQ = "sampling_freq"
     _MT_INFO_ATTR = "_pyphysio"
     
-    # TODO: check sui parametri del segnale: FSAMP > 0
-
-    def __new__(cls, values, sampling_freq, signal_nature="", start_time=0):#, start_index=0):
-        # noinspection PyNoneFunctionAssignment
-        #TODO (feature) multichannel signals
-        #TODO check values is 1-d
+    def __new__(cls, values, sampling_freq, signal_nature="", start_time=0):
+        # TODO (feature) multichannel signals
+        # TODO check values is 1-d
         assert sampling_freq > 0, "The sampling frequency cannot be zero or negative"
         obj = _np.asarray(_np.ravel(values)).view(cls)
         obj._pyphysio = {
             cls._MT_NATURE: signal_nature,
             cls._MT_START_TIME: start_time,
-#            cls._MT_START_INDEX: start_index,
             cls._MT_SAMPLING_FREQ: sampling_freq,
         }
         return obj
@@ -72,6 +64,7 @@ class Signal(_np.ndarray):
         return self.get_times()[-1]
     
     def plot(self, style=""):
+        # TODO (feature) verical lines if style='|'
         _plot(self.get_times(), self.get_values(), style)
 
     def __repr__(self):
@@ -79,7 +72,7 @@ class Signal(_np.ndarray):
 
 
 class EvenlySignal(Signal):
-    '''
+    """
     Evenly spaced signal
     
     Attributes:
@@ -93,7 +86,7 @@ class EvenlySignal(Signal):
         Type of signal (e.g. 'ECG', 'EDA')
     start_time: float,
         Instant of signal start
-    '''
+    """
     
     def get_times(self):
         return _np.arange(len(self)) / self.get_sampling_freq() + self.get_start_time()
@@ -195,7 +188,7 @@ class EvenlySignal(Signal):
         portion : EvenlySignal
             The selected portion
         """
-        #TODO: check
+        
         signal_times = self.get_times()
         signal_values = self.get_values()
         
@@ -211,13 +204,15 @@ class EvenlySignal(Signal):
         
     def __getslice__(self, i, j):
         o = Signal.__getslice__(self, i, j)
+        # TODO: call segment_idx
 #        if isinstance(o, Signal):
 #            o.ph[Signal._MT_START_INDEX] += i
         return o
 
+    # TODO : to_csv
 
 class UnevenlySignal(Signal):
-    '''
+    """
     Unevenly spaced signal
     
     Attributes:
@@ -237,7 +232,8 @@ class UnevenlySignal(Signal):
     x_type : str
         Type of x values given.
         Can be 'indices' or 'instants'
-    '''
+    """
+    
     _MT_X_INDICES = "x_values"
     _MT_ORIGINAL_LENGTH = "original_length"
 
@@ -280,7 +276,6 @@ class UnevenlySignal(Signal):
         return(self.ph[self._MT_X_INDICES])
 
     def __repr__(self):
-#        return Signal.__repr__(self)[:-1] + " freq:" + str(self.get_sampling_freq()) + "Hz>\n" + self.view(_np.ndarray).__repr__()
         return Signal.__repr__(self)[:-1] + " time resolution:" + str(1/self.get_sampling_freq()) + "s>\n" + self.view(_np.ndarray).__repr__() + " Times\n:" + self.get_times().__repr__()
 
     def __getslice__(self, i, j):
@@ -411,8 +406,4 @@ class UnevenlySignal(Signal):
         return(out_signal)
         
 
-#class EventsSignal(UnevenlySignal):
-#    def __new__(cls, values, times, orig_sampling_freq=1, orig_length=None, signal_nature="", start_time=0,
-#                meta=None, check=True):
-#        return UnevenlySignal.__new__(cls, values, times * orig_sampling_freq, orig_sampling_freq, orig_length, signal_nature, start_time,
-#                                      meta, check)
+    # TODO: resample()

@@ -33,8 +33,29 @@ class _Peaks(_Indicator):
 class PeaksMax(_Peaks):
     """
     Peaks Max
+    
+    Description ...
+
+    Parameters
+    ----------
+    
+    Optional:
+    degree : int, >0, default = 1
+        Sample interval to compute the differences
+    
+    Returns
+    -------
+    signal : 
+        Differences signal. 
+
+    Notes
+    -----
+    Note that the length of the returned signal is the lenght of the input_signal minus degree.
     """
 
+    def __init__(self, delta, **kwargs):
+        _Indicator.__init__(self, delta=delta, params=kwargs)
+        
     @classmethod
     def algorithm(cls, signal, params):
         delta = params['delta']
@@ -46,7 +67,6 @@ class PeaksMax(_Peaks):
             return _np.nan
         else:
             return _np.nanmax(val_maxs)
-
 
 class PeaksMin(_Peaks):
     """

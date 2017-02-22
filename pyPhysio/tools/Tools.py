@@ -41,7 +41,6 @@ class PeakDetection(_Tool):
         Array containing values of the minima
     """
     
-    #TODO: deltas and delta are now merged, fix Par
     _params_descriptors = {
         'delta': _Par(2, list, "Threshold for the detection of the peaks"),
         'refractory': _Par(0, float, "Seconds to skip after detection of a peak", 0, lambda x: x > 0),
@@ -374,7 +373,6 @@ class PSD(_Tool):
 
         # NORMALIZE
         if normalize:
-            # TODO: check formula
             psd /= 0.5 * fsamp * _np.sum(psd) / len(psd)
         return freqs, psd
 
@@ -1256,7 +1254,6 @@ class OptimizeBateman(_Tool):
 
             else:
                 OptimizeBateman.warn('Peaks found but too near. Returning Inf')
-                #TODO: return Inf instead of 10000
                 return _np.inf
             
             #normalize to the number of peaks

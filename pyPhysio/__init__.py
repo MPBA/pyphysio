@@ -109,6 +109,7 @@ def compute_pha_ton_indicators(phasic, driver, delta):
     return(indicators, labels)
     
 def fmap(segments, algorithms, alt_signal=None):
+    # TODO : rename extract_indicators
     """
     Generates a list composed of a list of results for each segment.
 
