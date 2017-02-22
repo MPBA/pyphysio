@@ -51,7 +51,7 @@ plt.subplot(212, sharex=ax1)
 ibi.plot('or')
 ibi_opt.plot('ob')
 
-g = ph.TimeSegments(width=60, step=10)(ibi)
+g = ph.FixedSegments(width=60, step=10)(ibi)
 
 h = ph.PowerInBand(method="ar", interp_freq = 4, freq_min=1, freq_max=3)
 

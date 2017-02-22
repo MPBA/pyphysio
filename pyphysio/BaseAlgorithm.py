@@ -16,7 +16,7 @@ class Algorithm(object):
     _parameter_error = None
     _log = None
 
-    # TODO : name as ...
+    # TODO: name as parameter in __repr__ to override ugly repr with params
     def __init__(self, params=None, **kwargs):
         """
         Incorporates the parameters and saves them in the instance.
@@ -157,8 +157,7 @@ class Algorithm(object):
         cls.emulate_log([l])
         if cls._log is not None:
             cls._log.append(l)
-        if raise_error:
-            raise
+        assert not raise_error, l
 
     @classmethod
     def set_logger(cls):

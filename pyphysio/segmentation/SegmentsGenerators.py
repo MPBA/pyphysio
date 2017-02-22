@@ -5,48 +5,17 @@ from ..BaseSegmentation import SegmentsGenerator, Segment
 __author__ = 'AleB'
 
 
-'''
-class LengthSegments(SegmentsGenerator):
+# WAS: class LengthSegments(SegmentsGenerator):
+
+class FixedSegments(SegmentsGenerator):
     """
-    Constant length (samples number) segments
+    Constant length (time) segments specifying segment step and segment width in seconds.
     __init__(self, step, width=0, start=0)
     """
 
+    # TODO: add label signal (drop_mixed = False -> drop segments with mixed label, drop_mixed  = True -> nan)
     def __init__(self, params=None, **kwargs):
-        super(LengthSegments, self).__init__(params, **kwargs)
-        assert "step" in self._params, "Need the parameter 'step' for the segmentation."
-        self._step = None
-        self._width = None
-        self._i = None
-
-    def init_segmentation(self):
-        if self._signal is None:
-            raise ValueError("Can't preview the segments without a signal here. Use the syntax " +
-                             LengthSegments.__name__ + "(**params)(signal)")
-        self._step = self._params["step"]
-        self._width =\
-            self._params["step"] if "width" not in self._params or self._params["width"] == 0 else self._params["width"]
-        self._i = self._params["start"] if "start" in self._params else 0
-        self._signal = self._signal
-
-    def next_segment(self):
-        o = self._i
-        self._i += self._step
-        s = Segment(o, o + self._width, '', self._signal)
-        if s.is_empty():
-            raise StopIteration()
-        return s
-'''
-
-# TODO : rename FixedSegments
-class TimeSegments(SegmentsGenerator): 
-    """
-    Constant length (time) segments
-    __init__(self, step, width=0, start=0)
-    """
-    # TODO: add label signal (drop_mixed = False -> drop segments with mixed label, drop_mixed  = True -> nan)  
-    def __init__(self, params=None, **kwargs):
-        super(TimeSegments, self).__init__(params, **kwargs)
+        super(FixedSegments, self).__init__(params, **kwargs)
         assert "step" in self._params, "Need the parameter 'step' for the segmentation."
         self._step = None
         self._width = None
@@ -56,7 +25,7 @@ class TimeSegments(SegmentsGenerator):
     def init_segmentation(self):
         self._step = self._params["step"]
         self._c_times = self._signal.get_times() if self._signal is not None else []
-        self._width =\
+        self._width = \
             self._params["step"] if "width" not in self._params or self._params["width"] == 0 else self._params["width"]
         self._i = 0
         # initial seek
@@ -68,7 +37,7 @@ class TimeSegments(SegmentsGenerator):
     def next_segment(self):
         if self._signal is None:
             _PhUI.w("Can't preview the segments without a signal here. Use the syntax " +
-                    TimeSegments.__name__ + "(**params])(signal)")
+                    FixedSegments.__name__ + "(**params])(signal)")
             raise StopIteration()
         b = e = self._i
         l = len(self._signal)
@@ -82,16 +51,16 @@ class TimeSegments(SegmentsGenerator):
         return s
 
 
-# TODO : rename CustomSegments
-class FromStartStopSegments(SegmentsGenerator):
+class CustomSegments(SegmentsGenerator):
     """
     Constant length (time) segments
     __init__(self, step, width=0, start=0)
     """
-    # TODO : correct docs
+
+    # TODO: correct docs
     # TODO: add label vector
     def __init__(self, params=None, **kwargs):
-        super(FromStartStopSegments, self).__init__(params, **kwargs)
+        super(CustomSegments, self).__init__(params, **kwargs)
         assert "starts" in self._params, "Need the parameter 'start' (array of times) for the segmentation."
         assert "stops" in self._params, "Need the parameter 'stop' (array of times) for the segmentation."
         self._b = None
@@ -106,7 +75,7 @@ class FromStartStopSegments(SegmentsGenerator):
     def next_segment(self):
         if self._signal is None:
             _PhUI.w("Can't preview the segments without a signal here. Use the syntax "
-                 + TimeSegments.__name__ + "(**params)(signal)")
+                    + FixedSegments.__name__ + "(**params)(signal)")
             raise StopIteration()
         else:
             if self._i < len(self._params['starts']):
@@ -129,42 +98,19 @@ class FromStartStopSegments(SegmentsGenerator):
             else:
                 raise StopIteration()
 
-'''
-class ExistingSegments(SegmentsGenerator):
+
+# WAS: class ExistingSegments(SegmentsGenerator):
+
+
+class LabelSegments(SegmentsGenerator):
     """
-    Wraps a list of windows from an existing collection.
+    Generates a list of windows from a label signal.
     """
+    # TODO: check that it does
 
     def __init__(self, params=None, **kwargs):
-        super(ExistingSegments, self).__init__(params, **kwargs)
-        assert "segments" in self._params, "Need the parameter 'segments' (array of Segment) for the segmentation."
-        self._wins = None
-        self._ind = None
-
-    def init_segmentation(self):
-        self._wins = iter(self._params["segments"])
-        self._ind = 0
-
-    def next_segment(self):
-        w = self._wins.next()
-        if self._signal is not None:
-            assert isinstance(w, Segment), "%s is not a Segment" % str(w)
-            w = Segment(w.get_begin(), w.get_end(), w.get_label(), self._signal)
-            if w.is_empty():
-                raise StopIteration()
-        return w
-
-'''
-
-class FromEventsSegments(SegmentsGenerator):
-    # TODO : rename LabelSegment
-    """
-    Generates a list of windows from a labels list.
-    """
-
-    def __init__(self, params=None, **kwargs):
-        super(FromEventsSegments, self).__init__(params, **kwargs)
-        assert "events" in self._params, "Need the parameter 'events' for this segmentation."
+        super(LabelSegments, self).__init__(params, **kwargs)
+        assert "labels" in self._params, "Need the parameter 'labels' (Signal) to generate segments from."
         self._i = None
         self._t = None
         self._s = None
@@ -173,21 +119,21 @@ class FromEventsSegments(SegmentsGenerator):
         self._c_times = None
 
     def init_segmentation(self):
-        self._ibn = self._params["include_baseline_name"] if "include_baseline_name" in self._params else None
-        self._events = self._params["events"]
+        self._events = self._params["labels"]
         self._s = 0
         self._i = 0
         self._t = self._events.get_indices(0)
 
         if self._signal is not None:
             # TODO TESTME: May be not so efficient but it is better than searchsorted (small k < n often smaller than log2(n))
+            # TODO: check on Even and Unev signals
             while self._i < len(self._signal) and self._signal.get_indices(self._i) < self._t:
                 self._i += 1
 
     def next_segment(self):
         if self._signal is None:
             _PhUI.w("Can't preview the segments without a signal here. Use the syntax "
-                    + LengthSegments.__name__ + "(**params)(signal)")
+                    + LabelSegments.__name__ + "(**params)(signal)")
             raise StopIteration()
         else:
             l = len(self._signal)

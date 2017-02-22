@@ -8,6 +8,7 @@
 #
 # class WindowsIterator(object):
 #     """
+#     DEPRECATED: use fmap
 #     Takes some indicators and calculates them on the given set of windows.
 #     Allows the iteration of the computation of a list of indicators over a WindowsGenerator.
 #     Use compute_all to execute the computation.
