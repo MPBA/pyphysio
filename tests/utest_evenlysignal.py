@@ -8,7 +8,7 @@ Created on Tue Aug 30 15:01:23 2016
 from __future__ import division
 import numpy as np
 
-import pyPhysio as ph
+import pyphysio as ph
 
 FSAMP = 10
 TSTART = 5

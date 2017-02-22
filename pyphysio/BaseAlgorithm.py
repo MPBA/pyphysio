@@ -1,7 +1,7 @@
 # coding=utf-8
-from pyPhysio.Signal import Signal
+from pyphysio.Signal import Signal
 from abc import abstractmethod as _abstract, ABCMeta as _ABCMeta
-from pyPhysio.Utility import PhUI as _PhUI
+from pyphysio.Utility import PhUI as _PhUI
 
 __author__ = 'AleB'
 

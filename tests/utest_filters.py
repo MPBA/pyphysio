@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 #from context import ph, Asset
-import pyPhysio as ph
+import pyphysio as ph
 
 #FILE = Asset.F18
 

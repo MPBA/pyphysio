@@ -4,7 +4,7 @@ import os
 import matplotlib.pyplot as plt
 import pickle # per salvare dati in binario
 import gzip # per comprimere i dati salvati
-import pyPhysio as ph
+import pyphysio as ph
 
 def phasic_estim_benedek(driver, delta):
     #find peaks in the driver

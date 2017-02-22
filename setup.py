@@ -8,7 +8,7 @@ pkg_path = dirname(__file__)
 version = 'beta-released'
 
 setup(
-    name='pyPhysio',
+    name='pyphysio',
     version=version,
     author='FBK - MPBA',
     license='GNU GPL version 3',
@@ -19,6 +19,6 @@ setup(
         'spectrum'
     ],
 
-    package_dir={'pyPhysio': 'pyPhysio'},
-    packages=['pyPhysio']#, 'pyPhysio.filters', 'pyPhysio.tools', 'pyPhysio.estimators', 'pyPhysio.indicators', 'pyPhysio.segmentation']
+    package_dir={'pyphysio': 'pyphysio'},
+    packages=['pyphysio']#, 'pyphysio.filters', 'pyphysio.tools', 'pyphysio.estimators', 'pyphysio.indicators', 'pyphysio.segmentation']
 )

@@ -12,15 +12,15 @@ import pyphysio.Estimators as est_old
 import pyphysio.Segmentation as sgm_old
 import pyphysio.Indexes as ind_old
 
-from pyPhysio.Signal import EvenlySignal as sig
-from pyPhysio.filters import  Filters as flt_new
-from pyPhysio.tools import Tools as tll_new
-from pyPhysio.estimators import Estimators as est_new
-from pyPhysio.segmentation import SegmentsGenerators as sgm_new
-from pyPhysio.indicators import TimeDomain as td_new
-from pyPhysio.indicators import FrequencyDomain as fd_new
-from pyPhysio.indicators import NonLinearDomain as nl_new
-import pyPhysio as ph
+from pyphysio.Signal import EvenlySignal as sig
+from pyphysio.filters import  Filters as flt_new
+from pyphysio.tools import Tools as tll_new
+from pyphysio.estimators import Estimators as est_new
+from pyphysio.segmentation import SegmentsGenerators as sgm_new
+from pyphysio.indicators import TimeDomain as td_new
+from pyphysio.indicators import FrequencyDomain as fd_new
+from pyphysio.indicators import NonLinearDomain as nl_new
+import pyphysio as ph
 
 FILE = '/home/andrea/Trento/DATI/SYNC/F/F18.txt'
 

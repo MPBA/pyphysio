@@ -3,7 +3,7 @@ import numpy as np # strumenti matematici
 import pandas as pd # importare dati
 import os # navigare nel computer
 import matplotlib.pyplot as plt # strumenti per fare i grafici
-import pyPhysio as ph
+import pyphysio as ph
 
 
 FS_BVP = 64

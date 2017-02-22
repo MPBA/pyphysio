@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # Used by test cases so:
 # noinspection PyUnresolvedReferences,PyPep8Naming
-import pyPhysio as ph
+import pyphysio as ph
 
 
 class Asset(object):

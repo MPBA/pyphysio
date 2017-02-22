@@ -5,7 +5,7 @@ import numpy as np
 try:
     import pyphysio.pyPhysio as ph
 except ImportError:
-    import pyPhysio as ph
+    import pyphysio as ph
 
 s = ph.EvenlySignal(np.cumsum(np.random.rand(1, 1000) - .5) * 100, 10)
 

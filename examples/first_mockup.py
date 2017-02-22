@@ -8,7 +8,7 @@ __author__ = 'AleB'
 try:
     import pyphysio.pyPhysio as ph
 except ImportError:
-    import pyPhysio as ph
+    import pyphysio as ph
 
 sig = ph.EvenlySignal(bvp_np, bvp_sf, bvp_st)
 sig.get_metadata.set_anag("Tito", "Livio", "SUB0524", 42)

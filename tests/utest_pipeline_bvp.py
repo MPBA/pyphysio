@@ -5,7 +5,7 @@ import pandas as pd
 
 import matplotlib.pyplot as plt
 
-import pyPhysio as ph
+import pyphysio as ph
 
 # BVP
 FILE = '/home/andrea/Trento/DATI/Dataset_ABP/experiment/sub01//BVP.csv'

@@ -1,5 +1,5 @@
 # coding=utf-8
-from pyPhysio.BaseAlgorithm import Algorithm
+from pyphysio.BaseAlgorithm import Algorithm
 from abc import ABCMeta as _ABCMeta
 __author__ = 'AleB'
 
