@@ -7,6 +7,8 @@ from pyphysio.Utility import abstractmethod as _abstract
 __author__ = 'AleB'
 
 
+# TODO: make compatible with Signal and autocollapser
+
 # WAS: class LengthSegments(SegmentsGenerator):
 
 class _SegmentsWithLabelSignal(SegmentsGenerator):

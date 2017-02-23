@@ -70,8 +70,9 @@ class Signal(_np.ndarray):
     def set_start_time(self, value):
         self.ph[self._MT_START_TIME] = value
 
+    @_abstract
     def get_end_time(self):
-        return self.get_time(len(self) - 1)
+        pass
 
     def get_idx(self, time):
         return (time - self.get_start_time()) * self.get_sampling_freq() if time < self.get_duration() else None
@@ -118,6 +119,9 @@ class EvenlySignal(Signal):
 
     def get_times(self):
         return _np.arange(len(self)) / self.get_sampling_freq() + self.get_start_time()
+
+    def get_end_time(self):
+        return self.get_time(len(self) - 1)
 
     def resample(self, fout, kind='linear'):
         """
@@ -269,6 +273,9 @@ class UnevenlySignal(Signal):
         obj.ph[cls._MT_X_INDICES] = x_values
         return obj
 
+    def get_end_time(self):
+        return self.get_time(self.get_indices()[-1])
+
     def get_times(self):
         return (self.ph[self._MT_X_INDICES]) / self.get_sampling_freq() + self.get_start_time()
 
@@ -279,7 +286,7 @@ class UnevenlySignal(Signal):
             return self.get_indices()[int(iidx)] / self.get_sampling_freq() + self.get_start_time()
 
     def get_iidx(self, time):
-        if time > 0:
+        if time >= self.get_start_time():
             i = (time - self.get_start_time()) * self.get_sampling_freq()
             return int(_np.searchsorted(self.get_indices(), i))
         else:
