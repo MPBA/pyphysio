@@ -13,8 +13,7 @@ __author__ = 'AleB'
 class InBand(_Indicator):
     @classmethod
     def algorithm(cls, data, params):
-        
-        freq, spec = PSD(params)(data)
+        freq, spec = PSD(**params)(data)
 
         # freq is sorted so
         i_min = _np.searchsorted(freq, params["freq_min"])
@@ -31,7 +30,7 @@ class InBand(_Indicator):
 class PowerInBand(_Indicator):
     @classmethod
     def algorithm(cls, data, params):
-        freq, powers = InBand(params)(data)
+        freq, powers = InBand(**params)(data)
         return _np.sum(powers)
 
     _params_descriptors = InBand.get_params_descriptors()
@@ -42,8 +41,7 @@ class PowerInBand(_Indicator):
 class PeakInBand(_Indicator):
     @classmethod
     def algorithm(cls, data, params):
-        
-        _freq_band, _pow_band = InBand(params)(data)
+        _freq_band, _pow_band = InBand(**params)(data)
         return _freq_band[_np.argmax(_pow_band)]
 
     _params_descriptors = InBand.get_params_descriptors()
