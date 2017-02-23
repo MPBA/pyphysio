@@ -1,3 +1,4 @@
+# coding=utf-8
 from __future__ import division
 
 from context import ph, Asset

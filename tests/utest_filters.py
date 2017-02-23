@@ -1,11 +1,11 @@
+# coding=utf-8
 from __future__ import division
 import numpy as np
 import pandas as pd
 
-#from context import ph, Asset
-import pyphysio as ph
+from context import ph, Asset
 
-#FILE = Asset.F18
+FILE = Asset.F18
 
 ecg1 = np.array(pd.read_csv(FILE))
 

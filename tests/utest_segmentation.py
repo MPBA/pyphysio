@@ -1,3 +1,4 @@
+# coding=utf-8
 from __future__ import division # divisione sensata
 import numpy as np # strumenti matematici
 import pandas as pd # importare dati

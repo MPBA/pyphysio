@@ -71,7 +71,7 @@ def compute_hrv(ibi):
     for x in TD_indexes:
         curr_idx = x(ibi)
         hrv.append(curr_idx)
-    return(hrv, labels)
+    return hrv, labels
 
 def compute_pha_ton_indicators(phasic, driver, delta):
     mean = Mean()
@@ -106,7 +106,7 @@ def compute_pha_ton_indicators(phasic, driver, delta):
         curr_ind = x(tonic)
         indicators.append(curr_ind)
         
-    return(indicators, labels)
+    return indicators, labels
     
 def fmap(segments, algorithms, alt_signal=None):
     # TODO : rename extract_indicators

@@ -239,7 +239,7 @@ class DenoiseEDA(_Filter):
         
         #interpolation
         signal_out = denoised.to_evenly('linear')
-        return(signal_out)
+        return signal_out
 
 class ConvolutionalFilter(_Filter):
     """

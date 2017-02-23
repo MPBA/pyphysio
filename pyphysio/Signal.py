@@ -173,7 +173,7 @@ class EvenlySignal(Signal):
         # FIXME: selected interval outside the signal
         if t_start > self.get_end_time() or t_stop < self.get_start_time():
             print('Error segmenting the signal: selected segment is outside the signal. Returning the original signal')
-            return (self)
+            return self
 
         idx_start = int(_np.ceil((t_start - self.get_start_time()) * self.get_sampling_freq()))
         if idx_start < 0:  # the signal starts after the segmentation start
@@ -186,7 +186,7 @@ class EvenlySignal(Signal):
 
         out_signal = EvenlySignal(portion_values, self.get_sampling_freq(), self.get_signal_nature(), t_0)
 
-        return (out_signal)
+        return out_signal
 
     def segment_idx(self, idx_start, idx_stop):
         """
@@ -216,7 +216,7 @@ class EvenlySignal(Signal):
 
         out_signal = EvenlySignal(portion_values, self.get_sampling_freq(), self.get_signal_nature(), t_0)
 
-        return (out_signal)
+        return out_signal
 
     def __getslice__(self, i, j):
         o = Signal.__getslice__(self, i, j)
@@ -387,7 +387,7 @@ class UnevenlySignal(Signal):
         out_signal = UnevenlySignal(portion_values, self.get_sampling_freq(), self.get_signal_nature(), t_0,
                                     x_values=portion_times, x_type='instants')
 
-        return (out_signal)
+        return out_signal
 
     def segment_idx(self, idx_start, idx_stop):
         """
@@ -424,6 +424,6 @@ class UnevenlySignal(Signal):
         out_signal = UnevenlySignal(portion_values, self.get_sampling_freq(), self.get_signal_nature(), t_0,
                                     x_values=portion_indices, x_type='indices')
 
-        return (out_signal)
+        return out_signal
 
 # TODO: add resample() here as resample (to_ev) -> Evenly

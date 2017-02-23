@@ -500,9 +500,9 @@ class Minima(_Tool):
 
     @classmethod
     def algorithm(cls, signal, params):
-        signal = -1*signal
+        signal *= -1
         idx_mins, mins = Maxima(params)(signal)
-        return idx_mins, -1*mins
+        return idx_mins, -mins
 
     _params_descriptors = {
         'method': _Par(2, str, 'Method to detect the minima', constraint=lambda x: x in ['complete', 'windowing']),
@@ -619,21 +619,21 @@ class BootstrapEstimation(_Tool):
 
 #TODO: remove this trivial function
 class Durations(_Tool):
-    '''
+    """
     Compute durations of events starting from their start and stop indexes
-    
+
     Parameters:
     -----------
     starts : list
         Start indexes along the data
     stops : list
         Stop indexes along the data
-        
+
     Return:
     -------
     durations : list
-        durations of the events        
-    '''
+        durations of the events
+    """
     
     _params_descriptors = {
         "starts": _Par(2, list, "Start indexes along the data"),
@@ -656,21 +656,21 @@ class Durations(_Tool):
 
 
 class Slopes(_Tool):
-    '''
+    """
     Compute rising slope of peaks
-    
+
     Parameters:
     -----------
     starts : list
         Start of the peaks indexes
     peaks : list
         Peaks indexes
-        
+
     Return:
     -------
     slopes : list
         Rising slopes the peaks
-    '''
+    """
     
     _params_descriptors = {
         "starts": _Par(2, list, "Start indexes along the data"),
@@ -685,7 +685,7 @@ class Slopes(_Tool):
         fsamp = data.get_sampling_freq()
         slopes = []
         for I in xrange(len(starts)):
-            if (peaks[I] > 0 & starts[I]>=0):
+            if peaks[I] > 0 & starts[I]>=0:
                 dy = data[peaks[I]] - data[starts[I]]
                 dt = (peaks[I] - starts[I]) / fsamp
                 slopes.append(dy / dt)
@@ -975,15 +975,15 @@ class BeatOptimizer(_Tool):
         stops = _np.where(diff_idxs < 0)[0]
         
         if len(starts)==0: # no differences
-            return(signal)
+            return signal
         
         if len(stops)==0:
             stops = _np.array([starts[-1] + 1])
             
         if starts[0] >= stops[0]:
             stops = stops[1:]
-            
-        stops = stops + 1
+
+        stops += 1
 
         if len(starts) > len(stops):
             stops = _np.r_[stops, starts[-1] + 1]

@@ -24,7 +24,7 @@ def abstractmethod(funcobj):
         #
         #
 
-#    funcobj._func_code = abstract_error.func_code
+    funcobj._func_code = abstract_error.func_code
     return abstract_error
 
 
@@ -34,7 +34,7 @@ def derive(data, labels):
     ii = []
     ts = 0
     pre = None
-    for i in xrange(len(labels)):
+    for i in range(len(labels)):
         if pre != labels[i]:
             ll.append(labels[i])
             tt.append(ts)
@@ -88,7 +88,7 @@ def template_interpolation(x, t, step, template=None):
     x_out = np.array([])
     t_out = np.array([])
 
-    for i in xrange(1, len(x)):
+    for i in range(1, len(x)):
         x_curr = x[i]
         t_curr = t[i]
 
