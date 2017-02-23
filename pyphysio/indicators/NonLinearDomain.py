@@ -229,9 +229,9 @@ class DFAShortTerm(_Indicator):
         if len(x) < 16:
             return _np.nan
         else:
-            ave = _Mean()(x)
-            y = _np.cumsum(x)
-            y -= ave
+            ave = float(_Mean()(x))
+            y = _np.cumsum(x).astype(float)
+            y = y - ave
             l = _np.arange(4, 17, 4)
             f = _np.zeros(len(l))  # f(n) of different given box length n
             for i in xrange(0, len(l)):
@@ -258,9 +258,9 @@ class DFALongTerm(_Indicator):
         if len(x) < 64:
             return _np.nan
         else:
-            ave = _Mean()(x)
-            y = _np.cumsum(x)
-            y -= ave
+            ave = float(_Mean()(x))
+            y = _np.cumsum(x).astype(float)
+            y = y - ave
             l_max = _np.min([64, len(x)])
             l = _np.arange(16, l_max + 1, 4)
             f = _np.zeros(len(l))  # f(n) of different given box length n

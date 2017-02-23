@@ -90,3 +90,4 @@ ENV/
 .spyderproject
 .spyderproject.bak
 .spyderworkspace
+.spyproject/

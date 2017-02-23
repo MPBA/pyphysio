@@ -361,7 +361,7 @@ class PSD(_Tool):
 
             ar, p, k = _aryule(signal, best_order)
             psd = _arma2psd(ar, NFFT=nfft)
-            psd = psd[0: _np.ceil(len(psd) / 2)]
+            psd = psd[0: int(_np.ceil(len(psd) / 2))]
 
         elif method == 'welch':
             bands_w, psd = _welch(signal, fsamp, nfft=nfft)
