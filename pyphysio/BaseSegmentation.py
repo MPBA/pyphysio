@@ -47,19 +47,11 @@ class Segment(object):
     def __call__(self, data=None):
         if data is None:
             data = self._signal
-            # TODO 7 check __slice__ and segment_*
-        return data[self._begin:self._end]
-
-    def islice(self, data, include_partial=False):
-        # TODO 7 check __slice__ and segment_*
-        if (include_partial or self._end <= data.index[-1]) and self._begin < data.index[-1]:
-            return self(data)
-        else:
-            raise StopIteration()
+        return data.segment_time(self.get_begin_time(), self.get_end_time())
 
     def __repr__(self):
         return '[%s:%s' % (str(self.get_begin_time()), str(self.get_end_time())) + (
-            ":%s]" % self._label) if self._label is not None else "]"
+            ":%s]" % self._label if self._label is not None else "]")
 
 
 class SegmentsGenerator(_Algorithm):
@@ -69,8 +61,8 @@ class SegmentsGenerator(_Algorithm):
     __metaclass__ = _ABCMeta
 
     @_abstract
-    def __init__(self, params=None, **kwargs):
-        super(SegmentsGenerator, self).__init__(params, **kwargs)
+    def __init__(self, **kwargs):
+        super(SegmentsGenerator, self).__init__(**kwargs)
         self._signal = None
 
     @_abstract

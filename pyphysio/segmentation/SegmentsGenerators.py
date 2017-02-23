@@ -1,9 +1,8 @@
 # coding=utf-8
 from ..Utility import PhUI as _PhUI
 from ..BaseSegmentation import SegmentsGenerator, Segment
-from ..Signal import Signal as _Signal
+from ..Signal import UnevenlySignal as _UnevenlySignal
 from pyphysio.Utility import abstractmethod as _abstract
-from numpy import nan as _nan
 
 __author__ = 'AleB'
 
@@ -12,8 +11,8 @@ __author__ = 'AleB'
 
 class _SegmentsWithLabelSignal(SegmentsGenerator):
 
-    def __init__(self, **kwargs):
-        super(_SegmentsWithLabelSignal, self).__init__(**kwargs)
+    def __init__(self, drop_shorter=True, **kwargs):
+        super(_SegmentsWithLabelSignal, self).__init__(drop_shorter=drop_shorter, **kwargs)
         self._labsig = None
 
     @_abstract
@@ -27,7 +26,6 @@ class _SegmentsWithLabelSignal(SegmentsGenerator):
             raise StopIteration()
 
         b, e, label = self.next_segment_mix_labels()
-
         s = Segment(b, e, label, self._signal)
         return s
 
@@ -37,48 +35,61 @@ class _SegmentsWithLabelSignal(SegmentsGenerator):
 
     def next_segment_mix_labels(self):
         label = b = e = None
-        while label is None:
+        while True:
             b, e = self.next_times()
 
             # signal segment bounds
-            first_idx = self._signal.get_idx(b)
-            last_idx = self._signal.get_idx(e)
+            first_idx = self._signal.get_idx(b) if b is not None else b
+            last_idx = self._signal.get_idx(e) if e is not None else e
 
-            # in-range check b,e
-            if first_idx is None:
-                # out of range
-                raise StopIteration()
-            elif last_idx is None:
-                # half out of range, cut to last idx
-                e = self._signal.get_end_time()
+            # full under-range (empty) or full over-range (empty)
+            if last_idx < 0 or first_idx is None:
+                continue
 
-            if not isinstance(self._labsig, _Signal):
+            # part out of range (mixed and shorter as half before the first label's start)
+            if first_idx < 0:
+                if self._params['drop_mixed'] and self._params['drop_shorter']:
+                    # goto next segment
+                    continue
+                else:
+                    # cut to start
+                    b = self._signal.get_start_time()
+
+            # part out of range (shorter as half before the first label's start)
+            if last_idx is None:
+                if self._params['drop_shorter']:
+                    # skip win == end (based on what next_times returns)
+                    continue
+                else:
+                    # cut to end
+                    e = self._signal.get_end_time()
+
+            if not isinstance(self._labsig, _UnevenlySignal):
                 break
 
-            # labels segment bounds
-            first_idx = self._labsig.get_idx(b)
-            last_idx = self._labsig.get_idx(e)
+            # labels segment bounds, can't be None
+            first_iidx = self._labsig.get_iidx(b)
+            last_iidx = self._labsig.get_iidx(e)
 
-            if first_idx is None:
-                label = self._labsig[-1]
+            # first label
+            if first_iidx is not None:
+                label = self._labsig[first_iidx]
             else:
-                # first label
-                first = self._labsig[first_idx]
+                # None label
+                first_iidx = -1
 
-                if last_idx is None:
-                    last_idx = self._labsig.get_end_time()
-
-                # For each label in b,e from the second sample
-                for i in range(first_idx + 1, last_idx):
-                    if first != self._labsig[i]:
-                        # This is a mixed segment
-                        if self._params['drop_mixed']:
-                            # goto next segment
-                            label = None
-                        else:
-                            # keep
-                            label = _nan
-                        break
+            # For each label in b,e from the second sample
+            for i in range(first_iidx + 1, last_iidx):
+                if label != self._labsig[i]:
+                    # This is a mixed segment
+                    if self._params['drop_mixed']:
+                        # goto next segment
+                        continue
+                    else:
+                        # keep
+                        label = None
+                    break
+            break
         return b, e, label
 
 
@@ -92,7 +103,8 @@ class FixedSegments(_SegmentsWithLabelSignal):
     def __init__(self, step, width=0, start=0, labels=None, drop_mixed=True, **kwargs):
         super(FixedSegments, self).__init__(step=step, width=width, start=start, labels=labels,
                                             drop_mixed=drop_mixed, **kwargs)
-        assert labels is None or isinstance(labels, _Signal), "Parameter labels must be a Signal"
+        assert labels is None or isinstance(labels, _UnevenlySignal),\
+            "The parameter 'labels' should be an UnevenlySignal."
         self._step = None
         self._width = None
         self._t = None
@@ -110,6 +122,8 @@ class FixedSegments(_SegmentsWithLabelSignal):
         b = self._t
         self._t += self._step
         e = b + self._width
+        if b >= self._signal.get_end_time():
+            raise StopIteration()
         return b, e
 
 
@@ -122,6 +136,8 @@ class CustomSegments(_SegmentsWithLabelSignal):
     def __init__(self, begins, ends, labels=None, drop_mixed=True, **kwargs):
         super(CustomSegments, self).__init__(begins=begins, ends=ends, labels=labels, drop_mixed=drop_mixed, **kwargs)
         assert len(begins) == len(ends), "The number of begins has to be equal to the number of ends :)"
+        assert labels is None or isinstance(labels, _UnevenlySignal),\
+            "The parameter 'labels' should be an UnevenlySignal."
         self._i = None
         self._b = None
         self._e = None
@@ -145,30 +161,24 @@ class CustomSegments(_SegmentsWithLabelSignal):
 class LabelSegments(_SegmentsWithLabelSignal):
     """
     Generates a list of segments from a label signal, allowing to collapse subsequent equal labels.
-    __init__(labels, collapse=True)
+    __init__(labels)
     """
 
-    def __init__(self, labels, collapse=False, **kwargs):
-        super(LabelSegments, self).__init__(labels=labels, collapse=collapse, **kwargs)
-        assert isinstance(labels, _Signal), "The parameter 'labels' should be a Signal."
+    def __init__(self, labels, **kwargs):
+        super(LabelSegments, self).__init__(labels=labels, **kwargs)
+        assert labels is None or isinstance(labels, _UnevenlySignal),\
+            "The parameter 'labels' should be an UnevenlySignal."
         self._i = None
         self._labsig = None
-        self._collapse = collapse
 
     def init_segmentation(self):
         self._i = 0
         self._labsig = self._params['labels']
 
     def next_times(self):
-        if self._collapse:
-            bi = self._i
-            b = self._labsig.get_time(self._i)
-            self._i += 1
-            while self._labsig[bi] == self._labsig[self._i]:
-                self._i += 1
-            e = self._labsig.get_time(self._i + 1)
-        else:
-            b = self._labsig.get_time(self._i)
-            e = self._labsig.get_time(self._i + 1)
-            self._i += 1
+        b = self._labsig.get_time(self._i)
+        e = self._labsig.get_time(self._i + 1)
+        self._i += 1
+        if b is None:
+            raise StopIteration()
         return b, e

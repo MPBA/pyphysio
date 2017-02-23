@@ -8,7 +8,6 @@ class Tool(Algorithm):
     """
     Algorithms which take as input a signal and return one or more np.array
     """
-    pass
 
     @classmethod
     def get_signal_type(cls):

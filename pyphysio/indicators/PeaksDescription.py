@@ -18,7 +18,7 @@ class _Peaks(_Indicator):
     __metaclass__ = _ABCMeta
 
     def __init__(self, delta, **kwargs):
-        _Indicator.__init__(self, delta=delta, params=kwargs)
+        _Indicator.__init__(self, delta=delta, **kwargs)
 
     @classmethod
     @_abstract
@@ -54,7 +54,7 @@ class PeaksMax(_Peaks):
     """
 
     def __init__(self, delta, **kwargs):
-        _Indicator.__init__(self, delta=delta, params=kwargs)
+        _Indicator.__init__(self, delta=delta, **kwargs)
         
     @classmethod
     def algorithm(cls, signal, params):
@@ -129,7 +129,7 @@ class _PeaksInterval(_Indicator):
     __metaclass__ = _ABCMeta
 
     def __init__(self, delta, pre_max, post_max, **kwargs):
-        _Indicator.__init__(self, delta=delta, pre_max=pre_max, post_max=post_max, params=kwargs)
+        _Indicator.__init__(self, delta=delta, pre_max=pre_max, post_max=post_max, **kwargs)
 
     @classmethod
     @_abstract

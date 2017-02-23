@@ -16,8 +16,7 @@ class Algorithm(object):
     _parameter_error = None
     _log = None
 
-    # TODO: name as parameter in __repr__ to override ugly repr with params
-    def __init__(self, params=None, **kwargs):
+    def __init__(self, **kwargs):
         """
         Incorporates the parameters and saves them in the instance.
         @param params: Dictionary of string-value parameters passed by the user.
@@ -27,12 +26,7 @@ class Algorithm(object):
         @param kwargs: kwargs parameters to pass to the feature extractor.
         @type kwargs: dict
         """
-        assert params is None or type(params) is dict, "The syntax is algorithm([params])(signal)"
-        if params is None:
-            self._params = {}
-        else:
-            self._params = params.copy()
-        self._params.update(kwargs)
+        self._params = kwargs
         # Parameters check
         p = self.get_params_descriptors()
         for n in p:
@@ -58,7 +52,7 @@ class Algorithm(object):
             raise self._parameter_error
 
     def __repr__(self):
-        return self.__class__.__name__ + str(self._params)
+        return self.__class__.__name__ + str(self._params) if 'name' not in self._params else self._params['name']
 
     @classmethod
     def get(cls, data, params=None, use_cache=False, **kwargs):
@@ -75,7 +69,7 @@ class Algorithm(object):
         if type(params) is dict:
             kwargs.update(params)
         if not isinstance(data, Signal):
-            _PhUI.w("The data is not a Signal. Optimization is not available and some errors may be caused by missing meta data (e.g. sampling frequency).")
+            _PhUI.w("The data must be a Signal (see class EvenlySignal and UnevenlySignal).")
             use_cache = False
         if use_cache is True:
             Cache.cache_check(data)
@@ -203,12 +197,14 @@ class Cache(object):
     # Field-unchecked methods
 
     @staticmethod
-    def cache_invalidate(self, calculator, params):
+    def cache_invalidate(self, algorithm, params):
         """
         Invalidates the specified calculator's cached data if any.
-        @type calculator: Algorithm
+        :type algorithm: Algorithm
+        :param self:
+        :param params:
         """
-        hh = calculator.cache_hash(params)
+        hh = algorithm.cache_hash(params)
         if hh in self._cache:
             del self._cache[hh]
 
@@ -216,8 +212,10 @@ class Cache(object):
     def cache_get_data(self, calculator, params):
         """
         Gets data from the cache if valid
-        @type calculator: Algorithm
-        @return: The data or None
+        :param params:
+        :param self:
+        :type calculator: Algorithm
+        :return: The data or None
         """
         hh = calculator.cache_hash(params)
 
