@@ -98,7 +98,7 @@ class SegmentsGenerator(_Algorithm):
 
     @classmethod
     def algorithm(cls, data, params):
-        o = cls(params)
+        o = cls(**params)
         o._signal = data
         return o
 

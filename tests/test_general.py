@@ -177,46 +177,41 @@ class GeneralTest(unittest.TestCase):
         samples = 1000
         freq_down = 7
         freq = freq_down * 13
-        start = 1460713373
+        start = 1460000000
         nature = "una_bif-fa"
-        test_string = 'test1235'
 
         s = ph.EvenlySignal(values=np.cumsum(np.random.rand(1, samples) - .5) * 100,
                             sampling_freq=freq,
                             signal_nature=nature,
-                            start_time=start,
-                            meta={'mode': test_string, 'subject': 'Baptist;Alessandro'}
+                            start_time=start
                             )
 
         def function(y):
-            for j in xrange(len(y)):
+            for j in range(len(y)):
                 self.assertLessEqual(y[j].get_begin(), y[j].get_end())
                 self.assertGreaterEqual(y[j].get_begin(), 0)
                 self.assertGreaterEqual(y[j].get_end(), 0)
-                # list[x:y] where y > len(list) is a valid usage in python so next lines are cut
+                # # list[x:y] where y > len(list) is a valid usage in python so next lines are cut
                 # self.assertLessEqual(y[j].get_begin(), len(s))
                 # self.assertLessEqual(y[j].get_end(), len(s))
 
-        w1 = ph.TimeSegments(step=2, width=3)(s)
+        w1 = ph.FixedSegments(step=2, width=3)(s)
         y1 = [x for x in w1]
         function(y1)
 
-        w2 = ph.LengthSegments(step=100, width=121)(s)
+        w2 = ph.FixedSegments(step=100, width=121)(s)
         y2 = [x for x in w2]
         function(y2)
 
-        w3 = ph.FromEventsSegments(events=ph.EventsSignal(['a', 'a', 'b', 'a', 'r', 's', 'r', 'b'], [10, 12, 13.5, 14.3, 15.6, 20.1123, 25, 36.8]))(s)
+        w3 = ph.LabelSegments(labels=ph.UnevenlySignal([0, 0, 1, 0, 2, 3, 2, 1],
+                                                       np.array([10, 12, 13.5, 14.3, 15.6, 20.1123, 25, 36.8])
+                                                       + start))(s)
         y3 = [x for x in w3]
         function(y3)
 
-        # iter from SegmentsGenerator
-        w4 = ph.ExistingSegments(segments=w3)(s)
+        w4 = ph.CustomSegments(begins=np.arange(s.get_start_time(), s.get_end_time(), 3),
+                               ends=np.arange(s.get_start_time() + 1, s.get_end_time(), 3))(s)
         y4 = [x for x in w4]
-        function(y4)
-
-        # iter from list
-        w5 = ph.ExistingSegments(segments=y3)(s)
-        y5 = [x for x in w5]
         function(y4)
 
         r = [ph.fmap(w1, [ph.Mean(), ph.StDev(), ph.NNx(threshold=31)]),
@@ -229,7 +224,7 @@ class GeneralTest(unittest.TestCase):
              ph.fmap(y4, [ph.Mean(), ph.StDev(), ph.NNx(threshold=31)])]
 
         n = 4
-        for i in xrange(n):
+        for i in range(n):
             self.assertEqual(len(r[i]), len(r[i + n]))
 
     def test_cache_with_time_domain(self):

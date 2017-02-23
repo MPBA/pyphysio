@@ -254,37 +254,27 @@ class UnevenlySignal(Signal):
     _MT_X_INDICES = "x_values"
     _MT_ORIGINAL_LENGTH = "original_length"
 
-    def __new__(cls, values, sampling_freq=1000, signal_nature="", start_time=None, x_values=None,
-                x_type=None):  # meta=None, start_index = 0, check=True):
+    def __new__(cls, values, x_values=None, sampling_freq=1000, signal_nature="", start_time=None,
+                x_type='instants'):  # meta=None, start_index = 0, check=True):
 
         assert x_values is not None, "x_values are missing"
-        assert x_type is not None, "x_type is missing"
+        assert x_type in ['indices', 'instants'], "x_type not in ['indices', 'instants']"
         assert len(x_values) == len(values), "Length mismatch (y:%d vs. x:%d)" % (len(values), len(x_values))
-        indices = None
-        instants = None
+        assert len(_np.where(_np.diff(x_values) <= 0)[0]) == 0, 'Given x_values are not strictly monotonic'
 
         if x_type == 'indices':
-            indices = x_values
-        elif x_type == 'instants':
-            instants = x_values
-
-        if indices is not None:
-            assert len(values) == len(indices), "Length mismatch (y:%d vs. x:%d)" % (len(values), len(indices))
-            assert len(_np.where(_np.diff(indices) <= 0)[0]) == 0, 'Given indices are not strictly monotonic'
-            indices = _np.array(indices)
+            x_values = _np.array(x_values)
             if start_time is None:
                 start_time = 0
         else:
-            assert len(values) == len(instants), "Length mismatch (y:%d vs. x:%d)" % (len(values), len(instants))
-            assert len(_np.where(_np.diff(instants) <= 0)[0]) == 0, 'Given instants are not strictly monotonic'
             if start_time is None:
-                start_time = instants[0]
+                start_time = x_values[0]
             else:
-                assert start_time <= instants[0], "One or more instants are before the starting time"
-            indices = _np.round((instants - start_time) * sampling_freq).astype(int)
+                assert start_time <= x_values[0], "One or more instants are before the starting time"
+                x_values = _np.round((x_values - start_time) * sampling_freq).astype(int)
 
         obj = Signal.__new__(cls, values, sampling_freq, signal_nature, start_time)
-        obj.ph[cls._MT_X_INDICES] = indices
+        obj.ph[cls._MT_X_INDICES] = x_values
         return obj
 
     def get_times(self):
@@ -294,9 +284,11 @@ class UnevenlySignal(Signal):
         return self.ph[self._MT_X_INDICES]
 
     def get_idx(self, time):
-        i = (time - self.get_start_time()) * self.get_sampling_freq()
-        # TODO betterize code
-        return _np.searchsorted(self.get_indices(), i) if time < self.get_duration() else None
+        if time < self.get_duration():
+            i = (time - self.get_start_time()) * self.get_sampling_freq()
+            return _np.searchsorted(self.get_indices(), i)
+        else:
+            return None
 
     def get_time(self, idx):
         return self.ph[self._MT_X_INDICES][idx] / self.get_sampling_freq() + self.get_start_time() if idx < len(self) \

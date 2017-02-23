@@ -52,6 +52,9 @@ class _SegmentsWithLabelSignal(SegmentsGenerator):
                 # half out of range, cut to last idx
                 e = self._signal.get_end_time()
 
+            if not isinstance(self._labsig, _Signal):
+                break
+
             # labels segment bounds
             first_idx = self._labsig.get_idx(b)
             last_idx = self._labsig.get_idx(e)
@@ -96,9 +99,11 @@ class FixedSegments(_SegmentsWithLabelSignal):
 
     def init_segmentation(self):
         self._step = self._params["step"]
-        self._width = self._params["width"]
+        w = self._params["width"]
+        self._width = w if w > 0 else self._step
         self._labsig = self._params["labels"]
-        self._t = self._params["start"]
+        s = self._params["start"]
+        self._t = s if s > 0 else self._signal.get_start_time()
 
     def next_times(self):
         b = self._t
@@ -150,7 +155,7 @@ class LabelSegments(_SegmentsWithLabelSignal):
         self._collapse = collapse
 
     def init_segmentation(self):
-        self._i = -1
+        self._i = 0
         self._labsig = self._params['labels']
 
     def next_times(self):
