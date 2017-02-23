@@ -254,7 +254,8 @@ class UnevenlySignal(Signal):
     _MT_X_INDICES = "x_values"
     _MT_ORIGINAL_LENGTH = "original_length"
 
-    def __new__(cls, values, x_values=None, sampling_freq=1000, signal_nature="", start_time=None,
+    # TODO: keep this format for compatibility with Evenly
+    def __new__(cls, values, sampling_freq=1000, signal_nature="", start_time=None, x_values=None,
                 x_type='instants'):  # meta=None, start_index = 0, check=True):
 
         assert x_values is not None, "x_values are missing"

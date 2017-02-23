@@ -103,6 +103,7 @@ class FixedSegments(_SegmentsWithLabelSignal):
         self._width = w if w > 0 else self._step
         self._labsig = self._params["labels"]
         s = self._params["start"]
+        # TODO : we could also have signals with start_time < 0 ! -> s could be < 0 ==> if s > signal.get_start_time() else self._signal.get_start_time()
         self._t = s if s > 0 else self._signal.get_start_time()
 
     def next_times(self):

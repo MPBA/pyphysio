@@ -13,6 +13,7 @@ __author__ = 'AleB'
 class InBand(_Indicator):
     @classmethod
     def algorithm(cls, data, params):
+        
         freq, spec = PSD(params)(data)
 
         # freq is sorted so
@@ -41,6 +42,7 @@ class PowerInBand(_Indicator):
 class PeakInBand(_Indicator):
     @classmethod
     def algorithm(cls, data, params):
+        
         _freq_band, _pow_band = InBand(params)(data)
         return _freq_band[_np.argmax(_pow_band)]
 
