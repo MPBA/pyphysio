@@ -100,7 +100,7 @@ class FixedSegments(_SegmentsWithLabelSignal):
     __init__(self, step, width=0, start=0, labels=None, drop_mixed=True)
     """
 
-    def __init__(self, step, width=0, start=0, labels=None, drop_mixed=True, **kwargs):
+    def __init__(self, step, width=None, start=None, labels=None, drop_mixed=True, **kwargs):
         super(FixedSegments, self).__init__(step=step, width=width, start=start, labels=labels,
                                             drop_mixed=drop_mixed, **kwargs)
         assert labels is None or isinstance(labels, _UnevenlySignal),\
@@ -112,11 +112,10 @@ class FixedSegments(_SegmentsWithLabelSignal):
     def init_segmentation(self):
         self._step = self._params["step"]
         w = self._params["width"]
-        self._width = w if w > 0 else self._step
+        self._width = w if w is not None else self._step
         self._labsig = self._params["labels"]
         s = self._params["start"]
-        # TODO : we could also have signals with start_time < 0 ! -> s could be < 0 ==> if s > signal.get_start_time() else self._signal.get_start_time()
-        self._t = s if s > 0 else self._signal.get_start_time()
+        self._t = s if s is not None else self._signal.get_start_time()
 
     def next_times(self):
         b = self._t
