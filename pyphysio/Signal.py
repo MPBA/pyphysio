@@ -21,6 +21,7 @@ class Signal(_np.ndarray):
         # TODO (feature) multichannel signals
         # TODO check values is 1-d
         assert sampling_freq > 0, "The sampling frequency cannot be zero or negative"
+        assert not isinstance(start_time, str), "Start time is a String"
         obj = _np.asarray(_np.ravel(values)).view(cls)
         obj._pyphysio = {
             cls._MT_NATURE: signal_nature,
@@ -108,10 +109,10 @@ class Signal(_np.ndarray):
 
     def plot(self, style="", vlines_height=1000):
         # TODO TESTME (feature) verical lines if style='|'
-        if style[0] == "|":
-            _vlines(self.get_times(), -vlines_height/2, vlines_height/2, style[1:])
+        if len(style) > 0 and style[0] == "|":
+            return _vlines(self.get_times(), -vlines_height/2, vlines_height/2, style[1:])
         else:
-            _plot(self.get_times(), self.get_values(), style)
+            return _plot(self.get_times(), self.get_values(), style)
 
     def __repr__(self):
         return "<signal: " + self.get_signal_nature() + ", start_time: " + str(self.get_start_time()) + ">"
@@ -179,7 +180,10 @@ class EvenlySignal(Signal):
                 tck = _interp.interp1d(indexes, self_l, kind=kind)
             signal_out = tck(indexes_out)
 
-        return EvenlySignal(signal_out, fout, self.get_signal_nature(), self.get_start_time())  # , self.get_metadata())
+        return EvenlySignal(values=signal_out,
+                            sampling_freq=fout,
+                            signal_nature=self.get_signal_nature(),
+                            start_time=self.get_start_time())
 
     # TRYME
     def segment_time(self, t_start, t_stop=None):

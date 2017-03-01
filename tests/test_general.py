@@ -24,7 +24,6 @@ class GeneralTest(unittest.TestCase):
                             sampling_freq=freq,
                             signal_nature=nature,
                             start_time=start,
-                            meta={'mode': test_string, 'subject': 'Baptist;Alessandro'}
                             )
 
         # ineffective
@@ -34,7 +33,7 @@ class GeneralTest(unittest.TestCase):
         self.assertEqual(len(s), samples)
         self.assertEqual(len(s.get_values()), samples)
         # length X
-        self.assertEqual(len(s.get_indices()), samples)
+        self.assertEqual(len(s.get_times()), samples)
         # sampling frequency in Hz
         self.assertEqual(s.get_sampling_freq(), freq)
         # duration in seconds
@@ -57,13 +56,10 @@ class GeneralTest(unittest.TestCase):
         test_string = 'test1235'
 
         s = ph.UnevenlySignal(values=np.cumsum(np.random.rand(1, samples) - .5) * 100,
-                              indices=np.cumsum(np.random.rand(1, samples)) * 100,
-                              orig_sampling_freq=freq,
-                              orig_length=original_length,
+                              x_values=np.cumsum(np.random.rand(1, samples)) * 100,
+                              sampling_freq=freq,
                               signal_nature=nature,
                               start_time=start,
-                              meta={'mode': test_string, 'subject': 'Baptist;Alessandro'},
-                              check=True
                               )
 
         # length Y
@@ -100,7 +96,6 @@ class GeneralTest(unittest.TestCase):
                             sampling_freq=freq,
                             signal_nature=nature,
                             start_time=start,
-                            meta={'mode': test_string, 'subject': 'Baptist;Alessandro'}
                             )
 
         def check_resampled(freq_new):
@@ -112,7 +107,7 @@ class GeneralTest(unittest.TestCase):
             # length Y
             self.assertEqual(len(resampled), new_samples)
             # length X
-            self.assertEqual(len(resampled.get_indices()), len(resampled))
+            self.assertEqual(len(resampled.get_times()), len(resampled))
             # sampling frequency in Hz
             self.assertEqual(resampled.get_sampling_freq(), freq_new)
             # duration differs less than 1s from the original
@@ -121,8 +116,6 @@ class GeneralTest(unittest.TestCase):
             self.assertEqual(resampled.get_start_time(), start)
             # end timestamp
             self.assertEqual(resampled.get_end_time(), start + resampled.get_duration())
-            # meta data present
-            self.assertEqual(resampled.get_metadata()['mode'], test_string)
             # start time
             self.assertEqual(resampled.get_signal_nature(), nature)
 
@@ -135,7 +128,7 @@ class GeneralTest(unittest.TestCase):
 
     def test_unevenly_signal_to_evenly(self):
         samples = 200
-        indexes = np.round(np.cumsum(np.random.rand(1, samples)))
+        indexes = np.cumsum(np.round(np.random.rand(1, samples)+1))
         freq = 13
         original_length = (indexes[-1] + 1) * freq
         start = 1460713373
@@ -143,13 +136,10 @@ class GeneralTest(unittest.TestCase):
         test_string = 'test1235'
 
         s = ph.UnevenlySignal(values=np.cumsum(np.random.rand(1, samples) - .5) * 100,
-                              indices=indexes,
-                              orig_sampling_freq=freq,
-                              orig_length=original_length,
+                              x_values=indexes,
+                              sampling_freq=freq,
                               signal_nature=nature,
                               start_time=start,
-                              meta={'mode': test_string, 'subject': 'Baptist;Alessandro'},
-                              check=True
                               )
 
         # conversion
@@ -243,7 +233,6 @@ class GeneralTest(unittest.TestCase):
                             sampling_freq=freq,
                             signal_nature=nature,
                             start_time=start,
-                            meta={'mode': test_string, 'subject': 'Baptist;Alessandro'}
                             )
 
         def function():
@@ -275,13 +264,11 @@ class GeneralTest(unittest.TestCase):
         freq = freq_down * 13
         start = 1460713373
         nature = "una_bif-fa"
-        test_string = 'test1235'
 
         s = ph.EvenlySignal(values=np.cumsum(np.random.rand(1, samples) - .5) * 100,
                             sampling_freq=freq,
                             signal_nature=nature,
                             start_time=start,
-                            meta={'mode': test_string, 'subject': 'Baptist;Alessandro'}
                             )
 
         s1 = s[0:x4]
@@ -299,20 +286,20 @@ class GeneralTest(unittest.TestCase):
         self.assertEqual(len(s5), samples)
         self.assertEqual(len(s6), x2)
         self.assertEqual(len(s7), samples)
-        self.assertEqual(s1.get_indices(0), 0)
-        self.assertEqual(s2.get_indices(0), x1)
-        self.assertEqual(s3.get_indices(0), x2)
-        self.assertEqual(s4.get_indices(0), x3)
-        self.assertEqual(s5.get_indices(0), 0)
-        self.assertEqual(s6.get_indices(0), 0)
-        self.assertEqual(s7.get_indices(0), 0)
-        self.assertEqual(s1.get_indices(-1), x4 - 1)
-        self.assertEqual(s2.get_indices(-1), x3 - 1)
-        self.assertEqual(s3.get_indices(-1), samples - 2)
-        self.assertEqual(s4.get_indices(-1), samples - 1)
-        self.assertEqual(s5.get_indices(-1), samples - 1)
-        self.assertEqual(s6.get_indices(-1), x2 - 1)
-        self.assertEqual(s7.get_indices(-1), samples - 1)
+        self.assertEqual(s1.get_idx(0), 0)
+        self.assertEqual(s2.get_idx(0), x1)
+        self.assertEqual(s3.get_idx(0), x2)
+        self.assertEqual(s4.get_idx(0), x3)
+        self.assertEqual(s5.get_idx(0), 0)
+        self.assertEqual(s6.get_idx(0), 0)
+        self.assertEqual(s7.get_idx(0), 0)
+        self.assertEqual(s1.get_idx(s1.get_end_time()), x4 - 1)
+        self.assertEqual(s2.get_idx(s2.get_end_time()), x3 - 1)
+        self.assertEqual(s3.get_idx(s3.get_end_time()), samples - 2)
+        self.assertEqual(s4.get_idx(s4.get_end_time()), samples - 1)
+        self.assertEqual(s5.get_idx(s5.get_end_time()), samples - 1)
+        self.assertEqual(s6.get_idx(s6.get_end_time()), x2 - 1)
+        self.assertEqual(s7.get_idx(s7.get_end_time()), samples - 1)
 
     def test_unevenly_slicing(self):
         samples = 1000
@@ -323,20 +310,14 @@ class GeneralTest(unittest.TestCase):
         freq = 7 * 13
         start = 1460713373
         nature = "una_bif-fa"
-        test_string = 'test1235'
 
-        x_vals = np.cumsum(np.random.rand(1, samples) * 10).astype(int)
-        orig_len = x_vals[-1] + int(np.random.rand() * 10)
-
-        print "orig_len:", orig_len
+        x_vals = np.cumsum(np.random.rand(1, samples) * 9 + 1).astype(int)
 
         s = ph.UnevenlySignal(values=np.cumsum(np.random.rand(1, samples) - .5) * 100,
-                              indices=x_vals,
-                              orig_sampling_freq=freq,
-                              orig_length=orig_len,
+                              x_values=x_vals,
+                              sampling_freq=freq,
                               signal_nature=nature,
                               start_time=start,
-                              meta={'mode': test_string, 'subject': 'Baptist;Alessandro'}
                               )
 
         s1 = s[0:x4]
@@ -363,20 +344,37 @@ class GeneralTest(unittest.TestCase):
         self.assertEqual(len(s6), len(s6.get_indices()))
         self.assertEqual(len(s7), len(s7.get_indices()))
 
-        self.assertEqual(s1.get_indices(0), s.get_indices(0))
-        self.assertEqual(s2.get_indices(0), s.get_indices(x1))
-        self.assertEqual(s3.get_indices(0), s.get_indices(x2))
-        self.assertEqual(s4.get_indices(0), s.get_indices(x3))
-        self.assertEqual(s5.get_indices(0), s.get_indices(0))
-        self.assertEqual(s6.get_indices(0), s.get_indices(0))
-        self.assertEqual(s7.get_indices(0), s.get_indices(0))
-        self.assertEqual(s1.get_indices(-1), s.get_indices(x4 - 1))
-        self.assertEqual(s2.get_indices(-1), s.get_indices(x3 - 1))
-        self.assertEqual(s3.get_indices(-1), s.get_indices(samples - 2))
-        self.assertEqual(s4.get_indices(-1), s.get_indices(samples - 1))
-        self.assertEqual(s5.get_indices(-1), s.get_indices(samples - 1))
-        self.assertEqual(s6.get_indices(-1), s.get_indices(x2 - 1))
-        self.assertEqual(s7.get_indices(-1), s.get_indices(samples - 1))
+        self.assertEqual(s1.get_indices()[0], s.get_indices()[0])
+        self.assertEqual(s2.get_indices()[0], s.get_indices()[x1])
+        self.assertEqual(s3.get_indices()[0], s.get_indices()[x2])
+        self.assertEqual(s4.get_indices()[0], s.get_indices()[x3])
+        self.assertEqual(s5.get_indices()[0], s.get_indices()[0])
+        self.assertEqual(s6.get_indices()[0], s.get_indices()[0])
+        self.assertEqual(s7.get_indices()[0], s.get_indices()[0])
+        self.assertEqual(s1.get_indices()[-1], s.get_indices()[x4 - 1])
+        self.assertEqual(s2.get_indices()[-1], s.get_indices()[x3 - 1])
+        self.assertEqual(s3.get_indices()[-1], s.get_indices()[samples - 2])
+        self.assertEqual(s4.get_indices()[-1], s.get_indices()[samples - 1])
+        self.assertEqual(s5.get_indices()[-1], s.get_indices()[samples - 1])
+        self.assertEqual(s6.get_indices()[-1], s.get_indices()[x2 - 1])
+        self.assertEqual(s7.get_indices()[-1], s.get_indices()[samples - 1])
+
+    def test_signal_plot(self):
+        s = np.genfromtxt("../sample_data/medical.txt", delimiter="\t", max_rows=10000)
+
+        e = ph.EvenlySignal(values=s[:, 0], sampling_freq=1024, signal_nature="ecg")
+        e, ignored, ignored, ignored = ph.PeakDetection(delta=1)(e)
+        e = ph.UnevenlySignal(values=e, x_values=e, x_type='indices', sampling_freq=1024, signal_nature="ibi")
+        e.plot("|b")
+        e = ph.EvenlySignal(values=s[:, 1], sampling_freq=1024, signal_nature="gsr")
+        e.plot()
+        e = ph.EvenlySignal(values=s[:, 2], sampling_freq=1024, signal_nature="bvp")
+        e.plot()
+        e = ph.EvenlySignal(values=s[:, 3], sampling_freq=1024, signal_nature="resp")
+        e.plot()
+
+        import matplotlib.pyplot as plt
+        plt.show()
 
 
 if __name__ == '__main__':

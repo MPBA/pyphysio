@@ -57,7 +57,7 @@ class PeakDetection(_Tool):
         look_for_max = params['start_max']
         delta = params['delta']
         
-        if isinstance(delta, float):
+        if isinstance(delta, float) or isinstance(delta, int):
             deltas = _np.repeat(delta, len(signal))
         else:
             deltas = delta
@@ -79,7 +79,7 @@ class PeakDetection(_Tool):
             i_activation_min = 0
             i_activation_max = 0
 
-            for i in xrange(1, len(signal)):
+            for i in range(1, len(signal)):
                 sample = signal[i]
                 d = deltas[i]
 
