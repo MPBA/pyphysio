@@ -3,9 +3,11 @@ from __future__ import division
 import numpy as _np
 from scipy import interpolate as _interp
 from pyphysio.Utility import abstractmethod as _abstract
-from matplotlib.pyplot import plot as _plot
+from matplotlib.pyplot import plot as _plot, vlines as _vlines
 
 __author__ = 'AleB'
+
+# TODO: Consider collapsing classes
 
 
 class Signal(_np.ndarray):
@@ -75,10 +77,18 @@ class Signal(_np.ndarray):
         pass
 
     def get_idx(self, time):
-        return (time - self.get_start_time()) * self.get_sampling_freq() if time < self.get_duration() else None
+        return (time - self.get_start_time()) * self.get_sampling_freq() if time < self.get_end_time() else None
+
+    @_abstract
+    def get_iidx(self, time):
+        pass
 
     def get_time(self, idx):
         return idx / self.get_sampling_freq() + self.get_start_time() if idx is not None and idx < len(self) else None
+
+    @_abstract
+    def get_time_from_iidx(self, iidx):
+        pass
 
     @_abstract
     def resample(self, fout, kind='linear'):
@@ -89,12 +99,19 @@ class Signal(_np.ndarray):
         pass
 
     @_abstract
+    def segment_iidx(self, t_start, t_stop=None):
+        pass
+
+    @_abstract
     def segment_time(self, t_start, t_stop=None):
         pass
 
-    def plot(self, style=""):
-        # TODO (feature) verical lines if style='|'
-        _plot(self.get_times(), self.get_values(), style)
+    def plot(self, style="", vlines_height=1000):
+        # TODO TESTME (feature) verical lines if style='|'
+        if style[0] == "|":
+            _vlines(self.get_times(), -vlines_height/2, vlines_height/2, style[1:])
+        else:
+            _plot(self.get_times(), self.get_values(), style)
 
     def __repr__(self):
         return "<signal: " + self.get_signal_nature() + ", start_time: " + str(self.get_start_time()) + ">"
@@ -122,6 +139,12 @@ class EvenlySignal(Signal):
 
     def get_end_time(self):
         return self.get_time(len(self) - 1)
+
+    def get_iidx(self, time):
+        return self.get_idx(time)
+
+    def get_time_from_iidx(self, iidx):
+        return self.get_time(iidx)
 
     def resample(self, fout, kind='linear'):
         """
@@ -204,9 +227,16 @@ class EvenlySignal(Signal):
         portion_values = signal_values[int(idx_start):int(idx_stop)]
         t_0 = self.get_time(idx_start)
 
-        out_signal = EvenlySignal(portion_values, self.get_sampling_freq(), self.get_signal_nature(), t_0)
+        out_signal = EvenlySignal(values=portion_values,
+                                  sampling_freq=self.get_sampling_freq(),
+                                  signal_nature=self.get_signal_nature(),
+                                  start_time=t_0)
 
         return out_signal
+
+    @_abstract
+    def segment_iidx(self, t_start, t_stop=None):
+        return self.segment_idx(t_start, t_stop)
 
     def to_csv(self, filename, comment=''):
         values = self.get_values()
@@ -264,9 +294,7 @@ class UnevenlySignal(Signal):
         else:
             if start_time is None:
                 start_time = x_values[0]
-            else:
-                assert start_time <= x_values[0], "One or more instants are before the starting time"
-                x_values = _np.round((x_values - start_time) * sampling_freq).astype(int)
+            x_values = _np.floor((x_values - start_time) * sampling_freq).astype(int)
 
         obj = Signal.__new__(cls, values, sampling_freq=sampling_freq, start_time=start_time,
                              signal_nature=signal_nature)
@@ -283,7 +311,8 @@ class UnevenlySignal(Signal):
         return self.ph[self._MT_X_INDICES]
 
     def get_time_from_iidx(self, iidx):
-            return self.get_indices()[int(iidx)] / self.get_sampling_freq() + self.get_start_time()
+        ii = self.ph[self._MT_X_INDICES]
+        return ii[int(iidx)] / self.get_sampling_freq() + self.get_start_time() if len(ii) < iidx else None
 
     def get_iidx(self, time):
         if time >= self.get_start_time():

@@ -62,7 +62,7 @@
 #                 _PhUI.i("Processing " + str(w))
 #             self._map.append(self._comp_one(w))
 #         df = self._map
-#         df.columns = self.labels()  # TODO: improve-me
+#         df.columns = self.labels()  # TO#DO: improve-me
 #         return df
 #
 #     def labels(self):

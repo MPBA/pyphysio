@@ -203,9 +203,13 @@ class GeneralTest(unittest.TestCase):
         y2 = [x for x in w2]
         function(y2)
 
-        w3 = ph.LabelSegments(labels=ph.UnevenlySignal([0, 0, 1, 0, 2, 3, 2, 1],
+        w3 = ph.LabelSegments(labels=ph.UnevenlySignal(values=[0, 0, 1, 0, 2, 3, 2, 1],
                                                        x_values=np.array([10, 12, 13.5, 14.3, 15.6, 20.1123, 25, 36.8])
-                                                       + start))(s)
+                                                       + start,
+                                                       # start_time=start,
+                                                       x_type='instants'
+                                                       ))(s)
+
         y3 = [x for x in w3]
         function(y3)
 
