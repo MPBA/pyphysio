@@ -109,7 +109,8 @@ class Embed(_Indicator):
         num = len(signal) - n + 1
         if num > 0:
             emb = _np.zeros([num, n])
-            for i in xrange(num):
+            # 2>3 xrange>range
+            for i in range(num):
                 emb[i, :] = signal[i:i + n]
             return emb
         else:
@@ -156,12 +157,14 @@ class ApproxEntropy(_Indicator):
             d_m1 = _cd(uj_m1, uj_m1, 'chebyshev')
 
             cmr_m_ap_en = _np.zeros(card_elem_m)
-            for i in xrange(card_elem_m):
+            # 2>3 xrange>range
+            for i in range(card_elem_m):
                 vector = d_m[i]
                 cmr_m_ap_en[i] = float(sum(1 for i in vector if i <= r)) / card_elem_m
 
             cmr_m1_ap_en = _np.zeros(card_elem_m1)
-            for i in xrange(card_elem_m1):
+            # 2>3 xrange>range
+            for i in range(card_elem_m1):
                 vector = d_m1[i]
                 cmr_m1_ap_en[i] = float(sum(1 for i in vector if i <= r)) / card_elem_m1
 
@@ -198,12 +201,14 @@ class SampleEntropy(_Indicator):
             d_m1 = _cd(uj_m1, uj_m1, 'chebyshev')
 
             cmr_m_sa_mp_en = _np.zeros(num_elem_m)
-            for i in xrange(num_elem_m):
+            # 2>3 xrange>range
+            for i in range(num_elem_m):
                 vector = d_m[i]
                 cmr_m_sa_mp_en[i] = (sum(1 for i in vector if i <= r) - 1) / (num_elem_m - 1)
 
             cmr_m1_sa_mp_en = _np.zeros(num_elem_m1)
-            for i in xrange(num_elem_m1):
+            # 2>3 xrange>range
+            for i in range(num_elem_m1):
                 vector = d_m1[i]
                 cmr_m1_sa_mp_en[i] = (sum(1 for i in vector if i <= r) - 1) / (num_elem_m1 - 1)
 
@@ -234,9 +239,11 @@ class DFAShortTerm(_Indicator):
             y = y - ave
             l = _np.arange(4, 17, 4)
             f = _np.zeros(len(l))  # f(n) of different given box length n
-            for i in xrange(0, len(l)):
+            # 2>3 xrange>range
+            for i in range(0, len(l)):
                 n = int(l[i])  # for each box length l[i]
-                for j in xrange(0, len(x), n):  # for each box
+                # 2>3 xrange>range
+                for j in range(0, len(x), n):  # for each box
                     if j + n < len(x):
                         c = range(j, j + n)
                         c = _np.vstack([c, _np.ones(n)]).T  # coordinates of time in the box
@@ -264,9 +271,11 @@ class DFALongTerm(_Indicator):
             l_max = _np.min([64, len(x)])
             l = _np.arange(16, l_max + 1, 4)
             f = _np.zeros(len(l))  # f(n) of different given box length n
-            for i in xrange(0, len(l)):
+            # 2>3 xrange>range
+            for i in range(0, len(l)):
                 n = int(l[i])  # for each box length l[i]
-                for j in xrange(0, len(x), n):  # for each box
+                # 2>3 xrange>range
+                for j in range(0, len(x), n):  # for each box
                     if j + n < len(x):
                         c = range(j, j + n)
                         c = _np.vstack([c, _np.ones(n)]).T  # coordinates of time in the box
