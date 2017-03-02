@@ -22,7 +22,6 @@ class SomeIndicatorsTest(unittest.TestCase):
                             sampling_freq=freq,
                             signal_nature=nature,
                             start_time=start,
-                            meta={'mode': test_string, 'subject': 'Baptist;Alessandro'}
                             )
 
         self.assertGreaterEqual(ph.RMSSD()(s), 0)
