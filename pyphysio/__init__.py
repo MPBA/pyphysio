@@ -122,7 +122,7 @@ def fmap(segments, algorithms, alt_signal=None):
     algorithm names.
     """
     from numpy import asarray as _asarray
-    values = _asarray([[seg.get_begin(), seg.get_end()] + [alg(seg(alt_signal)) for alg in algorithms]
+    values = _asarray([[seg.get_begin_time(), seg.get_end_time()] + [alg(seg(alt_signal)) for alg in algorithms]
                     for seg in segments]) 
     labels = _asarray([seg.get_label() for seg in segments]) 
     col_names = ["begin", "end"] + map(lambda x: x.__repr__(), algorithms)
