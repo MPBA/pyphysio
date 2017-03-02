@@ -735,11 +735,12 @@ class BeatOutliers(_Tool):
     @classmethod
     def algorithm(cls, signal, params):
         cache, sensitivity, ibi_median = params["cache"], params["sensitivity"], params["ibi_median"]
-
+        
         if ibi_median == 0:
-            ibi_expected = _np.median(signal)
+            ibi_expected = float(_np.median(signal))
         else:
-            ibi_expected = ibi_median
+            ibi_expected = float(ibi_median)
+        
         id_bad_ibi = []
         ibi_cache = _np.repeat(ibi_expected, cache)
         counter_bad = 0
@@ -761,7 +762,7 @@ class BeatOutliers(_Tool):
                 id_bad_ibi.append(i)  # append ibi id to the list of bad ibi
                 counter_bad += 1
             else:
-                ibi_cache = _np.r_[ibi_cache[-cache + 1:], curr_ibi]
+                ibi_cache = _np.r_[ibi_cache[1:], curr_ibi]
                 counter_bad = 0
             if counter_bad == cache:  # ibi cache probably corrupted, reinitialize
                 ibi_cache = _np.repeat(ibi_expected, cache)
