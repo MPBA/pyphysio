@@ -9,7 +9,7 @@ __author__ = 'AleB'
 # TODO: not really useful... we should write a test for all indicatots
 class SyntaxTest(unittest.TestCase):
     def test_fmap_and_algo(self):
-        s = ph.EvenlySignal((np.sin(np.random.rand(100, 1) * 3.14 - (3.14 / 2)) + 1) * 93, 15)
+        s = ph.EvenlySignal((np.sin(np.random.rand(100) * 3.14 - (3.14 / 2)) + 1) * 93, 15)
         lf = ph.PowerInBand(freq_max=1, freq_min=0.001, method='ar')
         hf = ph.PowerInBand(freq_max=4, freq_min=1, method='ar')
 

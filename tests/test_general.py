@@ -12,27 +12,26 @@ __author__ = 'aleb'
 
 # noinspection PyArgumentEqualDefault
 class GeneralTest(unittest.TestCase):
-    
+
     # TODO: test segment_time() and segment_idx()
     def test_evenly_signal_segment_time(self):
         pass
-    
+
     def test_unevenly_signal_segment_time(self):
         pass
-    
+
     def test_evenly_signal_segment_idx(self):
         pass
-    
+
     def test_unevenly_signal_segment_idx(self):
         pass
-    
+
     def test_evenly_signal_base(self):
         samples = 1000
         freq_down = 13
         freq = freq_down * 7
         start = 1460713373
         nature = "una_bif-fa"
-        test_string = 'test1235'
 
         s = ph.EvenlySignal(values=np.cumsum(np.random.rand(1, samples) - .5) * 100,
                             sampling_freq=freq,
@@ -41,7 +40,7 @@ class GeneralTest(unittest.TestCase):
                             )
         # TODO: assert properties of original s
         # ...
-        
+
         # ineffective
         s.resample(freq_down)
 
@@ -62,24 +61,23 @@ class GeneralTest(unittest.TestCase):
         self.assertEqual(s.get_end_time(), start + s.get_duration())
         # start time
         self.assertEqual(s.get_signal_nature(), nature)
-        
 
     # TODO : test_unevenly_signal_base with x_values of type 'indices'
     def test_unevenly_signal_base(self):
         samples = 200
         freq = 13
-        start = 1460713373
+        start = 0
         nature = "una_bif-fa"
-        test_string = 'test1235'
 
         s = ph.UnevenlySignal(values=np.cumsum(np.random.rand(1, samples) - .5) * 100,
-                              x_values=np.cumsum(np.random.rand(1, samples)) * 100,
+                              x_values=np.cumsum(np.random.rand(1, samples)) * 100 + start,
                               sampling_freq=freq,
                               signal_nature=nature,
                               start_time=start,
+                              x_type='indices'
                               )
         # assert properties of original s
-        # 
+        #
         # length Y
         self.assertEqual(len(s), samples)
         self.assertEqual(len(s.get_values()), samples)
@@ -94,7 +92,6 @@ class GeneralTest(unittest.TestCase):
         # start time
         self.assertEqual(s.get_signal_nature(), nature)
 
-
     def test_evenly_signal_resample(self):
         samples = 1000
         freq_down = 7
@@ -103,7 +100,6 @@ class GeneralTest(unittest.TestCase):
         freq_down_r = freq / 5
         start = 1460713373
         nature = "una_bif-fa"
-        test_string = 'test1235'
 
         s = ph.EvenlySignal(values=np.cumsum(np.random.rand(1, samples) - .5) * 100,
                             sampling_freq=freq,
@@ -139,15 +135,12 @@ class GeneralTest(unittest.TestCase):
         check_resampled(freq_up)
         # down-sampling rationale
         check_resampled(freq_down_r)
-        
-        # TODO: random generated fsamp (int e float)
-        
 
     def test_unevenly_signal_to_evenly(self):
         samples = 200
         indexes = np.cumsum(np.round(np.random.rand(1, samples) + 1))
         freq = 13
-        start = 1460713373
+        start = 0
         nature = "una_bif-fa"
 
         s = ph.UnevenlySignal(values=np.cumsum(np.random.rand(1, samples) - .5) * 100,
@@ -155,10 +148,11 @@ class GeneralTest(unittest.TestCase):
                               sampling_freq=freq,
                               signal_nature=nature,
                               start_time=start,
+                              x_type='indices'
                               )
 
         # conversion
-        s = s.to_evenly()  
+        s = s.to_evenly()
 
         # length
         self.assertEqual(len(s.get_values()), len(s))
@@ -184,7 +178,6 @@ class GeneralTest(unittest.TestCase):
                             start_time=start
                             )
 
-        # TODO: ma veramente hai chiamato una funzione 'function' ??? :D
         def function(y):
             for j in range(len(y)):
                 self.assertLessEqual(y[j].get_begin(), y[j].get_end())
@@ -237,7 +230,6 @@ class GeneralTest(unittest.TestCase):
         freq = freq_down * 7
         start = 1460713373
         nature = "una_bif-fa"
-        test_string = 'test1235'
 
         s = ph.EvenlySignal(values=np.cumsum(np.random.rand(1, samples) - .5) * 100,
                             sampling_freq=freq,
@@ -318,7 +310,7 @@ class GeneralTest(unittest.TestCase):
         x3 = 590
         x4 = 999
         freq = 7 * 13
-        start = 1460713373
+        start = 0
         nature = "una_bif-fa"
 
         x_vals = np.cumsum(np.random.rand(1, samples) * 9 + 1).astype(int)
@@ -328,6 +320,7 @@ class GeneralTest(unittest.TestCase):
                               sampling_freq=freq,
                               signal_nature=nature,
                               start_time=start,
+                              x_type='indices'
                               )
 
         s1 = s.segment_iidx(0, x4)
@@ -369,7 +362,6 @@ class GeneralTest(unittest.TestCase):
         self.assertEqual(s6.get_indices()[-1], s.get_indices()[x2 - 1])
         self.assertEqual(s7.get_indices()[-1], s.get_indices()[samples - 1])
 
-    
     # TODO: following test should be in a pipeline test
     def test_signal_plot(self):
         s = np.genfromtxt("sample_data/medical.txt", delimiter="\t", max_rows=10000)
@@ -387,7 +379,7 @@ class GeneralTest(unittest.TestCase):
 
         import matplotlib.pyplot as plt
         plt.show()
-        # TODO: add plt.close()
+        plt.close()
 
 
 if __name__ == '__main__':

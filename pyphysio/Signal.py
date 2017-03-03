@@ -17,15 +17,15 @@ class Signal(_np.ndarray):
     _MT_SAMPLING_FREQ = "sampling_freq"
     _MT_INFO_ATTR = "_pyphysio"
 
-    def __new__(cls, values, sampling_freq, start_time=0, signal_nature=""):
+    def __new__(cls, values, sampling_freq, start_time=None, signal_nature=""):
         # TODO (feature) multichannel signals
-        # TODO check values is 1-d
         assert sampling_freq > 0, "The sampling frequency cannot be zero or negative"
         assert not isinstance(start_time, str), "Start time is a String"
-        obj = _np.asarray(_np.ravel(values)).view(cls)
+        obj = _np.asarray(values).view(cls)
+        assert obj.ndim == 1, "Dimension not 1"
         obj._pyphysio = {
             cls._MT_NATURE: signal_nature,
-            cls._MT_START_TIME: start_time,
+            cls._MT_START_TIME: start_time if start_time is not None else 0,
             cls._MT_SAMPLING_FREQ: sampling_freq,
         }
         return obj
@@ -109,7 +109,6 @@ class Signal(_np.ndarray):
         pass
 
     def plot(self, style="", vlines_height=1000):
-        # TODO TESTME (feature) verical lines if style='|'
         if len(style) > 0 and style[0] == "|":
             return _vlines(self.get_times(), -vlines_height/2, vlines_height/2, style[1:])
         else:
@@ -230,27 +229,26 @@ class EvenlySignal(Signal):
         portion : EvenlySignal
             The selected portion
         """
+        return self.segment_iidx(idx_start, idx_stop)
+
+    # TRYME
+    def segment_iidx(self, iidx_start, iidx_stop=None):
 
         signal_values = self.get_values()
 
-        if idx_start is None:
-            idx_start = 0
-        if idx_stop is None:
-            idx_stop = len(self)
+        if iidx_start is None:
+            iidx_start = 0
+        if iidx_stop is None:
+            iidx_stop = len(self)
 
-        portion_values = signal_values[int(idx_start):int(idx_stop)]
-        t_0 = self.get_time(idx_start)
+        values = signal_values[int(iidx_start):int(iidx_stop)]
 
-        out_signal = EvenlySignal(values=portion_values,
+        out_signal = EvenlySignal(values=values,
                                   sampling_freq=self.get_sampling_freq(),
                                   signal_nature=self.get_signal_nature(),
-                                  start_time=t_0)
+                                  start_time=self.get_time(iidx_start))
 
         return out_signal
-
-    # TRYME
-    def segment_iidx(self, t_start, t_stop=None):
-        return self.segment_idx(t_start, t_stop)
 
     def to_csv(self, filename, comment=''):
         values = self.get_values()
@@ -300,27 +298,33 @@ class UnevenlySignal(Signal):
             x_values = _np.array(x_values)
             if start_time is None:
                 start_time = 0
+            else:
+                assert start_time < x_values[1] / sampling_freq, "More than one sample at or before start_time"
         else:
             if start_time is None:
                 start_time = x_values[0]
                 x_values = _np.floor((x_values - start_time) * sampling_freq).astype(int)
             else:
+                # TODO Andrea Start time could be also after the first sample so that a signal could be defined also in
+                # the start_time instant
+                assert start_time < x_values[1], "More than one sample at or before start_time"
                 x_values = _np.floor(x_values * sampling_freq).astype(int)
 
-        obj = Signal.__new__(cls, values, sampling_freq=sampling_freq, start_time=start_time,
+        obj = Signal.__new__(cls, values=values,
+                             sampling_freq=sampling_freq,
+                             start_time=start_time,
                              signal_nature=signal_nature)
         obj.ph[cls._MT_X_INDICES] = x_values
         return obj
 
     def get_end_time(self):
-        return self.get_time(self.get_indices()[-1]) + 1. / self.get_sampling_freq()
+        return self.get_time(self.get_indices()[-1]) + 1. / self.get_sampling_freq()  # TODO if good to add 1/f
 
     def get_times(self):
-        return (self.ph[self._MT_X_INDICES]) / self.get_sampling_freq() + self.get_start_time()
+        return self.ph[self._MT_X_INDICES] / self.get_sampling_freq() + self.get_start_time()
 
     def get_time(self, idx):
-        return idx / self.get_sampling_freq() + self.get_start_time()\
-            if idx is not None and idx <= self.get_indices()[-1] else None
+        return idx / self.get_sampling_freq() + self.get_start_time() if idx is not None else None
 
     def get_indices(self):
         return self.ph[self._MT_X_INDICES]
@@ -330,9 +334,11 @@ class UnevenlySignal(Signal):
             if iidx < len(self) else None
 
     def get_iidx(self, time):
-        if time >= self.get_start_time():
-            i = (time - self.get_start_time()) * self.get_sampling_freq()
-            return int(_np.searchsorted(self.get_indices(), i))
+        return self.get_iidx_from_idx((time - self.get_start_time()) * self.get_sampling_freq())
+
+    def get_iidx_from_idx(self, idx):
+        if idx >= self.get_indices()[0]:
+            return int(_np.searchsorted(self.get_indices(), idx))
         else:
             return None
 
@@ -359,10 +365,9 @@ class UnevenlySignal(Signal):
             The interpolated signal
         """
 
-        assert not (kind == 'cubic' and len(self) <= 3), 'At least 4 samples needed for cubic interpolation'
+        assert kind != 'cubic' or len(self) > 3, "At least 4 samples needed for cubic interpolation"
 
         data_x = self.ph[self._MT_X_INDICES]  # From a constant freq range
-
         data_y = self.get_values()
 
         # Cubic if needed
@@ -381,11 +386,9 @@ class UnevenlySignal(Signal):
                                start_time=self.get_start_time())
         return sig_out
 
-    # TRYME
     def resample(self, fout, kind='linear'):
         return self.to_evenly(kind).resample(fout, kind)
 
-    # TRYME
     def segment_time(self, t_start, t_stop=None):
         """
         Segment the signal given a time interval
@@ -403,10 +406,9 @@ class UnevenlySignal(Signal):
             The selected portion
         """
 
-        return self.segment_iidx(self.get_iidx(t_start),
-                                 self.get_iidx(t_stop) if t_stop is not None else None)
+        return self.segment_idx(self.get_idx(t_start) if t_start is not None else None,
+                                self.get_idx(t_stop) if t_stop is not None else None)
 
-    # TRYME
     def segment_idx(self, idx_start, idx_stop=None):
         """
         Segment the signal given the indexes
@@ -423,14 +425,21 @@ class UnevenlySignal(Signal):
         portion : UnvenlySignal
             The selected portion
         """
+        if idx_start is None:
+            idx_stop = len(self)
+        if idx_start is None:
+            idx_start = 0
 
-        # TODO More flexible times, consider start_time to be aligned (can first index be negative (before start_time))?
+        iidx_start = int(self.get_iidx_from_idx(idx_start))
+        iidx_stop = int(self.get_iidx_from_idx(idx_stop))
 
-        return self.segment_iidx(self.get_iidx(self.get_time(idx_start)),
-                                 self.get_iidx(self.get_time(idx_stop)) if idx_stop is not None else None)
+        return UnevenlySignal(values=self.get_values()[iidx_start:iidx_stop],
+                              x_values=self.get_indices()[iidx_start:iidx_stop],
+                              sampling_freq=self.get_sampling_freq(),
+                              signal_nature=self.get_signal_nature(),
+                              start_time=self.get_time(idx_start),
+                              x_type='indices')
 
-
-    # TRYME
     def segment_iidx(self, iidx_start, iidx_stop=None):
         """
         Segment the signal given the inner indexes

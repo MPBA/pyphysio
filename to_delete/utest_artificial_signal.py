@@ -1,7 +1,7 @@
 # coding=utf-8
 from __future__ import division
 import numpy as np
-import pyPhysio as ph
+import pyphysio as ph
 
 FSAMP = 10
 TSTART = 10

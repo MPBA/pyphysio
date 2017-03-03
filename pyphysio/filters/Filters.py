@@ -2,9 +2,9 @@
 from __future__ import division
 import numpy as _np
 from scipy.signal import gaussian as _gaussian, filtfilt as _filtfilt, filter_design as _filter_design, deconvolve as _deconvolve
+from matplotlib.pyplot import plot as _plot
 from ..BaseFilter import Filter as _Filter
 from ..Signal import EvenlySignal as _EvenlySignal, UnevenlySignal as _UnevenlySignal, Signal as _Signal
-from ..Utility import PhUI as _PhUI
 from ..Parameters import Parameter as _Par
 from ..Utility import abstractmethod as _abstract
 
@@ -46,8 +46,7 @@ class Normalize(_Filter):
     _params_descriptors = {
         'norm_method': _Par(0, str, 'Method for the normalization.', 'standard', lambda x: x in ['mean', 'standard', 'min', 'maxmin', 'custom']),
         'norm_bias': _Par(2, float, 'Bias for custom normalization', activation=lambda x, p: p['norm_method'] == 'custom'),
-        'norm_range': _Par(2, float, 'Range for custom normalization', activation=lambda x, p: p['norm_method'] == 'custom')
-        #TODO: check norm_range !=0
+        'norm_range': _Par(2, float, 'Range for custom normalization', lambda x: x != 0, lambda x, p: p['norm_method'] == 'custom')
     }
     
     class Types(object):
@@ -96,7 +95,7 @@ class Diff(_Filter):
     """
     
     _params_descriptors = {
-        'degree': _Par(0, int, 'Degree of the differences', 1, lambda x: x>0)
+        'degree': _Par(0, int, 'Degree of the differences', 1, lambda x: x > 0)
     }
     
     @classmethod
@@ -104,18 +103,15 @@ class Diff(_Filter):
         """
         Calculates the differences between consecutive values
         """
-#        if isinstance(signal, _Signal) and not isinstance(signal, _EvenlySignal):
-#            cls.log("Computing %s on '%s' may not make sense." % (cls.__name__, signal.__class__.__name__))
         degree = params['degree']
 
         sig_1 = signal[:-degree]
         sig_2 = signal[degree:]
-        
-        # TODO: should return the same signal type of the input, with same characteristics
+
         out = _EvenlySignal(values=sig_2 - sig_1,
                             sampling_freq=signal.get_sampling_freq(),
                             signal_nature=signal.get_signal_nature(),
-                            start_time=signal.get_start_time()+ degree / signal.get_sampling_freq())
+                            start_time=signal.get_start_time() + degree / signal.get_sampling_freq())
 
         return out
 
@@ -387,17 +383,14 @@ class DeConvolutionalFilter(_Filter):
             out = _np.fft.ifft(fft_signal / fft_irf)
         elif deconvolution_method == 'sps':
             cls.warn(cls.__name__+': sps based deconvolution needs to be tested. Use carefully.')
-            out, _  = _deconvolve(signal, irf)
+            out, _ = _deconvolve(signal, irf)
         else:
             print('Deconvolution method not implemented. Returning original signal.')
             out = signal.get_values()
-                
-            
+
         out_signal = _EvenlySignal(abs(out), signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time())
 
         return out_signal
 
-    @classmethod
-    def plot(cls):
-        # TODO (new feature): plot the irf
-        pass
+    def plot(self):
+        _plot(self._params['irf'])

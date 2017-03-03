@@ -37,7 +37,6 @@ class PowerInBand(_Indicator):
     # TODO (feature): add normalize option (total, length)
     
 
-
 class PeakInBand(_Indicator):
     @classmethod
     def algorithm(cls, data, params):
