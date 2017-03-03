@@ -111,6 +111,7 @@ class GeneralTest(unittest.TestCase):
                             start_time=start,
                             )
 
+        # TODO: test also different interpolationi methods
         def check_resampled(freq_new):
             # resample
             resampled = s.resample(freq_new)
