@@ -172,7 +172,7 @@ class IIRFilter(_Filter):
         ws = fs / nyq
         b, a = _filter_design.iirdesign(wp, ws, loss, att, ftype=ftype, output="ba")
                 
-        sig_filtered = _EvenlySignal(_filtfilt(b, a, signal.get_values()), signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time())
+        sig_filtered = _EvenlySignal(_filtfilt(b, a, signal.get_values()), sampling_freq = signal.get_sampling_freq(), signal_nature = signal.get_signal_nature(), start_time = signal.get_start_time())
         if _np.isnan(sig_filtered[0]):
             cls.warn(cls.__name__ + ': Filter parameters allow no solution. Returning original signal.')
             return signal
@@ -330,8 +330,7 @@ class ConvolutionalFilter(_Filter):
 
         signal_f = _np.convolve(signal_, irf, mode='same')
 
-        signal_out = _EvenlySignal(signal_f[n:-n], signal.get_sampling_freq(), signal.get_signal_nature(),
-                                   signal.get_start_time())
+        signal_out = _EvenlySignal(signal_f[n:-n], sampling_freq = signal.get_sampling_freq(), signal_nature = signal.get_signal_nature(), start_time = signal.get_start_time())
         return signal_out
 
     @classmethod

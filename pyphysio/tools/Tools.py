@@ -468,7 +468,7 @@ class Maxima(_Tool):
                     maxs.append(curr_max)
             idx_maxs = idx_maxs[1:]
             maxs = maxs[1:]
-            return idx_maxs, maxs
+            return _np.array(idx_maxs), _np.array(maxs)
 
 
 class Minima(_Tool):
@@ -500,9 +500,10 @@ class Minima(_Tool):
 
     @classmethod
     def algorithm(cls, signal, params):
+        signal = signal.copy()
         signal *= -1
-        idx_mins, mins = Maxima(params)(signal)
-        return idx_mins, -mins
+        idx_mins, mins = Maxima(**params)(signal)
+        return idx_mins, -1*mins
 
     _params_descriptors = {
         'method': _Par(2, str, 'Method to detect the minima', constraint=lambda x: x in ['complete', 'windowing']),
@@ -839,7 +840,7 @@ class BeatOptimizer(_Tool):
     See REF
     #TODO: insert REF      
     """
-    
+    # FIXME: (Andrea) Wrong first sample in the returned signal
     _params_descriptors = {
         'B': _Par(0, float, 'Ball radius in seconds to allow pairing between forward and backward beats', 0.25, lambda x: x > 0),
         'cache': _Par(0, int, 'Nuber of IBI to be stored in the cache for adaptive computation of the interval of accepted values', 5, lambda x: x > 0),

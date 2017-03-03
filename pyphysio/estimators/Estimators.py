@@ -117,7 +117,7 @@ class BeatFromBP(_Estimator):
         ibi_values = _np.diff(true_peaks) / fsamp
         idx_ibi = _np.array(true_peaks)
 
-        ibi = _UnevenlySignal(ibi_values, fsamp, 'IBI', signal.get_start_time(), x_values = idx_ibi[1:], x_type = 'indices')
+        ibi = _UnevenlySignal(values = ibi_values, sampling_freq = fsamp, signal_nature = 'IBI', start_time = signal.get_start_time(), x_values = idx_ibi[1:], x_type = 'indices')
         return ibi
 
 class BeatFromECG(_Estimator):
