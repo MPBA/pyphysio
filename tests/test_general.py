@@ -12,6 +12,20 @@ __author__ = 'aleb'
 
 # noinspection PyArgumentEqualDefault
 class GeneralTest(unittest.TestCase):
+    
+    # TODO: test segment_time() and segment_idx()
+    def test_evenly_signal_segment_time(self):
+        pass
+    
+    def test_unevenly_signal_segment_time(self):
+        pass
+    
+    def test_evenly_signal_segment_idx(self):
+        pass
+    
+    def test_unevenly_signal_segment_idx(self):
+        pass
+    
     def test_evenly_signal_base(self):
         samples = 1000
         freq_down = 13
@@ -25,10 +39,14 @@ class GeneralTest(unittest.TestCase):
                             signal_nature=nature,
                             start_time=start,
                             )
-
+        # TODO: assert properties of original s
+        # ...
+        
         # ineffective
         s.resample(freq_down)
 
+        # FIXME: this is part of test_evenly_signal_resample (?)
+        # assert properties of resampled s
         # length Y
         self.assertEqual(len(s), samples)
         self.assertEqual(len(s.get_values()), samples)
@@ -44,7 +62,9 @@ class GeneralTest(unittest.TestCase):
         self.assertEqual(s.get_end_time(), start + s.get_duration())
         # start time
         self.assertEqual(s.get_signal_nature(), nature)
+        
 
+    # TODO : test_unevenly_signal_base with x_values of type 'indices'
     def test_unevenly_signal_base(self):
         samples = 200
         freq = 13
@@ -58,7 +78,8 @@ class GeneralTest(unittest.TestCase):
                               signal_nature=nature,
                               start_time=start,
                               )
-
+        # assert properties of original s
+        # 
         # length Y
         self.assertEqual(len(s), samples)
         self.assertEqual(len(s.get_values()), samples)
@@ -72,6 +93,7 @@ class GeneralTest(unittest.TestCase):
         self.assertEqual(s.get_end_time(), start + s.get_duration())
         # start time
         self.assertEqual(s.get_signal_nature(), nature)
+
 
     def test_evenly_signal_resample(self):
         samples = 1000
@@ -116,6 +138,9 @@ class GeneralTest(unittest.TestCase):
         check_resampled(freq_up)
         # down-sampling rationale
         check_resampled(freq_down_r)
+        
+        # TODO: random generated fsamp (int e float)
+        
 
     def test_unevenly_signal_to_evenly(self):
         samples = 200
@@ -132,7 +157,7 @@ class GeneralTest(unittest.TestCase):
                               )
 
         # conversion
-        s = s.to_evenly()  # TODO: add custom freq
+        s = s.to_evenly()  
 
         # length
         self.assertEqual(len(s.get_values()), len(s))
@@ -158,9 +183,11 @@ class GeneralTest(unittest.TestCase):
                             start_time=start
                             )
 
+        # TODO: ma veramente hai chiamato una funzione 'function' ??? :D
         def function(y):
             for j in range(len(y)):
                 self.assertLessEqual(y[j].get_begin(), y[j].get_end())
+                # TODO: 0 should be s.get_start_time() ?
                 self.assertGreaterEqual(y[j].get_begin(), 0)
                 self.assertGreaterEqual(y[j].get_end(), 0)
                 # # list[x:y] where y > len(list) is a valid usage in python so next lines are cut
@@ -341,6 +368,8 @@ class GeneralTest(unittest.TestCase):
         self.assertEqual(s6.get_indices()[-1], s.get_indices()[x2 - 1])
         self.assertEqual(s7.get_indices()[-1], s.get_indices()[samples - 1])
 
+    
+    # TODO: following test should be in a pipeline test
     def test_signal_plot(self):
         s = np.genfromtxt("sample_data/medical.txt", delimiter="\t", max_rows=10000)
 
@@ -357,6 +386,7 @@ class GeneralTest(unittest.TestCase):
 
         import matplotlib.pyplot as plt
         plt.show()
+        # TODO: add plt.close()
 
 
 if __name__ == '__main__':
