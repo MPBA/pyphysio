@@ -293,7 +293,7 @@ class PSD(_Tool):
         'remove_mean': _Par(0, bool, 'Whether to remove the mean from the signal before estimation of the PSD', True)
     }
     
-    # TODO (feature): consider point below:
+    # Issue #15: consider point below:
     # A density spectrum considers the amplitudes per unit frequency.
     # Density spectra are used to compare spectra with different frequency resolution as the
     # magnitudes are not influenced by the resolution because it is per Hertz. The amplitude
@@ -308,7 +308,7 @@ class PSD(_Tool):
         remove_mean = params['remove_mean']
         
         if not isinstance(signal, _EvenlySignal):
-            #TODO (feature) lomb scargle
+            
             if len(signal) < 2: #zero or one sample: interpolation not allowed
                 return _np.repeat(_np.nan, 2), _np.repeat(_np.nan, 2)
         
@@ -1205,7 +1205,6 @@ class OptimizeBateman(_Tool):
             diff_maxs = _np.diff(_np.r_[maxp, len(driver) - 1])
             th_diff = WLEN * fsamp
 
-            # TODO (feature): select th such as to have enough maxs, e.g. diff_maxs_tentative = np.median(diff_maxs)
             idx_selected_maxs = _np.where(diff_maxs > th_diff)[0]
             selected_maxs = maxp[idx_selected_maxs]
 

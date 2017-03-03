@@ -161,9 +161,6 @@ class IIRFilter(_Filter):
         if isinstance(signal, _Signal) and not isinstance(signal, _EvenlySignal):
             cls.warn(cls.__name__ + ': Filtering Unevenly signal is undefined. Returning original signal.')
         
-        # TODO (feature): check that fs and fp are meaningful
-        # TODO (feature): if A and B already exist and fsamp is not changed skip the following
-        # TODO (feature): check if fs, fp, fsamp allow no solution for the filter
         nyq = 0.5 * fsamp
         fp = _np.array(fp)
         fs = _np.array(fs)
@@ -181,7 +178,6 @@ class IIRFilter(_Filter):
 
     @_abstract
     def plot(self):
-        # TODO (feature): plot frequency response
         pass
 
 class DenoiseEDA(_Filter):
@@ -220,7 +216,6 @@ class DenoiseEDA(_Filter):
         threshold = params['threshold']
         win_len = params['win_len']
         
-        #TODO (feature): detect the long periods of drop
         #remove fluctiations
         noise = ConvolutionalFilter(irftype ='triang', win_len = win_len, normalize=True)(abs(_np.diff(signal)))
         
@@ -335,7 +330,6 @@ class ConvolutionalFilter(_Filter):
 
     @classmethod
     def plot(cls):
-        # TODO (feature): plot the IRF
         pass
 
 

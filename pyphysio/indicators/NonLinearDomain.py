@@ -103,7 +103,6 @@ class Embed(_Indicator):
         @return: Data array with shape (l - n + 1, n) having l=len(data) and n=subset_size
         @rtype: array
         """
-        # TODO (feature): Implement general method with embedding delay
         n = params['dimension']
         #t = params['delay']
         num = len(signal) - n + 1
@@ -196,7 +195,7 @@ class SampleEntropy(_Indicator):
             num_elem_m1 = uj_m1.shape[0]
 
             r = r * _StDev()(data)
-            # TODO (feature): Insert distance type as algorithm parameter
+            
             d_m = _cd(uj_m, uj_m, 'chebyshev') 
             d_m1 = _cd(uj_m1, uj_m1, 'chebyshev')
 

@@ -337,8 +337,6 @@ class PhasicEstim(_Estimator):
         grid_size = params["grid_size"]
         pre_max = params['pre_max']
         post_max = params['post_max']
-        
-        # TODO (feature): compute correct delta given the bateman parameters and the delta value in the original signal.
 
         fsamp = signal.get_sampling_freq()
         
