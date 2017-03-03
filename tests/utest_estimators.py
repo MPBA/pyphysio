@@ -5,6 +5,9 @@ import pandas as pd
 
 from context import ph, Asset
 
+# TODO: rewrite the code in appropriate format for tests
+
+# TEST IBI EXTRACTION FROM ECG
 #ECG
 FILE = Asset.F18
 data = np.array(pd.read_csv(FILE, skiprows=8, header=None))
@@ -18,6 +21,7 @@ ecg = ph.EvenlySignal(ecg1, FSAMP, 'ECG', TSTART)
 
 ibi = ph.BeatFromECG()(ecg)
 
+# TEST IBI EXTRACTION FROM BVP
 # BVP
 FILE = Asset.BVP
 FSAMP = 64

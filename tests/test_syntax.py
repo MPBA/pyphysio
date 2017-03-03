@@ -6,7 +6,7 @@ import unittest
 
 __author__ = 'AleB'
 
-
+# TODO: not really useful... we should write a test for all indicatots
 class SyntaxTest(unittest.TestCase):
     def test_fmap_and_algo(self):
         s = ph.EvenlySignal((np.sin(np.random.rand(100, 1) * 3.14 - (3.14 / 2)) + 1) * 93, 15)
