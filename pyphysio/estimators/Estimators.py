@@ -255,7 +255,7 @@ class DriverEstim(_Estimator):
         # gaussian smoothing
         driver = _ConvolutionalFilter(irftype='gauss', win_len=_np.max([0.2, 1/fsamp])*8, normalize=True)(driver)
 
-        driver = _EvenlySignal(driver, fsamp, "dEDA", signal.get_start_time())
+        driver = _EvenlySignal(driver, sampling_freq = fsamp, signal_nature = "dEDA", start_time = signal.get_start_time())
         return driver
 
     @staticmethod

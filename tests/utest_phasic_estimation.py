@@ -18,9 +18,20 @@ data = np.loadtxt(FILE, delimiter='\t')
 #EDA
 eda = ph.EvenlySignal(data[:,1], sampling_freq = FSAMP, signal_nature = 'EDA', start_time = 0)
 
-eda_f = ph.DenoiseEDA(threshold = 0.2)(eda)
-eda_f = eda_f.resample(8)
+#preprocessing
+## downsampling
+eda_r = eda.resample(4)
+    
+## filter
+eda = ph.IIRFilter(fp=0.8, fs=1.1)(eda_r)
 
-driver = ph.DriverEstim(T1=0.75, T2=2)(eda_f)
+#%%
+#estimate driver
+driver = ph.DriverEstim(T1=0.75, T2=2)(eda)
+assert(int(np.mean(driver)*10000) == 18255)
+assert(isinstance(driver, ph.EvenlySignal))
 
+#%%
 phasic, tonic, driver_no_peak = ph.PhasicEstim(delta=0.1)(driver)
+assert(int(np.mean(phasic)*10000) == 485)
+assert(isinstance(phasic, ph.EvenlySignal))
