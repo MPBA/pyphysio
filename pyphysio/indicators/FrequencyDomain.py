@@ -14,7 +14,7 @@ class InBand(_Indicator):
     @classmethod
     def algorithm(cls, data, params):
         freq, spec = PSD(**params)(data)
-
+        
         # freq is sorted so
         i_min = _np.searchsorted(freq, params["freq_min"])
         i_max = _np.searchsorted(freq, params["freq_max"])
