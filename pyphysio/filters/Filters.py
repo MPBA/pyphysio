@@ -45,8 +45,8 @@ class Normalize(_Filter):
     """
     _params_descriptors = {
         'norm_method': _Par(0, str, 'Method for the normalization.', 'standard', lambda x: x in ['mean', 'standard', 'min', 'maxmin', 'custom']),
-        'norm_bias': _Par(2, float, 'Bias for custom normalization', activation=lambda x, p: p['norm_method'] == 'custom'),
-        'norm_range': _Par(2, float, 'Range for custom normalization', lambda x: x != 0, lambda x, p: p['norm_method'] == 'custom')
+        'norm_bias': _Par(2, float, 'Bias for custom normalization', activation = lambda x, p: p['norm_method'] == 'custom'),
+        'norm_range': _Par(2, float, 'Range for custom normalization', lambda x: x != 0, activation = lambda x, p: p['norm_method'] == 'custom')
     }
     
     class Types(object):
@@ -345,7 +345,7 @@ class DeConvolutionalFilter(_Filter):
     Optional:    
     normalize : boolean, default = True
         Whether to normalize the IRF to have unitary area
-    method : str
+    deconv_method : str
         Available methods: 'fft', 'sps'. 'fft' uses the fourier transform, 'sps' uses the scipy.signal.deconvolve function
         
     Returns
