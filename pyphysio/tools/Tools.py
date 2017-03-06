@@ -289,7 +289,8 @@ class PSD(_Tool):
         'min_order': _Par(0, int, 'Minimum order of the model (for method="ar")', default=18, constraint=lambda x: x > 0, activation=lambda x, y: "method" in y and y["method"] == "ar"),
         'max_order': _Par(0, int, 'Maximum order of the model (for method="ar")', default=25, constraint=lambda x: x > 0, activation=lambda x, y: "method" in y and y["method"] == "ar"),
         'normalize': _Par(0, bool, 'Whether to normalize the PSD', True),
-        'remove_mean': _Par(0, bool, 'Whether to remove the mean from the signal before estimation of the PSD', True)
+        'remove_mean': _Par(0, bool, 'Whether to remove the mean from the signal before estimation of the PSD', True),
+        'interp_freq': _Par(0, float, 'Frequency to interpolate the input signal, if of type UnevenlySignal', default=None, constraint=lambda x: x > 0)
     }
     
     # Issue #15: consider point below:
@@ -310,10 +311,11 @@ class PSD(_Tool):
             
             if len(signal) < 2: #zero or one sample: interpolation not allowed
                 return _np.repeat(_np.nan, 2), _np.repeat(_np.nan, 2)
-        
-            interp_freq = params['interp_freq']
+
             signal = signal.to_evenly(kind='cubic')
-            signal = signal.resample(interp_freq)
+            interp_freq = params['interp_freq']
+            if interp_freq is not None:
+                signal = signal.resample(interp_freq)
 
         fsamp = signal.get_sampling_freq()
         l = len(signal)
@@ -499,9 +501,7 @@ class Minima(_Tool):
 
     @classmethod
     def algorithm(cls, signal, params):
-        signal = signal.copy()
-        signal *= -1
-        idx_mins, mins = Maxima(**params)(signal)
+        idx_mins, mins = Maxima(**params)(-signal.copy())
         return idx_mins, -1*mins
 
     _params_descriptors = {
@@ -984,7 +984,6 @@ class BeatOptimizer(_Tool):
         stops = _np.where(diff_idxs < 0)[0]
         
         if len(starts)==0: # no differences
-            print('test')
             # keep the 'outliers removed' version
             idx_1 = idx_1 + idx_st
             return _UnevenlySignal(ibi_1/fsamp, sampling_freq = fsamp, signal_nature = "IBI", start_time = signal.get_start_time(), x_values = idx_1, x_type = 'indices')

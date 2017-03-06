@@ -3,54 +3,82 @@ from __future__ import division
 import numpy as np
 import pandas as pd
 
-from context import ph, Asset
+import pyphysio as ph
 
-# BVP
-FILE = Asset.BVP
-FSAMP = 64
+# TODO: rewrite the code in appropriate format for tests
+
+#%%
+FILE = '/home/andrea/Trento/CODICE/workspaces/pyHRV/pyHRV/sample_data/medical.txt'
+FSAMP = 2048
 TSTART = 0
 
-data = np.array(pd.read_csv(FILE))
-bvp = ph.EvenlySignal(data[:, 1], FSAMP, 'BVP', TSTART)
+data = np.loadtxt(FILE, delimiter='\t')
 
-# EDA
-FILE = Asset.GSR
-data = np.array(pd.read_csv(FILE))
-eda = ph.EvenlySignal(data[:, 1], 4, 'EDA', 0)
+#%%
+bvp = ph.EvenlySignal(data[:, 2], sampling_freq = FSAMP, signal_nature = 'ECG', start_time = TSTART)
 
-eda = ph.DenoiseEDA(threshold=0.2)(eda)  # OK
-eda = ph.ConvolutionalFilter(irftype='gauss', normalize=True, win_len=2)(eda)
+#%%
 # TEST SignalRange
-rng_bvp = ph.SignalRange(win_len=2, win_step=2, smooth=False)(bvp)  # OK
+rng_bvp = ph.SignalRange(win_len=1, win_step=0.5, smooth=True)(bvp)  # OK
+assert(int(np.max(rng_bvp)*100) == 1746)
 
+#%%
 # TEST PeakDetection
-mx, mn, _, _ = ph.PeakDetection(deltas=rng_bvp * 0.7)(bvp)
+idx_mx, idx_mn, mx, mn = ph.PeakDetection(delta=rng_bvp * 0.5)(bvp)
 
-mx2, mn2, _, _ = ph.PeakDetection(delta=0.02)(eda)
+assert(np.sum(idx_mx)==16818171)
+assert(np.sum(idx_mn)==16726017)
+
+#%%
+# EDA
+eda = ph.EvenlySignal(data[:, 1], sampling_freq = FSAMP, signal_nature = 'EDA', start_time = TSTART)
+eda = eda.resample(fout = 8)
+
+eda = ph.ConvolutionalFilter(irftype='gauss', win_len=2)(eda)
+
+driver = ph.DriverEstim(delta=0.02)(eda)
+phasic, _, __ = ph.PhasicEstim(delta=0.02)(driver)
+
+idx_mx, idx_mn, mx, mn = ph.PeakDetection(delta=0.02)(phasic)
+
 
 # TEST PeakSelection
-st, sp = ph.PeakSelection(maxs=mx2, pre_max=3, post_max=5)(eda)
+st, sp = ph.PeakSelection(maxs=idx_mx, pre_max=3, post_max=5)(phasic)
+assert(np.sum(st)==21244)
 
+#%%
 # TEST PSD
 FSAMP = 100
 n = np.arange(1000)
 t = n / FSAMP
 freq = 2.5
-sinusoid = ph.EvenlySignal(np.sin(2 * np.pi * freq * t), FSAMP, '', 0)
 
-f, psd = ph.PSD(psd_method='ar', nfft=1024, window='hanning')(sinusoid)  # OK
+sinusoid = ph.EvenlySignal(np.sin(2 * np.pi * freq * t), sampling_freq = FSAMP, signal_nature = '', start_time = 0)
+#sinusoid.plot()
 
-# TEST Energy
-energy = ph.Energy(win_len=5, win_step=2.5, smooth=True)(bvp)  # OK
+f, psd = ph.PSD(method='welch', nfft=2048, window='hanning')(sinusoid)
+#TODO AlmostEqual below
+assert(f[np.argmax(psd)]==2.5)
 
+
+sinusoid_unevenly = ph.UnevenlySignal(np.delete(sinusoid.get_values(), [10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]),
+                                      sampling_freq = FSAMP, signal_nature = '', start_time = 0,
+                                      x_values = np.delete(sinusoid.get_times(), [10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]),
+                                      x_type='instants')
+#sinusoid_unevenly.plot('.-')
+
+sinusoid_unevenly = sinusoid_unevenly.to_evenly(kind='linear') #should be possible to remove this line after Issue #24 is solved
+
+f, psd = ph.PSD(method='welch', nfft=2048, window='hanning')(sinusoid_unevenly)
+
+#TODO AlmostEqual below
+assert(f[np.argmax(psd)]==2.5)
+
+#%%
 # TEST Maxima
-mx = ph.Maxima(method='complete', win_len=2, win_step=1)(eda)  # TODO: che senso ha il windowing? /// Was?
+idx_mx, mx = ph.Maxima(method='windowing', win_len=1, win_step=0.5)(bvp)
+assert(np.sum(idx_mx)==16923339)
 
 # TEST Minima
-mn = ph.Minima(method='windowing', win_len=20, win_step=5)(eda)  # TODO: che senso ha il windowing?
-
-# TEST CreateTemplate() #TODO: test
-# ...
-
-# TEST BootstrapEstimation
-bt_mean = ph.BootstrapEstimation(func=np.mean, N=100, k=0.5)(eda)  # OK
+idx_mn, mn = ph.Minima(method='windowing', win_len=1, win_step=0.5)(bvp)
+assert(np.sum(idx_mn)==17939276)
