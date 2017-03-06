@@ -1,4 +1,3 @@
-# coding=utf-8
 from __future__ import division
 import numpy as _np
 import sys as _sys
@@ -872,8 +871,9 @@ class BeatOptimizer(_Tool):
         ibi_cache = _np.repeat(ibi_expected, cache)
         counter_bad = 0
 
-        idx_1 = [idx_ibi[0]]
-        ibi_1 = []
+        idx_1 = [0]
+        ibi_1 = [int(signal.get_values()[0]*fsamp)]
+        #ibi_1 = []
 
         prev_idx = idx_ibi[0]
         for i in xrange(1, len(idx_ibi)):
@@ -899,6 +899,8 @@ class BeatOptimizer(_Tool):
                 # action_message('Cache re-initialized - ' + str(curr_idx))  # , RuntimeWarning) # message
                 counter_bad = 0
 
+        ibi_1 = _np.array(ibi_1)
+        
         ###
         # RUN BACKWARD:
         idx_ibi_rev = idx_ibi[-1] - idx_ibi
@@ -907,7 +909,8 @@ class BeatOptimizer(_Tool):
         ibi_cache = _np.repeat(ibi_expected, cache)
         counter_bad = 0
 
-        idx_2 = [idx_ibi_rev[0]]
+        idx_2 = [0]
+        #ibi_2 = []
         ibi_2 = []
 
         prev_idx = idx_ibi_rev[0]
@@ -936,10 +939,13 @@ class BeatOptimizer(_Tool):
                 # action_message('Cache re-initialized - ' + str(curr_idx))  # , RuntimeWarning) # OK Message
                 counter_bad = 0
 
+        # correct last/first sample
+        ibi_2.append(int(signal.get_values()[0]*fsamp))
+        
         idx_2 = -1 * (_np.array(idx_2) - idx_ibi_rev[-1])
         idx_2 = idx_2[::-1]
-        ibi_2 = ibi_2[::-1]
-
+        ibi_2 = _np.array(ibi_2[::-1])
+        
         ###
         # add indexes of idx_ibi_2 which are not in idx_ibi_1 but close enough
         b = b * fsamp
@@ -954,6 +960,7 @@ class BeatOptimizer(_Tool):
         ###
         # create pairs for each beat
         pairs = []
+        pairs.append([0,0])
         for i_1 in xrange(1, len(idx_1)):
             curr_idx_1 = idx_1[i_1]
             if curr_idx_1 in idx_2:
@@ -977,7 +984,10 @@ class BeatOptimizer(_Tool):
         stops = _np.where(diff_idxs < 0)[0]
         
         if len(starts)==0: # no differences
-            return signal
+            print('test')
+            # keep the 'outliers removed' version
+            idx_1 = idx_1 + idx_st
+            return _UnevenlySignal(ibi_1/fsamp, sampling_freq = fsamp, signal_nature = "IBI", start_time = signal.get_start_time(), x_values = idx_1, x_type = 'indices')
         
         if len(stops)==0:
             stops = _np.array([starts[-1] + 1])
@@ -1044,9 +1054,9 @@ class BeatOptimizer(_Tool):
         # finalize arrays
         idx_out = _np.array(idx_out) + idx_st
         ibi_out = _np.diff(idx_out)
-        ibi_out = _np.r_[ibi_out[0], ibi_out]
+        ibi_out = _np.r_[signal.get_values()[0], ibi_out/fsamp]
 
-        return _UnevenlySignal(ibi_out/signal.get_sampling_freq(), signal.get_sampling_freq(), "IBI", signal.get_start_time(), x_values = idx_out, x_type = 'indices')
+        return _UnevenlySignal(ibi_out, sampling_freq = signal.get_sampling_freq(), signal_nature = "IBI", start_time = signal.get_start_time(), x_values = idx_out, x_type = 'indices')
 
 
 # EDA Tools

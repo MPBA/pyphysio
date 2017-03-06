@@ -23,6 +23,7 @@ ecg = ecg.resample(fout=4096, kind='cubic')
 ibi = ph.BeatFromECG()(ecg)
 assert(int(np.mean(ibi)*10000) == 8619)
 
+#%% Test ibi correction
 id_bad_ibi = ph.BeatOutliers(cache=3, sensitivity = 0.25)(ibi)
 assert(len(id_bad_ibi) == 0)
 
@@ -47,7 +48,8 @@ id_bad_ibi = ph.BeatOutliers(cache=3, sensitivity = 0.25)(ibi_bad)
 
 assert( id_bad_ibi[0] == 21 and id_bad_ibi[1] == 22)
 
-#ibi_opt = ph.BeatOptimizer()(ibi_bad)
+ibi_opt = ph.BeatOptimizer()(ibi_bad)
+assert(np.sum(ibi_opt.get_indices() - ibi.get_indices())==0)
 
 #%%
 # TEST IBI EXTRACTION FROM BVP
