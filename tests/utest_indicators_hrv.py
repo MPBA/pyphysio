@@ -1,62 +1,56 @@
 # coding=utf-8
 from __future__ import division
-
 import numpy as np
 import pandas as pd
-import os
 
-os.chdir('/home/andrea/Trento/CODICE/workspaces/pyHRV/pyHRV/tests')
-from context import ph, Asset
+import pyphysio as ph
 
-#FILE = Asset.F18
-FILE  = '/home/andrea/Downloads/tmp/F18.txt'
+# TODO: rewrite the code in appropriate format for tests
 
-data = np.array(pd.read_csv(FILE, skiprows=8, header=None))
+#%%
+FILE = '/home/andrea/Trento/CODICE/workspaces/pyHRV/pyHRV/sample_data/medical.txt'
+FSAMP = 2048
+TSTART = 0
 
-ecg1 = data[:, 0]
+data = np.loadtxt(FILE, delimiter='\t')
 
-fsamp = 2048
+#%%
+# TEST IBI EXTRACTION FROM ECG
+ecg = ph.EvenlySignal(data[:, 0], sampling_freq = FSAMP, signal_nature = 'ECG', start_time = TSTART)
 
-# ===========================
-# INITIALIZING
-ecg = ph.EvenlySignal(ecg1, fsamp, 'ECG', 0)
-ecg = ecg[100000:500000]
-#ecg.plot()
+ecg = ecg.resample(fout=4096, kind='cubic')
 
-# =============================
-# ESTIMATE DELTA
-range_ecg = ph.SignalRange(win_len=2, win_step=0.5, smooth=False)(ecg)
+ibi = ph.BeatFromECG()(ecg)
+#%%
 
-# =============================
-# DETECT IBI
-ibi = ph.BeatFromECG(deltas=range_ecg * 0.7)(ecg)
+assert(int(ph.Mean()(ibi)*10000) == 8619)
+assert(int(ph.StDev()(ibi)*10000) == 602)
 
-# PLOT
-#plt.plot(ecg)
-#plt.vlines(ibi.get_indices(), np.min(ecg), np.max(ecg))
-#
-#mean = ph.Mean()(ibi)
-#std = ph.StDev()(ibi)
-#median = ph.Median()(ibi)
-#rng = ph.Range()(ibi)
-#rmssd = ph.RMSSD()(ibi)
-#sdsd = ph.SDSD()(ibi)
-#VLF = ph.PowerInBand(interp_freq=4, freq_max=0.04, freq_min=0.00001)(ibi)
-#LF = ph.PowerInBand(interp_freq=4, freq_max=0.15, freq_min=0.04)(ibi)
-#HF = ph.PowerInBand(interp_freq=4, freq_max=0.4, freq_min=0.15)(ibi)
-#
-#pnn10 = ph.PNNx(threshold=10)(ibi)
-#pnn25 = ph.PNNx(threshold=25)(ibi)
-#pnn50 = ph.PNNx(threshold=50)(ibi)
-#
-## FAKE IBI
-#idx_ibi = np.arange(0, 101, 10).astype(float)
-#ibi = ph.UnevenlySignal(np.diff(idx_ibi), idx_ibi[1:], 10, 90, 'IBI')
-#ibi[-1] = 10.011
-#mean = ph.Mean()(ibi)  # OK
-#std = ph.StDev()(ibi)  # OK
-#median = ph.Median()(ibi)  # OK
-#rng = ph.Range()(ibi)  # OK
+assert(int(ph.Median()(ibi)*10000) == 8679)
+assert(int(ph.Range()(ibi)*10000) == 2548)
+
+assert(int(ph.RMSSD()(ibi)*10000) == 328)
+assert(int(ph.SDSD()(ibi)*10000) == 328)
+
+# TODO: almost equal below
+assert(int(ph.PowerInBand(interp_freq=4, method = 'welch', freq_max=0.04, freq_min=0.00001)(ibi)*10000) == 1271328)
+assert(int(ph.PowerInBand(interp_freq=4, method = 'welch', freq_max=0.15, freq_min=0.04)(ibi)*10000) == 2599850)
+assert(int(ph.PowerInBand(method = 'welch', interp_freq=4, freq_max=0.4, freq_min=0.15)(ibi)*10000) == 1201839)
+
+
+assert(int(ph.PNNx(threshold=10)(ibi)*10000) == 3453)
+assert(int(ph.PNNx(threshold=25)(ibi)*10000) == 2158)
+assert(int(ph.PNNx(threshold=50)(ibi)*10000) == 431)
+
+#%%
+# Test with FAKE IBI
+idx_ibi = np.arange(0, 101, 10).astype(float)
+ibi = ph.UnevenlySignal(np.diff(idx_ibi), idx_ibi[1:], 10, 90, 'IBI')
+ibi[-1] = 10.011
+mean = ph.Mean()(ibi)  # OK
+std = ph.StDev()(ibi)  # OK
+median = ph.Median()(ibi)  # OK
+rng = ph.Range()(ibi)  # OK
 
 VLF = ph.PowerInBand(interp_freq=4, freq_max=0.04, freq_min=0.00001)(ibi) # OK
 LF = ph.PowerInBand(interp_freq=4, freq_max=0.15, freq_min=0.04)(ibi) # OK
