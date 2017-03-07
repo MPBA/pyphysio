@@ -1,11 +1,11 @@
 # coding=utf-8
 from __future__ import division
 
-from context import ph, Asset
+from context import ph, Assets
 import numpy as np
 import pandas as pd
 
-FILE = Asset.F18
+FILE = Assets.F18
 
 data = np.array(pd.read_csv(FILE, skiprows=8, header=None))
 

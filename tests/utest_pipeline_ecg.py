@@ -6,9 +6,9 @@ import pandas as pd
 
 import matplotlib.pyplot as plt
 
-from context import ph, Asset
+from context import ph, Assets
 
-FILE = Asset.F18
+FILE = Assets.F18
 
 data = np.array(pd.read_csv(FILE, skiprows=8, header=None))
 

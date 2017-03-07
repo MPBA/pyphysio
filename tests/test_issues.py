@@ -63,4 +63,4 @@ class GeneralTest(unittest.TestCase):
         zero = signal_evenly.get_times()[0]  # = 0 <= KO
 
         self.assertEqual(one, 1)
-        # self.assertNotEqual(zero, 0)
+        self.assertEqual(zero, 1)

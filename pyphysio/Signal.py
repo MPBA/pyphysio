@@ -318,7 +318,7 @@ class UnevenlySignal(Signal):
         return obj
 
     def get_end_time(self):
-        return self.get_time(self.get_indices()[-1]) + 1. / self.get_sampling_freq()  # TODO if good to add 1/f
+        return self.get_time_from_iidx(-1) + 1. / self.get_sampling_freq()  # adding 1/f cause end_time is exclusive
 
     def get_times(self):
         return self.ph[self._MT_X_INDICES] / self.get_sampling_freq() + self.get_start_time()

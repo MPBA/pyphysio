@@ -1,7 +1,7 @@
 # coding=utf-8
 from __future__ import division
 
-from context import ph
+from context import ph, Assets
 from math import ceil as _ceil
 import numpy as np
 
@@ -364,22 +364,20 @@ class GeneralTest(unittest.TestCase):
 
     # TODO: following test should be in a pipeline test
     def test_signal_plot(self):
-        s = np.genfromtxt("sample_data/medical.txt", delimiter="\t", max_rows=10000)
-
-        e = ph.EvenlySignal(values=s[:, 0], sampling_freq=1024, signal_nature="ecg")
+        e = ph.EvenlySignal(values=Assets.ecg(), sampling_freq=1024, signal_nature="ecg")
         e, ignored, ignored, ignored = ph.PeakDetection(delta=1)(e)
         e = ph.UnevenlySignal(values=e, x_values=e, x_type='indices', sampling_freq=1024, signal_nature="ibi")
         e.plot("|b")
-        e = ph.EvenlySignal(values=s[:, 1], sampling_freq=1024, signal_nature="gsr")
+        e = ph.EvenlySignal(values=Assets.gsr(), sampling_freq=1024, signal_nature="gsr")
         e.plot()
-        e = ph.EvenlySignal(values=s[:, 2], sampling_freq=1024, signal_nature="bvp")
+        e = ph.EvenlySignal(values=Assets.bvp(), sampling_freq=1024, signal_nature="bvp")
         e.plot()
-        e = ph.EvenlySignal(values=s[:, 3], sampling_freq=1024, signal_nature="resp")
+        e = ph.EvenlySignal(values=Assets.resp(), sampling_freq=1024, signal_nature="resp")
         e.plot()
 
         import matplotlib.pyplot as plt
         plt.show()
-        plt.close()
+        plt.close('all')
 
 
 if __name__ == '__main__':

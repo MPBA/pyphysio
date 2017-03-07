@@ -8,7 +8,7 @@ import pyphysio as ph
 # TODO: rewrite the code in appropriate format for tests
 
 #%%
-FILE = '/home/andrea/Trento/CODICE/workspaces/pyHRV/pyHRV/sample_data/medical.txt'
+FILE = '/home/andrea/Trento/CODICE/workspaces/pyHRV/pyHRV/assets/medical.txt'
 FSAMP = 2048
 TSTART = 0
 

@@ -7,7 +7,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 os.chdir('/home/andrea/Trento/CODICE/workspaces/pyHRV/pyHRV/tests')
-from context import ph, Asset
+from context import ph, Assets
 
 #EDA
 FSAMP = 4
