@@ -173,7 +173,7 @@ class ApproxEntropy(_Indicator):
             return phi_m - phi_m1
 
     _params_descriptors = {
-        'radius': _Par(2, float, 'Radius', 0.5, lambda x: x > 0),
+        'radius': _Par(0, float, 'Radius', 0.5, lambda x: x > 0),
     }
 
 
