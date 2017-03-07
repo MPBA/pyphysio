@@ -165,8 +165,7 @@ class Algorithm(object):
 
     @classmethod
     def emulate_log(cls, log):
-        #TODO: Error here
-        map(lambda f, m: f(m), log)
+        map(lambda (f, m): f(m), log)
 
 
 class Cache(object):

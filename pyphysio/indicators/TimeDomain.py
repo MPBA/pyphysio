@@ -116,7 +116,7 @@ class AUC(_Indicator):
     @classmethod
     def algorithm(cls, signal, params):
         if isinstance(signal, _Signal) and not isinstance(signal, _EvenlySignal):
-            cls.warn(cls.__name__ + ': Calculating Area Under the Curve of an Unevenly signal!')
+            cls.warn('Calculating Area Under the Curve of an Unevenly signal!')
         fsamp = signal.get_sampling_freq()
         return (1. / fsamp) * Sum()(signal)
 

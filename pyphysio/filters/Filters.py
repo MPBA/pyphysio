@@ -159,7 +159,7 @@ class IIRFilter(_Filter):
         fp, fs, loss, att, ftype = params["fp"], params["fs"], params["loss"], params["att"], params["ftype"]
 
         if isinstance(signal, _Signal) and not isinstance(signal, _EvenlySignal):
-            cls.warn(cls.__name__ + ': Filtering Unevenly signal is undefined. Returning original signal.')
+            cls.warn('Filtering Unevenly signal is undefined. Returning original signal.')
         
         nyq = 0.5 * fsamp
         fp = _np.array(fp)
@@ -171,7 +171,7 @@ class IIRFilter(_Filter):
                 
         sig_filtered = _EvenlySignal(_filtfilt(b, a, signal.get_values()), sampling_freq = signal.get_sampling_freq(), signal_nature = signal.get_signal_nature(), start_time = signal.get_start_time())
         if _np.isnan(sig_filtered[0]):
-            cls.warn(cls.__name__ + ': Filter parameters allow no solution. Returning original signal.')
+            cls.warn('Filter parameters allow no solution. Returning original signal.')
             return signal
         else:
             return sig_filtered
@@ -375,7 +375,7 @@ class DeConvolutionalFilter(_Filter):
             fft_irf = _np.fft.fft(irf, n=l)
             out = _np.fft.ifft(fft_signal / fft_irf)
         elif deconvolution_method == 'sps':
-            cls.warn(cls.__name__+': sps based deconvolution needs to be tested. Use carefully.')
+            cls.warn('sps based deconvolution needs to be tested. Use carefully.')
             out, _ = _deconvolve(signal, irf)
         else:
             print('Deconvolution method not implemented. Returning original signal.')
