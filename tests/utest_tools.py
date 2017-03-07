@@ -54,23 +54,18 @@ t = n / FSAMP
 freq = 2.5
 
 sinusoid = ph.EvenlySignal(np.sin(2 * np.pi * freq * t), sampling_freq = FSAMP, signal_nature = '', start_time = 0)
-#sinusoid.plot()
 
-f, psd = ph.PSD(method='welch', nfft=2048, window='hanning')(sinusoid)
+f, psd = ph.PSD(method='welch', nfft=4096, window='hanning')(sinusoid)
 #TODO AlmostEqual below
 assert(f[np.argmax(psd)]==2.5)
 
 
-sinusoid_unevenly = ph.UnevenlySignal(np.delete(sinusoid.get_values(), [10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]),
+sinusoid_unevenly = ph.UnevenlySignal(np.delete(sinusoid.get_values(), np.arange(10, 200)),
                                       sampling_freq = FSAMP, signal_nature = '', start_time = 0,
-                                      x_values = np.delete(sinusoid.get_times(), [10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]),
+                                      x_values = np.delete(sinusoid.get_times(), np.arange(10, 200)),
                                       x_type='instants')
-#sinusoid_unevenly.plot('.-')
 
-sinusoid_unevenly = sinusoid_unevenly.to_evenly(kind='linear') #should be possible to remove this line after Issue #24 is solved
-
-f, psd = ph.PSD(method='welch', nfft=2048, window='hanning')(sinusoid_unevenly)
-
+f, psd = ph.PSD(method='welch', nfft=4096, window='hanning')(sinusoid_unevenly)
 #TODO AlmostEqual below
 assert(f[np.argmax(psd)]==2.5)
 

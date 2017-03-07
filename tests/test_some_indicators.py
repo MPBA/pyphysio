@@ -8,7 +8,7 @@ import unittest
 __author__ = 'aleb'
 
 
-# TODO: not really useful... we should write a test for all indicatots
+# TODO: not really useful... we should write a test for all indicators --> utest_indicators_hrv & utest_indicators_eda
 
 # noinspection PyArgumentEqualDefault
 class SomeIndicatorsTest(unittest.TestCase):

@@ -8,18 +8,21 @@ class Assets(object):
     @classmethod
     def get_data(cls):
         if Assets._sing is None:
+            # TODO: remove max_rows
             try:
-                Assets._sing = np.genfromtxt("assets/medical.txt", delimiter="\t", max_rows=10000)
+                Assets._sing = np.genfromtxt("assets/medical.txt", delimiter="\t")#, max_rows=10000)
             except IOError:
-                Assets._sing = np.genfromtxt("../assets/medical.txt", delimiter="\t", max_rows=10000)
+                Assets._sing = np.genfromtxt("../assets/medical.txt", delimiter="\t")#, max_rows=10000)
         return Assets._sing
 
+    # IDEA: why not just return an EvenlySignal?
     @classmethod
     def ecg(cls):
         return Assets.get_data()[:, 0]
 
+    # TODO: call it eda
     @classmethod
-    def gsr(cls):
+    def eda(cls):
         return Assets.get_data()[:, 1]
 
     @classmethod
