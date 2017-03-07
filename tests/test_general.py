@@ -159,9 +159,9 @@ class GeneralTest(unittest.TestCase):
         # sampling frequency in Hz
         self.assertEqual(s.get_sampling_freq(), freq)
         # start timestamp
-        self.assertEqual(s.get_start_time(), start)
+        self.assertEqual(s.get_start_time(), s.get_time_from_iidx(0))
         # end timestamp
-        self.assertEqual(s.get_end_time(), start + s.get_duration())
+        self.assertEqual(s.get_end_time(), s.get_time_from_iidx(0) + s.get_duration())
         # start time
         self.assertEqual(s.get_signal_nature(), nature)
 

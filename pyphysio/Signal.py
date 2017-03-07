@@ -305,12 +305,10 @@ class UnevenlySignal(Signal):
                 start_time = x_values[0]
                 x_values = _np.floor((x_values - start_time) * sampling_freq).astype(int)
             else:
-                # TODO Andrea Start time could be also after the first sample so that a signal could be defined also in
-                # the start_time instant
                 assert start_time < x_values[1], "More than one sample at or before start_time"
                 # WARN: limitation to 10 decimals due to workaround to prevent wrong cast flooring
                 # (e.g. np.floor(0.29 * 100) == 28)
-                x_values = _np.round(x_values * sampling_freq, 10).astype(int)
+                x_values = _np.round((x_values - start_time) * sampling_freq, 10).astype(int)
 
         obj = Signal.__new__(cls, values=values,
                              sampling_freq=sampling_freq,
@@ -385,7 +383,7 @@ class UnevenlySignal(Signal):
         sig_out = EvenlySignal(values=sig_out,
                                sampling_freq=self.get_sampling_freq(),
                                signal_nature=self.get_signal_nature(),
-                               start_time=self.get_start_time())
+                               start_time=self.get_time_from_iidx(0))
         return sig_out
 
     def resample(self, fout, kind='linear'):

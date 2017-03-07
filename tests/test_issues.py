@@ -44,3 +44,23 @@ class GeneralTest(unittest.TestCase):
         self.assertEquals(error_sum, error_sum1)
         self.assertEquals(error_sum, 0)
         self.assertEquals(error_sum, np.sum(errors))
+
+    def test_issue22(self):
+        values = np.arange(1, 11)
+        instan = np.arange(1, 11)
+
+        signal_unevenly = ph.UnevenlySignal(values=values,
+                                            sampling_freq=100,
+                                            signal_nature='',
+                                            start_time=0,
+                                            x_values=instan,
+                                            x_type='instants')
+
+        one = signal_unevenly.get_times()[0]  # = 1 <=OK
+
+        signal_evenly = signal_unevenly.to_evenly()
+
+        zero = signal_evenly.get_times()[0]  # = 0 <= KO
+
+        self.assertEqual(one, 1)
+        # self.assertNotEqual(zero, 0)
