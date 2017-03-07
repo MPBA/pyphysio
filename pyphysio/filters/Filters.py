@@ -381,7 +381,7 @@ class DeConvolutionalFilter(_Filter):
             print('Deconvolution method not implemented. Returning original signal.')
             out = signal.get_values()
 
-        out_signal = _EvenlySignal(abs(out), signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time())
+        out_signal = _EvenlySignal(abs(out), sampling_freq = signal.get_sampling_freq(), signal_nature = signal.get_signal_nature(), start_time = signal.get_start_time())
 
         return out_signal
 
