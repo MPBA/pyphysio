@@ -308,7 +308,9 @@ class UnevenlySignal(Signal):
                 # TODO Andrea Start time could be also after the first sample so that a signal could be defined also in
                 # the start_time instant
                 assert start_time < x_values[1], "More than one sample at or before start_time"
-                x_values = _np.floor(x_values * sampling_freq).astype(int)
+                # WARN: limitation to 10 decimals due to workaround to prevent wrong cast flooring
+                # (e.g. np.floor(0.29 * 100) == 28)
+                x_values = _np.round(x_values * sampling_freq, 10).astype(int)
 
         obj = Signal.__new__(cls, values=values,
                              sampling_freq=sampling_freq,
