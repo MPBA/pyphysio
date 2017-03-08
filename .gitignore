@@ -91,3 +91,6 @@ ENV/
 .spyderproject.bak
 .spyderworkspace
 .spyproject/
+
+# Uncompressed asset files
+assets/*.txt

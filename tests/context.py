@@ -1,17 +1,22 @@
 # coding=utf-8
 import numpy as np
+import os
 
 
 class Assets(object):
     _sing = None
+    _path = "assets/"
+    _file_c = "medical.txt.bz2"
+    _file_u = "medical.txt"
 
     @classmethod
     def get_data(cls):
         if Assets._sing is None:
-            try:
-                Assets._sing = np.genfromtxt("assets/medical.txt", delimiter="\t")
-            except IOError:
-                Assets._sing = np.genfromtxt("../assets/medical.txt", delimiter="\t")
+            if not os.path.isfile(Assets._path + Assets._file_c):
+                Assets._path = "../" + Assets._path
+            if not os.path.isfile(Assets._path + Assets._file_u):
+                os.system("bzcat %s%s > %s%s" % (Assets._path, Assets._file_c, Assets._path, Assets._file_u))
+            Assets._sing = np.genfromtxt(Assets._path + Assets._file_u, delimiter="\t")
         return Assets._sing
 
     # The following methods return an array to make it easier to test the Signal wrapping classes
