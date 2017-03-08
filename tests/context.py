@@ -8,19 +8,18 @@ class Assets(object):
     @classmethod
     def get_data(cls):
         if Assets._sing is None:
-            # TODO: remove max_rows
             try:
-                Assets._sing = np.genfromtxt("assets/medical.txt", delimiter="\t")#, max_rows=10000)
+                Assets._sing = np.genfromtxt("assets/medical.txt", delimiter="\t")
             except IOError:
-                Assets._sing = np.genfromtxt("../assets/medical.txt", delimiter="\t")#, max_rows=10000)
+                Assets._sing = np.genfromtxt("../assets/medical.txt", delimiter="\t")
         return Assets._sing
 
-    # IDEA: why not just return an EvenlySignal?
+    # The following methods return an array to make it easier to test the Signal wrapping classes
+
     @classmethod
     def ecg(cls):
         return Assets.get_data()[:, 0]
 
-    # TODO: call it eda
     @classmethod
     def eda(cls):
         return Assets.get_data()[:, 1]

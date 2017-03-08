@@ -364,15 +364,15 @@ class GeneralTest(unittest.TestCase):
 
     # TODO: following test should be in a pipeline test
     def test_signal_plot(self):
-        e = ph.EvenlySignal(values=Assets.ecg(), sampling_freq=1024, signal_nature="ecg")
+        e = ph.EvenlySignal(values=Assets.ecg()[:1000], sampling_freq=1024, signal_nature="ecg")
         e, ignored, ignored, ignored = ph.PeakDetection(delta=1)(e)
         e = ph.UnevenlySignal(values=e, x_values=e, x_type='indices', sampling_freq=1024, signal_nature="ibi")
         e.plot("|b")
-        e = ph.EvenlySignal(values=Assets.gsr(), sampling_freq=1024, signal_nature="gsr")
+        e = ph.EvenlySignal(values=Assets.eda()[:1000], sampling_freq=1024, signal_nature="gsr")
         e.plot()
-        e = ph.EvenlySignal(values=Assets.bvp(), sampling_freq=1024, signal_nature="bvp")
+        e = ph.EvenlySignal(values=Assets.bvp()[:1000], sampling_freq=1024, signal_nature="bvp")
         e.plot()
-        e = ph.EvenlySignal(values=Assets.resp(), sampling_freq=1024, signal_nature="resp")
+        e = ph.EvenlySignal(values=Assets.resp()[:1000], sampling_freq=1024, signal_nature="resp")
         e.plot()
 
         import matplotlib.pyplot as plt
