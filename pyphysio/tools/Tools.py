@@ -135,7 +135,7 @@ class PeakSelection(_Tool):
     """
 
     _params_descriptors = {
-        'maxs': _Par(2, list, 'Array containing indexes (first column) and values (second column) of the maxima'),
+        'idx_max': _Par(2, list, 'Array containing indexes of the maxima'),
         'pre_max': _Par(2, float, 'Duration (in seconds) of interval before the peak that is considered to find the start of the peak', constraint= lambda x: x > 0),
         'post_max': _Par(2, float, 'Duration (in seconds) of interval after the peak that is considered to find the end of the peak', constraint= lambda x: x > 0)
     }
@@ -144,7 +144,7 @@ class PeakSelection(_Tool):
     def algorithm(cls, signal, params):
         i_pre_max = int(params['pre_max'] * signal.get_sampling_freq())
         i_post_max = int(params['post_max'] * signal.get_sampling_freq())
-        i_peaks = params['maxs']
+        i_peaks = params['idx_max']
         
         ZERO = 0.01 
         
@@ -156,34 +156,37 @@ class PeakSelection(_Tool):
             return i_start, i_stop
             
         signal_dt = _Diff()(signal)
-        for i in xrange(len(i_peaks)):
+        for i in range(len(i_peaks)):
             i_pk = int(i_peaks[i])
 
-            if i_pk < i_pre_max or i_pk >= len(signal_dt) - i_post_max:
-#                cls.log('Peak at start/end of signal, not accounting')
-
-                i_start[i] = i_stop[i] = -1
+            if i_pk < i_pre_max:
+                i_st = 0
+            elif i_pk >= len(signal_dt) - i_post_max:
+                i_sp = len(signal_dt) - 1
             else:
-                
-                # find START
                 i_st = i_pk - i_pre_max
-                signal_dt_pre = signal_dt[i_st:i_pk]
-                i_pre = len(signal_dt_pre) - 1
-
-                while i_pre > 0 and (signal_dt_pre[i_pre] > 0 or abs(signal_dt_pre[i_pre]) <= ZERO):
-                    i_pre -= 1
-
-                i_start[i] = i_st + i_pre + 1
-
-                # find STOP
                 i_sp = i_pk + i_post_max
-                signal_dt_post = signal_dt[i_pk: i_sp]
-                i_post = 1
 
-                while i_post < len(signal_dt_post)-1 and (signal_dt_post[i_post] < 0 or abs(signal_dt_post[i_post]) <= ZERO):
-                    i_post += 1
+            # find START
+            signal_dt_pre = signal_dt[i_st:i_pk]
+            i_pre = len(signal_dt_pre) - 1
 
-                i_stop[i] = i_pk + i_post
+            # OR below is to allow small fluctuations (?)
+            
+            while i_pre > 0 and (signal_dt_pre[i_pre] > 0 or abs(signal_dt_pre[i_pre]) <= ZERO):
+                i_pre -= 1
+
+            i_start[i] = i_st + i_pre + 1
+
+            # find STOP
+            signal_dt_post = signal_dt[i_pk: i_sp]
+            i_post = 1
+
+            # OR below is to allow small fluctuations (?)
+            while i_post < len(signal_dt_post)-1 and (signal_dt_post[i_post] < 0 or abs(signal_dt_post[i_post]) <= ZERO):
+                i_post += 1
+
+            i_stop[i] = i_pk + i_post
 
         return i_start, i_stop
 

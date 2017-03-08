@@ -165,7 +165,7 @@ class DurationMin(_PeaksInterval):
             cls.warn("No peaks found")
             return _np.nan
             
-        idxs_start, idxs_stop = _PeakSelection(maxs=idx_maxs, pre_max=pre_max, post_max=post_max)(signal)
+        idxs_start, idxs_stop = _PeakSelection(idx_max=idx_maxs, pre_max=pre_max, post_max=post_max)(signal)
 
         if len(idxs_start) == 0:
             cls.warn("Unable to detect the start of the peaks")
@@ -192,7 +192,7 @@ class DurationMax(_PeaksInterval):
             cls.warn("No peaks found")
             return _np.nan
             
-        idxs_start, idxs_stop = _PeakSelection(maxs=idx_maxs, pre_max=pre_max, post_max=post_max)(signal)
+        idxs_start, idxs_stop = _PeakSelection(idx_max=idx_maxs, pre_max=pre_max, post_max=post_max)(signal)
 
         if len(idxs_start) == 0:
             cls.warn("Unable to detect the start of the peaks")
@@ -218,7 +218,7 @@ class DurationMean(_PeaksInterval):
             cls.warn("No peaks found")
             return _np.nan
             
-        idxs_start, idxs_stop = _PeakSelection(maxs=idx_maxs, pre_max=pre_max, post_max=post_max)(signal)
+        idxs_start, idxs_stop = _PeakSelection(idx_max=idx_maxs, pre_max=pre_max, post_max=post_max)(signal)
 
         if len(idxs_start) == 0:
             cls.warn("Unable to detect the start of the peaks")
@@ -245,7 +245,7 @@ class SlopeMin(_PeaksInterval):
             cls.warn("No peaks found")
             return _np.nan
             
-        idxs_start, idxs_stop = _PeakSelection(maxs=idx_maxs, pre_max=pre_max, post_max=post_max)(signal)     
+        idxs_start, idxs_stop = _PeakSelection(idx_max=idx_maxs, pre_max=pre_max, post_max=post_max)(signal)     
         if len(idxs_start) == 0:
             cls.warn("Unable to detect the start of the peaks")
             return _np.nan
@@ -270,7 +270,7 @@ class SlopeMax(_PeaksInterval):
             cls.warn("No peaks found")
             return _np.nan
             
-        idxs_start, idxs_stop = _PeakSelection(maxs=idx_maxs, pre_max=pre_max, post_max=post_max)(signal)     
+        idxs_start, idxs_stop = _PeakSelection(idx_max=idx_maxs, pre_max=pre_max, post_max=post_max)(signal)     
         if len(idxs_start) == 0:
             cls.warn("Unable to detect the start of the peaks")
             return _np.nan
@@ -295,7 +295,7 @@ class SlopeMean(_PeaksInterval):
             cls.warn("No peaks found")
             return _np.nan
             
-        idxs_start, idxs_stop = _PeakSelection(maxs=idx_maxs, pre_max=pre_max, post_max=post_max)(signal)     
+        idxs_start, idxs_stop = _PeakSelection(idx_max=idx_maxs, pre_max=pre_max, post_max=post_max)(signal)     
         if len(idxs_start) == 0:
             cls.warn("Unable to detect the start of the peaks")
             return _np.nan

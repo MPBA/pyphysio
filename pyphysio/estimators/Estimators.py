@@ -344,7 +344,7 @@ class PhasicEstim(_Estimator):
         idx_max, idx_min, val_max, val_min = _PeakDetection(delta=delta, refractory=1, start_max=True)(signal)
 
         #identify start and stop of the peak
-        idx_pre, idx_post = _PeakSelection(maxs=idx_max, pre_max=pre_max, post_max=post_max)(signal)
+        idx_pre, idx_post = _PeakSelection(idx_max=idx_max, pre_max=pre_max, post_max=post_max)(signal)
 
         # Linear interpolation to substitute the peaks
         driver_no_peak = _np.copy(signal)
