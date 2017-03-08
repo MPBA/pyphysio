@@ -16,7 +16,7 @@ setup(
         'pandas (>= 0.13.1)',
         'numpy (>= 1.7.1)',
         'scipy (>= 0.12.0)',
-        'spectrum'
+        'spectrum', 'pytest'
     ],
 
     package_dir={'pyphysio': 'pyphysio'},

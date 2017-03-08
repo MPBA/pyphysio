@@ -1,6 +1,14 @@
 # coding=utf-8
+import os as _os
+try:
+    import pyphysio as ph
+except ImportError:
+    from sys import path
+    path.insert(0, _os.path.join(_os.path.dirname(__file__), ".."))
+    import pyphysio as ph
 import numpy as np
-import os
+# noinspection PyUnresolvedReferences
+from pytest import approx as approx
 
 
 class Assets(object):
@@ -12,10 +20,10 @@ class Assets(object):
     @classmethod
     def get_data(cls):
         if Assets._sing is None:
-            if not os.path.isfile(Assets._path + Assets._file_c):
+            if not _os.path.isfile(Assets._path + Assets._file_c):
                 Assets._path = "../" + Assets._path
-            if not os.path.isfile(Assets._path + Assets._file_u):
-                os.system("bzcat %s%s > %s%s" % (Assets._path, Assets._file_c, Assets._path, Assets._file_u))
+            if not _os.path.isfile(Assets._path + Assets._file_u):
+                _os.system("bzcat %s%s > %s%s" % (Assets._path, Assets._file_c, Assets._path, Assets._file_u))
             Assets._sing = np.genfromtxt(Assets._path + Assets._file_u, delimiter="\t")
         return Assets._sing
 
@@ -37,6 +45,3 @@ class Assets(object):
     def resp(cls):
         return Assets.get_data()[:, 3]
 
-# Used by test cases so:
-# noinspection PyUnresolvedReferences,PyPep8Naming
-import pyphysio as ph

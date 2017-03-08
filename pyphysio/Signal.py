@@ -291,6 +291,7 @@ class UnevenlySignal(Signal):
     def __new__(cls, values, sampling_freq=1000, signal_nature="", start_time=None, x_values=None, x_type='instants'):
         assert x_values is not None, "x_values are missing"
         assert x_type in ['indices', 'instants'], "x_type not in ['indices', 'instants']"
+        x_values = _np.asarray(x_values)
         assert len(x_values) == len(values), "Length mismatch (y:%d vs. x:%d)" % (len(values), len(x_values))
         assert len(_np.where(_np.diff(x_values) <= 0)[0]) == 0, 'Given x_values are not strictly monotonic'
 

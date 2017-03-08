@@ -18,7 +18,6 @@ class SomeIndicatorsTest(unittest.TestCase):
         freq = freq_down * 7
         start = 1460713373
         nature = "una_bif-fa"
-        test_string = 'test1235'
 
         s = ph.EvenlySignal(values=np.cumsum(np.random.rand(1, samples) - .5) * 100,
                             sampling_freq=freq,

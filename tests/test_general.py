@@ -12,6 +12,63 @@ __author__ = 'aleb'
 
 # noinspection PyArgumentEqualDefault
 class GeneralTest(unittest.TestCase):
+    def test_ex_more(self):
+        s = ph.EvenlySignal(np.cumsum(np.random.rand(1000) - .5) * 100, 10)
+
+        w1 = ph.FixedSegments(step=2, width=3)(s)
+        w3 = ph.LabelSegments(labels=ph.UnevenlySignal(
+            values=['a', 'a', 'b', 'a', 'r', 's', 'r', 'b'],
+            x_values=[10, 12, 13.5, 14.3, 15.6, 20.1123, 25, 36.8],
+            sampling_freq=10,
+            start_time=4,
+            x_type='instants'))(s)
+        w3i = [x for x in w3]
+        w4 = ph.CustomSegments(begins=map(lambda x: x.get_begin_time(), w3i),
+                               ends=map(lambda x: x.get_end_time(), w3i))(s)
+        w4i = [x for x in w4]
+
+        self.assertEqual(len(w4i), len(w3i))
+
+        y1 = [x for x in w1]
+        y3 = [x for x in w3]
+        ph.fmap(w1, [ph.Mean(), ph.StDev(), ph.NNx(threshold=31)])
+        ph.fmap(w3, [ph.Mean(), ph.StDev(), ph.NNx(threshold=31)])
+        ph.fmap(y1, [ph.Mean(), ph.StDev(), ph.NNx(threshold=31)])
+        ph.fmap(y3, [ph.Mean(), ph.StDev(), ph.NNx(threshold=31)])
+
+        # noinspection PyArgumentEqualDefault
+        sd2 = s.resample(1, 'linear')
+        sd3 = s.resample(1, 'nearest')
+        sd4 = s.resample(1, 'zero')
+        sd5 = s.resample(1, 'slinear')
+        sd6 = s.resample(1, 'quadratic')
+        sd7 = s.resample(1, 'cubic')
+
+        self.assertEqual(len(sd2), 100)
+        self.assertEqual(len(sd3), 100)
+        self.assertEqual(len(sd4), 100)
+        self.assertEqual(len(sd5), 100)
+        self.assertEqual(len(sd6), 100)
+        self.assertEqual(len(sd7), 100)
+
+        # noinspection PyArgumentEqualDefault
+        so2 = s.resample(20, 'linear')
+        so3 = s.resample(20, 'nearest')
+        so4 = s.resample(20, 'zero')
+        so5 = s.resample(20, 'slinear')
+        so6 = s.resample(20, 'quadratic')
+        so7 = s.resample(20, 'cubic')
+
+        self.assertEqual(len(so2), 2000)
+        self.assertEqual(len(so3), 2000)
+        self.assertEqual(len(so4), 2000)
+        self.assertEqual(len(so5), 2000)
+        self.assertEqual(len(so6), 2000)
+        self.assertEqual(len(so7), 2000)
+
+        so1 = s.resample(21)
+
+        self.assertEqual(len(so1), 2100)
 
     # TODO: test segment_time() and segment_idx()
     def test_evenly_signal_segment_time(self):
@@ -375,9 +432,9 @@ class GeneralTest(unittest.TestCase):
         e = ph.EvenlySignal(values=Assets.resp()[:10000], sampling_freq=1024, signal_nature="resp")
         e.plot()
 
-        import matplotlib.pyplot as plt
-        plt.show()
-        plt.close('all')
+        # import matplotlib.pyplot as plt
+        # plt.show()
+        # plt.close('all')
 
 
 if __name__ == '__main__':

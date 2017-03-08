@@ -2,7 +2,6 @@
 from __future__ import division
 
 from context import ph
-from math import ceil as _ceil
 import numpy as np
 
 import unittest
