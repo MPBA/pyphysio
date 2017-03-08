@@ -161,7 +161,9 @@ class PeakSelection(_Tool):
 
             if i_pk < i_pre_max:
                 i_st = 0
+                i_sp = i_pk + i_post_max
             elif i_pk >= len(signal_dt) - i_post_max:
+                i_st = i_pk - i_pre_max
                 i_sp = len(signal_dt) - 1
             else:
                 i_st = i_pk - i_pre_max
