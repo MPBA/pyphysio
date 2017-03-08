@@ -44,4 +44,3 @@ class Assets(object):
     @classmethod
     def resp(cls):
         return Assets.get_data()[:, 3]
-

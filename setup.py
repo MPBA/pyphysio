@@ -1,24 +1,26 @@
 # coding=utf-8
-from setuptools import setup
-from os.path import dirname
-
-pkg_path = dirname(__file__)
-
-
-version = 'beta-released'
+from distutils.core import setup
 
 setup(
     name='pyphysio',
-    version=version,
-    author='FBK - MPBA',
-    license='GNU GPL version 3',
-    requires=[
-        'pandas (>= 0.13.1)',
-        'numpy (>= 1.7.1)',
-        'scipy (>= 0.12.0)',
-        'spectrum', 'pytest'
+    packages=['pyphysio'],
+    version='1.0',
+    description='Python library for physiological signals analysis (IBI & HRV, ECG, BVP, EDA, RESP...)',
+    author='MPBA FBK',
+    author_email='bizzego@fbk.eu',
+    url='https://sites.google.com/site/pyhrvlib/pyhrv',
+    download_url='https://github.com/peterldowns/mypackage/archive/0.1.tar.gz',
+    keywords=['eda', 'gsr', 'ecg', 'bvp', 'signal', 'analysis', 'physiological', 'pyhrv', 'hrv'],
+    classifiers=[
+        'Development Status :: 5 - Production/Stable',
+        'Environment :: Console',
+        'Intended Audience :: Healthcare Industry',
+        'Intended Audience :: Information Technology',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
+        'Natural Language :: English',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 2.7',
+        'Topic :: Scientific/Engineering :: Bio-Informatics',
     ],
-
-    package_dir={'pyphysio': 'pyphysio'},
-    packages=['pyphysio']#, 'pyphysio.filters', 'pyphysio.tools', 'pyphysio.estimators', 'pyphysio.indicators', 'pyphysio.segmentation']
 )
