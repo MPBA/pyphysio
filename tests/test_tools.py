@@ -1,8 +1,8 @@
 # coding=utf-8
 from __future__ import division
 
-from context import ph, np, Assets
-
+from context import ph, np, Assets, approx
+#%%
 
 def test_tools():
     # %%
@@ -10,7 +10,7 @@ def test_tools():
     TSTART = 0
 
     # %%
-    bvp = ph.EvenlySignal(Assets.ecg(), sampling_freq=FSAMP, signal_nature='ECG', start_time=TSTART)
+    bvp = ph.EvenlySignal(Assets.bvp(), sampling_freq=FSAMP, signal_nature='BVP', start_time=TSTART)
 
     # %%
     # TEST SignalRange
@@ -29,7 +29,10 @@ def test_tools():
     eda = ph.EvenlySignal(Assets.eda(), sampling_freq=FSAMP, signal_nature='EDA', start_time=TSTART)
     eda = eda.resample(fout=8)
 
-    eda = ph.ConvolutionalFilter(irftype='gauss', win_len=2)(eda)
+    eda = eda.resample(8)
+
+    # filter
+    eda = ph.IIRFilter(fp=0.8, fs=1.1)(eda)
 
     driver = ph.DriverEstim(delta=0.02)(eda)
     phasic, _, __ = ph.PhasicEstim(delta=0.02)(driver)
@@ -37,8 +40,8 @@ def test_tools():
     idx_mx, idx_mn, mx, mn = ph.PeakDetection(delta=0.02)(phasic)
 
     # TEST PeakSelection
-    st, sp = ph.PeakSelection(maxs=idx_mx, pre_max=3, post_max=5)(phasic)
-    assert (np.sum(st) == 21244)
+    st, sp = ph.PeakSelection(idx_max=idx_mx, pre_max=2, post_max=2)(phasic)
+    assert (np.sum(st) == 22985)
 
     # %%
     # TEST PSD
@@ -51,7 +54,7 @@ def test_tools():
 
     f, psd = ph.PSD(method='welch', nfft=4096, window='hanning')(sinusoid)
     # TODO AlmostEqual below
-    assert (f[np.argmax(psd)] == 2.5)
+    assert (f[np.argmax(psd)] == approx(2.5, abs=0.02))
 
     sinusoid_unevenly = ph.UnevenlySignal(np.delete(sinusoid.get_values(), np.arange(10, 200)),
                                           sampling_freq=FSAMP,
@@ -61,7 +64,7 @@ def test_tools():
 
     f, psd = ph.PSD(method='welch', nfft=4096, window='hanning')(sinusoid_unevenly)
     # TODO AlmostEqual below
-    assert (f[np.argmax(psd)] == 2.5)
+    assert (f[np.argmax(psd)] == approx(2.5, abs=0.02))
 
     # %%
     # TEST Maxima

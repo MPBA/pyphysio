@@ -2,7 +2,6 @@
 from __future__ import division
 
 from context import ph, Assets, np, approx
-import matplotlib.pyplot as plt
 
 
 def test_indicators_eda():
@@ -25,7 +24,7 @@ def test_indicators_eda():
 
     # %%
     # TODO check value
-    assert ph.Mean()(phasic) == approx(.0575)
+    assert ph.Mean()(phasic) == approx(.0568, abs=0.00005)
 
     mx = ph.Max()(phasic)
     pks_max = ph.PeaksMax(delta=0.1)(phasic)
@@ -35,25 +34,11 @@ def test_indicators_eda():
     idx_mx, idx_mn, mx, mn = ph.PeakDetection(delta=0.1)(phasic)
     st, sp = ph.PeakSelection(idx_max=idx_mx, pre_max=2, post_max=2)(phasic)
 
-    signal_dt = ph.Diff()(phasic)
-
-    ax1 = plt.subplot(211)
-    phasic.plot()
-    plt.vlines(phasic.get_times()[idx_mx], np.min(phasic), np.max(phasic), 'y')
-    plt.vlines(phasic.get_times()[st], np.min(phasic), np.max(phasic), 'g')
-    plt.vlines(phasic.get_times()[sp], np.min(phasic), np.max(phasic), 'r')
-
-    plt.subplot(212, sharex=ax1)
-    signal_dt.plot()
-    plt.vlines(signal_dt.get_times()[idx_mx], np.min(signal_dt), np.max(signal_dt), 'y')
-    plt.vlines(signal_dt.get_times()[st], np.min(signal_dt), np.max(signal_dt), 'g')
-    plt.vlines(signal_dt.get_times()[sp], np.min(signal_dt), np.max(signal_dt), 'r')
-
     n_peaks = ph.PeaksNum(delta=0.1, pre_max=2, post_max=2)(phasic)
 
     assert (n_peaks == 24)
-    assert (np.sum(st) == 11519)
-    assert (np.sum(sp) == 12210)
+    assert (np.sum(st) == 12501)
+    assert (np.sum(sp) == 13031)
 
     # %%
     # FAKE PHASIC

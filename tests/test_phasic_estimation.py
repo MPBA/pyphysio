@@ -13,18 +13,18 @@ def test_phasic_estimation():
 
     # preprocessing
     # downsampling
-    eda_r = eda.resample(4)
+    eda = eda.resample(8)
 
     # filter
-    eda = ph.IIRFilter(fp=0.8, fs=1.1)(eda_r)
+    eda = ph.IIRFilter(fp=0.8, fs=1.1)(eda)
 
     # %%
     # estimate driver
     driver = ph.DriverEstim(T1=0.75, T2=2)(eda)
-    assert (int(np.mean(driver) * 10000) == 18255)
+    assert (int(np.mean(driver) * 10000) == 18262)
     assert (isinstance(driver, ph.EvenlySignal))
 
     # %%
     phasic, tonic, driver_no_peak = ph.PhasicEstim(delta=0.1)(driver)
-    assert np.mean(phasic) == approx(.0485)
+    assert np.mean(phasic) == approx(.0568, abs=0.00005)
     assert (isinstance(phasic, ph.EvenlySignal))
