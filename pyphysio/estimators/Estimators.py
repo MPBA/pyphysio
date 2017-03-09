@@ -2,7 +2,6 @@
 from __future__ import print_function
 from __future__ import division
 import numpy as _np
-from scipy.signal import gaussian as _gaussian
 from ..BaseEstimator import Estimator as _Estimator
 from ..Signal import UnevenlySignal as _UnevenlySignal, EvenlySignal as _EvenlySignal
 from ..filters.Filters import IIRFilter as _IIRFilter, Diff as _Diff, DeConvolutionalFilter as _DeConvolutionalFilter, \
@@ -16,6 +15,7 @@ __author__ = 'AleB'
 
 # IBI ESTIMATION
 class BeatFromBP(_Estimator):
+    # TODO: insert reference
     """
     Identify the beats in a Blood Pulse (BP) signal and compute the IBIs.
     Optimized to identify the percussion peak.
@@ -46,8 +46,9 @@ class BeatFromBP(_Estimator):
     Notes
     -----
         See REF for info about the algorithm.
-    #TODO: insert reference
     """
+    def __init__(self, bpm_max=120, win_pre=.25, win_post=.05, **kwargs):
+        _Estimator.__init__(self, bpm_max=bpm_max, win_pre=win_pre, win_post=win_post, **kwargs)
 
     _params_descriptors = {
         'bpm_max': _Par(0, int, 'Maximal expected heart rate (in beats per minute)', 120, lambda x: 1 < x <= 400),
@@ -145,6 +146,8 @@ class BeatFromECG(_Estimator):
      This algorithms looks for maxima in the signal which are followed by values lower than a delta value. 
      The adaptive version estimates the delta value adaptively.
     """
+    def __init__(self, bpm_max=120, delta=0, **kwargs):
+        _Estimator.__init__(self, bpm_max=bpm_max, delta=delta, **kwargs)
 
     _params_descriptors = {
         'bpm_max': _Par(0, int, 'Maximal expected heart rate (in beats per minute)', 120, lambda x: 1 < x <= 400),
@@ -185,9 +188,10 @@ class BeatFromECG(_Estimator):
 
 # PHASIC ESTIMATION
 class DriverEstim(_Estimator):
+    # TODO: insert ref
+    # TODO: insert ref
     """
     Estimates the driver of an EDA signal according to REF
-    #TODO: insert ref
 
     The estimation uses a deconvolution using a Bateman function as Impulsive Response Function.
     The version of the Bateman function here adopted is:
@@ -199,9 +203,9 @@ class DriverEstim(_Estimator):
     
     Optional:
     
-    T1: float, >0, default = 0.75
+    t1: float, >0, default = 0.75
         Value of T1 parameters of the bateman function
-    T2: float, >0, default = 2
+    t2: float, >0, default = 2
         Value of T2 parameters of the bateman function
 
     Returns
@@ -212,12 +216,13 @@ class DriverEstim(_Estimator):
     Notes
     -----
     See ref for more info
-    #TODO: insert ref
     """
+    def __init__(self, t1=.75, t2=2, **kwargs):
+        _Estimator.__init__(self, t1=t1, t2=t2, **kwargs)
 
     _params_descriptors = {
-        'T1': _Par(0, float, 'T1 parameter for the Bateman function', 0.75, lambda x: x > 0),
-        'T2': _Par(0, float, 'T2 parameter for the Bateman function', 2, lambda x: x > 0)
+        't1': _Par(0, float, 't1 parameter for the Bateman function', 0.75, lambda x: x > 0),
+        't2': _Par(0, float, 't2 parameter for the Bateman function', 2, lambda x: x > 0)
     }
 
     @classmethod
@@ -226,8 +231,8 @@ class DriverEstim(_Estimator):
 
     @classmethod
     def algorithm(cls, signal, params):
-        t1 = params['T1']
-        t2 = params['T2']
+        t1 = params['t1']
+        t2 = params['t2']
 
         par_bat = [t1, t2]
 
@@ -320,15 +325,17 @@ class PhasicEstim(_Estimator):
     driver_no_peak : EvenlySignal
         The "de-peaked" driver signal used to generate the interpolation grid
     """
+    def __init__(self, delta, grid_size=1, pre_max=2, post_max=2, **kwargs):
+        _Estimator.__init__(self, delta=delta, grid_size=grid_size, pre_max=pre_max, post_max=post_max, **kwargs)
 
     _params_descriptors = {
         'delta': _Par(2, float, 'Minimum amplitude of the peaks in the driver', constraint=lambda x: x > 0),
         'grid_size': _Par(0, int, 'Sampling size of the interpolation grid in seconds', 1, lambda x: x > 0),
-        'pre_max': _Par(0, float,
-                        'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
+        'pre_max': _Par(0, float, 'Duration (in seconds) of interval before the peak that is considered to find the'
+                                  ' start of the peak',
                         2, lambda x: x > 0),
-        'post_max': _Par(0, float,
-                         'Duration (in seconds) of interval after the peak that is considered to find the start of the peak',
+        'post_max': _Par(0, float, 'Duration (in seconds) of interval after the peak that is considered to find the'
+                                   ' start of the peak',
                          2, lambda x: x > 0)
     }
 
@@ -396,6 +403,8 @@ class Energy(_Estimator):
     energy : numpy.array
         Local energy
     """
+    def __init__(self, win_len, win_step, smooth=True, **kwargs):
+        _Estimator.__init__(self, win_len=win_len, win_step=win_step, smooth=smooth, **kwargs)
 
     _params_descriptors = {
         'win_len': _Par(2, float, 'The length of the window (seconds)', constraint=lambda x: x > 0),
@@ -416,7 +425,7 @@ class Energy(_Estimator):
         windows = _np.arange(0, len(signal) - idx_len + 1, idx_step)
 
         energy = _np.empty(len(windows) + 2)
-        for i in xrange(1, len(windows) + 1):
+        for i in range(1, len(windows) + 1):
             start = windows[i - 1]
             portion_curr = signal[start: start + idx_len]
             energy[i] = _np.sum(_np.power(portion_curr, 2)) / len(portion_curr)

@@ -11,7 +11,7 @@ class AbstractCalledError(RuntimeError):
 def abstractmethod(funcobj):
     """A decorator indicating abstract methods.
     """
-    def abstract_error(*args, **kwargs):
+    def abstract_error():
         #
         #
         #

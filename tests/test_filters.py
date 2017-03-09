@@ -43,10 +43,11 @@ class FiltersTest(unittest.TestCase):
         # %%
 
         # TEST ConvolutionalFilter
-        self.assertEqual(int(np.max(ph.ConvolutionalFilter(irftype='gauss', win_len=0.1)(ecg)) * 10000), 7501)
-        self.assertEqual(int(np.max(ph.ConvolutionalFilter(irftype='rect', win_len=0.1)(ecg)) * 10000), 4022)
-        self.assertEqual(int(np.max(ph.ConvolutionalFilter(irftype='triang', win_len=0.1)(ecg)) * 10000), 5000)
-        self.assertEqual(int(np.max(ph.ConvolutionalFilter(irftype='dgauss', win_len=0.1, normalize=False)(ecg)) * 10000), 8823)
+        self.assertAlmostEqual(np.max(ph.ConvolutionalFilter(irftype='gauss', win_len=0.1)(ecg)), .7501, delta=.0001)
+        self.assertAlmostEqual(np.max(ph.ConvolutionalFilter(irftype='rect', win_len=0.1)(ecg)), .4022, delta=.0001)
+        self.assertAlmostEqual(np.max(ph.ConvolutionalFilter(irftype='triang', win_len=0.1)(ecg)), .5000, delta=.0001)
+        self.assertAlmostEqual(
+            np.max(ph.ConvolutionalFilter(irftype='dgauss', win_len=0.1, normalize=False)(ecg)), .8823, delta=.0001)
 
         irf = np.r_[np.arange(50, 500, 5)]
         ecg_cfC = ph.ConvolutionalFilter(irftype='custom', irf=irf, normalize=True)(ecg)

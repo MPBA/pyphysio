@@ -1,3 +1,4 @@
+# coding=utf-8
 from __future__ import division
 import numpy as _np
 import sys as _sys
@@ -136,11 +137,11 @@ class PeakSelection(_Tool):
 
     _params_descriptors = {
         'idx_max': _Par(2, list, 'Array containing indexes of the maxima'),
-        'pre_max': _Par(2, float,
-                        'Duration (in seconds) of interval before the peak that is considered to find the start of the peak',
+        'pre_max': _Par(2, float, 'Duration (in seconds) of interval before the peak that is considered to find the'
+                                  ' start of the peak',
                         constraint=lambda x: x > 0),
-        'post_max': _Par(2, float,
-                         'Duration (in seconds) of interval after the peak that is considered to find the end of the peak',
+        'post_max': _Par(2, float, 'Duration (in seconds) of interval after the peak that is considered to find the'
+                                   ' end of the peak',
                          constraint=lambda x: x > 0)
     }
 
@@ -190,7 +191,7 @@ class PeakSelection(_Tool):
 
             # OR below is to allow small fluctuations (?)
             while i_post < len(signal_dt_post) - 1 and (
-                    signal_dt_post[i_post] < 0 or abs(signal_dt_post[i_post]) <= ZERO):
+                            signal_dt_post[i_post] < 0 or abs(signal_dt_post[i_post]) <= ZERO):
                 i_post += 1
 
             i_stop[i] = i_pk + i_post
@@ -399,8 +400,8 @@ class Maxima(_Tool):
     Parameters
     ----------
     method : str
-        Method to detect the maxima. Available methods: 'complete' or 'windowing'. 
-        'complete' finds all the local maxima, 'windowing' uses a runnning window to find the global maxima in each window.
+        Method to detect the maxima. Available methods: 'complete' or 'windowing'. 'complete' finds all the local
+         maxima, 'windowing' uses a runnning window to find the global maxima in each window.
     win_len : float, >0
         Length of window in seconds (method = 'windowing')
     win_step : float, >0
@@ -496,8 +497,8 @@ class Minima(_Tool):
     Parameters
     ----------
     method : str
-        Method to detect the minima. Available methods: 'complete' or 'windowing'. 
-        'complete' finds all the local minima, 'windowing' uses a runnning window to find the global minima in each window.
+        Method to detect the minima. Available methods: 'complete' or 'windowing'. 'complete' finds all the local
+        minima, 'windowing' uses a runnning window to find the global minima in each window.
     win_len : float, >0
         Length of window in seconds (method = 'windowing')
     win_step : float, >0
@@ -582,7 +583,7 @@ class CreateTemplate(_Tool):
         total_samples = smp_pre + smp_post
         templates = _np.zeros(total_samples)
 
-        for i in xrange(1, len(ref_indexes) - 1):
+        for i in range(1, len(ref_indexes) - 1):
             idx_peak = ref_indexes[i]
             tmp = sig[idx_peak - smp_pre: idx_peak + smp_post]
             tmp = (tmp - _np.min(tmp)) / (_np.max(tmp) - _np.min(tmp))
@@ -633,7 +634,7 @@ class BootstrapEstimation(_Tool):
         k = params['k']
 
         estim = []
-        for i in xrange(niter):
+        for i in range(niter):
             ixs = _np.arange(l)
             ixs_p = _np.random.permutation(ixs)
             sampled_data = signal[ixs_p[:int(round(k * l))]]
@@ -672,7 +673,7 @@ class Durations(_Tool):
 
         fsamp = signal.get_sampling_freq()
         durations = []
-        for I in xrange(len(starts)):
+        for I in range(len(starts)):
             if (stops[I] > 0) & (starts[I] >= 0):
                 durations.append((stops[I] - starts[I]) / fsamp)
             else:
@@ -709,7 +710,7 @@ class Slopes(_Tool):
 
         fsamp = data.get_sampling_freq()
         slopes = []
-        for I in xrange(len(starts)):
+        for I in range(len(starts)):
             if peaks[I] > 0 & starts[I] >= 0:
                 dy = data[peaks[I]] - data[starts[I]]
                 dt = (peaks[I] - starts[I]) / fsamp
@@ -748,11 +749,11 @@ class BeatOutliers(_Tool):
     """
 
     _params_descriptors = {
-        'ibi_median': _Par(0, float,
-                           'Ibi value used to initialize the cache. If 0 (default) the ibi_median is computed on the input signal',
+        'ibi_median': _Par(0, float, 'Ibi value used to initialize the cache. If 0 (default) the ibi_median is computed'
+                                     ' on the input signal',
                            0, lambda x: x >= 0),
-        'cache': _Par(0, int,
-                      'Number of IBI to be stored in the cache for adaptive computation of the interval of accepted values',
+        'cache': _Par(0, int, 'Number of IBI to be stored in the cache for adaptive computation of the interval of'
+                              ' accepted values',
                       3, lambda x: x > 0),
         'sensitivity': _Par(0, float, 'Relative variation from the current median that is accepted', 0.25,
                             lambda x: x > 0)
@@ -778,7 +779,7 @@ class BeatOutliers(_Tool):
         # missings = []
         idx_ibi = signal.get_indices()
         ibi = signal.get_values()
-        for i in xrange(1, len(idx_ibi)):
+        for i in range(1, len(idx_ibi)):
             curr_median = _np.median(ibi_cache)
 
             curr_ibi = ibi[i]
@@ -875,13 +876,13 @@ class BeatOptimizer(_Tool):
     _params_descriptors = {
         'B': _Par(0, float, 'Ball radius in seconds to allow pairing between forward and backward beats', 0.25,
                   lambda x: x > 0),
-        'cache': _Par(0, int,
-                      'Nuber of IBI to be stored in the cache for adaptive computation of the interval of accepted values',
+        'cache': _Par(0, int, 'Nuber of IBI to be stored in the cache for adaptive computation of the interval of'
+                              ' accepted values',
                       5, lambda x: x > 0),
         'sensitivity': _Par(0, float, 'Relative variation from the current median that is accepted', 0.25,
                             lambda x: x > 0),
-        'ibi_median': _Par(0, int,
-                           'Ibi value used to initialize the cache. If 0 (default) the ibi_median is computed on the input signal',
+        'ibi_median': _Par(0, int, 'Ibi value used to initialize the cache. If 0 (default) the ibi_median is computed'
+                                   ' on the input signal',
                            0, lambda x: x > 0)
     }
 
@@ -914,7 +915,7 @@ class BeatOptimizer(_Tool):
         # ibi_1 = []
 
         prev_idx = idx_ibi[0]
-        for i in xrange(1, len(idx_ibi)):
+        for i in range(1, len(idx_ibi)):
             curr_median = _np.median(ibi_cache)
             curr_idx = idx_ibi[i]
             curr_ibi = curr_idx - prev_idx
@@ -952,7 +953,7 @@ class BeatOptimizer(_Tool):
         ibi_2 = []
 
         prev_idx = idx_ibi_rev[0]
-        for i in xrange(1, len(idx_ibi_rev)):
+        for i in range(1, len(idx_ibi_rev)):
             curr_median = _np.median(ibi_cache)
             curr_idx = idx_ibi_rev[i]
             curr_ibi = curr_idx - prev_idx
@@ -982,12 +983,11 @@ class BeatOptimizer(_Tool):
 
         idx_2 = -1 * (_np.array(idx_2) - idx_ibi_rev[-1])
         idx_2 = idx_2[::-1]
-        ibi_2 = _np.array(ibi_2[::-1])
 
         ###
         # add indexes of idx_ibi_2 which are not in idx_ibi_1 but close enough
         b = b * fsamp
-        for i_2 in xrange(1, len(idx_2)):
+        for i_2 in range(1, len(idx_2)):
             curr_idx_2 = idx_2[i_2]
             if not (curr_idx_2 in idx_1):
                 i_1 = _np.where((idx_1 >= curr_idx_2 - b) & (idx_1 <= curr_idx_2 + b))[0]
@@ -997,9 +997,8 @@ class BeatOptimizer(_Tool):
 
         ###
         # create pairs for each beat
-        pairs = []
-        pairs.append([0, 0])
-        for i_1 in xrange(1, len(idx_1)):
+        pairs = [[0, 0]]
+        for i_1 in range(1, len(idx_1)):
             curr_idx_1 = idx_1[i_1]
             if curr_idx_1 in idx_2:
                 pairs.append([curr_idx_1, curr_idx_1])
@@ -1044,7 +1043,7 @@ class BeatOptimizer(_Tool):
 
         add_index = 0
         lens = stops - starts
-        for i in xrange(len(starts)):
+        for i in range(len(starts)):
             l = lens[i]
             if l > 10:
                 curr_st = starts[i]
@@ -1064,7 +1063,7 @@ class BeatOptimizer(_Tool):
         ########################################
         # find best combination
         idx_out = _np.copy(pairs[:, 0])
-        for i in xrange(len(starts)):
+        for i in range(len(starts)):
             i_st = starts[i]
             i_sp = stops[i]
 
@@ -1079,7 +1078,7 @@ class BeatOptimizer(_Tool):
             combinations = list(_itertools.product([0, 1], repeat=i_sp - i_st - 1))
             for comb in combinations:
                 cand_portion = _np.copy(curr_portion[:, 0])
-                for k in xrange(len(comb)):
+                for k in range(len(comb)):
                     bit = comb[k]
                     cand_portion[k + 2] = curr_portion[k + 2, bit]
                 cand_error = sum(abs(_np.diff(_np.diff(cand_portion))))
@@ -1210,10 +1209,10 @@ class OptimizeBateman(_Tool):
             return None
 
         if complete:
-            x0_min, loss_min, niter, nfuncalls, warnflag = _opt.fmin(loss_function, x0, args=(
-            signal, delta, min_T1, max_T1, min_T2, max_T2, weight),
-                                                                     full_output=True,
-                                                                     **min_pars)
+            x0_min, loss_min, niter, nfuncalls, warnflag, ignored = _opt.fmin(loss_function, x0, args=(
+                signal, delta, min_T1, max_T1, min_T2, max_T2, weight),
+                                                                              full_output=True,
+                                                                              **min_pars)
             return x0, x0_min, loss, loss_min, exit_code, warnflag
         else:
             return x0, loss, exit_code
@@ -1227,7 +1226,7 @@ class OptimizeBateman(_Tool):
         ----------
         par_bat : list
             Bateman parameters to be optimized
-        signal : array
+        signal : Signal
             The EDA signal
         delta : float
             Minimum amplitude of the peaks in the driver
@@ -1253,9 +1252,9 @@ class OptimizeBateman(_Tool):
             return _np.Inf
 
         WLEN = 10
-        # check if pars hit boudaries
-        #        if par_bat[0] < min_T1 or par_bat[0] > max_T1 or par_bat[1] < min_T2 or par_bat[1] > max_T2 or par_bat[0] >= par_bat[1]:
-        #            return 10000
+        # # check if pars hit boudaries
+        # if par_bat[0] < min_T1 or par_bat[0] > max_T1 or par_bat[1] < min_T2 or par_bat[1] > max_T2 or par_bat[0] >= par_bat[1]:
+        #     return 10000
 
         fsamp = signal.get_sampling_freq()
         driver = _DriverEstim(T1=par_bat[0], T2=par_bat[1])(signal)
@@ -1315,7 +1314,7 @@ class OptimizeBateman(_Tool):
                             driver_detrended)
 
                     energy_curr = (1 / fsamp) * _np.sum(driver_detrended[1:] ** 2) / (len(driver_detrended) - 1)
-                    #                    energy_curr = (1 / fsamp) * _np.sum(driver_detrended[fsamp:] ** 2) / (len(driver_detrended) - fsamp)
+                    # energy_curr = (1 / fsamp) * _np.sum(driver_detrended[fsamp:] ** 2) / (len(driver_detrended) - fsamp)
 
                     energy += energy_curr
 
@@ -1339,7 +1338,7 @@ class OptimizeBateman(_Tool):
         ----------
         par_bat : list
             Bateman parameters to be optimized
-        signal : array
+        signal : Signal
             The EDA signal
         delta : float
             Minimum amplitude of the peaks in the driver
@@ -1385,14 +1384,14 @@ class OptimizeBateman(_Tool):
                 # extract WLEN seconds after the peak
                 driver_portion = driver[idx_max:idx_max + WLEN * fsamp]
 
-                #                lin_weigths = _np.arange(1, 0, -1/len(driver_portion))
-                #                driver_portion = (driver_portion - _np.mean(driver_portion)) * lin_weigths + _np.mean(driver_portion)
+                # lin_weigths = _np.arange(1, 0, -1/len(driver_portion))
+                # driver_portion = (driver_portion - _np.mean(driver_portion)) * lin_weigths + _np.mean(driver_portion)
                 #
-                #                idxs = _np.arange(len(driver_portion))
-                #                exp_weigths = _np.exp(-idxs / (par_bat[0]*fsamp))
-                #                driver_portion = (driver_portion - _np.mean(driver_portion)) * exp_weigths + _np.mean(driver_portion)
+                # idxs = _np.arange(len(driver_portion))
+                # exp_weigths = _np.exp(-idxs / (par_bat[0]*fsamp))
+                # driver_portion = (driver_portion - _np.mean(driver_portion)) * exp_weigths + _np.mean(driver_portion)
 
-                ##estimate trend
+                # # estimate trend
                 # extract final 5 seconds
                 #                half = len(driver_portion) - 10 * fsamp
 
@@ -1462,8 +1461,6 @@ class OptimizeBateman(_Tool):
             Lower bound for T2
         max_T2 : float
             Upper bound for T2
-        alpha : float, default = 6
-            Coefficient to weight the 'neg' component
        
         Returns
         -------
@@ -1491,7 +1488,7 @@ class OptimizeBateman(_Tool):
                 print('No peaks found.')
                 return driver
 
-            for i in xrange(len(i_peaks)):
+            for i in range(len(i_peaks)):
                 i_pk = int(i_peaks[i])
 
                 # find START

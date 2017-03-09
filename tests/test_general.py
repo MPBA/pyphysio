@@ -254,8 +254,8 @@ class GeneralTest(unittest.TestCase):
         function(y2)
 
         w3 = ph.LabelSegments(labels=ph.UnevenlySignal(values=[0, 0, 1, 0, 2, 3, 2, 1],
-                                                       x_values=np.array([10, 12, 13.5, 14.3, 15.6, 20.1123, 25, 36.8])
-                                                                + start,
+                                                       x_values=np.array(
+                                                           [10, 12, 13.5, 14.3, 15.6, 20.1123, 25, 36.8]) + start,
                                                        # start_time=start,
                                                        x_type='instants'
                                                        ))(s)
@@ -420,6 +420,7 @@ class GeneralTest(unittest.TestCase):
         self.assertEqual(s7.get_indices()[-1], s.get_indices()[samples - 1])
 
     # TODO: following test should be in a pipeline test
+    # noinspection PyMethodMayBeStatic
     def test_signal_plot(self):
         e = ph.EvenlySignal(values=Assets.ecg()[:10000], sampling_freq=1024, signal_nature="ecg")
         e, ignored, ignored, ignored = ph.PeakDetection(delta=1)(e)

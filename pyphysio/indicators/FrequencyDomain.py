@@ -5,7 +5,6 @@ from ..BaseIndicator import Indicator as _Indicator
 from ..tools.Tools import PSD as PSD
 import numpy as _np
 from ..Parameters import Parameter as _Par
-from ..Signal import UnevenlySignal as _UnevenlySignal, EvenlySignal as _EvenlySignal
 
 __author__ = 'AleB'
 

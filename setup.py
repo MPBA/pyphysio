@@ -17,10 +17,18 @@ setup(
         'Intended Audience :: Healthcare Industry',
         'Intended Audience :: Information Technology',
         'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
+        'License :: OSI Approved :: GNU General Public License (GPL)',
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.7',
         'Topic :: Scientific/Engineering :: Bio-Informatics',
     ],
+    requires=[
+        'numpy',
+        'pytest',
+        'scipy',
+        'matplotlib',
+        'spectrum',
+        'minepy'
+    ]
 )

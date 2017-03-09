@@ -9,7 +9,6 @@ __author__ = 'aleb'
 
 
 # TODO: not really useful... we should write a test for all indicators --> utest_indicators_hrv & utest_indicators_eda
-
 # noinspection PyArgumentEqualDefault
 class SomeIndicatorsTest(unittest.TestCase):
     def test_evenly_signal_base(self):
@@ -24,7 +23,7 @@ class SomeIndicatorsTest(unittest.TestCase):
                             signal_nature=nature,
                             start_time=start,
                             )
-        
+
         self.assertGreaterEqual(ph.RMSSD()(s), 0)
         self.assertGreaterEqual(ph.StDev()(s), 0)
         self.assertGreaterEqual(ph.Triang()(s), 0)

@@ -123,8 +123,8 @@ def fmap(segments, algorithms, alt_signal=None):
     :param algorithms: A list of algorithms
     :param alt_signal: The signal that will be used instead of the one referenced in the segments
     
-    :return: values, labels, col_names A tuple: a list containing a list for each segment containing a value for each algorithm, the list of the
-    algorithm names.
+    :return: values, labels, col_names A tuple: a list containing a list for each segment containing a value for each
+     algorithm, the list of the algorithm names.
     """
     from numpy import asarray as _asarray
     values = _asarray([[seg.get_begin_time(), seg.get_end_time()] + [alg(seg(alt_signal)) for alg in algorithms]

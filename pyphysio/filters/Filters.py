@@ -1,7 +1,8 @@
 # coding=utf-8
 from __future__ import division
 import numpy as _np
-from scipy.signal import gaussian as _gaussian, filtfilt as _filtfilt, filter_design as _filter_design, deconvolve as _deconvolve
+from scipy.signal import gaussian as _gaussian, filtfilt as _filtfilt, filter_design as _filter_design, \
+    deconvolve as _deconvolve
 from matplotlib.pyplot import plot as _plot
 from ..BaseFilter import Filter as _Filter
 from ..Signal import EvenlySignal as _EvenlySignal, UnevenlySignal as _UnevenlySignal, Signal as _Signal
@@ -43,12 +44,18 @@ class Normalize(_Filter):
     -----
         ...
     """
+    def __init__(self, norm_method='standard', bias=0, range=1, **kwargs):
+        _Filter.__init__(self, norm_method=norm_method, bias=bias, range=range, **kwargs)
+
     _params_descriptors = {
-        'norm_method': _Par(0, str, 'Method for the normalization.', 'standard', lambda x: x in ['mean', 'standard', 'min', 'maxmin', 'custom']),
-        'norm_bias': _Par(2, float, 'Bias for custom normalization', activation = lambda x, p: p['norm_method'] == 'custom'),
-        'norm_range': _Par(2, float, 'Range for custom normalization', lambda x: x != 0, activation = lambda x, p: p['norm_method'] == 'custom')
+        'norm_method': _Par(0, str, 'Method for the normalization.', 'standard',
+                            lambda x: x in ['mean', 'standard', 'min', 'maxmin', 'custom']),
+        'norm_bias': _Par(2, float, 'Bias for custom normalization',
+                          activation=lambda x, p: p['norm_method'] == 'custom'),
+        'norm_range': _Par(2, float, 'Range for custom normalization', lambda x: x != 0,
+                           activation=lambda x, p: p['norm_method'] == 'custom')
     }
-    
+
     class Types(object):
         Mean = 'mean'
         MeanSd = 'standard'
@@ -93,11 +100,13 @@ class Diff(_Filter):
     -----
     Note that the length of the returned signal is the lenght of the input_signal minus degree.
     """
-    
+    def __init__(self, degree=1, **kwargs):
+        _Filter.__init__(self, degree=degree, **kwargs)
+
     _params_descriptors = {
         'degree': _Par(0, int, 'Degree of the differences', 1, lambda x: x > 0)
     }
-    
+
     @classmethod
     def algorithm(cls, signal, params):
         """
@@ -142,17 +151,21 @@ class IIRFilter(_Filter):
 
     Notes
     -----
-    This is a wrapper of `scipy.signal.filter_design.iirdesign`. Refer to `scipy.signal.filter_design.iirdesign` for additional information
+    This is a wrapper of `scipy.signal.filter_design.iirdesign`. Refer to `scipy.signal.filter_design.iirdesign`
+     for additional information
     """
-    
+    def __init__(self, fp, fs, loss=.1, att=40, ftype='butter', **kwargs):
+        _Filter.__init__(self, fp=fp, fs=fs, loss=loss, att=att, ftype=ftype, **kwargs)
+
     _params_descriptors = {
         'fp': _Par(2, list, 'The pass frequencies'),
         'fs': _Par(2, list, 'The stop frequencies'),
         'loss': _Par(0, float, 'Loss tolerance in the pass band', 0.1, lambda x: x > 0),
         'att': _Par(0, float, 'Minimum attenuation required in the stop band.', 40, lambda x: x > 0),
-        'ftype': _Par(0, str, 'Type of filter', 'butter', lambda x: x in ['butter', 'cheby1', 'cheby2', 'ellip', 'bessel'])
+        'ftype': _Par(0, str, 'Type of filter', 'butter',
+                      lambda x: x in ['butter', 'cheby1', 'cheby2', 'ellip', 'bessel'])
     }
-    
+
     @classmethod
     def algorithm(cls, signal, params):
         fsamp = signal.get_sampling_freq()
@@ -160,16 +173,18 @@ class IIRFilter(_Filter):
 
         if isinstance(signal, _Signal) and not isinstance(signal, _EvenlySignal):
             cls.warn('Filtering Unevenly signal is undefined. Returning original signal.')
-        
+
         nyq = 0.5 * fsamp
         fp = _np.array(fp)
         fs = _np.array(fs)
-        
+
         wp = fp / nyq
         ws = fs / nyq
+        # noinspection PyTupleAssignmentBalance
         b, a = _filter_design.iirdesign(wp, ws, loss, att, ftype=ftype, output="ba")
-                
-        sig_filtered = _EvenlySignal(_filtfilt(b, a, signal.get_values()), sampling_freq = signal.get_sampling_freq(), signal_nature = signal.get_signal_nature(), start_time = signal.get_start_time())
+
+        sig_filtered = _EvenlySignal(_filtfilt(b, a, signal.get_values()), sampling_freq=signal.get_sampling_freq(),
+                                     signal_nature=signal.get_signal_nature(), start_time=signal.get_start_time())
         if _np.isnan(sig_filtered[0]):
             cls.warn('Filter parameters allow no solution. Returning original signal.')
             return signal
@@ -180,7 +195,9 @@ class IIRFilter(_Filter):
     def plot(self):
         pass
 
+
 class DenoiseEDA(_Filter):
+    #TODO: insert ref
     """
     Removes noise due to sensor displacement from the EDA signal.
     
@@ -202,38 +219,40 @@ class DenoiseEDA(_Filter):
     Notes
     -----
     See REF for more infos.
-    #TODO: insert ref
     """
-    
+    def __init__(self, threshold, win_len=2, **kwargs):
+        _Filter.__init__(self, threshold=threshold, win_len=win_len, **kwargs)
+
     _params_descriptors = {
         'threshold': _Par(2, float, 'Threshold to detect the noise', constraint=lambda x: x > 0),
         'win_len': _Par(0, float, 'Length of the window', 2, lambda x: x > 0)
     }
-    
+
     @classmethod
     def algorithm(cls, signal, params):
-        
+
         threshold = params['threshold']
         win_len = params['win_len']
-        
-        #remove fluctiations
-        noise = ConvolutionalFilter(irftype ='triang', win_len = win_len, normalize=True)(abs(_np.diff(signal)))
-        
-        #identify noisy portions        
+
+        # remove fluctiations
+        noise = ConvolutionalFilter(irftype='triang', win_len=win_len, normalize=True)(abs(_np.diff(signal)))
+
+        # identify noisy portions
         idx_ok = _np.where(noise <= threshold)[0]
-        
-        #fix start and stop of the signal for the followinf interpolation
+
+        # fix start and stop of the signal for the following interpolation
         if idx_ok[0] != 0:
             idx_ok = _np.r_[0, idx_ok].astype(int)
-        
-        if idx_ok[-1] != len(signal)-1:
-            idx_ok = _np.r_[idx_ok, len(signal)-1].astype(int)
 
-        denoised = _UnevenlySignal(signal[idx_ok], signal.get_sampling_freq(), x_values = idx_ok, x_type = 'indices')
-        
-        #interpolation
+        if idx_ok[-1] != len(signal) - 1:
+            idx_ok = _np.r_[idx_ok, len(signal) - 1].astype(int)
+
+        denoised = _UnevenlySignal(signal[idx_ok], signal.get_sampling_freq(), x_values=idx_ok, x_type='indices')
+
+        # interpolation
         signal_out = denoised.to_evenly('linear')
         return signal_out
+
 
 class ConvolutionalFilter(_Filter):
     """
@@ -258,23 +277,27 @@ class ConvolutionalFilter(_Filter):
         Filtered signal
 
     """
-    
+    def __init__(self, irftype, win_len, irf, normalize=True, **kwargs):
+        _Filter.__init__(self, irftype=irftype, win_len=win_len, irf=irf, normalize=normalize, **kwargs)
+
     _params_descriptors = {
-        'irftype': _Par(2, str, 'Type of IRF to be generated.', constraint=lambda x: x in ['gauss', 'rect', 'triang', 'dgauss', 'custom']), 
-        'win_len': _Par(2, float, "Durarion of the generated IRF in seconds (if irftype is not 'custom')", constraint=lambda x: x > 0, activation=lambda x, p: p['irftype'] != 'custom'),        
+        'irftype': _Par(2, str, 'Type of IRF to be generated.',
+                        constraint=lambda x: x in ['gauss', 'rect', 'triang', 'dgauss', 'custom']),
+        'win_len': _Par(2, float, "Durarion of the generated IRF in seconds (if irftype is not 'custom')",
+                        constraint=lambda x: x > 0, activation=lambda x, p: p['irftype'] != 'custom'),
         'irf': _Par(2, list, "IRF to be used if irftype is 'custom'", activation=lambda x, p: p['irftype'] == 'custom'),
         'normalize': _Par(1, bool, 'Whether to normalizes the IRF to have unitary area', True)
     }
-    
-#    class Types(object):
-#        Same = 'none'
-#        Gauss = 'gauss'
-#        Rect = 'rect'
-#        Triang = 'triang'
-#        Dgauss = 'dgauss'
-#        Custom = 'custom'
-    
-    #TODO: TEST normalization and results
+
+    #    class Types(object):
+    #        Same = 'none'
+    #        Gauss = 'gauss'
+    #        Rect = 'rect'
+    #        Triang = 'triang'
+    #        Dgauss = 'dgauss'
+    #        Custom = 'custom'
+
+    # TODO: TEST normalization and results
     @classmethod
     def algorithm(cls, signal, params):
         irftype = params["irftype"]
@@ -298,10 +321,11 @@ class ConvolutionalFilter(_Filter):
                 n = int(params['win_len'] * fsamp)
 
                 if irftype == 'gauss':
-                    if n<8:
-                        #TODO: test, sometimes it returns nan
-                        cls.error("'win_len' too short to generate a gaussian IRF, expected > "+str(_np.ceil(8/fsamp)))
-                    std = _np.floor(n / 8) 
+                    if n < 8:
+                        # TODO: test, sometimes it returns nan
+                        cls.error(
+                            "'win_len' too short to generate a gaussian IRF, expected > " + str(_np.ceil(8 / fsamp)))
+                    std = _np.floor(n / 8)
                     irf = _gaussian(n, std)
                 elif irftype == 'rect':
                     irf = _np.ones(n)
@@ -316,7 +340,7 @@ class ConvolutionalFilter(_Filter):
                     std = _np.round(n / 8)
                     g = _gaussian(n, std)
                     irf = _np.diff(g)
-                
+
         # NORMALIZE
         if normalize:
             irf = irf / _np.sum(irf)
@@ -325,7 +349,8 @@ class ConvolutionalFilter(_Filter):
 
         signal_f = _np.convolve(signal_, irf, mode='same')
 
-        signal_out = _EvenlySignal(signal_f[n:-n], sampling_freq = signal.get_sampling_freq(), signal_nature = signal.get_signal_nature(), start_time = signal.get_start_time())
+        signal_out = _EvenlySignal(signal_f[n:-n], sampling_freq=signal.get_sampling_freq(),
+                                   signal_nature=signal.get_signal_nature(), start_time=signal.get_start_time())
         return signal_out
 
     @classmethod
@@ -345,8 +370,9 @@ class DeConvolutionalFilter(_Filter):
     Optional:    
     normalize : boolean, default = True
         Whether to normalize the IRF to have unitary area
-    deconv_method : str
-        Available methods: 'fft', 'sps'. 'fft' uses the fourier transform, 'sps' uses the scipy.signal.deconvolve function
+    deconv_method : str, default = 'sps'
+        Available methods: 'fft', 'sps'. 'fft' uses the fourier transform, 'sps' uses the scipy.signal.deconvolve
+         function
         
     Returns
     -------
@@ -354,19 +380,21 @@ class DeConvolutionalFilter(_Filter):
         Filtered signal
 
     """
+    def __init__(self, irf, normalize=True, deconv_method='sps', **kwargs):
+        _Filter.__init__(self, irf=irf, normalize=normalize, deconv_method=deconv_method, **kwargs)
 
     _params_descriptors = {
-        'irf': _Par(2, list, 'IRF used to deconvolve the signal'),#TODO: check that irf[0]>0 to avoid scipy BUG
+        'irf': _Par(2, list, 'IRF used to deconvolve the signal'),  # TODO: check that irf[0]>0 to avoid scipy BUG
         'normalize': _Par(0, bool, 'Whether to normalize the IRF to have unitary area', True),
         'deconv_method': _Par(0, str, 'Deconvolution method.', 'fft', lambda x: x in ['fft', 'sps'])
     }
-    
+
     @classmethod
     def algorithm(cls, signal, params):
         irf = params["irf"]
         normalize = params["normalize"]
         deconvolution_method = params["deconv_method"]
-        
+
         if normalize:
             irf = irf / _np.sum(irf)
         if deconvolution_method == 'fft':
@@ -381,7 +409,8 @@ class DeConvolutionalFilter(_Filter):
             print('Deconvolution method not implemented. Returning original signal.')
             out = signal.get_values()
 
-        out_signal = _EvenlySignal(abs(out), sampling_freq = signal.get_sampling_freq(), signal_nature = signal.get_signal_nature(), start_time = signal.get_start_time())
+        out_signal = _EvenlySignal(abs(out), sampling_freq=signal.get_sampling_freq(),
+                                   signal_nature=signal.get_signal_nature(), start_time=signal.get_start_time())
 
         return out_signal
 

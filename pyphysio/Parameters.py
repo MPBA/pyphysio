@@ -15,7 +15,7 @@ class Parameter(object):
     def check_type(self, value):
         return (_np.issubdtype(type(value), int) and self._pytype is float) or \
                (_np.issubdtype(type(value), float) and value.is_integer()) or \
-            _np.issubdtype(type(value), self._pytype)
+               _np.issubdtype(type(value), self._pytype)
 
     def check_constraint(self, value):
         return self._constraint is None or self._constraint(value)
@@ -24,7 +24,8 @@ class Parameter(object):
         value = params[name]
         if self._activation is None or self._activation(value, params):
             if not self.check_type(value):
-                raise ValueError("Wrong parameter type (" + name + "): " + str(type(value)) + " not sub-dtype of " + str(self._pytype))
+                raise ValueError("Wrong parameter type (" + name + "): " + str(type(value)) + " not sub-dtype of "
+                                 + str(self._pytype))
             elif not self.check_constraint(value):
                 raise ValueError("Parameter constraint (" + name + "): " + self._description)
         return True, None

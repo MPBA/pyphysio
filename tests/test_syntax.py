@@ -6,6 +6,7 @@ import unittest
 
 __author__ = 'AleB'
 
+
 # TODO: not really useful... we should write a test for all indicatots
 class SyntaxTest(unittest.TestCase):
     def test_fmap_and_algo(self):

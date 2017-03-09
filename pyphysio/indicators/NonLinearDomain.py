@@ -88,7 +88,7 @@ class NNx(_Indicator):
     def algorithm(cls, signal, params):
         th = params['threshold']
         diff = _Diff()(signal)
-        return sum(1.0 for x in diff*1000 if x > th)
+        return sum(1.0 for x in diff * 1000 if x > th)
 
     _params_descriptors = {
         'threshold': _Par(2, float, 'Threshold to select the subsequent differences', 10, lambda x: x > 0),
@@ -104,7 +104,7 @@ class Embed(_Indicator):
         @rtype: array
         """
         n = params['dimension']
-        #t = params['delay']
+        # t = params['delay']
         num = len(signal) - n + 1
         if num > 0:
             emb = _np.zeros([num, n])
@@ -116,7 +116,7 @@ class Embed(_Indicator):
             return []
 
     @staticmethod
-    def BuildTakensVector(data, m, tau):
+    def build_takens_vector(data, m, tau):
 
         N = len(data)
         jump = tau
@@ -195,8 +195,8 @@ class SampleEntropy(_Indicator):
             num_elem_m1 = uj_m1.shape[0]
 
             r = r * _StDev()(data)
-            
-            d_m = _cd(uj_m, uj_m, 'chebyshev') 
+
+            d_m = _cd(uj_m, uj_m, 'chebyshev')
             d_m1 = _cd(uj_m1, uj_m1, 'chebyshev')
 
             cmr_m_sa_mp_en = _np.zeros(num_elem_m)
@@ -228,14 +228,14 @@ class DFAShortTerm(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        
+
         x = data
         if len(x) < 16:
             return _np.nan
         else:
             ave = float(_Mean()(x))
             y = _np.cumsum(x).astype(float)
-            y = y - ave
+            y -= ave
             l = _np.arange(4, 17, 4)
             f = _np.zeros(len(l))  # f(n) of different given box length n
             # 2>3 xrange>range
@@ -266,7 +266,7 @@ class DFALongTerm(_Indicator):
         else:
             ave = float(_Mean()(x))
             y = _np.cumsum(x).astype(float)
-            y = y - ave
+            y -= ave
             l_max = _np.min([64, len(x)])
             l = _np.arange(16, l_max + 1, 4)
             f = _np.zeros(len(l))  # f(n) of different given box length n
