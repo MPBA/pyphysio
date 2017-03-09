@@ -277,7 +277,7 @@ class ConvolutionalFilter(_Filter):
         Filtered signal
 
     """
-    def __init__(self, irftype, win_len, irf, normalize=True, **kwargs):
+    def __init__(self, irftype, win_len=None, irf=None, normalize=True, **kwargs):
         _Filter.__init__(self, irftype=irftype, win_len=win_len, irf=irf, normalize=normalize, **kwargs)
 
     _params_descriptors = {

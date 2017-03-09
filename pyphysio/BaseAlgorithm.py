@@ -26,18 +26,8 @@ class Algorithm(object):
         @param kwargs: kwargs parameters to pass to the feature extractor.
         @type kwargs: dict
         """
-        self._params = kwargs
-        # Parameters check
-        p = self.get_params_descriptors()
-        for n in p:
-            if n in self._params:
-                r, e = p[n](self._params, n)
-                if not r:
-                    self._parameter_error = ValueError("Error in parameters: " + e)
-            else:
-                r, self._params[n] = p[n].not_present(self._params, n, self)
-                if not r:
-                    self._parameter_error = ValueError("Error in parameters")
+        self._params = {}
+        self.set(**kwargs)
 
     def __call__(self, data):
         """
@@ -53,6 +43,20 @@ class Algorithm(object):
 
     def __repr__(self):
         return self.__class__.__name__ + str(self._params) if 'name' not in self._params else self._params['name']
+
+    def set(self, **kwargs):
+        self._params.update(kwargs)
+        # Parameters check
+        p = self.get_params_descriptors()
+        for n in p:
+            if n in self._params:
+                r, e = p[n](self._params, n)
+                if not r:
+                    self._parameter_error = ValueError("Error in parameters: " + e)
+            else:
+                r, self._params[n] = p[n].not_present(self._params, n, self)
+                if not r:
+                    self._parameter_error = ValueError("Error in parameters")
 
     @classmethod
     def get(cls, data, params=None, use_cache=False, **kwargs):
