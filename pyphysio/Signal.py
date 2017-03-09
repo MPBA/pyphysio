@@ -114,6 +114,18 @@ class Signal(_np.ndarray):
         else:
             return _plot(self.get_times(), self.get_values(), style)
 
+    @classmethod
+    def unp(cls, pickle):
+        d, ph = pickle
+        assert isinstance(d, Signal)
+        assert isinstance(ph, dict)
+        d._pyphysio = ph
+        return d
+
+    @property
+    def p(self):
+        return self, self.ph
+
     def __repr__(self):
         return "<signal: " + self.get_signal_nature() + ", start_time: " + str(self.get_start_time()) + ">"
 

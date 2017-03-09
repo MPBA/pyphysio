@@ -25,10 +25,9 @@ setup(
     ],
     requires=[
         'numpy',
-        'pytest',
         'scipy',
         'matplotlib',
         'spectrum',
-        'minepy'
+        'pytest',
     ]
 )

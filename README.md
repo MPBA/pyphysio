@@ -12,8 +12,8 @@ To allow optimization, two wrapper classes for signals are provided:
 ### Classes of Algorithms
 Every algorithm is available under the main module name e.g.
 
-import pyphysio as ph
-ph.IIRFilter(...)
+    import pyphysio as ph
+    ph.IIRFilter(...)
 
 however they are divided into the following groups:
 

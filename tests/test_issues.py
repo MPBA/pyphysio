@@ -63,3 +63,37 @@ class GeneralTest(unittest.TestCase):
 
         self.assertEqual(one, 1)
         self.assertEqual(zero, 1)
+
+    def test_issue18_unev(self):
+        values = np.arange(1, 11)
+        instan = np.arange(1, 11)
+        s = ph.UnevenlySignal(values=values,
+                              sampling_freq=100,
+                              signal_nature='',
+                              start_time=0,
+                              x_values=instan,
+                              x_type='instants')
+
+        pickled = s.p
+
+        s2 = ph.UnevenlySignal.unp(pickled)
+
+        self.assertEqual(s.get_sampling_freq(), s2.get_sampling_freq())
+        self.assertEqual(s.get_start_time(), s2.get_start_time())
+        self.assertEqual(s.get_end_time(), s2.get_end_time())
+        self.assertEqual(str(s), str(s2))
+
+    def test_issue18_even(self):
+        s = ph.EvenlySignal(values=np.sin(2 * np.pi * np.arange(1000, step=0.01)),
+                            sampling_freq=100,
+                            signal_nature='',
+                            start_time=0)
+
+        pickled = s.p
+
+        s2 = ph.EvenlySignal.unp(pickled)
+
+        self.assertEqual(s.get_sampling_freq(), s2.get_sampling_freq())
+        self.assertEqual(s.get_start_time(), s2.get_start_time())
+        self.assertEqual(s.get_end_time(), s2.get_end_time())
+        self.assertEqual(str(s), str(s2))
