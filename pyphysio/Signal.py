@@ -308,20 +308,18 @@ class UnevenlySignal(Signal):
         assert len(_np.where(_np.diff(x_values) <= 0)[0]) == 0, 'Given x_values are not strictly monotonic'
 
         if x_type == 'indices':
-            x_values = _np.array(x_values)
+            # Keep indices, set start_time
             if start_time is None:
                 start_time = 0
-            else:
-                assert start_time < x_values[1] / sampling_freq, "More than one sample at or before start_time"
         else:
+            # Get indices removing start_time
             if start_time is None:
                 start_time = x_values[0]
-                x_values = _np.floor((x_values - start_time) * sampling_freq).astype(int)
             else:
-                assert start_time < x_values[1], "More than one sample at or before start_time"
-                # WARN: limitation to 10 decimals due to workaround to prevent wrong cast flooring
-                # (e.g. np.floor(0.29 * 100) == 28)
-                x_values = _np.round((x_values - start_time) * sampling_freq, 10).astype(int)
+                assert start_time >= x_values[0], "More than one sample at or before start_time"
+            # WARN: limitation to 10 decimals due to workaround to prevent wrong cast flooring
+            # (e.g. np.floor(0.29 * 100) == 28)
+            x_values = _np.round((x_values - start_time) * sampling_freq, 10).astype(int)
 
         obj = Signal.__new__(cls, values=values,
                              sampling_freq=sampling_freq,
