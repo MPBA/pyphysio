@@ -3,8 +3,14 @@ from distutils.core import setup
 
 setup(
     name='pyphysio',
-    packages=['pyphysio'],
-    version='1.0',
+    packages=['pyphysio',
+              'pyphysio.estimators',
+              'pyphysio.filters',
+              'pyphysio.indicators',
+              'pyphysio.segmentation',
+              'pyphysio.tools'
+              ],
+    version='1.0dev',
     description='Python library for physiological signals analysis (IBI & HRV, ECG, BVP, EDA, RESP...)',
     author='MPBA FBK',
     author_email='bizzego@fbk.eu',
@@ -28,6 +34,5 @@ setup(
         'scipy',
         'matplotlib',
         'spectrum',
-        'pytest',
     ]
 )

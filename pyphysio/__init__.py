@@ -1,17 +1,17 @@
 # coding=utf-8
 from __future__ import division
-import pyphysio.filters.Filters
-from pyphysio.indicators.TimeDomain import *
-from pyphysio.indicators.FrequencyDomain import *
-from pyphysio.indicators.NonLinearDomain import *
-from pyphysio.indicators.PeaksDescription import *
-from pyphysio.filters.Filters import *
-from pyphysio.estimators.Estimators import *
-from pyphysio.tools.Tools import *
-from pyphysio.segmentation.SegmentsGenerators import *
-import pyphysio.segmentation.SegmentsGenerators
-from pyphysio.BaseSegmentation import Segment
-from pyphysio.Signal import EvenlySignal, UnevenlySignal
+import filters.Filters
+from indicators.TimeDomain import *
+from indicators.FrequencyDomain import *
+from indicators.NonLinearDomain import *
+from indicators.PeaksDescription import *
+from filters.Filters import *
+from estimators.Estimators import *
+from tools.Tools import *
+from segmentation.SegmentsGenerators import *
+import segmentation.SegmentsGenerators
+from BaseSegmentation import Segment
+from Signal import EvenlySignal, UnevenlySignal
 from tests.context import Assets
 from numpy import nan as _nan
 

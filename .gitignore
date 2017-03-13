@@ -94,3 +94,4 @@ ENV/
 
 # Uncompressed asset files
 assets/*.txt
+MANIFEST
