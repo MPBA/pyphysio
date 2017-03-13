@@ -51,7 +51,7 @@ class GeneralTest(unittest.TestCase):
         signal_unevenly = ph.UnevenlySignal(values=values,
                                             sampling_freq=100,
                                             signal_nature='',
-                                            start_time=0,
+                                            start_time=None,
                                             x_values=instan,
                                             x_type='instants')
 
@@ -70,7 +70,7 @@ class GeneralTest(unittest.TestCase):
         s = ph.UnevenlySignal(values=values,
                               sampling_freq=100,
                               signal_nature='',
-                              start_time=0,
+                              start_time=None,
                               x_values=instan,
                               x_type='instants')
 

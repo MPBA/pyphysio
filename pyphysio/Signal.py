@@ -7,6 +7,7 @@ from matplotlib.pyplot import plot as _plot, vlines as _vlines
 
 __author__ = 'AleB'
 
+
 # TODO: Consider collapsing classes
 
 
@@ -110,7 +111,7 @@ class Signal(_np.ndarray):
 
     def plot(self, style="", vlines_height=1000):
         if len(style) > 0 and style[0] == "|":
-            return _vlines(self.get_times(), -vlines_height/2, vlines_height/2, style[1:])
+            return _vlines(self.get_times(), -vlines_height / 2, vlines_height / 2, style[1:])
         else:
             return _plot(self.get_times(), self.get_values(), style)
 
@@ -157,7 +158,7 @@ class EvenlySignal(Signal):
         return self.get_time(len(self) - 1) + 1. / self.get_sampling_freq()
 
     def get_time(self, idx):
-        return idx / self.get_sampling_freq() + self.get_start_time()\
+        return idx / self.get_sampling_freq() + self.get_start_time() \
             if idx is not None and idx < len(self) else None
 
     def get_iidx(self, time):
@@ -341,7 +342,7 @@ class UnevenlySignal(Signal):
         return self.ph[self._MT_X_INDICES]
 
     def get_time_from_iidx(self, iidx):
-        return self.get_indices()[int(iidx)] / self.get_sampling_freq() + self.get_start_time()\
+        return self.get_indices()[int(iidx)] / self.get_sampling_freq() + self.get_start_time() \
             if iidx < len(self) else None
 
     def get_iidx(self, time):

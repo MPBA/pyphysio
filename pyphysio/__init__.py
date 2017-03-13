@@ -12,6 +12,7 @@ from pyphysio.segmentation.SegmentsGenerators import *
 import pyphysio.segmentation.SegmentsGenerators
 from pyphysio.BaseSegmentation import Segment
 from pyphysio.Signal import EvenlySignal, UnevenlySignal
+from tests.context import Assets
 from numpy import nan as _nan
 
 __author__ = "AleB"

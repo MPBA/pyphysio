@@ -12,8 +12,8 @@ __author__ = 'AleB'
 class _SegmentsWithLabelSignal(SegmentsGenerator):
     # Assumed: label signal extended over the end by holding the value
 
-    def __init__(self, drop_shorter=True, **kwargs):
-        super(_SegmentsWithLabelSignal, self).__init__(drop_shorter=drop_shorter, **kwargs)
+    def __init__(self, drop_shorter=True, drop_mixed=True, **kwargs):
+        super(_SegmentsWithLabelSignal, self).__init__(drop_shorter=drop_shorter, drop_mixed=drop_mixed, **kwargs)
         self._labsig = None
 
     @_abstract

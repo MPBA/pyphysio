@@ -20,7 +20,7 @@ class GeneralTest(unittest.TestCase):
             values=['a', 'a', 'b', 'a', 'r', 's', 'r', 'b'],
             x_values=[10, 12, 13.5, 14.3, 15.6, 20.1123, 25, 36.8],
             sampling_freq=10,
-            start_time=4,
+            start_time=11,
             x_type='instants'))(s)
         w3i = [x for x in w3]
         w4 = ph.CustomSegments(begins=map(lambda x: x.get_begin_time(), w3i),
