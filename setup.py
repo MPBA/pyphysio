@@ -34,5 +34,6 @@ setup(
         'scipy',
         'matplotlib',
         'spectrum',
+        'pytest',
     ]
 )

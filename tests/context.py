@@ -14,17 +14,14 @@ from pytest import approx as approx
 class Assets(object):
     _sing = None
     _path = "assets/"
-    _file_c = "medical.txt.bz2"
-    _file_u = "medical.txt"
+    _file = "medical.txt.bz2"
 
     @classmethod
     def get_data(cls):
         if Assets._sing is None:
-            if not _os.path.isfile(Assets._path + Assets._file_c):
+            if not _os.path.isfile(Assets._path + Assets._file):
                 Assets._path = "../" + Assets._path
-            if not _os.path.isfile(Assets._path + Assets._file_u):
-                _os.system("bzcat %s%s > %s%s" % (Assets._path, Assets._file_c, Assets._path, Assets._file_u))
-            Assets._sing = np.genfromtxt(Assets._path + Assets._file_u, delimiter="\t")
+            Assets._sing = np.genfromtxt(Assets._path + Assets._file, delimiter="\t")
         return Assets._sing
 
     # The following methods return an array to make it easier to test the Signal wrapping classes
