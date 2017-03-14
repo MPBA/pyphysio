@@ -25,7 +25,7 @@ class GeneralTest(unittest.TestCase):
         # remove some samples
         sinusoid_unevenly = ph.UnevenlySignal(
             np.delete(sinusoid.get_values(), selection),
-            sampling_freq=FSAMP, signal_nature='', start_time=0,
+            sampling_freq=FSAMP, signal_nature='', start_time=None,
             x_values=np.delete(sinusoid.get_times(), selection),
             x_type='instants')
 

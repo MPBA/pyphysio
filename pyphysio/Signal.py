@@ -317,7 +317,7 @@ class UnevenlySignal(Signal):
             if start_time is None:
                 start_time = x_values[0]
             else:
-                assert start_time >= x_values[0], "More than one sample at or before start_time"
+                assert start_time <= x_values[0], "More than one sample at or before start_time"
             # WARN: limitation to 10 decimals due to workaround to prevent wrong cast flooring
             # (e.g. np.floor(0.29 * 100) == 28)
             x_values = _np.round((x_values - start_time) * sampling_freq, 10).astype(int)
