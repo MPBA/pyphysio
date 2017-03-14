@@ -418,6 +418,8 @@ class UnevenlySignal(Signal):
             The selected portion
         """
 
+        # TODO Collapse everything to segment iidx and then set the precise start time: the x_values?
+
         return self.segment_idx(self.get_idx(t_start) if t_start is not None else None,
                                 self.get_idx(t_stop) if t_stop is not None else None)
 
@@ -446,7 +448,7 @@ class UnevenlySignal(Signal):
         iidx_stop = int(self.get_iidx_from_idx(idx_stop))
 
         return UnevenlySignal(values=self.get_values()[iidx_start:iidx_stop],
-                              x_values=self.get_indices()[iidx_start:iidx_stop],
+                              x_values=self.get_indices()[iidx_start:iidx_stop] - idx_start,
                               sampling_freq=self.get_sampling_freq(),
                               signal_nature=self.get_signal_nature(),
                               start_time=self.get_time(idx_start),
@@ -474,7 +476,8 @@ class UnevenlySignal(Signal):
             iidx_start = 0
 
         return UnevenlySignal(values=self.get_values()[int(iidx_start):int(iidx_stop)],
-                              x_values=self.get_indices()[int(iidx_start):int(iidx_stop)],
+                              x_values=self.get_indices()[int(iidx_start):int(iidx_stop)] - self.get_indices()[
+                                  int(iidx_start)],
                               sampling_freq=self.get_sampling_freq(),
                               signal_nature=self.get_signal_nature(),
                               start_time=self.get_time_from_iidx(iidx_start),
