@@ -1,6 +1,6 @@
 # coding=utf-8
 from __future__ import division
-from context import ph, np, Assets, approx
+from . import ph, np, TestData, approx
 
 
 def test_phasic_estimation():
@@ -9,7 +9,7 @@ def test_phasic_estimation():
 
     # %%
     # EDA
-    eda = ph.EvenlySignal(Assets.eda(), sampling_freq=FSAMP, signal_nature='EDA', start_time=0)
+    eda = ph.EvenlySignal(TestData.eda(), sampling_freq=FSAMP, signal_nature='EDA', start_time=0)
 
     # preprocessing
     # downsampling

@@ -1,7 +1,7 @@
 # coding=utf-8
 from __future__ import division
 
-from context import ph
+from . import ph
 import numpy as np
 import unittest
 

@@ -1,19 +1,25 @@
 # coding=utf-8
 from __future__ import division
+
+from numpy import nan as _nan
+
 import filters.Filters
-from indicators.TimeDomain import *
+import segmentation.SegmentsGenerators
+import indicators.FrequencyDomain
+import indicators.NonLinearDomain
+import indicators.PeaksDescription
+import indicators.TimeDomain
+from BaseSegmentation import Segment
+from Signal import EvenlySignal, UnevenlySignal
+from estimators.Estimators import *
+from filters.Filters import *
 from indicators.FrequencyDomain import *
 from indicators.NonLinearDomain import *
 from indicators.PeaksDescription import *
-from filters.Filters import *
-from estimators.Estimators import *
-from tools.Tools import *
+from indicators.TimeDomain import *
+from tests import TestData
 from segmentation.SegmentsGenerators import *
-import segmentation.SegmentsGenerators
-from BaseSegmentation import Segment
-from Signal import EvenlySignal, UnevenlySignal
-from tests.context import Assets
-from numpy import nan as _nan
+from tools.Tools import *
 
 __author__ = "AleB"
 
@@ -155,3 +161,9 @@ def algo(function, **kwargs):
         return Custom
     else:
         return Custom(**kwargs)
+
+
+def test():
+    from pytest import main as m
+    from os.path import dirname as d
+    m(['-x', d(__file__)])

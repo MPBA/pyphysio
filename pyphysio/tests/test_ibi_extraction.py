@@ -1,6 +1,6 @@
 # coding=utf-8
 from __future__ import division
-from context import *
+from . import *
 
 
 def test_ibi_extraction():
@@ -10,7 +10,7 @@ def test_ibi_extraction():
 
     # %%
     # TEST IBI EXTRACTION FROM ECG
-    ecg = ph.EvenlySignal(Assets.ecg(), sampling_freq=FSAMP, signal_nature='ECG', start_time=TSTART)
+    ecg = ph.EvenlySignal(TestData.ecg(), sampling_freq=FSAMP, signal_nature='ECG', start_time=TSTART)
 
     ecg = ecg.resample(fout=4096, kind='cubic')
 
@@ -48,7 +48,7 @@ def test_ibi_extraction():
 
     # %%
     # TEST IBI EXTRACTION FROM BVP
-    bvp = ph.EvenlySignal(Assets.bvp(), sampling_freq=FSAMP, signal_nature='BVP', start_time=TSTART)
+    bvp = ph.EvenlySignal(TestData.bvp(), sampling_freq=FSAMP, signal_nature='BVP', start_time=TSTART)
     bvp = bvp.resample(fout=4096, kind='cubic')
 
     ibi = ph.BeatFromBP()(bvp)

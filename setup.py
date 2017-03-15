@@ -8,9 +8,11 @@ setup(
               'pyphysio.filters',
               'pyphysio.indicators',
               'pyphysio.segmentation',
-              'pyphysio.tools'
+              'pyphysio.tools',
+              'pyphysio.tests',
               ],
-    version='1.0dev',
+    package_data={'pyphysio.tests': ['data/*']},
+    version='0.9',
     description='Python library for physiological signals analysis (IBI & HRV, ECG, BVP, EDA, RESP...)',
     author='MPBA FBK',
     author_email='bizzego@fbk.eu',
@@ -27,13 +29,16 @@ setup(
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.5',
         'Topic :: Scientific/Engineering :: Bio-Informatics',
     ],
-    requires=[
+    install_requires=[
         'numpy',
         'scipy',
         'matplotlib',
         'spectrum',
+    ],
+    requires=[
         'pytest',
-    ]
+    ],
 )

@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from context import ph
+from . import ph
 import numpy as np
 import unittest
 

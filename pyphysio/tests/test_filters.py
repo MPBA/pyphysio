@@ -2,7 +2,7 @@
 from __future__ import division
 
 import unittest
-from context import ph, Assets, np
+from . import ph, TestData, np
 
 __author__ = 'aleb'
 
@@ -14,7 +14,7 @@ class FiltersTest(unittest.TestCase):
         TSTART = 0
 
         # %%
-        ecg = ph.EvenlySignal(Assets.ecg(), sampling_freq=FSAMP, signal_nature='ECG', start_time=TSTART)
+        ecg = ph.EvenlySignal(TestData.ecg(), sampling_freq=FSAMP, signal_nature='ECG', start_time=TSTART)
 
         # %%
         # TEST Normalize

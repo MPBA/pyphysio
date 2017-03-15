@@ -1,7 +1,7 @@
 # coding=utf-8
 from __future__ import division
 
-from context import ph, Assets, np, approx
+from . import ph, TestData, np, approx
 
 
 def test_indicators_eda():
@@ -9,7 +9,7 @@ def test_indicators_eda():
     # EDA
     FSAMP = 2048
 
-    eda = ph.EvenlySignal(Assets.eda(), sampling_freq=FSAMP, signal_nature='EDA', start_time=0)
+    eda = ph.EvenlySignal(TestData.eda(), sampling_freq=FSAMP, signal_nature='EDA', start_time=0)
 
     # pre-processing
     # downsampling

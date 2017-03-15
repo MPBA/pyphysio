@@ -1,6 +1,6 @@
 # coding=utf-8
 from __future__ import division
-from context import ph, np, Assets, approx
+from . import ph, np, TestData, approx
 
 
 def test_indicators():
@@ -10,7 +10,7 @@ def test_indicators():
 
     # %%
     # TEST IBI EXTRACTION FROM ECG
-    ecg = ph.EvenlySignal(Assets.ecg(), sampling_freq=FSAMP, signal_nature='ECG', start_time=TSTART)
+    ecg = ph.EvenlySignal(TestData.ecg(), sampling_freq=FSAMP, signal_nature='ECG', start_time=TSTART)
 
     ecg = ecg.resample(fout=4096, kind='cubic')
 

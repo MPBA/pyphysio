@@ -406,7 +406,7 @@ class DeConvolutionalFilter(_Filter):
             cls.warn('sps based deconvolution needs to be tested. Use carefully.')
             out, _ = _deconvolve(signal, irf)
         else:
-            print('Deconvolution method not implemented. Returning original signal.')
+            cls.error('Deconvolution method not implemented. Returning original signal.')
             out = signal.get_values()
 
         out_signal = _EvenlySignal(abs(out), sampling_freq=signal.get_sampling_freq(),

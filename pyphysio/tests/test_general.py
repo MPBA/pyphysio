@@ -1,7 +1,7 @@
 # coding=utf-8
 from __future__ import division
 
-from context import ph, Assets
+from . import ph, TestData
 from math import ceil as _ceil
 import numpy as np
 
@@ -422,15 +422,15 @@ class GeneralTest(unittest.TestCase):
     # TODO: following test should be in a pipeline test
     # noinspection PyMethodMayBeStatic
     def test_signal_plot(self):
-        e = ph.EvenlySignal(values=Assets.ecg()[:10000], sampling_freq=1024, signal_nature="ecg")
+        e = ph.EvenlySignal(values=TestData.ecg()[:10000], sampling_freq=1024, signal_nature="ecg")
         e, ignored, ignored, ignored = ph.PeakDetection(delta=1)(e)
         e = ph.UnevenlySignal(values=e, x_values=e, x_type='indices', sampling_freq=1024, signal_nature="ibi")
         e.plot("|b")
-        e = ph.EvenlySignal(values=Assets.eda()[:10000], sampling_freq=1024, signal_nature="gsr")
+        e = ph.EvenlySignal(values=TestData.eda()[:10000], sampling_freq=1024, signal_nature="gsr")
         e.plot()
-        e = ph.EvenlySignal(values=Assets.bvp()[:10000], sampling_freq=1024, signal_nature="bvp")
+        e = ph.EvenlySignal(values=TestData.bvp()[:10000], sampling_freq=1024, signal_nature="bvp")
         e.plot()
-        e = ph.EvenlySignal(values=Assets.resp()[:10000], sampling_freq=1024, signal_nature="resp")
+        e = ph.EvenlySignal(values=TestData.resp()[:10000], sampling_freq=1024, signal_nature="resp")
         e.plot()
 
         # import matplotlib.pyplot as plt

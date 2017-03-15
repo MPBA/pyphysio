@@ -1,5 +1,11 @@
 recursive-exclude build
 recursive-exclude dist
 recursive-exclude .cache
-recursive-exclude tests
+
 recursive-include pyphysio *.py
+recursive-exclude pyphysio/metrics *.py
+
+include-recursive pyphysio/tests/data *
+
+include Makefile
+include LICENSE

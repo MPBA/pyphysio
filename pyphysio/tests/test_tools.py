@@ -1,7 +1,7 @@
 # coding=utf-8
 from __future__ import division
 
-from context import ph, np, Assets, approx
+from . import ph, np, TestData, approx
 
 
 # %%
@@ -11,7 +11,7 @@ def test_tools():
     TSTART = 0
 
     # %%
-    bvp = ph.EvenlySignal(Assets.bvp(), sampling_freq=FSAMP, signal_nature='BVP', start_time=TSTART)
+    bvp = ph.EvenlySignal(TestData.bvp(), sampling_freq=FSAMP, signal_nature='BVP', start_time=TSTART)
 
     # %%
     # TEST SignalRange
@@ -27,7 +27,7 @@ def test_tools():
 
     # %%
     # EDA
-    eda = ph.EvenlySignal(Assets.eda(), sampling_freq=FSAMP, signal_nature='EDA', start_time=TSTART)
+    eda = ph.EvenlySignal(TestData.eda(), sampling_freq=FSAMP, signal_nature='EDA', start_time=TSTART)
     eda = eda.resample(fout=8)
 
     eda = eda.resample(8)
