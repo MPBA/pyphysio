@@ -3,23 +3,23 @@ from __future__ import division
 
 from numpy import nan as _nan
 
-import filters.Filters
-import segmentation.SegmentsGenerators
-import indicators.FrequencyDomain
-import indicators.NonLinearDomain
-import indicators.PeaksDescription
-import indicators.TimeDomain
-from BaseSegmentation import Segment
-from Signal import EvenlySignal, UnevenlySignal
-from estimators.Estimators import *
-from filters.Filters import *
-from indicators.FrequencyDomain import *
-from indicators.NonLinearDomain import *
-from indicators.PeaksDescription import *
-from indicators.TimeDomain import *
-from tests import TestData
-from segmentation.SegmentsGenerators import *
-from tools.Tools import *
+import pyphysio.filters.Filters
+import pyphysio.segmentation.SegmentsGenerators
+import pyphysio.indicators.FrequencyDomain
+import pyphysio.indicators.NonLinearDomain
+import pyphysio.indicators.PeaksDescription
+import pyphysio.indicators.TimeDomain
+from pyphysio.BaseSegmentation import Segment
+from pyphysio.Signal import EvenlySignal, UnevenlySignal
+from pyphysio.estimators.Estimators import *
+from pyphysio.filters.Filters import *
+from pyphysio.indicators.FrequencyDomain import *
+from pyphysio.indicators.NonLinearDomain import *
+from pyphysio.indicators.PeaksDescription import *
+from pyphysio.indicators.TimeDomain import *
+from pyphysio.tests import TestData
+from pyphysio.segmentation.SegmentsGenerators import *
+from pyphysio.tools.Tools import *
 
 __author__ = "AleB"
 

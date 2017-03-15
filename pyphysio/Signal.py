@@ -3,7 +3,7 @@ from __future__ import division
 import numpy as _np
 from scipy import interpolate as _interp
 from pyphysio.Utility import abstractmethod as _abstract
-from matplotlib.pyplot import plot as _plot, vlines as _vlines
+from matplotlib.pyplot import plot as _plot, vlines as _vlines, xlabel as _xlabel, ylabel as _ylabel, grid as _grid
 
 __author__ = 'AleB'
 
@@ -110,6 +110,9 @@ class Signal(_np.ndarray):
         pass
 
     def plot(self, style="", vlines_height=1000):
+        _xlabel("time")
+        _ylabel(self.get_signal_nature())
+        _grid()
         if len(style) > 0 and style[0] == "|":
             return _vlines(self.get_times(), -vlines_height / 2, vlines_height / 2, style[1:])
         else:
