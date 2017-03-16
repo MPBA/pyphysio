@@ -13,6 +13,16 @@ __author__ = 'AleB'
 
 # HRV
 class PoincareSD1(_Indicator):
+    """
+    Return the SD1 value of the Poincare' plot of input Inter Beat Intervals
+
+    Returns
+    -------
+    sd1 : float
+        SD1 of Poincare' plot
+    
+    """
+    
     @classmethod
     def algorithm(cls, data, params):
         """
@@ -26,6 +36,16 @@ class PoincareSD1(_Indicator):
 
 
 class PoincareSD2(_Indicator):
+    """
+    Return the SD2 value of the Poincare' plot of input Inter Beat Intervals
+
+    Returns
+    -------
+    sd2 : float
+        SD2 of Poincare' plot
+    
+    """
+
     @classmethod
     def algorithm(cls, data, params):
         """
@@ -39,6 +59,16 @@ class PoincareSD2(_Indicator):
 
 
 class PoincareSD1SD2(_Indicator):
+    """
+    Return the SD1/SD2 value of the Poincare' plot of input Inter Beat Intervals
+
+    Returns
+    -------
+    sd12 : float
+        SD1/SD2 of Poincare' plot
+    
+    """
+
     @classmethod
     def algorithm(cls, data, params):
         """
@@ -53,8 +83,15 @@ class PoincareSD1SD2(_Indicator):
 
 class PoinEll(_Indicator):
     """
-    Calculates the Poincaré Ell. index of the data series.
+    Return the SD1*SD2*pi value of the Poincare' plot of input Inter Beat Intervals
+
+    Returns
+    -------
+    sdEll : float
+        SD1*SD2*pi of Poincare' plot
+    
     """
+
 
     @classmethod
     def algorithm(cls, data, params):
@@ -66,7 +103,17 @@ class PoinEll(_Indicator):
 class PNNx(_Indicator):
     """
     Calculates the relative frequency (0.0-1.0) of pairs of consecutive IBIs in the data series
-    where the difference between the two values is greater than the parameter (threshold).
+    with the differences between the two values greater than 'threshold' in milliseconds.
+    
+    Parameters
+    ----------
+    threshold : int, >0
+        Threshold on the values of the differences
+        
+    Returns
+    -------
+    pnnx : float
+        Relative frequency
     """
 
     @classmethod
@@ -80,8 +127,13 @@ class PNNx(_Indicator):
 
 class NNx(_Indicator):
     """
-    Calculates number of pairs of consecutive values in the data where the difference between is greater than the given
-    parameter (threshold).
+    Calculates number of pairs of consecutive IBIs in the data series
+    with the differences between the two values greater than 'threshold' in milliseconds.
+    
+    Parameters
+    ----------
+    threshold : int, >0
+        Threshold on the values of the differences
     """
 
     @classmethod
@@ -95,6 +147,7 @@ class NNx(_Indicator):
     }
 
 
+# TODO : hide Embed -> _Embed
 class Embed(_Indicator):
     @classmethod
     def algorithm(cls, signal, params):
@@ -137,7 +190,17 @@ class Embed(_Indicator):
 
 class ApproxEntropy(_Indicator):
     """
-    Calculates the approx entropy of the data series.
+    Calculates Approximate Entropy
+        
+    Parameters
+    ----------
+    radius : float, >0
+        Radius to threshold the distance between the embedded vectors
+        
+    Returns
+    -------
+    apen : float
+        Approximate Entropy
     """
 
     @classmethod
@@ -179,7 +242,17 @@ class ApproxEntropy(_Indicator):
 
 class SampleEntropy(_Indicator):
     """
-    Calculates the sample entropy of the data series.
+    Calculates Sample Entropy
+        
+    Parameters
+    ----------
+    radius : float, >0
+        Radius to threshold the distance between the embedded vectors
+        
+    Returns
+    -------
+    sampen : float
+        Sample Entropy
     """
 
     @classmethod
@@ -224,6 +297,11 @@ class SampleEntropy(_Indicator):
 class DFAShortTerm(_Indicator):
     """
     Calculate the alpha1 (short term) component index of the De-trended Fluctuation Analysis.
+   
+    Returns
+    -------
+    alpha1 : float
+        Short term component index of the De-trended Fluctuation Analysis
     """
 
     @classmethod
@@ -256,6 +334,11 @@ class DFAShortTerm(_Indicator):
 class DFALongTerm(_Indicator):
     """
     Calculate the alpha2 (long term) component index of the De-trended Fluctuation Analysis.
+   
+    Returns
+    -------
+    alpha2 : float
+        Long term component index of the De-trended Fluctuation Analysis
     """
 
     @classmethod

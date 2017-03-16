@@ -23,7 +23,8 @@ class PeakDetection(_Tool):
     delta : float or list
         Threshold for the detection of the peaks. If it is a list it must have the same length of the signal.
         
-    Optional:
+    Optional parameters
+    -------------------
     refractory : float, >=0, default = 0
         Seconds to skip after a detected paek to look for new peaks.
     start_max : boolean, default = True
@@ -210,7 +211,8 @@ class SignalRange(_Tool):
     win_step : float, >0
         Shiftt to start the next window in seconds
 
-    Optional:    
+    Optional parameters
+    -------------------    
     smooth : boolean, default = True
         Whether to convolve the result with a gaussian window
 
@@ -268,7 +270,9 @@ class PSD(_Tool):
     method : str
         Method to estimate the PSD. Available methods: 'welch', 'fft', 'ar'
         
-    Optional:
+    Optional parameters
+    -------------------
+    
     nfft : int, >0, default=2048
         Number of samples of the PSD
     window : str, default = 'hamming'
@@ -407,7 +411,8 @@ class Maxima(_Tool):
     win_step : float, >0
         Shift of the window to start the next window in seconds (method = 'windowing')
     
-    Optional:
+    Optional parameters
+    -------------------
     refractory : float, >0, default = 0
         Seconds to skip after a detected maximum to look for new maxima, when method = 'complete'. 
     
@@ -504,7 +509,9 @@ class Minima(_Tool):
     win_step : float, >0
         Shift of the window to start the next window in seconds (method = 'windowing')
     
-    Optional:
+    Optional parameters
+    -------------------
+    
     refractory : float, >0, default = 0
         Seconds to skip after a detected minimum to look for new minima, when method = 'complete'. 
     
@@ -606,7 +613,9 @@ class BootstrapEstimation(_Tool):
     func : numpy function
         Function to use in the bootstrapping. Must accept data as input
         
-    Optional:
+    Optional parameters
+    -------------------
+    
     N : int, >0, default = 100
         Number of iterations
     k : float, (0,1), default = 0.5
@@ -640,10 +649,10 @@ class BootstrapEstimation(_Tool):
             sampled_data = signal[ixs_p[:int(round(k * l))]]
             curr_est = func(sampled_data)
             estim.append(curr_est)
-        return _np.mean(estim)
+        estim = _np.sort(estim)
+        return estim[int(len(estim)/2)]
 
 
-# TODO: remove this trivial function
 class Durations(_Tool):
     """
     Compute durations of events starting from their start and stop indexes
@@ -725,10 +734,8 @@ class BeatOutliers(_Tool):
     """
     Detects outliers in the IBI signal. 
     
-    Parameters
-    ----------
-    
-    Optional:
+    Optional parameters
+    -------------------
     
     cache : int, >0,  default = 3
         Nuber of IBI to be stored in the cache for adaptive computation of the interval of accepted values
@@ -846,10 +853,8 @@ class BeatOptimizer(_Tool):
     """
     Optimize detection of errors in IBI estimation.
     
-    Parameters
-    ----------
-    
-    Optional:
+    Optional parameters
+    -------------------
     
     B : float, >0, default = 0.25
         Ball radius in seconds to allow pairing between forward and backward beats
@@ -860,7 +865,6 @@ class BeatOptimizer(_Tool):
     ibi_median : float, >=0, default = 0
         IBI value use to initialize the cache. By default (ibi_median=0) it is computed as median of the input IBI
     
-    Returns
         
     Returns
     -------
@@ -869,10 +873,10 @@ class BeatOptimizer(_Tool):
 
     Notes
     -----
-    See REF
-    #TODO: insert REF      
+        Bizzego et al., *DBD-RCO: Derivative Based Detection and Reverse Combinatorial Optimization 
+        to improve heart beat detection for wearable devices for info about the algorithm*
     """
-    # FIXME: (Andrea) Wrong first sample in the returned signal
+
     _params_descriptors = {
         'B': _Par(0, float, 'Ball radius in seconds to allow pairing between forward and backward beats', 0.25,
                   lambda x: x > 0),
@@ -1107,13 +1111,13 @@ class OptimizeBateman(_Tool):
     delta : float
         Minimum amplitude of the peaks in the driver
         
-    Optional:
+    Optional parameters
+    -------------------
     
     opt_method : str
         Method to perform the search of optimal parameters.
         Available methods:
-        - 'asa' Adaptive Simulated Annealing. Uses the algorithm proposed in REF
-        #TODO: insert ref
+        - 'asa' Adaptive Simulated Annealing. Uses the Basin-Hopping algorithm.
         - 'grid' Grid search
     complete : boolean, default = True
         Whether to perform minimization after detecting the optimal parameters
@@ -1596,13 +1600,11 @@ class Histogram(_Tool):
     """
     Compute the histogram of a set of data.
     
-    Parametes:
-    ----------
+    Optional parameters
+    -------------------
     
-    Optional:
-    
-    histogram_bins : list
-        'Number of bins (int) or bin edges, including the rightmost edge (list-like).'
+    histogram_bins : 
+        Number of bins (int) or bin edges, including the rightmost edge (list-like).
     
     Returns:
     histogram

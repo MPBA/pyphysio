@@ -21,15 +21,15 @@ class Normalize(_Filter):
     Normalized the input signal using the general formula: ( signal - BIAS ) / RANGE
 
     Parameters
-    ----------
-    norm_method : str, default = 'standard'
+    -------------------
+    norm_method : 
         Method for the normalization. Available methods are:
-        'mean' - remove the mean [ BIAS = mean(signal); RANGE = 1 ]
-        'standard' - standardization [ BIAS = mean(signal); RANGE = std(signal) ]
-        'min' - remove the minimum [ BIAS = min(signal); RANGE = 1 ]
-        'maxmin' - maxmin normalization [ BIAS = min(signal); RANGE = ( max(signal) - min(signal ) ]
-        'custom' - custom, bias and range are manually defined [ BIAS = bias, RANGE = range ]
-
+    * 'mean' - remove the mean [ BIAS = mean(signal); RANGE = 1 ]
+    * 'standard' - standardization [ BIAS = mean(signal); RANGE = std(signal) ]
+    * 'min' - remove the minimum [ BIAS = min(signal); RANGE = 1 ]
+    * 'maxmin' - maxmin normalization [ BIAS = min(signal); RANGE = ( max(signal) - min(signal ) ]
+    * 'custom' - custom, bias and range are manually defined [ BIAS = bias, RANGE = range ]
+    
     bias : float, default = 0
         Bias for custom normalization
     range : float, !=0, default = 1
@@ -40,10 +40,8 @@ class Normalize(_Filter):
     signal: 
         The normalized signal. 
 
-    Notes
-    -----
-        ...
     """
+    
     def __init__(self, norm_method='standard', bias=0, range=1, **kwargs):
         _Filter.__init__(self, norm_method=norm_method, bias=bias, range=range, **kwargs)
 
@@ -84,10 +82,8 @@ class Diff(_Filter):
     """
     Computes the differences between adjacent samples.
 
-    Parameters
-    ----------
-    
-    Optional:
+    Optional parameters
+    -------------------
     degree : int, >0, default = 1
         Sample interval to compute the differences
     
@@ -96,9 +92,6 @@ class Diff(_Filter):
     signal : 
         Differences signal. 
 
-    Notes
-    -----
-    Note that the length of the returned signal is the lenght of the input_signal minus degree.
     """
     def __init__(self, degree=1, **kwargs):
         _Filter.__init__(self, degree=degree, **kwargs)
@@ -136,7 +129,8 @@ class IIRFilter(_Filter):
     fs : list
         The stop frequencies
     
-    Optional:
+    Optional parameters
+    -------------------
     loss : float, >0, default = 0.1
         Loss tolerance in the pass band
     att : float, >0, default = 40
@@ -146,13 +140,13 @@ class IIRFilter(_Filter):
 
     Returns
     -------
-    signal: EvenlySignal
+    signal : EvenlySignal
         Filtered signal
 
     Notes
     -----
-    This is a wrapper of `scipy.signal.filter_design.iirdesign`. Refer to `scipy.signal.filter_design.iirdesign`
-     for additional information
+    This is a wrapper of *scipy.signal.filter_design.iirdesign*. Refer to `scipy.signal.filter_design.iirdesign`
+    for additional information
     """
     def __init__(self, fp, fs, loss=.1, att=40, ftype='butter', **kwargs):
         _Filter.__init__(self, fp=fp, fs=fs, loss=loss, att=att, ftype=ftype, **kwargs)
@@ -197,18 +191,18 @@ class IIRFilter(_Filter):
 
 
 class DenoiseEDA(_Filter):
-    #TODO: insert ref
     """
-    Removes noise due to sensor displacement from the EDA signal.
+    Remove noise due to sensor displacement from the EDA signal.
     
     Parameters
     ----------
     threshold : float, >0
         Threshold to detect the noise
         
-    Optional:
+    Optional parameters
+    -------------------
     
-    win_len : float, >0, default=2
+    win_len : float, >0, default = 2
         Length of the window
    
     Returns
@@ -216,9 +210,6 @@ class DenoiseEDA(_Filter):
     signal : EvenlySignal
         De-noised signal
             
-    Notes
-    -----
-    See REF for more infos.
     """
     def __init__(self, threshold, win_len=2, **kwargs):
         _Filter.__init__(self, threshold=threshold, win_len=win_len, **kwargs)
@@ -262,12 +253,13 @@ class ConvolutionalFilter(_Filter):
     ----------
     irftype : str
         Type of IRF to be generated. 'gauss', 'rect', 'triang', 'dgauss', 'custom'.
-    win_len : float, >0 (>8 for 'gaussian")
+    win_len : float, >0 (> 8/fsamp for 'gaussian")
         Durarion of the generated IRF in seconds (if irftype is not 'custom')
     irf : numpy.array
         IRF to be used if irftype is 'custom'
     
-    Optional:
+    Optional parameters
+    -------------------
     normalize : boolean, default = True
         Whether to normalizes the IRF to have unitary area
     
@@ -367,7 +359,9 @@ class DeConvolutionalFilter(_Filter):
     irf : numpy.array
         IRF used to deconvolve the signal
     
-    Optional:    
+    Optional parameters
+    -------------------
+    
     normalize : boolean, default = True
         Whether to normalize the IRF to have unitary area
     deconv_method : str, default = 'sps'

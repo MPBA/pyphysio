@@ -33,25 +33,18 @@ class _Peaks(_Indicator):
 
 class PeaksMax(_Peaks):
     """
-    Peaks Max
-    
-    Description ...
+    Return the maximum amplitude of detected peaks.
 
     Parameters
     ----------
-    
-    Optional:
-    degree : int, >0, default = 1
-        Sample interval to compute the differences
+    delta : float, >0
+        Minimum amplitude of peaks to be selected
     
     Returns
     -------
-    signal : 
-        Differences signal. 
-
-    Notes
-    -----
-    Note that the length of the returned signal is the lenght of the input_signal minus degree.
+    mx : float
+        Maximum amplitude of detected peaks
+    
     """
 
     def __init__(self, delta, **kwargs):
@@ -72,8 +65,20 @@ class PeaksMax(_Peaks):
 
 class PeaksMin(_Peaks):
     """
-    Peaks Min
+    Return the minimum amplitude of detected peaks.
+
+    Parameters
+    ----------
+    delta : float, >0
+        Minimum amplitude of peaks to be selected
+    
+    Returns
+    -------
+    mn : float
+        Minimum amplitude of detected peaks
+    
     """
+
 
     @classmethod
     def algorithm(cls, data, params):
@@ -90,7 +95,18 @@ class PeaksMin(_Peaks):
 
 class PeaksMean(_Peaks):
     """
-    Peaks Mean
+    Return the average amplitude of detected peaks.
+
+    Parameters
+    ----------
+    delta : float, >0
+        Minimum amplitude of peaks to be selected
+    
+    Returns
+    -------
+    av : float
+        Average amplitude of detected peaks
+    
     """
 
     @classmethod
@@ -108,7 +124,18 @@ class PeaksMean(_Peaks):
 
 class PeaksNum(_Peaks):
     """
-    Number of Peaks
+    Return the number of detected peaks.
+
+    Parameters
+    ----------
+    delta : float, >0
+        Minimum amplitude of peaks to be selected
+    
+    Returns
+    -------
+    n : float
+        Number of detected peaks
+    
     """
 
     @classmethod
@@ -153,7 +180,22 @@ class _PeaksInterval(_Indicator):
 
 class DurationMin(_PeaksInterval):
     """
-    Min duration of Peaks
+    Return the minimum duration of detected peaks.
+
+    Parameters
+    ----------
+    delta : float, >0
+        Minimum amplitude of peaks to be selected
+    pre_max : float, >0
+        Interval before a detected peak where to search the start of the peak
+    post_max : float, >0
+        Interval after a detected peak where to search the end of the peak
+        
+    Returns
+    -------
+    mn : float
+        Minimum duration of detected peaks
+    
     """
 
     @classmethod
@@ -179,7 +221,22 @@ class DurationMin(_PeaksInterval):
 
 class DurationMax(_PeaksInterval):
     """
-    Max duration of Peaks
+    Return the maximum duration of detected peaks.
+
+    Parameters
+    ----------
+    delta : float, >0
+        Minimum amplitude of peaks to be selected
+    pre_max : float, >0
+        Interval before a detected peak where to search the start of the peak
+    post_max : float, >0
+        Interval after a detected peak where to search the end of the peak
+        
+    Returns
+    -------
+    mx : float
+        Maximum duration of detected peaks
+    
     """
 
     @classmethod
@@ -206,7 +263,22 @@ class DurationMax(_PeaksInterval):
 
 class DurationMean(_PeaksInterval):
     """
-    Mean duration of Peaks
+    Return the average duration of detected peaks.
+
+    Parameters
+    ----------
+    delta : float, >0
+        Minimum amplitude of peaks to be selected
+    pre_max : float, >0
+        Interval before a detected peak where to search the start of the peak
+    post_max : float, >0
+        Interval after a detected peak where to search the end of the peak
+        
+    Returns
+    -------
+    av : float
+        Average duration of detected peaks
+    
     """
 
     @classmethod
@@ -232,7 +304,22 @@ class DurationMean(_PeaksInterval):
 
 class SlopeMin(_PeaksInterval):
     """
-    Min slope of Peaks
+    Return the minimum slope of detected peaks.
+
+    Parameters
+    ----------
+    delta : float, >0
+        Minimum amplitude of peaks to be selected
+    pre_max : float, >0
+        Interval before a detected peak where to search the start of the peak
+    post_max : float, >0
+        Interval after a detected peak where to search the end of the peak
+        
+    Returns
+    -------
+    mn : float
+        Minimum slope of detected peaks
+    
     """
 
     @classmethod
@@ -258,7 +345,22 @@ class SlopeMin(_PeaksInterval):
 
 class SlopeMax(_PeaksInterval):
     """
-    Max slope of Peaks
+    Return the maximum slope of detected peaks.
+
+    Parameters
+    ----------
+    delta : float, >0
+        Minimum amplitude of peaks to be selected
+    pre_max : float, >0
+        Interval before a detected peak where to search the start of the peak
+    post_max : float, >0
+        Interval after a detected peak where to search the end of the peak
+        
+    Returns
+    -------
+    mx : float
+        Maximum slope of detected peaks
+    
     """
 
     @classmethod
@@ -283,7 +385,22 @@ class SlopeMax(_PeaksInterval):
 
 class SlopeMean(_PeaksInterval):
     """
-    Min slope of Peaks
+    Return the average slope of detected peaks.
+
+    Parameters
+    ----------
+    delta : float, >0
+        Minimum amplitude of peaks to be selected
+    pre_max : float, >0
+        Interval before a detected peak where to search the start of the peak
+    post_max : float, >0
+        Interval after a detected peak where to search the end of the peak
+        
+    Returns
+    -------
+    av : float
+        Average slope of detected peaks
+    
     """
 
     @classmethod

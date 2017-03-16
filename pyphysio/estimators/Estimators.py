@@ -19,16 +19,15 @@ class BeatFromBP(_Estimator):
     Identify the beats in a Blood Pulse (BP) signal and compute the IBIs.
     Optimized to identify the percussion peak.
 
-    Limitations: works only on 'BP' type signal.
+    Warning: works only on 'BP' type signal.
 
     Based on two stages:
     1) Identification of candidate beats
     2) Identification of the peak for each beat, using the derivative of the signal
 
-    Parameters
-    ----------
+    Optional parameters
+    -------------------
     
-    Optional:
     bpm_max : int, (1, 400], default=120
         Maximal expected heart rate (in beats per minute)
     win_pre : float, (0, 1], default=0.25
@@ -44,8 +43,10 @@ class BeatFromBP(_Estimator):
 
     Notes
     -----
-        See REF for info about the algorithm.
+        Bizzego et al., *DBD-RCO: Derivative Based Detection and Reverse Combinatorial Optimization 
+        to improve heart beat detection for wearable devices for info about the algorithm*
     """
+    
     def __init__(self, bpm_max=120, win_pre=.25, win_post=.05, **kwargs):
         _Estimator.__init__(self, bpm_max=bpm_max, win_pre=win_pre, win_post=win_post, **kwargs)
 
@@ -126,10 +127,9 @@ class BeatFromECG(_Estimator):
     """
     Identify the beats in an ECG signal and compute the IBIs.
 
-    Parameters
-    ----------
+    Optional parameters
+    -------------------
     
-    Optional:
     bpm_max : int, (1, 400], default=120
         Maximal expected heart rate (in beats per minute)
     delta : float, >=0, default=0
@@ -142,9 +142,10 @@ class BeatFromECG(_Estimator):
 
     Notes
     -----
-     This algorithms looks for maxima in the signal which are followed by values lower than a delta value. 
-     The adaptive version estimates the delta value adaptively.
+        This algorithms looks for maxima in the signal which are followed by values lower than a delta value. 
+        The adaptive version estimates the delta value adaptively.
     """
+    
     def __init__(self, bpm_max=120, delta=0, **kwargs):
         _Estimator.__init__(self, bpm_max=bpm_max, delta=delta, **kwargs)
 
@@ -187,8 +188,6 @@ class BeatFromECG(_Estimator):
 
 # PHASIC ESTIMATION
 class DriverEstim(_Estimator):
-    # TODO: insert ref
-    # TODO: insert ref
     """
     Estimates the driver of an EDA signal according to REF
 
@@ -197,14 +196,11 @@ class DriverEstim(_Estimator):
 
     :math:`b = e^{-t/T1} - e^{-t/T2}`
 
-    Parameters
-    ----------
-    
-    Optional:
-    
-    t1: float, >0, default = 0.75
+    Optional parameters
+    -------------------
+    t1 : float, >0, default = 0.75
         Value of T1 parameters of the bateman function
-    t2: float, >0, default = 2
+    t2 : float, >0, default = 2
         Value of T2 parameters of the bateman function
 
     Returns
@@ -214,8 +210,10 @@ class DriverEstim(_Estimator):
 
     Notes
     -----
-    See ref for more info
+    Bizzego et al. *A novel method to optimize the estimation of phasic component 
+    of Electrodermal Activity signals*
     """
+    
     def __init__(self, t1=.75, t2=2, **kwargs):
         _Estimator.__init__(self, t1=t1, t2=t2, **kwargs)
 
@@ -298,22 +296,21 @@ class PhasicEstim(_Estimator):
     """
     Estimates the phasic and tonic components of a EDA driver function.
     It uses a detection algorithm based on the derivative of the driver.
-    See REF for more infos
-    #TODO: insert ref
+
     
     Parameters:
     -----------
     delta : float, >0
         Minimum amplitude of the peaks in the driver
         
-    Optional:
-    
+    Optional parameters
+    -------------------
     grid_size : float, >0, default = 1
         Sampling size of the interpolation grid
-    pre_max : float, >0, 2
-        Duration (in seconds) of interval before the peak that is considered to find the start of the peak
-    post_max : float, >0, 2
-        Duration (in seconds) of interval after the peak that is considered to find the end of the peak
+    pre_max : float, >0, default = 2
+        Duration (in seconds) of interval before the peak where to search the start of the peak
+    post_max : float, >0, default = 2
+        Duration (in seconds) of interval after the peak where to search the end of the peak
 
     Returns:
     --------
@@ -323,6 +320,12 @@ class PhasicEstim(_Estimator):
         The tonic component
     driver_no_peak : EvenlySignal
         The "de-peaked" driver signal used to generate the interpolation grid
+    
+    Notes
+    -----
+    Bizzego et al. *A novel method to optimize the estimation of phasic component 
+    of Electrodermal Activity signals*
+    
     """
     def __init__(self, delta, grid_size=1, pre_max=2, post_max=2, **kwargs):
         _Estimator.__init__(self, delta=delta, grid_size=grid_size, pre_max=pre_max, post_max=post_max, **kwargs)
@@ -393,7 +396,9 @@ class Energy(_Estimator):
     win_step : float, >0
         Shift of the window to start the next window
         
-    Optional:
+    Optional parameters
+    -------------------
+    
     smooth : boolean, default = True
         Whether to convolve the result with a gaussian window
 

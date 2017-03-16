@@ -27,9 +27,7 @@ __author__ = 'AleB'
 
 class Mean(_Indicator):
     """
-    Compute the arithmetic mean along the specified axis, ignoring NaNs.
-
-    Uses directly numpy.nanmean, but uses the PyPhysio cache.
+    Compute the arithmetic mean of the signal
     """
 
     @classmethod
@@ -39,9 +37,7 @@ class Mean(_Indicator):
 
 class Min(_Indicator):
     """
-    Return minimum of the data, ignoring any NaNs.
-
-    Uses directly numpy.nanmin, but uses the PyPhysio cache.
+    Return minimum of the signal, ignoring any NaNs.
     """
 
     @classmethod
@@ -51,9 +47,7 @@ class Min(_Indicator):
 
 class Max(_Indicator):
     """
-    Return maximum of the data, ignoring any NaNs.
-
-    Uses directly numpy.nanmax, but uses the PyPhysio cache.
+    Return maximum of the signal, ignoring any NaNs.
     """
 
     @classmethod
@@ -63,8 +57,7 @@ class Max(_Indicator):
 
 class Range(_Indicator):
     """
-    Computes the range value of the data, ignoring any NaNs.
-    The range is the difference Max(d) - Min(d)
+    Compute the range of the signal, ignoring any NaNs.
     """
 
     @classmethod
@@ -74,9 +67,7 @@ class Range(_Indicator):
 
 class Median(_Indicator):
     """
-    Computes the median of the data.
-
-    Uses directly numpy.median but uses the PyPhysio cache.
+    Compute the median of the signal.
     """
 
     @classmethod
@@ -86,9 +77,7 @@ class Median(_Indicator):
 
 class StDev(_Indicator):
     """
-    Computes the standard deviation of the data, ignoring any NaNs.
-
-    Uses directly numpy.nanstd but uses the PyPhysio cache.
+    Computes the standard deviation of the signal, ignoring any NaNs.
     """
 
     @classmethod
@@ -98,9 +87,7 @@ class StDev(_Indicator):
 
 class Sum(_Indicator):
     """
-    Computes the sum of the values in the data, treating Not a Numbers (NaNs) as zero.
-
-    Uses directly numpy.nansum but uses the PyPhysio cache.
+    Computes the sum of the values in the signal, treating Not a Numbers (NaNs) as zero.
     """
 
     @classmethod
@@ -110,7 +97,7 @@ class Sum(_Indicator):
 
 class AUC(_Indicator):
     """
-    Computes the Area Under the Curve of the data, treating Not a Numbers (NaNs) as zero.
+    Computes the Area Under the Curve of the signal, treating Not a Numbers (NaNs) as zero.
     """
 
     @classmethod
@@ -124,7 +111,7 @@ class AUC(_Indicator):
 # HRV
 class RMSSD(_Indicator):
     """
-    Computes the square root of the mean of the squared 1st order discrete differences.
+    Compute the square root of the mean of the squared 1st order discrete differences.
     """
 
     @classmethod
@@ -135,7 +122,7 @@ class RMSSD(_Indicator):
 
 class SDSD(_Indicator):
     """
-    Calculates the standard deviation of the 1st order discrete differences.
+    Calculate the standard deviation of the 1st order discrete differences.
     """
 
     @classmethod
