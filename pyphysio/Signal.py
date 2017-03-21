@@ -12,7 +12,6 @@ __author__ = 'AleB'
 
 
 class Signal(_np.ndarray):
-    # TODO: Make the following attributes "pickleable"
     _MT_NATURE = "signal_nature"
     _MT_START_TIME = "start_time"
     _MT_SAMPLING_FREQ = "sampling_freq"
@@ -447,8 +446,11 @@ class UnevenlySignal(Signal):
         if idx_start is None:
             idx_start = 0
 
-        iidx_start = int(self.get_iidx_from_idx(idx_start))
-        iidx_stop = int(self.get_iidx_from_idx(idx_stop))
+        iib = self.get_iidx_from_idx(idx_start)
+        iie = self.get_iidx_from_idx(idx_stop)
+
+        iidx_start = int(iib) if iib is not None else 0
+        iidx_stop = int(iie) if iie is not None else -1
 
         return UnevenlySignal(values=self.get_values()[iidx_start:iidx_stop],
                               x_values=self.get_indices()[iidx_start:iidx_stop] - idx_start,

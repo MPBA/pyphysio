@@ -131,10 +131,11 @@ class FixedSegments(_SegmentsWithLabelSignal):
         w = self._params["width"]
         self._width = w if w is not None else self._step
         self._labsig = self._params["labels"]
-        s = self._params["start"]
-        self._t = s if s is not None else self._signal.get_start_time()
+        self._t = self._params["start"]
 
     def next_times(self):
+        if self._t is None:
+            self._t = self._signal.get_start_time()
         b = self._t
         self._t += self._step
         e = b + self._width
