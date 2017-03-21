@@ -12,6 +12,39 @@ __author__ = 'aleb'
 
 # noinspection PyArgumentEqualDefault
 class GeneralTest(unittest.TestCase):
+    def test_fmap(self):
+        samples = 1000
+        freq_down = 13
+        freq = freq_down * 7
+        start = 1460713373
+        nature = "una_bif-fa"
+        np.random.seed(1234)
+
+        s = ph.EvenlySignal(values=np.cumsum(np.random.rand(1, samples) - .5) * 100,
+                            sampling_freq=freq,
+                            signal_nature=nature,
+                            start_time=start,
+                            )
+
+        features = [
+            ph.PNNx(threshold=50),
+            ph.PNNx(threshold=25),
+            ph.PNNx(threshold=10),
+            ph.PNNx(threshold=5),
+            ph.Mean(),
+            ph.StDev(),
+            ph.Median(),
+        ]
+
+        segmenter = ph.FixedSegments(width=3, step=2)
+        segments = [i for i in segmenter(s)]
+
+        results, labels, columns = ph.fmap(segments, features, s)
+
+        self.assertEqual(results.shape, (len(segments), len(features) + 2))
+        self.assertEqual(len(labels), len(segments))
+        self.assertEqual(len(columns), len(features) + 2)
+
     def test_ex_more(self):
         s = ph.EvenlySignal(np.cumsum(np.random.rand(1000) - .5) * 100, 10)
 
