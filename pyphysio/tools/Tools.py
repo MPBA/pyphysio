@@ -42,8 +42,14 @@ class PeakDetection(_Tool):
         Array containing values of the minima
     """
 
+    def __init__(self, delta, refractory=0, start_max=True):
+        assert delta > 0, "Delta value should be positive"
+        assert refractory > 0, "Refractory value should be positive"
+        _Tool.__init__(self, delta=delta, refractory=refractory, start_max=start_max)
+
+        
     _params_descriptors = {
-        'delta': _Par(2, list, "Threshold for the detection of the peaks"),
+        'delta': _Par(2, list, "Threshold for the detection of the peaks", constraint=lambda x: x > 0),
         'refractory': _Par(0, float, "Seconds to skip after detection of a peak", 0, lambda x: x > 0),
         'start_max': _Par(0, bool, "Whether to start looking for a max.", True)
     }
@@ -136,22 +142,27 @@ class PeakSelection(_Tool):
         Array containing end indexes
     """
 
+    def __init__(self, idx_max, win_pre, win_post):
+        assert win_pre > 0, "Window pre peak value should be positive"
+        assert win_post > 0, "Window post peak value should be positive"
+        _Tool.__init__(self, idx_max=idx_max, win_pre=win_pre, win_post=win_post)
+        
     _params_descriptors = {
         'idx_max': _Par(2, list, 'Array containing indexes of the maxima'),
-        'pre_max': _Par(2, float, 'Duration (in seconds) of interval before the peak that is considered to find the'
+        'win_pre': _Par(2, float, 'Duration (in seconds) of interval before the peak that is considered to find the'
                                   ' start of the peak',
                         constraint=lambda x: x > 0),
-        'post_max': _Par(2, float, 'Duration (in seconds) of interval after the peak that is considered to find the'
+        'win_post': _Par(2, float, 'Duration (in seconds) of interval after the peak that is considered to find the'
                                    ' end of the peak',
                          constraint=lambda x: x > 0)
     }
 
     @classmethod
     def algorithm(cls, signal, params):
-        i_pre_max = int(params['pre_max'] * signal.get_sampling_freq())
-        i_post_max = int(params['post_max'] * signal.get_sampling_freq())
         i_peaks = params['idx_max']
-
+        i_pre_max = int(params['win_pre'] * signal.get_sampling_freq())
+        i_post_max = int(params['win_post'] * signal.get_sampling_freq())
+        
         ZERO = 0.01
 
         i_start = _np.empty(len(i_peaks), int)
@@ -221,7 +232,13 @@ class SignalRange(_Tool):
     deltas : numpy.array
         Local range of the signal
     """
-
+    
+    def __init__(self, win_len, win_step, smooth=True):
+        assert win_len > 0, "Window length should be positive"
+        assert win_step > 0, "Window step should be positive"
+        _Tool.__init__(self, win_len=win_len, win_step=win_step, smooth=smooth)
+        
+        
     _params_descriptors = {
         'win_len': _Par(2, float, 'The length of the window (seconds)', constraint=lambda x: x > 0),
         'win_step': _Par(2, float, 'The increment to start the next window (seconds)', constraint=lambda x: x > 0),
@@ -294,9 +311,22 @@ class PSD(_Tool):
         Power Spectrum Density
     """
 
-    _method_list = ['welch', 'fft', 'ar']
-    _window_list = ['hamming', 'blackman', 'hanning', 'bartlett', 'none']
+   
 
+    def __init__(self, method, nfft=2048, window='hamming', min_order=18, max_order=25, normalize=True, remove_mean=True, interp_freq=None ):
+        _method_list = ['welch', 'fft', 'ar']
+        _window_list = ['hamming', 'blackman', 'hanning', 'bartlett', 'none']
+    
+        assert method in _method_list, "Method not valid"
+        assert nfft > 0, "nfft value should be positive"
+        assert window in _window_list, "Window type not valid"
+        assert min_order > 0, "Minimum order for the AR method should be positive"
+        assert max_order > 0, "Maximum order for the AR method should be positive"
+        assert interp_freq > 0, "Interpolation frequency value should be positive"
+        
+        _Tool.__init__(self, method=method, nfft=nfft, window=window, min_order=min_order, 
+                       max_order=max_order, normalize=normalize, remove_mean=remove_mean, interp_freq=interp_freq)
+        
     _params_descriptors = {
         'method': _Par(2, str, 'Method to estimate the PSD', constraint=lambda x: x in PSD._method_list),
         'nfft': _Par(0, int, 'Number of samples in the PSD', 2048, lambda x: x > 0),
@@ -312,6 +342,7 @@ class PSD(_Tool):
                             default=None, constraint=lambda x: x > 0)
     }
 
+    
     # Issue #15: consider point below:
     # A density spectrum considers the amplitudes per unit frequency.
     # Density spectra are used to compare spectra with different frequency resolution as the
@@ -425,6 +456,13 @@ class Maxima(_Tool):
         Array containing values of the maxima
     """
 
+    def __init__(self, method='complete', refractory=0, win_len, win_step, smooth=True):
+        assert method in ['complete', 'windowing'], "Method not valid"
+        assert refractory > 0, "Refractory time value should be positive"
+        assert win_len > 0, "Window length should be positive"
+        assert win_step > 0, "Window step should be positive"
+        _Tool.__init__(self, method=method, refractory=refractory, win_len=win_len, win_step=win_step)
+        
     _params_descriptors = {
         'method': _Par(2, str, 'Method to detect the maxima', 'complete', lambda x: x in ['complete', 'windowing']),
         'refractory': _Par(0, float, 'Seconds to skip after detection of a maximum (method = "complete")', 0,
@@ -524,11 +562,13 @@ class Minima(_Tool):
         Array containing values of the minima
     """
 
-    @classmethod
-    def algorithm(cls, signal, params):
-        idx_mins, mins = Maxima(**params)(-signal.copy())
-        return idx_mins, -1 * mins
-
+    def __init__(self, method='complete', refractory=0, win_len, win_step, smooth=True):
+        assert method in ['complete', 'windowing'], "Method not valid"
+        assert refractory > 0, "Refractory time value should be positive"
+        assert win_len > 0, "Window length should be positive"
+        assert win_step > 0, "Window step should be positive"
+        _Tool.__init__(self, method=method, refractory=refractory, win_len=win_len, win_step=win_step)
+    
     _params_descriptors = {
         'method': _Par(2, str, 'Method to detect the minima', constraint=lambda x: x in ['complete', 'windowing']),
         'refractory': _Par(0, float, 'Seconds to skip after detection of a minimum (method = "complete")', 0,
@@ -539,6 +579,13 @@ class Minima(_Tool):
                          constraint=lambda x: x > 0, activation=lambda x, p: p['method'] == 'windowing'),
     }
 
+
+    @classmethod
+    def algorithm(cls, signal, params):
+        idx_mins, mins = Maxima(**params)(-signal.copy())
+        return idx_mins, -1 * mins
+
+    
 
 class CreateTemplate(_Tool):
     """
@@ -563,6 +610,16 @@ class CreateTemplate(_Tool):
         The template
     """
 
+    def __init__(self, ref_indexes, idx_start=0, idx_stop, win_len, win_step, smooth=True):
+        assert method in ['complete', 'windowing'], "Method not valid"
+        assert idx_start >= 0, "Start index should be non negative"
+        assert idx_stop > 0, "Stop index should be positive"
+        assert smp_pre > 0, "Number of samples before the reference should be positive"
+        assert smp_post > 0, "Number of samples after the reference should be positive"
+        
+        _Tool.__init__(self, ref_indexes=ref_indexes, method=method, idx_start=idx_start, idx_stop=idx_stop, smp_pre=smp_pre, smp_post=smp_post)
+        
+        
     _params_descriptors = {
         'ref_indexes': _Par(2, list, 'Indexes of the signals to be used as reference point to generate the template'),
         'idx_start': _Par(2, int,
@@ -579,11 +636,12 @@ class CreateTemplate(_Tool):
 
     @classmethod
     def algorithm(cls, signal, params):
+        ref_indexes = params['ref_indexes']
         idx_start = params['idx_start']
         idx_end = params['idx_stop']
         smp_pre = params['smp_pre']
         smp_post = params['smp_post']
-        ref_indexes = params['ref_indexes']
+        
         sig = _np.array(signal[idx_start: idx_end])
         ref_indexes = _np.array(
             ref_indexes[_np.where((ref_indexes > idx_start) & (ref_indexes <= idx_end))[0]]) - idx_start
@@ -627,6 +685,12 @@ class BootstrapEstimation(_Tool):
         Bootstrapped estimate
     
     """
+    
+    def __init__(self, func, N=100, k=0.5):
+        assert N > 0, "N should be positive"
+        assert k > 0 and k<=1, "k should be between (0 and 1]"
+        _Tool.__init__(self, func, N=N, k=k)
+    
     from types import FunctionType as Func
     _params_descriptors = {
         'func': _Par(2, Func, 'Function (accepts as input a vector and returns a scalar).'),
@@ -670,6 +734,9 @@ class Durations(_Tool):
         durations of the events
     """
 
+    def __init__(self, starts, stops):
+        _Tool.__init__(self, starts=starts, stops=stops)
+
     _params_descriptors = {
         "starts": _Par(2, list, "Start indexes along the data"),
         "stops": _Par(2, list, "Stop indexes along the data")
@@ -706,6 +773,9 @@ class Slopes(_Tool):
     slopes : list
         Rising slopes the peaks
     """
+
+    def __init__(self, starts, peaks):
+        _Tool.__init__(self, starts=starts, peaks=peaks)
 
     _params_descriptors = {
         "starts": _Par(2, list, "Start indexes along the data"),
@@ -755,13 +825,21 @@ class BeatOutliers(_Tool):
     
     """
 
+    def __init__(self, ibi_median = 0, cache=3, sensitivity=0.25):
+        assert ibi_median >=0, "IBI median value should be positive (or equal to 0 for automatic computation"
+        assert cache >=1, "Cache size should be greater than 1"
+        assert sensitivity > 0, "Sensitivity value shlud be positive"
+        
+        _Tool.__init__(self, ibi_median=ibi_median, cache=cache, sensitivity=sensitivity)
+        
+
     _params_descriptors = {
         'ibi_median': _Par(0, float, 'Ibi value used to initialize the cache. If 0 (default) the ibi_median is computed'
                                      ' on the input signal',
                            0, lambda x: x >= 0),
         'cache': _Par(0, int, 'Number of IBI to be stored in the cache for adaptive computation of the interval of'
                               ' accepted values',
-                      3, lambda x: x > 0),
+                      3, lambda x: x > 1),
         'sensitivity': _Par(0, float, 'Relative variation from the current median that is accepted', 0.25,
                             lambda x: x > 0)
     }
@@ -825,6 +903,9 @@ class FixIBI(_Tool):
             
     """
 
+    def __init__(self, id_bad_ibi):
+        _Tool.__init__(self, id_bad_ibi=id_bad_ibi)
+        
     _params_descriptors = {
         'id_bad_ibi': _Par(2, list, 'Identifiers of abnormal beats')
     }
@@ -876,6 +957,14 @@ class BeatOptimizer(_Tool):
         Bizzego et al., *DBD-RCO: Derivative Based Detection and Reverse Combinatorial Optimization 
         to improve heart beat detection for wearable devices for info about the algorithm*
     """
+    
+    def __init__(self, B=0.25, ibi_median = 0, cache=3, sensitivity=0.25):
+        assert B > 0, "Ball radius should be positive"
+        assert ibi_median >=0, "IBI median value should be positive (or equal to 0 for automatic computation"
+        assert cache >=1, "Cache size should be greater than 1"
+        assert sensitivity > 0, "Sensitivity value shlud be positive"
+        
+        _Tool.__init__(self, B=B, ibi_median=ibi_median, cache=cache, sensitivity=sensitivity)
 
     _params_descriptors = {
         'B': _Par(0, float, 'Ball radius in seconds to allow pairing between forward and backward beats', 0.25,
@@ -1140,7 +1229,13 @@ class OptimizeBateman(_Tool):
         If complete = True, parameters resulting from the minimization
     """
 
-    # TODO: fix parameters
+    def __init__(self, delta, loss_func='all', opt_method='bsh', complete=True, par_ranges=[0.1, 0.99, 1.5, 5],
+                 maxiter=99999, n_step=10, weight='none', **kwargs):
+        
+        _Tool.__init__(delta=delta, loss_func=loss_func, opt_method=opt_method, complete=complete, par_ranges=par_ranges,
+                 maxiter=maxiter, n_step=n_step, weight=weight, **kwargs)
+
+    # TODO: fix **kwargs parameters
     _params_descriptors = {
         'delta': _Par(2, float, 'Minimum amplitude of the peaks in the driver', default=None,
                       constraint=lambda x: x > 0),

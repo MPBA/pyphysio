@@ -42,8 +42,10 @@ class Normalize(_Filter):
 
     """
     
-    def __init__(self, norm_method='standard', bias=0, range=1, **kwargs):
-        _Filter.__init__(self, norm_method=norm_method, bias=bias, range=range, **kwargs)
+    def __init__(self, norm_method='standard', norm_bias=0, norm_range=1):
+        assert norm_range != 0, "Normalization range should be different from 0"
+        
+        _Filter.__init__(self, norm_method=norm_method, norm_bias=norm_bias, norm_range=norm_range)
 
     _params_descriptors = {
         'norm_method': _Par(0, str, 'Method for the normalization.', 'standard',
@@ -93,8 +95,9 @@ class Diff(_Filter):
         Differences signal. 
 
     """
-    def __init__(self, degree=1, **kwargs):
-        _Filter.__init__(self, degree=degree, **kwargs)
+    def __init__(self, degree=1):
+        assert degree > 0, "The degree value should be positive"
+        _Filter.__init__(self, degree=degree)
 
     _params_descriptors = {
         'degree': _Par(0, int, 'Degree of the differences', 1, lambda x: x > 0)
@@ -148,9 +151,13 @@ class IIRFilter(_Filter):
     This is a wrapper of *scipy.signal.filter_design.iirdesign*. Refer to `scipy.signal.filter_design.iirdesign`
     for additional information
     """
-    def __init__(self, fp, fs, loss=.1, att=40, ftype='butter', **kwargs):
-        _Filter.__init__(self, fp=fp, fs=fs, loss=loss, att=att, ftype=ftype, **kwargs)
-
+    def __init__(self, fp, fs, loss=.1, att=40, ftype='butter'):
+        assert loss > 0, "Loss value should be positive"
+        assert att > 0, "Attenuation value should be positive"
+        assert att > loss, "Attenuation value should be greater than loss value"
+        assert ftype in ['butter', 'cheby1', 'cheby2', 'ellip', 'bessel'], "Filter type not valid"
+        _Filter.__init__(self, fp=fp, fs=fs, loss=loss, att=att, ftype=ftype)
+        
     _params_descriptors = {
         'fp': _Par(2, list, 'The pass frequencies'),
         'fs': _Par(2, list, 'The stop frequencies'),
@@ -211,9 +218,11 @@ class DenoiseEDA(_Filter):
         De-noised signal
             
     """
-    def __init__(self, threshold, win_len=2, **kwargs):
-        _Filter.__init__(self, threshold=threshold, win_len=win_len, **kwargs)
-
+    def __init__(self, threshold, win_len=2):
+        assert threshold > 0 , "Threshold value should be positive"
+        assert win_len > 0, "Window length value should be positive"
+        _Filter.__init__(self, threshold=threshold, win_len=win_len)
+        
     _params_descriptors = {
         'threshold': _Par(2, float, 'Threshold to detect the noise', constraint=lambda x: x > 0),
         'win_len': _Par(0, float, 'Length of the window', 2, lambda x: x > 0)
@@ -269,8 +278,11 @@ class ConvolutionalFilter(_Filter):
         Filtered signal
 
     """
-    def __init__(self, irftype, win_len=None, irf=None, normalize=True, **kwargs):
-        _Filter.__init__(self, irftype=irftype, win_len=win_len, irf=irf, normalize=normalize, **kwargs)
+    def __init__(self, irftype, win_len=None, irf=None, normalize=True):
+        assert irftype in ['gauss', 'rect', 'triang', 'dgauss', 'custom'], "IRF type not valid"
+        assert win_len > 0, "Window length value should be positive"
+        _Filter.__init__(self, irftype=irftype, win_len=win_len, irf=irf, normalize=normalize)
+        
 
     _params_descriptors = {
         'irftype': _Par(2, str, 'Type of IRF to be generated.',
@@ -281,14 +293,7 @@ class ConvolutionalFilter(_Filter):
         'normalize': _Par(1, bool, 'Whether to normalizes the IRF to have unitary area', True)
     }
 
-    #    class Types(object):
-    #        Same = 'none'
-    #        Gauss = 'gauss'
-    #        Rect = 'rect'
-    #        Triang = 'triang'
-    #        Dgauss = 'dgauss'
-    #        Custom = 'custom'
-
+    
     # TODO: TEST normalization and results
     @classmethod
     def algorithm(cls, signal, params):
@@ -374,8 +379,10 @@ class DeConvolutionalFilter(_Filter):
         Filtered signal
 
     """
-    def __init__(self, irf, normalize=True, deconv_method='sps', **kwargs):
-        _Filter.__init__(self, irf=irf, normalize=normalize, deconv_method=deconv_method, **kwargs)
+    def __init__(self, irf, normalize=True, deconv_method='sps'):
+        assert deconv_method in ['fft', 'sps'], "Deconvolution method not valid"
+        _Filter.__init__(self, irf=irf, normalize=normalize, deconv_method=deconv_method)
+        
 
     _params_descriptors = {
         'irf': _Par(2, list, 'IRF used to deconvolve the signal'),  # TODO: check that irf[0]>0 to avoid scipy BUG

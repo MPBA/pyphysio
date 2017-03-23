@@ -47,8 +47,12 @@ class BeatFromBP(_Estimator):
         to improve heart beat detection for wearable devices for info about the algorithm*
     """
     
-    def __init__(self, bpm_max=120, win_pre=.25, win_post=.05, **kwargs):
-        _Estimator.__init__(self, bpm_max=bpm_max, win_pre=win_pre, win_post=win_post, **kwargs)
+    def __init__(self, bpm_max=120, win_pre=.25, win_post=.05):
+        assert bpm_max > 1 and bpm_max <= 400,"Maximum BPM value non valid"
+        assert win_pre > 0 and win_pre <= 1, "Window pre peak value should be between (0 and 1]"
+        assert win_post > 0 and win_post <= 1, "Window post peak value should be between (0 and 1]"
+        _Estimator.__init__(self, bpm_max=bpm_max, win_pre=win_pre, win_post=win_post)
+        
 
     _params_descriptors = {
         'bpm_max': _Par(0, int, 'Maximal expected heart rate (in beats per minute)', 120, lambda x: 1 < x <= 400),
@@ -146,9 +150,12 @@ class BeatFromECG(_Estimator):
         The adaptive version estimates the delta value adaptively.
     """
     
-    def __init__(self, bpm_max=120, delta=0, **kwargs):
-        _Estimator.__init__(self, bpm_max=bpm_max, delta=delta, **kwargs)
-
+    def __init__(self, bpm_max=120, delta=0):
+        assert bpm_max > 1 and bpm_max <= 400,"Maximum BPM value non valid"
+        assert delta >= 0, "Delta value should be positive (or equal to 0 if automatically computed"
+        _Estimator.__init__(self, bpm_max=bpm_max, delta=delta)
+        
+    
     _params_descriptors = {
         'bpm_max': _Par(0, int, 'Maximal expected heart rate (in beats per minute)', 120, lambda x: 1 < x <= 400),
         'delta': _Par(0, float, 'Threshold for the peak detection', 0, lambda x: x >= 0)
@@ -199,9 +206,9 @@ class DriverEstim(_Estimator):
     Optional parameters
     -------------------
     t1 : float, >0, default = 0.75
-        Value of T1 parameters of the bateman function
+        Value of the T1 parameter of the bateman function
     t2 : float, >0, default = 2
-        Value of T2 parameters of the bateman function
+        Value of the T2 parameter of the bateman function
 
     Returns
     -------
@@ -214,9 +221,12 @@ class DriverEstim(_Estimator):
     of Electrodermal Activity signals*
     """
     
-    def __init__(self, t1=.75, t2=2, **kwargs):
-        _Estimator.__init__(self, t1=t1, t2=t2, **kwargs)
-
+    def __init__(self, t1=.75, t2=2):
+        assert t1 > 0, "t1 value shoud be positive"
+        assert t2 > 0, "t2 value shoud be positive"
+        _Estimator.__init__(self, t1=t1, t2=t2)
+        
+        
     _params_descriptors = {
         't1': _Par(0, float, 't1 parameter for the Bateman function', 0.75, lambda x: x > 0),
         't2': _Par(0, float, 't2 parameter for the Bateman function', 2, lambda x: x > 0)
@@ -327,16 +337,21 @@ class PhasicEstim(_Estimator):
     of Electrodermal Activity signals*
     
     """
-    def __init__(self, delta, grid_size=1, pre_max=2, post_max=2, **kwargs):
-        _Estimator.__init__(self, delta=delta, grid_size=grid_size, pre_max=pre_max, post_max=post_max, **kwargs)
-
+    def __init__(self, delta, grid_size=1, win_pre=2, win_post=2):
+        assert delta > 0, "Delta value should be positive"
+        assert grid_size > 0, "Step of the interpolation grid should be positive"
+        assert win_pre > 0, "Window pre peak value should be positive"
+        assert win_post > 0, "Window post peak value should be positive"
+        _Estimator.__init__(self, delta=delta, grid_size=grid_size, win_pre=win_pre, win_post=win_post)
+        
+    
     _params_descriptors = {
         'delta': _Par(2, float, 'Minimum amplitude of the peaks in the driver', constraint=lambda x: x > 0),
         'grid_size': _Par(0, int, 'Sampling size of the interpolation grid in seconds', 1, lambda x: x > 0),
-        'pre_max': _Par(0, float, 'Duration (in seconds) of interval before the peak that is considered to find the'
+        'win_pre': _Par(0, float, 'Duration (in seconds) of interval before the peak that is considered to find the'
                                   ' start of the peak',
                         2, lambda x: x > 0),
-        'post_max': _Par(0, float, 'Duration (in seconds) of interval after the peak that is considered to find the'
+        'win_post': _Par(0, float, 'Duration (in seconds) of interval after the peak that is considered to find the'
                                    ' start of the peak',
                          2, lambda x: x > 0)
     }
@@ -349,8 +364,8 @@ class PhasicEstim(_Estimator):
     def algorithm(cls, signal, params):
         delta = params["delta"]
         grid_size = params["grid_size"]
-        pre_max = params['pre_max']
-        post_max = params['post_max']
+        win_pre = params['win_pre']
+        win_post = params['win_post']
 
         fsamp = signal.get_sampling_freq()
 
@@ -358,7 +373,7 @@ class PhasicEstim(_Estimator):
         idx_max, idx_min, val_max, val_min = _PeakDetection(delta=delta, refractory=1, start_max=True)(signal)
 
         # identify start and stop of the peak
-        idx_pre, idx_post = _PeakSelection(idx_max=idx_max, pre_max=pre_max, post_max=post_max)(signal)
+        idx_pre, idx_post = _PeakSelection(idx_max=idx_max, win_pre=win_pre, win_post=win_post)(signal)
 
         # Linear interpolation to substitute the peaks
         driver_no_peak = _np.copy(signal)
@@ -407,9 +422,12 @@ class Energy(_Estimator):
     energy : numpy.array
         Local energy
     """
-    def __init__(self, win_len, win_step, smooth=True, **kwargs):
-        _Estimator.__init__(self, win_len=win_len, win_step=win_step, smooth=smooth, **kwargs)
-
+    def __init__(self, win_len, win_step, smooth=True):
+        assert win_len > 0, "Window length should be positive"
+        assert win_step > 0, "Window step should be positive"
+        _Estimator.__init__(self, win_len=win_len, win_step=win_step, smooth=smooth)
+        
+        
     _params_descriptors = {
         'win_len': _Par(2, float, 'The length of the window (seconds)', constraint=lambda x: x > 0),
         'win_step': _Par(2, float, 'The increment to start the next window (seconds)', constraint=lambda x: x > 0),
