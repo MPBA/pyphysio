@@ -130,15 +130,16 @@ def fmap(segments, algorithms, alt_signal=None):
     :param algorithms: A list of algorithms
     :param alt_signal: The signal that will be used instead of the one referenced in the segments
     
-    :return: values, labels, col_names A tuple: a list containing a list for each segment containing a value for each
+    :return: values, col_names A tuple: matrix (segment x algorithms) containing a value for each
      algorithm, the list of the algorithm names.
     """
     from numpy import asarray as _asarray
-    values = _asarray([[seg.get_begin_time(), seg.get_end_time()] + [alg(seg(alt_signal)) for alg in algorithms]
-                       for seg in segments])
-    labels = _asarray([seg.get_label() for seg in segments])
-    col_names = ["begin", "end"] + map(lambda x: x.__repr__(), algorithms)
-    return values, labels, col_names
+    values = _asarray([[seg.get_begin_time(), seg.get_end_time(), seg.get_label()] +
+                       [alg(seg(alt_signal)) for alg in algorithms] for seg in (
+        segments(alt_signal) if isinstance(segments, SegmentsGenerator) else segments
+    )])
+    col_names = ["begin", "end", "label"] + map(lambda x: x.__repr__(), algorithms)
+    return values, col_names
 
 
 def algo(function, **kwargs):

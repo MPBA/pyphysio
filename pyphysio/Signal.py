@@ -1,6 +1,7 @@
 # coding=utf-8
 from __future__ import division
 import numpy as _np
+from pyphysio.Utility import PhUI as _PhUI
 from scipy import interpolate as _interp
 from pyphysio.Utility import abstractmethod as _abstract
 from matplotlib.pyplot import plot as _plot, vlines as _vlines, xlabel as _xlabel, ylabel as _ylabel, grid as _grid
@@ -19,6 +20,8 @@ class Signal(_np.ndarray):
 
     def __new__(cls, values, sampling_freq, start_time=None, signal_nature=""):
         # TODO (feature) multichannel signals
+        if values is None or len(values) == 0:
+            _PhUI.i("Creating empty signal")
         assert sampling_freq > 0, "The sampling frequency cannot be zero or negative"
         assert not isinstance(start_time, str), "Start time is a String"
         obj = _np.asarray(values).view(cls)
@@ -78,7 +81,7 @@ class Signal(_np.ndarray):
         pass
 
     def get_idx(self, time):
-        return (time - self.get_start_time()) * self.get_sampling_freq() if time < self.get_end_time() else None
+        return int((time - self.get_start_time()) * self.get_sampling_freq()) if time < self.get_end_time() else None
 
     @_abstract
     def get_iidx(self, time):
@@ -344,8 +347,11 @@ class UnevenlySignal(Signal):
         return self.ph[self._MT_X_INDICES]
 
     def get_time_from_iidx(self, iidx):
-        return self.get_indices()[int(iidx)] / self.get_sampling_freq() + self.get_start_time() \
-            if iidx < len(self) else None
+        if len(self) == 0:
+            return self.get_start_time()
+        else:
+            return self.get_indices()[int(iidx)] / self.get_sampling_freq() + self.get_start_time() \
+                if iidx < len(self) else None
 
     def get_iidx(self, time):
         return self.get_iidx_from_idx((time - self.get_start_time()) * self.get_sampling_freq())

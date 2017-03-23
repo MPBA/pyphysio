@@ -39,11 +39,10 @@ class GeneralTest(unittest.TestCase):
         segmenter = ph.FixedSegments(width=3, step=2)
         segments = [i for i in segmenter(s)]
 
-        results, labels, columns = ph.fmap(segments, features, s)
+        results, columns = ph.fmap(segments, features, s)
 
-        self.assertEqual(results.shape, (len(segments), len(features) + 2))
-        self.assertEqual(len(labels), len(segments))
-        self.assertEqual(len(columns), len(features) + 2)
+        self.assertEqual(results.shape, (len(segments), len(features) + 3))
+        self.assertEqual(len(columns), len(features) + 3)
 
     def test_ex_more(self):
         s = ph.EvenlySignal(np.cumsum(np.random.rand(1000) - .5) * 100, 10)

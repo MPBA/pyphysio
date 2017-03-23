@@ -26,8 +26,8 @@ class SyntaxTest(unittest.TestCase):
 
         g = ph.FixedSegments(step=1, width=1.5)
         l = len([x for x in g(s)])
-        r, ignored, ignored = ph.fmap(g(s), algos)
-        n = 2 + len(algos)
+        r, ignored = ph.fmap(g(s), algos)
+        n = 3 + len(algos)
         for i in r:
             self.assertEquals(len(i), n)
 

@@ -97,3 +97,45 @@ class GeneralTest(unittest.TestCase):
         self.assertEqual(s.get_start_time(), s2.get_start_time())
         self.assertEqual(s.get_end_time(), s2.get_end_time())
         self.assertEqual(str(s), str(s2))
+
+    def test_issue39(self):
+        ecg = ph.EvenlySignal(ph.TestData.ecg(), sampling_freq=1024)
+        algos = [
+            ph.PNNx(name="PNN50", threshold=50),
+            ph.PNNx(name="PNN20", threshold=20),
+            ph.PNNx(name="PNN10", threshold=10),
+            ph.Mean(name="Mean"),
+            ph.StDev(name="Median"),
+        ]
+
+        # %%
+
+        # create fake label
+        label = np.zeros(len(ecg))
+        label[int(len(ecg) / 2):] = 1
+        label[int(3 * len(ecg) / 4):] = 2
+        label = ph.EvenlySignal(label, sampling_freq=1024)
+
+        # label based windowing
+        label_based = ph.LabelSegments(labels=label)
+
+        # %%
+
+        fixed_length = ph.FixedSegments(step=5, width=20, labels=label)
+        result, col_names = ph.fmap(fixed_length, algos, ecg)
+
+        # %%
+
+        # (optional) IIR filtering : remove high frequency noise
+        ecg = ph.IIRFilter(fp=45, fs=50, ftype='ellip')(ecg)
+
+        # normalization : normalize data
+        ecg = ph.Normalize(norm_method='standard')(ecg)
+
+        # resampling : increase the sampling frequency by cubic interpolation
+        ecg = ecg.resample(fout=4096, kind='cubic')
+        fsamp = 4096
+
+        ibi = ph.BeatFromECG()(ecg)
+
+        result, col_names = ph.fmap(label_based(ibi), algos)
