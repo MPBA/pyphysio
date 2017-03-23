@@ -20,11 +20,11 @@ def test_phasic_estimation():
 
     # %%
     # estimate driver
-    driver = ph.DriverEstim(T1=0.75, T2=2)(eda)
-    assert (int(np.mean(driver) * 10000) == 18262)
+    driver = ph.DriverEstim(t1=0.75, t2=2.5)(eda)
+    assert (int(np.mean(driver) * 10000) == 18286)
     assert (isinstance(driver, ph.EvenlySignal))
 
     # %%
     phasic, tonic, driver_no_peak = ph.PhasicEstim(delta=0.1)(driver)
-    assert np.mean(phasic) == approx(.0568, abs=0.00005)
+    assert np.mean(phasic) == approx(.0656, abs=0.0005)
     assert (isinstance(phasic, ph.EvenlySignal))

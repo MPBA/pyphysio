@@ -43,23 +43,24 @@ class PeakDetection(_Tool):
     """
 
     def __init__(self, delta, refractory=0, start_max=True):
-        assert delta > 0, "Delta value should be positive"
-        assert refractory > 0, "Refractory value should be positive"
+        if isinstance(delta, float) or isinstance(delta, int):
+            assert delta > 0, "Delta value should be positive"
+        assert refractory >= 0, "Refractory value should be non negative"
         _Tool.__init__(self, delta=delta, refractory=refractory, start_max=start_max)
 
         
     _params_descriptors = {
-        'delta': _Par(2, list, "Threshold for the detection of the peaks", constraint=lambda x: x > 0),
-        'refractory': _Par(0, float, "Seconds to skip after detection of a peak", 0, lambda x: x > 0),
+        #'delta': _Par(2, list, "Threshold for the detection of the peaks", constraint=lambda x: x > 0),
+        'refractory': _Par(0, float, "Seconds to skip after detection of a peak", 0, lambda x: x >= 0),
         'start_max': _Par(0, bool, "Whether to start looking for a max.", True)
     }
 
     @classmethod
     def algorithm(cls, signal, params):
         refractory = params['refractory']
-        if refractory == 0:
+        if refractory == 0: # if 0 then do not skip samples
             refractory = 1
-        else:
+        else: #else transform the refractory from seconds to samples
             refractory = refractory * signal.get_sampling_freq()
         look_for_max = params['start_max']
         delta = params['delta']
@@ -313,7 +314,7 @@ class PSD(_Tool):
 
    
 
-    def __init__(self, method, nfft=2048, window='hamming', min_order=18, max_order=25, normalize=True, remove_mean=True, interp_freq=None ):
+    def __init__(self, method, nfft=2048, window='hamming', min_order=18, max_order=25, normalize=True, remove_mean=True, interp_freq=None, **kwargs):
         _method_list = ['welch', 'fft', 'ar']
         _window_list = ['hamming', 'blackman', 'hanning', 'bartlett', 'none']
     
@@ -322,24 +323,22 @@ class PSD(_Tool):
         assert window in _window_list, "Window type not valid"
         assert min_order > 0, "Minimum order for the AR method should be positive"
         assert max_order > 0, "Maximum order for the AR method should be positive"
-        assert interp_freq > 0, "Interpolation frequency value should be positive"
+        if interp_freq is not None:
+            assert interp_freq > 0, "Interpolation frequency value should be positive"
         
         _Tool.__init__(self, method=method, nfft=nfft, window=window, min_order=min_order, 
-                       max_order=max_order, normalize=normalize, remove_mean=remove_mean, interp_freq=interp_freq)
+                       max_order=max_order, normalize=normalize, remove_mean=remove_mean, interp_freq=interp_freq, **kwargs)
         
     _params_descriptors = {
-        'method': _Par(2, str, 'Method to estimate the PSD', constraint=lambda x: x in PSD._method_list),
-        'nfft': _Par(0, int, 'Number of samples in the PSD', 2048, lambda x: x > 0),
-        'window': _Par(0, str, 'Type of window to adapt the signal before estimation of the PSD', 'hamming',
-                       lambda x: x in PSD._window_list),
+#        'method': _Par(2, str, 'Method to estimate the PSD', constraint=lambda x: x in PSD._method_list),        'nfft': _Par(0, int, 'Number of samples in the PSD', 2048, lambda x: x > 0),
+#        'window': _Par(0, str, 'Type of window to adapt the signal before estimation of the PSD', 'hamming',                       lambda x: x in PSD._window_list),
         'min_order': _Par(0, int, 'Minimum order of the model (for method="ar")', default=18,
                           constraint=lambda x: x > 0, activation=lambda x, y: "method" in y and y["method"] == "ar"),
         'max_order': _Par(0, int, 'Maximum order of the model (for method="ar")', default=25,
                           constraint=lambda x: x > 0, activation=lambda x, y: "method" in y and y["method"] == "ar"),
         'normalize': _Par(0, bool, 'Whether to normalize the PSD', True),
-        'remove_mean': _Par(0, bool, 'Whether to remove the mean from the signal before estimation of the PSD', True),
-        'interp_freq': _Par(0, float, 'Frequency to interpolate the input signal, if of type UnevenlySignal',
-                            default=None, constraint=lambda x: x > 0)
+        'remove_mean': _Par(0, bool, 'Whether to remove the mean from the signal before estimation of the PSD', True)
+#        'interp_freq': _Par(0, float, 'Frequency to interpolate the input signal, if of type UnevenlySignal',default=None, constraint=lambda x: x > 0)
     }
 
     
@@ -456,11 +455,12 @@ class Maxima(_Tool):
         Array containing values of the maxima
     """
 
-    def __init__(self, method='complete', refractory=0, win_len, win_step, smooth=True):
+    def __init__(self, method='complete', refractory=0, win_len=None, win_step=None, smooth=True):
         assert method in ['complete', 'windowing'], "Method not valid"
-        assert refractory > 0, "Refractory time value should be positive"
-        assert win_len > 0, "Window length should be positive"
-        assert win_step > 0, "Window step should be positive"
+        assert refractory >= 0, "Refractory time value should be positive (or 0 to deactivate)"
+        if method == 'windowing':
+            assert win_len > 0, "Window length should be positive"
+            assert win_step > 0, "Window step should be positive"
         _Tool.__init__(self, method=method, refractory=refractory, win_len=win_len, win_step=win_step)
         
     _params_descriptors = {
@@ -562,13 +562,14 @@ class Minima(_Tool):
         Array containing values of the minima
     """
 
-    def __init__(self, method='complete', refractory=0, win_len, win_step, smooth=True):
+    def __init__(self, method='complete', refractory=0, win_len=None, win_step=None, smooth=True):
         assert method in ['complete', 'windowing'], "Method not valid"
-        assert refractory > 0, "Refractory time value should be positive"
-        assert win_len > 0, "Window length should be positive"
-        assert win_step > 0, "Window step should be positive"
+        assert refractory >= 0, "Refractory time value should be positive (or 0 to deactivate)"
+        if method == 'windowing':
+            assert win_len > 0, "Window length should be positive"
+            assert win_step > 0, "Window step should be positive"
         _Tool.__init__(self, method=method, refractory=refractory, win_len=win_len, win_step=win_step)
-    
+        
     _params_descriptors = {
         'method': _Par(2, str, 'Method to detect the minima', constraint=lambda x: x in ['complete', 'windowing']),
         'refractory': _Par(0, float, 'Seconds to skip after detection of a minimum (method = "complete")', 0,
@@ -610,28 +611,29 @@ class CreateTemplate(_Tool):
         The template
     """
 
-    def __init__(self, ref_indexes, idx_start=0, idx_stop, win_len, win_step, smooth=True):
-        assert method in ['complete', 'windowing'], "Method not valid"
-        assert idx_start >= 0, "Start index should be non negative"
-        assert idx_stop > 0, "Stop index should be positive"
+    def __init__(self, ref_indexes, smp_pre, smp_post, idx_start=0, idx_stop=0, smooth=True):
         assert smp_pre > 0, "Number of samples before the reference should be positive"
         assert smp_post > 0, "Number of samples after the reference should be positive"
+        assert idx_start >= 0, "Start index should be non negative"
+        assert idx_stop >= 0, "Stop index should be positive or 0 for end of the signal"
+
         
-        _Tool.__init__(self, ref_indexes=ref_indexes, method=method, idx_start=idx_start, idx_stop=idx_stop, smp_pre=smp_pre, smp_post=smp_post)
+        _Tool.__init__(self, ref_indexes=ref_indexes, smp_pre=smp_pre, smp_post=smp_post, idx_start=idx_start, idx_stop=idx_stop)
         
         
     _params_descriptors = {
         'ref_indexes': _Par(2, list, 'Indexes of the signals to be used as reference point to generate the template'),
+        
+        'smp_pre': _Par(2, int, 'Number of samples before the reference point to be used to generate the template',
+                        constraint=lambda x: x > 0),
+        'smp_post': _Par(2, int, 'Number of samples after the reference point to be used to generate the template',
+                         constraint=lambda x: x > 0),
         'idx_start': _Par(2, int,
                           'Index of the signal to start the segmentation of the portion used to generate the template',
                           constraint=lambda x: x >= 0),
         'idx_stop': _Par(2, int,
                          'Index of the signal to end the segmentation of the portion used to generate the template',
-                         constraint=lambda x: x >= 0),
-        'smp_pre': _Par(2, int, 'Number of samples before the reference point to be used to generate the template',
-                        constraint=lambda x: x > 0),
-        'smp_post': _Par(2, int, 'Number of samples after the reference point to be used to generate the template',
-                         constraint=lambda x: x > 0)
+                         constraint=lambda x: x >= 0)
     }
 
     @classmethod
@@ -826,8 +828,8 @@ class BeatOutliers(_Tool):
     """
 
     def __init__(self, ibi_median = 0, cache=3, sensitivity=0.25):
-        assert ibi_median >=0, "IBI median value should be positive (or equal to 0 for automatic computation"
-        assert cache >=1, "Cache size should be greater than 1"
+        assert ibi_median >= 0, "IBI median value should be positive (or equal to 0 for automatic computation"
+        assert cache >= 1, "Cache size should be greater than 1"
         assert sensitivity > 0, "Sensitivity value shlud be positive"
         
         _Tool.__init__(self, ibi_median=ibi_median, cache=cache, sensitivity=sensitivity)
@@ -960,7 +962,7 @@ class BeatOptimizer(_Tool):
     
     def __init__(self, B=0.25, ibi_median = 0, cache=3, sensitivity=0.25):
         assert B > 0, "Ball radius should be positive"
-        assert ibi_median >=0, "IBI median value should be positive (or equal to 0 for automatic computation"
+        assert ibi_median >= 0, "IBI median value should be positive (or equal to 0 for automatic computation"
         assert cache >=1, "Cache size should be greater than 1"
         assert sensitivity > 0, "Sensitivity value shlud be positive"
         
@@ -976,7 +978,7 @@ class BeatOptimizer(_Tool):
                             lambda x: x > 0),
         'ibi_median': _Par(0, int, 'Ibi value used to initialize the cache. If 0 (default) the ibi_median is computed'
                                    ' on the input signal',
-                           0, lambda x: x > 0)
+                           0, lambda x: x >= 0)
     }
 
     @classmethod
@@ -1235,7 +1237,7 @@ class OptimizeBateman(_Tool):
         _Tool.__init__(delta=delta, loss_func=loss_func, opt_method=opt_method, complete=complete, par_ranges=par_ranges,
                  maxiter=maxiter, n_step=n_step, weight=weight, **kwargs)
 
-    # TODO: fix **kwargs parameters
+    # TODO: fix **kwargs parameters for internal optimization
     _params_descriptors = {
         'delta': _Par(2, float, 'Minimum amplitude of the peaks in the driver', default=None,
                       constraint=lambda x: x > 0),
@@ -1253,10 +1255,7 @@ class OptimizeBateman(_Tool):
                        activation=lambda x, p: p['opt_method'] == 'grid'),
         'weight': _Par(0, str, 'How the errors should be weighted before computing the loss function', default='none',
                        constraint=lambda x: x in ['exp', 'lin', 'none']),
-        'fmin_params': _Par(0, dict,
-                            'Additional parameters to pass to the minimization function (when complete = True)',
-                            default={}, activation=lambda x, p: p['complete'])
-    }
+        }
 
     @classmethod
     def algorithm(cls, signal, params):
@@ -1704,6 +1703,12 @@ class Histogram(_Tool):
     Returns:
     histogram
     """
+
+    def __init__(self, histogram_bins=100):
+        if isinstance(histogram_bins, int):
+            assert histogram_bins > 0, "Number of bins should be positive"
+        _Tool.__init__(self, histogram_bins=histogram_bins)
+
 
     _params_descriptors = {
         'histogram_bins': _Par(1, list,

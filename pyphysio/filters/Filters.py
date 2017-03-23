@@ -278,9 +278,9 @@ class ConvolutionalFilter(_Filter):
         Filtered signal
 
     """
-    def __init__(self, irftype, win_len=None, irf=None, normalize=True):
+    def __init__(self, irftype, win_len=0, irf=None, normalize=True):
         assert irftype in ['gauss', 'rect', 'triang', 'dgauss', 'custom'], "IRF type not valid"
-        assert win_len > 0, "Window length value should be positive"
+        assert (irftype == 'custom') or (win_len > 0), "Window length value should be positive"
         _Filter.__init__(self, irftype=irftype, win_len=win_len, irf=irf, normalize=normalize)
         
 

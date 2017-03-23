@@ -35,13 +35,13 @@ def test_tools():
     # filter
     eda = ph.IIRFilter(fp=0.8, fs=1.1)(eda)
 
-    driver = ph.DriverEstim(delta=0.02)(eda)
+    driver = ph.DriverEstim()(eda)
     phasic, _, __ = ph.PhasicEstim(delta=0.02)(driver)
 
     idx_mx, idx_mn, mx, mn = ph.PeakDetection(delta=0.02)(phasic)
 
     # TEST PeakSelection
-    st, sp = ph.PeakSelection(idx_max=idx_mx, pre_max=2, post_max=2)(phasic)
+    st, sp = ph.PeakSelection(idx_max=idx_mx, win_pre=2, win_post=2)(phasic)
     assert (np.sum(st) == 22985)
 
     # %%
