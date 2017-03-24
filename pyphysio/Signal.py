@@ -5,6 +5,7 @@ from pyphysio.Utility import PhUI as _PhUI
 from scipy import interpolate as _interp
 from pyphysio.Utility import abstractmethod as _abstract
 from matplotlib.pyplot import plot as _plot, vlines as _vlines, xlabel as _xlabel, ylabel as _ylabel, grid as _grid
+from numbers import Number as _Number
 
 __author__ = 'AleB'
 
@@ -20,12 +21,12 @@ class Signal(_np.ndarray):
 
     def __new__(cls, values, sampling_freq, start_time=None, signal_nature=""):
         # TODO (feature) multichannel signals
-        if values is None or len(values) == 0:
-            _PhUI.i("Creating empty signal")
         assert sampling_freq > 0, "The sampling frequency cannot be zero or negative"
-        assert not isinstance(start_time, str), "Start time is a String"
+        assert start_time is None or isinstance(start_time, _Number), "Start time is not numeric"
         obj = _np.asarray(values).view(cls)
         assert obj.ndim == 1, "Dimension not 1"
+        if len(obj) == 0:
+            _PhUI.i("Creating empty signal")
         obj._pyphysio = {
             cls._MT_NATURE: signal_nature,
             cls._MT_START_TIME: start_time if start_time is not None else 0,
