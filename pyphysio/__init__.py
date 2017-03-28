@@ -1,7 +1,7 @@
 # coding=utf-8
 from __future__ import division
 
-from numpy import nan as _nan
+from numpy import nan as _nan, array as _array
 
 import pyphysio.filters.Filters
 import pyphysio.segmentation.SegmentsGenerators
@@ -139,7 +139,7 @@ def fmap(segments, algorithms, alt_signal=None):
         segments(alt_signal) if isinstance(segments, SegmentsGenerator) else segments
     )])
     col_names = ["begin", "end", "label"] + map(lambda x: x.__repr__(), algorithms)
-    return values, col_names
+    return values, _array(col_names)
 
 
 def algo(function, **kwargs):

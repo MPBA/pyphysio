@@ -1208,8 +1208,8 @@ class OptimizeBateman(_Tool):
     opt_method : str
         Method to perform the search of optimal parameters.
         Available methods:
-        - 'asa' Adaptive Simulated Annealing. Uses the Basin-Hopping algorithm.
-        - 'grid' Grid search
+    * 'bsh' Adaptive Simulated Annealing. Uses the Basin-Hopping algorithm.
+    * 'grid' Grid search
     complete : boolean, default = True
         Whether to perform minimization after detecting the optimal parameters
     par_ranges : list, default = [0.1, 0.99, 1, 10]
@@ -1227,8 +1227,7 @@ class OptimizeBateman(_Tool):
     -------
     x0 : list
         The resulting optimal parameters
-    x0_min : list
-        If complete = True, parameters resulting from the minimization
+    
     """
 
     def __init__(self, delta, loss_func='all', opt_method='bsh', complete=True, par_ranges=[0.1, 0.99, 1.5, 5],
@@ -1241,9 +1240,9 @@ class OptimizeBateman(_Tool):
     _params_descriptors = {
         'delta': _Par(2, float, 'Minimum amplitude of the peaks in the driver', default=None,
                       constraint=lambda x: x > 0),
-        'loss_func': _Par(0, str, 'Loss function to be used', default='bizzego',
+        'loss_func': _Par(0, str, 'Loss function to be used', default='all',
                           constraint=lambda x: x in ['bizzego', 'benedek', 'all']),
-        'opt_method': _Par(0, str, 'Method to perform the search of optimal parameters.', default='asa',
+        'opt_method': _Par(0, str, 'Method to perform the search of optimal parameters.', default='bsh',
                            constraint=lambda x: x in ['grid', 'bsh']),
         'complete': _Par(0, bool, 'Whether to perform a minimization after detecting the optimal parameters',
                          default=True),

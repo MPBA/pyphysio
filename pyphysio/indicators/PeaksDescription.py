@@ -157,8 +157,8 @@ class _PeaksInterval(_Indicator):
     """
     __metaclass__ = _ABCMeta
 
-    def __init__(self, delta, win_pre, win_post, **kwargs):
-        _Indicator.__init__(self, delta=delta, win_pre=win_pre, win_post=win_post, **kwargs)
+    def __init__(self, delta, pre_max=1, post_max=1, **kwargs):
+        _Indicator.__init__(self, delta=delta, pre_max=pre_max, post_max=post_max, **kwargs)
 
     @classmethod
     @_abstract
@@ -167,11 +167,11 @@ class _PeaksInterval(_Indicator):
 
     _params_descriptors = {
         'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0),
-        'pre_max': _Par(1, float,
+        'pre_max': _Par(0, float,
                         'Duration (in seconds) of interval before the peak that is considered to find the start of the '
                         'peak (>0)',
                         1, lambda x: x > 0),
-        'post_max': _Par(1, float,
+        'post_max': _Par(0, float,
                          'Duration (in seconds) of interval after the peak that is considered to find the start of the '
                          'peak (>0)',
                          1, lambda x: x > 0)
