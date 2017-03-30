@@ -178,7 +178,7 @@ class TestSignal(object):
 
         # get_time
         assert self.s.get_time(0) == self.s.get_start_time()
-        assert self.s.get_time(len(t) - 1) == self.s.get_end_time()
+        assert self.s.get_time(len(t) - 1) == approx(self.s.get_end_time(), rel=.00002)
         assert self.s.get_time(len(t)) is None
         assert self.s.get_time(10) == self.s.get_start_time() + 10 / self.s.get_sampling_freq()
 
@@ -194,15 +194,18 @@ class TestSignal(object):
 
     def test_unevenly_signal_base(self):
         # get_indices
-        assert self.us.get_indices() == self.x_vals
+        for i, (a, b) in enumerate(zip(self.us.get_indices(), self.x_vals)):
+            assert a == b
 
         # get_times
-        assert self.us.get_times() == self.x_vals / self.us.get_sampling_freq() + self.us.get_start_time()
+        for i, (a, b) in enumerate(zip(self.us.get_times(),
+                                       self.x_vals / self.us.get_sampling_freq() + self.us.get_start_time())):
+            assert a == b, "Index %d" % i
 
         # get_time
         assert self.us.get_time(0) == self.us.get_start_time()
-        assert self.us.get_time(len(self.us) - 1) == self.us.get_end_time()
-        assert self.us.get_time(len(self.us)) is None
+        assert self.us.get_time_from_iidx(len(self.us) - 1) + 1. / self.us.get_sampling_freq() == self.us.get_end_time()
+        assert self.us.get_time_from_iidx(len(self.us)) is None
         assert self.us.get_time(10) == self.us.get_start_time() + 10 / self.us.get_sampling_freq()
 
         #
