@@ -387,7 +387,7 @@ class PSD(_Tool):
         signal = signal * win
         if method == 'fft':
             spec_tmp = _np.abs(_np.fft.fft(signal, n=nfft)) ** 2  # FFT
-            psd = spec_tmp[0:(_np.ceil(len(spec_tmp) / 2))]
+            psd = spec_tmp[0:int(_np.ceil(len(spec_tmp) / 2))]
 
         elif method == 'ar':
             min_order = params['min_order']
@@ -691,7 +691,7 @@ class BootstrapEstimation(_Tool):
     def __init__(self, func, N=100, k=0.5):
         assert N > 0, "N should be positive"
         assert k > 0 and k<=1, "k should be between (0 and 1]"
-        _Tool.__init__(self, func, N=N, k=k)
+        _Tool.__init__(self, func=func, N=N, k=k)
     
     from types import FunctionType as Func
     _params_descriptors = {
@@ -1233,8 +1233,8 @@ class OptimizeBateman(_Tool):
     def __init__(self, delta, loss_func='all', opt_method='bsh', complete=True, par_ranges=[0.1, 0.99, 1.5, 5],
                  maxiter=99999, n_step=10, weight='none', **kwargs):
         
-        _Tool.__init__(delta=delta, loss_func=loss_func, opt_method=opt_method, complete=complete, par_ranges=par_ranges,
-                 maxiter=maxiter, n_step=n_step, weight=weight, **kwargs)
+        _Tool.__init__(delta=delta, loss_func=loss_func, opt_method=opt_method, complete=complete, par_ranges=par_ranges, 
+                       maxiter=maxiter, n_step=n_step, weight=weight, **kwargs)
 
     # TODO: fix **kwargs parameters for internal optimization
     _params_descriptors = {
