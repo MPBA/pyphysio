@@ -1,4 +1,5 @@
 # coding=utf-8
+from __future__ import print_function
 from __future__ import division
 
 from . import ph
@@ -138,3 +139,57 @@ class GeneralTest(unittest.TestCase):
         ibi = ph.BeatFromECG()(ecg)
 
         result, col_names = ph.fmap(label_based(ibi), algos)
+
+    def test_issue40(self):
+        # import data and creating a signal
+
+        ecg_data = ph.TestData.ecg()
+        fsamp = 2048
+        ecg = ph.EvenlySignal(values=ecg_data, sampling_freq=fsamp, signal_nature='ecg')
+
+        # ** Step 1: Filtering and preprocessing **
+
+        # (optional) IIR filtering : remove high frequency noise
+        ecg = ph.IIRFilter(fp=45, fs=50, ftype='ellip')(ecg)
+
+        # normalization : normalize data
+        ecg = ph.Normalize(norm_method='standard')(ecg)
+
+        # resampling : increase the sampling frequency by cubic interpolation
+        ecg = ecg.resample(fout=4096, kind='cubic')
+
+        # ** Step 2: Information Extraction **
+        ibi = ph.BeatFromECG()(ecg)
+
+        # define a list of indicators we want to compute
+        hrv_indicators = [ph.Mean(name='RRmean'), ph.StDev(name='RRstd'), ph.RMSSD(name='rmsSD'),
+                          ph.PowerInBand(name='HF', interp_freq=4, freq_max=0.4, freq_min=0.15, method='ar'),
+                          ph.PowerInBand(name='LF', interp_freq=4, freq_max=0.15, freq_min=0.04, method='ar')
+                          ]
+
+        # create fake label
+        label = np.zeros(1200)
+        label[300:600] = 1
+        label[900:1200] = 2
+        label = ph.EvenlySignal(label, sampling_freq=10, signal_nature='label')
+
+        # fixed length windowing
+        fixed_length = ph.FixedSegments(step=5, width=20, labels=label, drop_mixed=False, drop_shorter=True)
+
+        indicators, col_names = ph.fmap(fixed_length(ibi), hrv_indicators)
+
+        print(indicators[:, 0:3])
+
+        # label based windowing
+        label_based = ph.LabelSegments(labels=label)
+
+        indicators, col_names = ph.fmap(label_based(ibi), hrv_indicators)
+
+        print(indicators[:, 0:3])
+
+        # custom based windowing
+        custom_based = ph.CustomSegments(begins=[0, 30, 60, 90], ends=[30, 60, 90, label.get_duration()], labels=label)
+
+        indicators, col_names = ph.fmap(custom_based, hrv_indicators, ibi)
+
+        print(indicators[:, 0:3])

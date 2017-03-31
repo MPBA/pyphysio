@@ -312,8 +312,6 @@ class PSD(_Tool):
         Power Spectrum Density
     """
 
-   
-
     def __init__(self, method, nfft=2048, window='hamming', min_order=18, max_order=25, normalize=True, remove_mean=True, interp_freq=None, **kwargs):
         _method_list = ['welch', 'fft', 'ar']
         _window_list = ['hamming', 'blackman', 'hanning', 'bartlett', 'none']
@@ -392,6 +390,8 @@ class PSD(_Tool):
         elif method == 'ar':
             min_order = params['min_order']
             max_order = params['max_order']
+
+            assert len(signal) >= max_order, "Input signal too short: try another 'method' or a longer signal"
 
             # FIXME: min_order is None by default and not 18 as requested            
             # WORKAROUND for min_order = None by default

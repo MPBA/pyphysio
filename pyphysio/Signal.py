@@ -452,9 +452,9 @@ class UnevenlySignal(Signal):
             The selected portion
         """
         if idx_start is None:
-            idx_stop = len(self)
-        if idx_start is None:
             idx_start = 0
+        if idx_stop is None:
+            idx_stop = self.get_indices()[-1]
 
         iib = self.get_iidx_from_idx(idx_start)
         iie = self.get_iidx_from_idx(idx_stop)

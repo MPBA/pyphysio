@@ -42,7 +42,7 @@ class _SegmentsWithLabelSignal(SegmentsGenerator):
         last_idx = self._signal.get_idx(e) if e is not None else None
 
         # full under-range (empty) or full over-range (empty)
-        if last_idx < 0 or first_idx is None:
+        if (last_idx is not None and last_idx < 0) or first_idx is None:
             return drop
 
         # part out of range: mixed and shorter (as partially before the first label's begin)
