@@ -134,8 +134,7 @@ class GeneralTest(unittest.TestCase):
 
         # resampling : increase the sampling frequency by cubic interpolation
         ecg = ecg.resample(fout=4096, kind='cubic')
-        fsamp = 4096
-
+        
         ibi = ph.BeatFromECG()(ecg)
 
         result, col_names = ph.fmap(label_based(ibi), algos)

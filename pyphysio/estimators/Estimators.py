@@ -120,10 +120,11 @@ class BeatFromBP(_Estimator):
 
         # STAGE 3 - FINALIZE computing IBI
         ibi_values = _np.diff(true_peaks) / fsamp
+        ibi_values = _np.r_[ibi_values[0], ibi_values]
         idx_ibi = _np.array(true_peaks)
 
         ibi = _UnevenlySignal(values=ibi_values, sampling_freq=fsamp, signal_nature='IBI',
-                              start_time=signal.get_start_time(), x_values=idx_ibi[1:], x_type='indices')
+                              start_time=signal.get_start_time(), x_values=idx_ibi, x_type='indices')
         return ibi
 
 

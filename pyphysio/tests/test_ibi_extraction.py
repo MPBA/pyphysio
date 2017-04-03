@@ -54,4 +54,4 @@ def test_ibi_extraction():
     ibi = ph.BeatFromBP()(bvp)
 
     id_bad_ibi = ph.BeatOutliers(cache=3, sensitivity=0.25)(ibi)
-    assert (np.sum(id_bad_ibi) == 735)
+    assert (np.sum(id_bad_ibi) == 744)
