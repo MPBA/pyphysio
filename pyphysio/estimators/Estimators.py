@@ -450,7 +450,7 @@ class Energy(_Estimator):
         energy = _np.empty(len(windows) + 2)
         for i in range(1, len(windows) + 1):
             start = windows[i - 1]
-            portion_curr = signal[start: start + idx_len]
+            portion_curr = signal.segment_idx(start, start + idx_len)
             energy[i] = _np.sum(_np.power(portion_curr, 2)) / len(portion_curr)
         energy[0] = energy[1]
         energy[-1] = energy[-2]

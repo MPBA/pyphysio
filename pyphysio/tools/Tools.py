@@ -987,98 +987,31 @@ class BeatOptimizer(_Tool):
 
     @classmethod
     def algorithm(cls, signal, params):
+        print('Not implemented')
+        return(signal)
+        
         b, cache, sensitivity, ibi_median = params["B"], params["cache"], params["sensitivity"], params["ibi_median"]
 
-        idx_ibi = signal.get_indices()
         fsamp = signal.get_sampling_freq()
 
-        if ibi_median == 0:
-            ibi_expected = _np.median(_np.diff(idx_ibi))
-        else:
-            ibi_expected = ibi_median
+        #FORWARD
+        id_bad_ibi_F = BeatOutliers(ibi_median=ibi_median, cache=cache, sensitivity=sensitivity)(signal)
+        
+        #BACKWARD
+        # reverse the signal
+        idx_reverse = signal.get_indices()
+        
+        idx_reverse = -1 * (idx_reverse - idx_reverse[-1])[::-1]
+        ibi_reverse = _np.diff(idx_reverse)
+        ibi_reverse = _np.r_[ibi_reverse[0], ibi_reverse]
 
-        idx_st = idx_ibi[0]
-        idx_ibi = idx_ibi - idx_st
+        ibi_reverse = _UnevenlySignal(ibi_reverse/fsamp, x_values=idx_reverse, x_type='indices')
 
-        ###
-        # RUN FORWARD:
-        ibi_cache = _np.repeat(ibi_expected, cache)
-        counter_bad = 0
-
-        idx_1 = [0]
-        ibi_1 = [int(signal.get_values()[0] * fsamp)]
-        # ibi_1 = []
-
-        prev_idx = idx_ibi[0]
-        for i in range(1, len(idx_ibi)):
-            curr_median = _np.median(ibi_cache)
-            curr_idx = idx_ibi[i]
-            curr_ibi = curr_idx - prev_idx
-
-            if curr_ibi > curr_median * (1 + sensitivity):  # abnormal peak:
-                prev_idx = curr_idx
-                ibi_1.append(_np.nan)
-                idx_1.append(curr_idx)
-                counter_bad += 1
-            elif curr_ibi < curr_median * (1 - sensitivity):  # abnormal peak:
-                counter_bad += 1
-            else:
-                ibi_cache = _np.r_[ibi_cache[1:], curr_ibi]
-                prev_idx = curr_idx
-                ibi_1.append(curr_ibi)
-                idx_1.append(curr_idx)
-
-            if counter_bad == cache:  # ibi cache probably corrupted, reinitialize
-                ibi_cache = _np.repeat(ibi_expected, cache)
-                # action_message('Cache re-initialized - ' + str(curr_idx))  # , RuntimeWarning) # message
-                counter_bad = 0
-
-        ibi_1 = _np.array(ibi_1)
-
-        ###
-        # RUN BACKWARD:
-        idx_ibi_rev = idx_ibi[-1] - idx_ibi
-        idx_ibi_rev = idx_ibi_rev[::-1]
-
-        ibi_cache = _np.repeat(ibi_expected, cache)
-        counter_bad = 0
-
-        idx_2 = [0]
-        # ibi_2 = []
-        ibi_2 = []
-
-        prev_idx = idx_ibi_rev[0]
-        for i in range(1, len(idx_ibi_rev)):
-            curr_median = _np.median(ibi_cache)
-            curr_idx = idx_ibi_rev[i]
-            curr_ibi = curr_idx - prev_idx
-
-            # print([curr_median*(1+sensitivity), curr_median*(1-sensitivity), curr_median])
-            if curr_ibi > curr_median * (1 + sensitivity):  # abnormal peak:
-                prev_idx = curr_idx
-                ibi_2.append(_np.nan)
-                idx_2.append(curr_idx)
-                counter_bad += 1
-
-            elif curr_ibi < curr_median * (1 - sensitivity):  # abnormal peak:
-                counter_bad += 1
-            else:
-                ibi_cache = _np.r_[ibi_cache[1:], curr_ibi]
-                prev_idx = curr_idx
-                ibi_2.append(curr_ibi)
-                idx_2.append(curr_idx)
-
-            if counter_bad == cache:  # ibi cache probably corrupted, reinitialize
-                ibi_cache = _np.repeat(ibi_expected, cache)
-                # action_message('Cache re-initialized - ' + str(curr_idx))  # , RuntimeWarning) # OK Message
-                counter_bad = 0
-
-        # correct last/first sample
-        ibi_2.append(int(signal.get_values()[0] * fsamp))
-
-        idx_2 = -1 * (_np.array(idx_2) - idx_ibi_rev[-1])
-        idx_2 = idx_2[::-1]
-
+        id_bad_ibi_b = BeatOutliers(ibi_median=ibi_median, cache=cache, sensitivity=sensitivity)(ibi_reverse)
+        
+        id_bad_ibi_B = -1* (_np.array(id_bad_ibi_b) - len(ibi_reverse))[::-1]
+        
+        idx_1
         ###
         # add indexes of idx_ibi_2 which are not in idx_ibi_1 but close enough
         b = b * fsamp
@@ -1230,10 +1163,10 @@ class OptimizeBateman(_Tool):
     
     """
 
-    def __init__(self, delta, loss_func='all', opt_method='bsh', complete=True, par_ranges=[0.1, 0.99, 1.5, 5],
+    def __init__(self, delta, loss_func='all', opt_method='bsh', complete=False, par_ranges=[0.1, 0.99, 1.5, 10],
                  maxiter=99999, n_step=10, weight='none', **kwargs):
         
-        _Tool.__init__(delta=delta, loss_func=loss_func, opt_method=opt_method, complete=complete, par_ranges=par_ranges, 
+        _Tool.__init__(self, delta=delta, loss_func=loss_func, opt_method=opt_method, complete=complete, par_ranges=par_ranges, 
                        maxiter=maxiter, n_step=n_step, weight=weight, **kwargs)
 
     # TODO: fix **kwargs parameters for internal optimization
@@ -1241,7 +1174,7 @@ class OptimizeBateman(_Tool):
         'delta': _Par(2, float, 'Minimum amplitude of the peaks in the driver', default=None,
                       constraint=lambda x: x > 0),
         'loss_func': _Par(0, str, 'Loss function to be used', default='all',
-                          constraint=lambda x: x in ['bizzego', 'benedek', 'all']),
+                          constraint=lambda x: x in ['biz', 'ben', 'all']),
         'opt_method': _Par(0, str, 'Method to perform the search of optimal parameters.', default='bsh',
                            constraint=lambda x: x in ['grid', 'bsh']),
         'complete': _Par(0, bool, 'Whether to perform a minimization after detecting the optimal parameters',
@@ -1264,16 +1197,17 @@ class OptimizeBateman(_Tool):
         par_ranges = params['par_ranges']
         maxiter = params['maxiter']
         n_step = params['n_step']
-
         weight = params['weight']
-        min_pars = params['fmin_params']
+        
+        # TODO: add **kwargs
 
-        if params['loss_func'] == 'benedek':
+        if params['loss_func'] == 'ben':
             loss_function = OptimizeBateman._loss_benedek
         elif params['loss_func'] == 'all':
             loss_function = OptimizeBateman._loss_function_all
         else:
             loss_function = OptimizeBateman._loss_function
+
 
         min_T1 = float(par_ranges[0])
         max_T1 = float(par_ranges[1])
@@ -1287,13 +1221,16 @@ class OptimizeBateman(_Tool):
             rranges = (slice(min_T1, max_T1 + step_T1, step_T1), slice(min_T2, max_T2 + step_T2, step_T2))
             x0, loss, grid, loss_grid = _opt.brute(loss_function, rranges,
                                                    args=(signal, delta, min_T1, max_T1, min_T2, max_T2, weight),
-                                                   finish=None, full_output=True)
+                                                   full_output=True, finish=None)
             exit_code = -1
+            
         elif opt_method == 'bsh':
-            x_opt = _opt.basinhopping(loss_function, [0.75, 2.], niter=maxiter, minimizer_kwargs={
-                "bounds": ((par_ranges[0], par_ranges[1]), (par_ranges[2], par_ranges[3])),
-                "args": (signal, delta, min_T1, max_T1, min_T2, max_T2, weight), "tol": 0.001}, disp=False,
-                                      niter_success=10)
+            x_opt = _opt.basinhopping(loss_function, [0.75, 2.], 
+                                      niter=maxiter, 
+                                      minimizer_kwargs={"bounds": ((par_ranges[0], par_ranges[1]), (par_ranges[2], par_ranges[3])), 
+                                                        "args": (signal, delta, min_T1, max_T1, min_T2, max_T2, weight), 
+                                                        "tol": 0.001}, 
+                                      disp=False, niter_success=10)
             x0 = x_opt.x
             loss = float(x_opt.fun)
 
@@ -1306,10 +1243,10 @@ class OptimizeBateman(_Tool):
             return None
 
         if complete:
-            x0_min, loss_min, niter, nfuncalls, warnflag, ignored = _opt.fmin(loss_function, x0, args=(
-                signal, delta, min_T1, max_T1, min_T2, max_T2, weight),
-                                                                              full_output=True,
-                                                                              **min_pars)
+            x0_min, loss_min, niter, nfuncalls, warnflag = _opt.fmin(loss_function, x0, 
+                                                                     args=(signal, delta, min_T1, max_T1, min_T2, max_T2, weight), 
+                                                                     full_output=True)
+            
             return x0, x0_min, loss, loss_min, exit_code, warnflag
         else:
             return x0, loss, exit_code
@@ -1354,7 +1291,7 @@ class OptimizeBateman(_Tool):
         #     return 10000
 
         fsamp = signal.get_sampling_freq()
-        driver = _DriverEstim(T1=par_bat[0], T2=par_bat[1])(signal)
+        driver = _DriverEstim(t1=par_bat[0], t2=par_bat[1])(signal)
         maxp, minp, ignored, ignored = PeakDetection(delta=delta, start_max=True)(driver)
 
         if len(maxp) == 0:
@@ -1422,7 +1359,7 @@ class OptimizeBateman(_Tool):
             # normalize to the number of peaks
             energy /= len(selected_maxs)
             OptimizeBateman.log(
-                'BIZZEGO. Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(energy))
+                '\r\r BIZZEGO. Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(energy)+ '\r')
 
             return energy
 
@@ -1467,7 +1404,7 @@ class OptimizeBateman(_Tool):
 
         fsamp = signal.get_sampling_freq()
 
-        driver = _DriverEstim(T1=par_bat[0], T2=par_bat[1])(signal)
+        driver = _DriverEstim(t1=par_bat[0], t2=par_bat[1])(signal)
         maxp, minp, ignored, ignored = PeakDetection(delta=delta, start_max=True)(driver[:-15 * fsamp])
 
         if len(maxp) == 0:
@@ -1529,7 +1466,7 @@ class OptimizeBateman(_Tool):
                 return _np.Inf
             energy /= peak_counts
             OptimizeBateman.log(
-                'ALL. Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(energy))
+                '\r\r ALL. Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(energy)+ '\r')
 
             if _np.isnan(energy):
                 return _np.Inf
@@ -1648,11 +1585,11 @@ class OptimizeBateman(_Tool):
             return phasic
 
         ALPHA = 6
-        driver = _DriverEstim(T1=par_bat[0], T2=par_bat[1])(signal)
+        driver = _DriverEstim(t1=par_bat[0], t2=par_bat[1])(signal)
 
         phasic = phasic_estim_benedek(driver, delta)
         # TODO Do not use print, use cls.warn or cls.err (return something that can make the Algorithm call it, if not for debug)
-        print(len(phasic))
+#        print(len(phasic))
 
         TH = float(_np.max(phasic) * 0.05)
 
@@ -1684,7 +1621,7 @@ class OptimizeBateman(_Tool):
         # compute loss
         LOSS = indist + ALPHA * neg
         OptimizeBateman.log(
-            'BENEDEK. Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(LOSS))
+            '\r\r BENEDEK. Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(LOSS) + '\r')
         return LOSS
 
 
