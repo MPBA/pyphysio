@@ -404,7 +404,10 @@ class UnevenlySignal(Signal):
         sig_out = EvenlySignal(values=sig_out,
                                sampling_freq=self.get_sampling_freq(),
                                signal_nature=self.get_signal_nature(),
-                               start_time=self.get_time_from_iidx(0))
+                               start_time=self.get_start_time())
+                               # NOT: start_time=self.get_time_from_iidx(0))
+        
+        
         return sig_out
 
     def resample(self, fout, kind='linear'):
