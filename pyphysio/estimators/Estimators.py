@@ -171,7 +171,7 @@ class BeatFromECG(_Estimator):
         fmax = bpm_max / 60
 
         if delta == 0:
-            delta = 0.5 * _SignalRange(win_len=2 / fmax, win_step=0.5 / fmax, smooth=False)(signal)
+            delta = 0.7 * _SignalRange(win_len=2 / fmax, win_step=0.5 / fmax, smooth=False)(signal)
         else:
             delta = _np.repeat(delta, len(signal))
 
@@ -448,7 +448,7 @@ class Energy(_Estimator):
         for i in range(1, len(windows) + 1):
             start = windows[i - 1]
             portion_curr = signal.segment_idx(start, start + idx_len)
-            energy[i] = _np.sum(_np.power(portion_curr, 2)) / len(portion_curr)
+            energy[i] = _np.nanmean(_np.power(portion_curr, 2))
         energy[0] = energy[1]
         energy[-1] = energy[-2]
 
