@@ -12,8 +12,8 @@ __author__ = 'AleB'
 class _SegmentsWithLabelSignal(SegmentsGenerator):
     # Assumed: label signal extended over the end by holding the value
 
-    def __init__(self, drop_shorter=True, drop_mixed=True, **kwargs):
-        super(_SegmentsWithLabelSignal, self).__init__(drop_shorter=drop_shorter, drop_mixed=drop_mixed, **kwargs)
+    def __init__(self, drop_cut=True, drop_mixed=True, **kwargs):
+        super(_SegmentsWithLabelSignal, self).__init__(drop_cut=drop_cut, drop_mixed=drop_mixed, **kwargs)
         self._labsig = None
 
     @_abstract
@@ -47,7 +47,7 @@ class _SegmentsWithLabelSignal(SegmentsGenerator):
 
         # part out of range: mixed and shorter (as partially before the first label's begin)
         if first_idx < 0:
-            if self._params['drop_mixed'] or self._params['drop_shorter']:
+            if self._params['drop_mixed'] or self._params['drop_cut']:
                 # goto next segment
                 return drop
             else:
@@ -117,8 +117,8 @@ class FixedSegments(_SegmentsWithLabelSignal):
     __init__(self, step, width=0, start=0, labels=None, drop_mixed=True)
     """
 
-    def __init__(self, step, width=None, start=None, labels=None, drop_mixed=True, **kwargs):
-        super(FixedSegments, self).__init__(step=step, width=width, start=start, labels=labels,
+    def __init__(self, step, width=None, start=None, labels=None, drop_mixed=True, drop_cut=True, **kwargs):
+        super(FixedSegments, self).__init__(step=step, width=width, start=start, labels=labels, drop_cut=drop_cut,
                                             drop_mixed=drop_mixed, **kwargs)
         assert labels is None or isinstance(labels, _Signal),\
             "The parameter 'labels' should be a Signal."
@@ -150,8 +150,9 @@ class CustomSegments(_SegmentsWithLabelSignal):
     __init__(self, begins, ends, labels=None, drop_mixed=True)
     """
 
-    def __init__(self, begins, ends, labels=None, drop_mixed=True, **kwargs):
-        super(CustomSegments, self).__init__(begins=begins, ends=ends, labels=labels, drop_mixed=drop_mixed, **kwargs)
+    def __init__(self, begins, ends, labels=None, drop_mixed=True, drop_cut=True, **kwargs):
+        super(CustomSegments, self).__init__(begins=begins, ends=ends, labels=labels, drop_cut=drop_cut,
+                                             drop_mixed=drop_mixed, **kwargs)
         assert len(begins) == len(ends), "The number of begins has to be equal to the number of ends :)"
         assert labels is None or isinstance(labels, _Signal),\
             "The parameter 'labels' should be an Signal."
@@ -181,8 +182,8 @@ class LabelSegments(_SegmentsWithLabelSignal):
     __init__(labels)
     """
 
-    def __init__(self, labels, **kwargs):
-        super(LabelSegments, self).__init__(labels=labels, **kwargs)
+    def __init__(self, labels, drop_mixed=True, drop_cut=True, **kwargs):
+        super(LabelSegments, self).__init__(labels=labels, drop_cut=drop_cut, drop_mixed=drop_mixed, **kwargs)
         assert labels is None or isinstance(labels, _Signal),\
             "The parameter 'labels' should be an Signal."
         self._i = None
