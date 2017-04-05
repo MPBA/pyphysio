@@ -163,7 +163,7 @@ class TestSignal(object):
         assert isinstance(self.s.plot("|r"), matplotlib.collections.LineCollection)
 
         # pickleability
-        ps = ph.EvenlySignal.unp(self.s.p)
+        ps = ph.EvenlySignal.from_pickleable(self.s.pickleable)
         assert ps.get_start_time() == self.s.get_start_time()
         assert ps.get_sampling_freq() == self.s.get_sampling_freq()
         assert ps.get_end_time() == self.s.get_end_time()

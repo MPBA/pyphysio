@@ -12,6 +12,22 @@ __author__ = 'AleB'
 
 # TODO: Consider collapsing classes
 
+def from_pickleable(pickle):
+    d, ph = pickle
+    assert isinstance(d, Signal)
+    assert isinstance(ph, dict)
+    d._pyphysio = ph
+    return d
+
+
+def load_pickle(path):
+    from gzip import open
+    from pickle import load
+    f = open(path, 'rb')
+    p = load(f)
+    f.close()
+    return from_pickleable(p)
+
 
 class Signal(_np.ndarray):
     _MT_NATURE = "signal_nature"
@@ -121,17 +137,16 @@ class Signal(_np.ndarray):
         else:
             return _plot(self.get_times(), self.get_values(), style)
 
-    @classmethod
-    def unp(cls, pickle):
-        d, ph = pickle
-        assert isinstance(d, Signal)
-        assert isinstance(ph, dict)
-        d._pyphysio = ph
-        return d
-
     @property
-    def p(self):
+    def pickleable(self):
         return self, self.ph
+
+    def save_pickle(self, path):
+        from gzip import open
+        from pickle import dump
+        f = open(path, mode="wb")
+        dump(self.pickleable, f)
+        f.close()
 
     def __repr__(self):
         return "<signal: " + self.get_signal_nature() + ", start_time: " + str(self.get_start_time()) + ">"
