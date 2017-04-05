@@ -467,13 +467,13 @@ class GeneralTest(unittest.TestCase):
         self.assertEqual(s5.get_indices()[0], 0)
         self.assertEqual(s6.get_indices()[0], 0)
         self.assertEqual(s7.get_indices()[0], 0)
-        # FIXME self.assertEqual(s1.get_indices()[-1], s.get_indices()[0 + x4 - 1] - s.get_indices()[0])
-        # FIXME self.assertEqual(s2.get_indices()[-1], s.get_indices()[x1 + x3 - 1] - s.get_indices()[x1])
-        # FIXME self.assertEqual(s3.get_indices()[-1], s.get_indices()[x2 + -1 - 1] - s.get_indices()[x2])
-        # FIXME self.assertEqual(s4.get_indices()[-1], s.get_indices()[x3 + samples - 1] - s.get_indices()[x3])
-        # FIXME self.assertEqual(s5.get_indices()[-1], s.get_indices()[0 + samples - 1] - s.get_indices()[0])
-        # FIXME self.assertEqual(s6.get_indices()[-1], s.get_indices()[0 + x2 - 1] - s.get_indices()[0])
-        # FIXME self.assertEqual(s7.get_indices()[-1], s.get_indices()[0 + samples - 1] - s.get_indices()[0])
+        self.assertEqual(s1.get_indices()[-1], s.get_indices()[x4 - 1] - s.get_indices()[0])
+        self.assertEqual(s2.get_indices()[-1], s.get_indices()[x3 - 1] - s.get_indices()[x1])
+        self.assertEqual(s3.get_indices()[-1], s.get_indices()[-1 - 1] - s.get_indices()[x2])
+        self.assertEqual(s4.get_indices()[-1], s.get_indices()[samples - 1] - s.get_indices()[x3])
+        self.assertEqual(s5.get_indices()[-1], s.get_indices()[samples - 1] - s.get_indices()[0])
+        self.assertEqual(s6.get_indices()[-1], s.get_indices()[x2 - 1] - s.get_indices()[0])
+        self.assertEqual(s7.get_indices()[-1], s.get_indices()[samples - 1] - s.get_indices()[0])
 
     # TODO: following test should be in a pipeline test
     # noinspection PyMethodMayBeStatic

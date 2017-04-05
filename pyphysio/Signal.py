@@ -303,11 +303,17 @@ class UnevenlySignal(Signal):
     x_type : str
         Type of x values given.
         Can be 'indices' or 'instants'
+
+    duration: float,
+        Duration of the original EvenlySignal, if any. Duration is needed to have information about the duration of the
+        last sample, if None the last sample will last 1. / fsamp.
     """
 
     _MT_X_INDICES = "x_values"
+    _MT_DURATION = "duration"
 
-    def __new__(cls, values, sampling_freq=1000, signal_nature="", start_time=None, x_values=None, x_type='instants'):
+    def __new__(cls, values, sampling_freq=1000, signal_nature="", start_time=None, x_values=None, x_type='instants',
+                duration=None):
         assert x_values is not None, "x_values are missing"
         assert x_type in ['indices', 'instants'], "x_type not in ['indices', 'instants']"
         x_values = _np.asarray(x_values)
@@ -328,31 +334,45 @@ class UnevenlySignal(Signal):
             # (e.g. np.floor(0.29 * 100) == 28)
             x_values = _np.round((x_values - start_time) * sampling_freq, 10).astype(int)
 
+        # adding 1/f cause end_time is exclusive
+        min_duration = (x_values[-1] + 1.) / sampling_freq if len(x_values) > 0 else 0
+        assert duration is None or duration >= min_duration, \
+            "The specified duration is less than the one of the x_values"
+
         obj = Signal.__new__(cls, values=values,
                              sampling_freq=sampling_freq,
                              start_time=start_time,
                              signal_nature=signal_nature)
+
+        if duration is None:
+            duration = min_duration
+
         obj.ph[cls._MT_X_INDICES] = x_values
+        obj.ph[cls._MT_DURATION] = duration
         return obj
 
+    def get_duration(self):
+        return self.ph[UnevenlySignal._MT_DURATION]
+
     def get_end_time(self):
-        return self.get_time_from_iidx(-1) + 1. / self.get_sampling_freq()  # adding 1/f cause end_time is exclusive
+        return self.get_start_time() + self.get_duration()
 
     def get_times(self):
         return self.ph[self._MT_X_INDICES] / self.get_sampling_freq() + self.get_start_time()
 
-    def get_time(self, idx):
-        return idx / self.get_sampling_freq() + self.get_start_time() if idx is not None else None
-
     def get_indices(self):
         return self.ph[self._MT_X_INDICES]
+
+    def get_time(self, idx):
+        return idx / self.get_sampling_freq() + self.get_start_time() if idx is not None else None
 
     def get_time_from_iidx(self, iidx):
         if len(self) == 0:
             return self.get_start_time()
+        elif int(iidx) < len(self):
+            return self.get_indices()[int(iidx)] / self.get_sampling_freq() + self.get_start_time()
         else:
-            return self.get_indices()[int(iidx)] / self.get_sampling_freq() + self.get_start_time() \
-                if iidx < len(self) else None
+            return None
 
     def get_iidx(self, time):
         return self.get_iidx_from_idx((time - self.get_start_time()) * self.get_sampling_freq())
@@ -405,9 +425,7 @@ class UnevenlySignal(Signal):
                                sampling_freq=self.get_sampling_freq(),
                                signal_nature=self.get_signal_nature(),
                                start_time=self.get_start_time())
-                               # NOT: start_time=self.get_time_from_iidx(0))
-        
-        
+
         return sig_out
 
     def resample(self, fout, kind='linear'):
@@ -467,7 +485,8 @@ class UnevenlySignal(Signal):
                               sampling_freq=self.get_sampling_freq(),
                               signal_nature=self.get_signal_nature(),
                               start_time=self.get_time(idx_start),
-                              x_type='indices')
+                              x_type='indices',
+                              duration=(idx_stop - idx_start) / self.get_sampling_freq())
 
     def segment_iidx(self, iidx_start, iidx_stop=None):
         """
@@ -489,16 +508,20 @@ class UnevenlySignal(Signal):
             iidx_stop = len(self)
         if iidx_start is None:
             iidx_start = 0
+        if iidx_stop < len(self):
+            idx_stop = self.get_indices()[int(iidx_stop)]
+        else:
+            idx_stop = self.get_indices()[-1] + 1
 
         return UnevenlySignal(values=self.get_values()[int(iidx_start):int(iidx_stop)],
-                              x_values=self.get_indices()[int(iidx_start):int(iidx_stop)] - self.get_indices()[
-                                  int(iidx_start)],
+                              x_values=self.get_indices()[int(iidx_start):int(iidx_stop)]
+                              - self.get_indices()[int(iidx_start)],
                               sampling_freq=self.get_sampling_freq(),
                               signal_nature=self.get_signal_nature(),
                               start_time=self.get_time_from_iidx(iidx_start),
-                              x_type='indices')
+                              x_type='indices',
+                              duration=idx_stop / self.get_sampling_freq())
 
     def __repr__(self):
-        return Signal.__repr__(self)[:-1] + " time resolution:" + str(
-            1 / self.get_sampling_freq()) + "s>\n" + self.view(
-            _np.ndarray).__repr__() + " Times\n:" + self.get_times().__repr__()
+        return Signal.__repr__(self)[:-1] + " time resolution:" + str(1 / self.get_sampling_freq()) + "s>\n" + \
+               self.get_values().__repr__() + " Times\n:" + self.get_times().__repr__()
