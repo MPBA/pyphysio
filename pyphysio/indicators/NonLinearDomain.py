@@ -147,8 +147,7 @@ class NNx(_Indicator):
     }
 
 
-# TODO : hide Embed -> _Embed
-class Embed(_Indicator):
+class _Embed(_Indicator):
     @classmethod
     def algorithm(cls, signal, params):
         """
@@ -209,8 +208,8 @@ class ApproxEntropy(_Indicator):
             return _np.nan
         else:
             r = params['radius']
-            uj_m = Embed(dimension=2, delay=1)(data)
-            uj_m1 = Embed(dimension=3, delay=1)(data)
+            uj_m = _Embed(dimension=2, delay=1)(data)
+            uj_m1 = _Embed(dimension=3, delay=1)(data)
             card_elem_m = uj_m.shape[0]
             card_elem_m1 = uj_m1.shape[0]
 
@@ -261,8 +260,8 @@ class SampleEntropy(_Indicator):
             return _np.nan
         else:
             r = params['radius']
-            uj_m = Embed(dimension=2, delay=1)(data)
-            uj_m1 = Embed(dimension=3, delay=1)(data)
+            uj_m = _Embed(dimension=2, delay=1)(data)
+            uj_m1 = _Embed(dimension=3, delay=1)(data)
 
             num_elem_m = uj_m.shape[0]
             num_elem_m1 = uj_m1.shape[0]

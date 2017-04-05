@@ -1521,7 +1521,7 @@ class OptimizeBateman(_Tool):
             i_stop = _np.empty(len(i_peaks), int)
 
             if len(i_peaks) == 0:
-                # TODO Do not use print, use cls.warn or cls.err (return something that can make the Algorithm call it)
+                # TODO Andrea: Do not use print, use cls.warn or cls.error (return something that can make the Algorithm call it)
                 print('No peaks found.')
                 return driver
 
@@ -1590,7 +1590,7 @@ class OptimizeBateman(_Tool):
         driver = _DriverEstim(t1=par_bat[0], t2=par_bat[1])(signal)
 
         phasic = phasic_estim_benedek(driver, delta)
-        # TODO Do not use print, use cls.warn or cls.err (return something that can make the Algorithm call it, if not for debug)
+        # TODO Andrea: Do not use print, use cls.warn or cls.error (return something that can make the Algorithm call it, if not for debug)
 #        print(len(phasic))
 
         TH = float(_np.max(phasic) * 0.05)

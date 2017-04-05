@@ -56,7 +56,7 @@ class _SegmentsWithLabelSignal(SegmentsGenerator):
 
         # part out of range: shorter but not mixed (as half after the last label's end)
         if last_idx is None:
-            if self._params['drop_shorter']:
+            if self._params['drop_cut']:
                 return drop
             else:
                 # cut to end

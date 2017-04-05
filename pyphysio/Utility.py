@@ -120,7 +120,7 @@ class PhUI(object):
 
     @staticmethod
     def i(mex):
-        PhUI.p(mex, '', 35)
+        PhUI.p(mex, '', 32)
 
     @staticmethod
     def w(mex):
@@ -128,7 +128,7 @@ class PhUI(object):
 
     @staticmethod
     def e(mex):
-        PhUI.p(mex, 'Error: ', 34)
+        PhUI.p(mex, 'Error: ', 31)
 
     @staticmethod
     def p(mex, lev, col):

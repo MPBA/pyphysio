@@ -512,6 +512,7 @@ class UnevenlySignal(Signal):
             idx_stop = self.get_indices()[int(iidx_stop)]
         else:
             idx_stop = self.get_indices()[-1] + 1
+        idx_start = self.get_indices()[int(iidx_start)]
 
         return UnevenlySignal(values=self.get_values()[int(iidx_start):int(iidx_stop)],
                               x_values=self.get_indices()[int(iidx_start):int(iidx_stop)]
@@ -520,7 +521,7 @@ class UnevenlySignal(Signal):
                               signal_nature=self.get_signal_nature(),
                               start_time=self.get_time_from_iidx(iidx_start),
                               x_type='indices',
-                              duration=idx_stop / self.get_sampling_freq())
+                              duration=(idx_stop - idx_start) / self.get_sampling_freq())
 
     def __repr__(self):
         return Signal.__repr__(self)[:-1] + " time resolution:" + str(1 / self.get_sampling_freq()) + "s>\n" + \

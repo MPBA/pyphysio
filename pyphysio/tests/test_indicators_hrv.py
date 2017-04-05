@@ -17,24 +17,24 @@ def test_indicators():
     ibi = ph.BeatFromECG()(ecg)
     # %%
     # TEST Time domain
-    assert int(ph.Mean()(ibi) * 10000) == 8619
-    assert int(ph.StDev()(ibi) * 10000) == 602
-
-    assert int(ph.Median()(ibi) * 10000) == 8679
-    assert int(ph.Range()(ibi) * 10000) == 2548
-
-    assert int(ph.RMSSD()(ibi) * 10000) == 328
-    assert int(ph.SDSD()(ibi) * 10000) == 328
+    assert ph.Mean()(ibi) == approx(.86195, abs=.00005)
+    assert ph.StDev()(ibi) == approx(.06025, abs=.00005)
+    assert ph.Median()(ibi) == approx(.86795, abs=.00005)
+    assert ph.Range()(ibi) == approx(.25485, abs=.00005)
+    assert ph.RMSSD()(ibi) == approx(.03285, abs=.00005)
+    assert ph.SDSD()(ibi) == approx(.03285, abs=.00005)
 
     # TEST Frequency domain
-    # TODO: almost equal below
-    assert int(ph.PowerInBand(interp_freq=4, method='welch', freq_max=0.04, freq_min=0.00001)(ibi) * 10000) == 1271328
-    assert int(ph.PowerInBand(interp_freq=4, method='welch', freq_max=0.15, freq_min=0.04)(ibi) * 10000) == 2599850
-    assert int(ph.PowerInBand(method='welch', interp_freq=4, freq_max=0.4, freq_min=0.15)(ibi) * 10000) == 1201839
+    assert ph.PowerInBand(method='welch', interp_freq=4, freq_max=0.04, freq_min=0.00001)(ibi) == approx(127.1328,
+                                                                                                         abs=.00005)
+    assert ph.PowerInBand(method='welch', interp_freq=4, freq_max=0.15, freq_min=0.04)(ibi) == approx(259.98505,
+                                                                                                      abs=.00005)
+    assert ph.PowerInBand(method='welch', interp_freq=4, freq_max=0.4, freq_min=0.15)(ibi) == approx(120.18395,
+                                                                                                     abs=.00005)
 
-    assert int(ph.PNNx(threshold=10)(ibi) * 10000) == 3453
-    assert int(ph.PNNx(threshold=25)(ibi) * 10000) == 2158
-    assert int(ph.PNNx(threshold=50)(ibi) * 10000) == 431
+    assert ph.PNNx(threshold=10)(ibi) == approx(.3453, abs=.00005)
+    assert ph.PNNx(threshold=25)(ibi) == approx(.2158, abs=.00005)
+    assert ph.PNNx(threshold=50)(ibi) == approx(.04316, abs=.00005)
 
     # %%
     # Test with FAKE IBI
@@ -61,7 +61,7 @@ def test_indicators():
 
     ibi[-1] = 10.011
 
-    # TODO Andrea check the next commented failing assertions
+    # TODO Andrea: check the next commented failing assertions
     # assert ph.Mean()(ibi) != 10
     # assert ph.StDev()(ibi) != 0
 

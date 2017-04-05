@@ -64,7 +64,7 @@ def test_tools():
                                           x_type='instants')
 
     f, psd = ph.PSD(method='welch', nfft=4096, window='hanning')(sinusoid_unevenly)
-    # TODO AlmostEqual below
+
     assert (f[np.argmax(psd)] == approx(2.5, abs=0.02))
 
     # %%

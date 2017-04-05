@@ -46,13 +46,12 @@ class BeatFromBP(_Estimator):
         Bizzego et al., *DBD-RCO: Derivative Based Detection and Reverse Combinatorial Optimization 
         to improve heart beat detection for wearable devices for info about the algorithm*
     """
-    
+
     def __init__(self, bpm_max=120, win_pre=.25, win_post=.05):
-        assert bpm_max > 1 and bpm_max <= 400,"Maximum BPM value non valid"
-        assert win_pre > 0 and win_pre <= 1, "Window pre peak value should be between (0 and 1]"
-        assert win_post > 0 and win_post <= 1, "Window post peak value should be between (0 and 1]"
+        assert 1 < bpm_max <= 400, "Maximum BPM value non valid"
+        assert 0 < win_pre <= 1, "Window pre peak value should be between (0 and 1]"
+        assert 0 < win_post <= 1, "Window post peak value should be between (0 and 1]"
         _Estimator.__init__(self, bpm_max=bpm_max, win_pre=win_pre, win_post=win_post)
-        
 
     _params_descriptors = {
         'bpm_max': _Par(0, int, 'Maximal expected heart rate (in beats per minute)', 120, lambda x: 1 < x <= 400),
@@ -65,7 +64,7 @@ class BeatFromBP(_Estimator):
         return ['BVP', 'BP']
 
     @classmethod
-    def algorithm(cls, signal, params):  # FIX others TODO Andrea: ?
+    def algorithm(cls, signal, params):
         fsamp = signal.get_sampling_freq()
 
         bpm_max = params["bpm_max"]
@@ -150,13 +149,12 @@ class BeatFromECG(_Estimator):
         This algorithms looks for maxima in the signal which are followed by values lower than a delta value. 
         The adaptive version estimates the delta value adaptively.
     """
-    
+
     def __init__(self, bpm_max=120, delta=0):
-        assert bpm_max > 1 and bpm_max <= 400,"Maximum BPM value non valid"
+        assert 1 < bpm_max <= 400, "Maximum BPM value non valid"
         assert delta >= 0, "Delta value should be positive (or equal to 0 if automatically computed"
         _Estimator.__init__(self, bpm_max=bpm_max, delta=delta)
-        
-    
+
     _params_descriptors = {
         'bpm_max': _Par(0, int, 'Maximal expected heart rate (in beats per minute)', 120, lambda x: 1 < x <= 400),
         'delta': _Par(0, float, 'Threshold for the peak detection', 0, lambda x: x >= 0)
@@ -221,13 +219,12 @@ class DriverEstim(_Estimator):
     Bizzego et al. *A novel method to optimize the estimation of phasic component 
     of Electrodermal Activity signals*
     """
-    
+
     def __init__(self, t1=.75, t2=2):
         assert t1 > 0, "t1 value shoud be positive"
         assert t2 > 0, "t2 value shoud be positive"
         _Estimator.__init__(self, t1=t1, t2=t2)
-        
-        
+
     _params_descriptors = {
         't1': _Par(0, float, 't1 parameter for the Bateman function', 0.75, lambda x: x > 0),
         't2': _Par(0, float, 't2 parameter for the Bateman function', 2, lambda x: x > 0)
@@ -338,14 +335,14 @@ class PhasicEstim(_Estimator):
     of Electrodermal Activity signals*
     
     """
+
     def __init__(self, delta, grid_size=1, win_pre=2, win_post=2):
         assert delta > 0, "Delta value should be positive"
         assert grid_size > 0, "Step of the interpolation grid should be positive"
         assert win_pre > 0, "Window pre peak value should be positive"
         assert win_post > 0, "Window post peak value should be positive"
         _Estimator.__init__(self, delta=delta, grid_size=grid_size, win_pre=win_pre, win_post=win_post)
-        
-    
+
     _params_descriptors = {
         'delta': _Par(2, float, 'Minimum amplitude of the peaks in the driver', constraint=lambda x: x > 0),
         'grid_size': _Par(0, int, 'Sampling size of the interpolation grid in seconds', 1, lambda x: x > 0),
@@ -423,12 +420,12 @@ class Energy(_Estimator):
     energy : numpy.array
         Local energy
     """
+
     def __init__(self, win_len, win_step, smooth=True):
         assert win_len > 0, "Window length should be positive"
         assert win_step > 0, "Window step should be positive"
         _Estimator.__init__(self, win_len=win_len, win_step=win_step, smooth=smooth)
-        
-        
+
     _params_descriptors = {
         'win_len': _Par(2, float, 'The length of the window (seconds)', constraint=lambda x: x > 0),
         'win_step': _Par(2, float, 'The increment to start the next window (seconds)', constraint=lambda x: x > 0),

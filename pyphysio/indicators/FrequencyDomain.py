@@ -55,6 +55,7 @@ class InBand(_Indicator):
         'freq_max': _Par(2, float, 'Higher frequency of the band', 0, lambda x: x > 0)
     }
 
+
 class PowerInBand(_Indicator):
     """
     Estimate the power in given frequency band

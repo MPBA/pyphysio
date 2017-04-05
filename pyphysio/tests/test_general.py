@@ -126,19 +126,6 @@ class GeneralTest(unittest.TestCase):
 
         self.assertEqual(len(so1), 2100)
 
-    # TODO: test segment_time() and segment_idx()
-    def test_evenly_signal_segment_time(self):
-        pass
-
-    def test_unevenly_signal_segment_time(self):
-        pass
-
-    def test_evenly_signal_segment_idx(self):
-        pass
-
-    def test_unevenly_signal_segment_idx(self):
-        pass
-
     def test_evenly_signal_base(self):
         samples = 1000
         freq_down = 13
@@ -294,9 +281,8 @@ class GeneralTest(unittest.TestCase):
         def function(y):
             for j in range(len(y)):
                 self.assertLessEqual(y[j].get_begin(), y[j].get_end())
-                # TODO: 0 should be s.get_start_time() ?
-                self.assertGreaterEqual(y[j].get_begin(), 0)
-                self.assertGreaterEqual(y[j].get_end(), 0)
+                self.assertGreaterEqual(y[j].get_begin_time(), s.get_start_time())
+                self.assertGreaterEqual(y[j].get_end_time(), s.get_start_time())
                 # # list[x:y] where y > len(list) is a valid usage in python so next lines are cut
                 # self.assertLessEqual(y[j].get_begin(), len(s))
                 # self.assertLessEqual(y[j].get_end(), len(s))
@@ -475,7 +461,6 @@ class GeneralTest(unittest.TestCase):
         self.assertEqual(s6.get_indices()[-1], s.get_indices()[x2 - 1] - s.get_indices()[0])
         self.assertEqual(s7.get_indices()[-1], s.get_indices()[samples - 1] - s.get_indices()[0])
 
-    # TODO: following test should be in a pipeline test
     # noinspection PyMethodMayBeStatic
     def test_signal_plot(self):
         e = ph.EvenlySignal(values=TestData.ecg()[:10000], sampling_freq=1024, signal_nature="ecg")

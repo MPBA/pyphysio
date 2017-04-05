@@ -23,7 +23,7 @@ def test_indicators_eda():
     phasic, tonic, driver_no_peak = ph.PhasicEstim(delta=0.1)(driver)
 
     # %%
-    # TODO check value
+    # TODO Andrea: check value
     assert ph.Mean()(phasic) == approx(.0568, abs=0.00005)
 
     mx = ph.Max()(phasic)
