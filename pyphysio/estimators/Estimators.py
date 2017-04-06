@@ -137,7 +137,9 @@ class BeatFromECG(_Estimator):
     bpm_max : int, (1, 400], default=120
         Maximal expected heart rate (in beats per minute)
     delta : float, >=0, default=0
-        Threshold for the peak detection. By default it is computed from the signal (adaptive thresholding).
+        Threshold for the peak detection. By default it is computed from the signal (adaptive thresholding)
+    k : float, (0,1), default=0.7
+        Ratio at which the signal range is multiplied (when delta = 0)
 
     Returns
     -------
@@ -150,14 +152,16 @@ class BeatFromECG(_Estimator):
         The adaptive version estimates the delta value adaptively.
     """
 
-    def __init__(self, bpm_max=120, delta=0):
+    def __init__(self, bpm_max=120, delta=0, k=0.7):
         assert 1 < bpm_max <= 400, "Maximum BPM value non valid"
         assert delta >= 0, "Delta value should be positive (or equal to 0 if automatically computed"
-        _Estimator.__init__(self, bpm_max=bpm_max, delta=delta)
+        assert k>0 and k < 1, "K coefficient must be in the range (0,1)"
+        _Estimator.__init__(self, bpm_max=bpm_max, delta=delta, k=k)
 
     _params_descriptors = {
         'bpm_max': _Par(0, int, 'Maximal expected heart rate (in beats per minute)', 120, lambda x: 1 < x <= 400),
-        'delta': _Par(0, float, 'Threshold for the peak detection', 0, lambda x: x >= 0)
+        'delta': _Par(0, float, 'Threshold for the peak detection', 0, lambda x: x >= 0),
+        'k': _Par(0, float, 'Coefficient for the range-based delta', 0, lambda x: x > 0 and x < 1),
     }
 
     @classmethod
@@ -166,12 +170,12 @@ class BeatFromECG(_Estimator):
 
     @classmethod
     def algorithm(cls, signal, params):
-        bpm_max, delta = params["bpm_max"], params["delta"]
+        bpm_max, delta, k = params["bpm_max"], params["delta"], params["k"]
 
         fmax = bpm_max / 60
 
         if delta == 0:
-            delta = 0.7 * _SignalRange(win_len=2 / fmax, win_step=0.5 / fmax, smooth=False)(signal)
+            delta = k * _SignalRange(win_len=2 / fmax, win_step=0.5 / fmax, smooth=False)(signal)
         else:
             delta = _np.repeat(delta, len(signal))
 

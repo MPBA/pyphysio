@@ -18,18 +18,18 @@ def test_indicators():
     # %%
     # TEST Time domain
     assert ph.Mean()(ibi) == approx(.86195, abs=.00005)
-    assert ph.StDev()(ibi) == approx(.06025, abs=.00005)
-    assert ph.Median()(ibi) == approx(.86795, abs=.00005)
-    assert ph.Range()(ibi) == approx(.25485, abs=.00005)
-    assert ph.RMSSD()(ibi) == approx(.03285, abs=.00005)
-    assert ph.SDSD()(ibi) == approx(.03285, abs=.00005)
+    assert ph.StDev()(ibi) == approx(.06027, abs=.00005)
+    assert ph.Median()(ibi) == approx(.87133, abs=.00005)
+    assert ph.Range()(ibi) == approx(.25488, abs=.00005)
+    assert ph.RMSSD()(ibi) == approx(.03260, abs=.00005)
+    assert ph.SDSD()(ibi) == approx(.03260, abs=.00005)
 
     # TEST Frequency domain
-    assert ph.PowerInBand(method='welch', interp_freq=4, freq_max=0.04, freq_min=0.00001)(ibi) == approx(127.1328,
+    assert ph.PowerInBand(method='welch', interp_freq=4, freq_max=0.04, freq_min=0.00001)(ibi) == approx(127.1227,
                                                                                                          abs=.00005)
-    assert ph.PowerInBand(method='welch', interp_freq=4, freq_max=0.15, freq_min=0.04)(ibi) == approx(259.98505,
+    assert ph.PowerInBand(method='welch', interp_freq=4, freq_max=0.15, freq_min=0.04)(ibi) == approx(259.99196,
                                                                                                       abs=.00005)
-    assert ph.PowerInBand(method='welch', interp_freq=4, freq_max=0.4, freq_min=0.15)(ibi) == approx(120.18395,
+    assert ph.PowerInBand(method='welch', interp_freq=4, freq_max=0.4, freq_min=0.15)(ibi) == approx(120.18714,
                                                                                                      abs=.00005)
 
     assert ph.PNNx(threshold=10)(ibi) == approx(.3453, abs=.00005)

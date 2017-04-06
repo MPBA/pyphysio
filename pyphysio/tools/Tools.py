@@ -1151,8 +1151,10 @@ class OptimizeBateman(_Tool):
         [min_T1, max_T1, min_T2, max_T2] boundaries for the Bateman parameters
     maxiter : int (Default = 99999)
         Maximum number of iterations ('asa' method)
-    n_step : int
-        Number of steps in the grid search
+    n_step_1 : int
+        Number of steps in the grid search (paramter t1)
+    n_step_2 : int
+        Number of steps in the grid search (parameter t2)
     weight : str
         How the errors should be weighted before computing the loss function. ['exp', 'lin', 'none']
     min_pars : dict
@@ -1166,10 +1168,10 @@ class OptimizeBateman(_Tool):
     """
 
     def __init__(self, delta, loss_func='all', opt_method='bsh', complete=False, par_ranges=[0.1, 0.99, 1.5, 10],
-                 maxiter=99999, n_step=10, weight='none', **kwargs):
+                 maxiter=99999, n_step_1=10, n_step_2=10, weight='none', **kwargs):
         
         _Tool.__init__(self, delta=delta, loss_func=loss_func, opt_method=opt_method, complete=complete, par_ranges=par_ranges, 
-                       maxiter=maxiter, n_step=n_step, weight=weight, **kwargs)
+                       maxiter=maxiter, n_step_1=n_step_1, n_step_2=n_step_2, weight=weight, **kwargs)
 
     # TODO: fix **kwargs parameters for internal optimization
     _params_descriptors = {
@@ -1185,7 +1187,9 @@ class OptimizeBateman(_Tool):
                            default=[0.1, 0.99, 1.5, 5], constraint=lambda x: len(x) == 4),
         'maxiter': _Par(0, int, 'Maximum number of iterations ("asa" method).', default=99999,
                         constraint=lambda x: x > 0, activation=lambda x, p: p['opt_method'] == 'asa'),
-        'n_step': _Par(0, int, 'Number of steps in the grid search', default=10, constraint=lambda x: x > 0,
+        'n_step_1': _Par(0, int, 'Number of steps in the grid search', default=10, constraint=lambda x: x > 0,
+                       activation=lambda x, p: p['opt_method'] == 'grid'),
+        'n_step_2': _Par(0, int, 'Number of steps in the grid search', default=10, constraint=lambda x: x > 0,
                        activation=lambda x, p: p['opt_method'] == 'grid'),
         'weight': _Par(0, str, 'How the errors should be weighted before computing the loss function', default='none',
                        constraint=lambda x: x in ['exp', 'lin', 'none']),
@@ -1198,7 +1202,9 @@ class OptimizeBateman(_Tool):
         complete = params['complete']
         par_ranges = params['par_ranges']
         maxiter = params['maxiter']
-        n_step = params['n_step']
+        n_step_1 = params['n_step_1']
+        n_step_2 = params['n_step_2']
+        
         weight = params['weight']
         
         # TODO: add **kwargs
@@ -1218,8 +1224,8 @@ class OptimizeBateman(_Tool):
         max_T2 = float(par_ranges[3])
 
         if opt_method == 'grid':
-            step_T1 = (max_T1 - min_T1) / n_step
-            step_T2 = (max_T2 - min_T2) / n_step
+            step_T1 = (max_T1 - min_T1) / n_step_1
+            step_T2 = (max_T2 - min_T2) / n_step_2
             rranges = (slice(min_T1, max_T1 + step_T1, step_T1), slice(min_T2, max_T2 + step_T2, step_T2))
             x0, loss, grid, loss_grid = _opt.brute(loss_function, rranges,
                                                    args=(signal, delta, min_T1, max_T1, min_T2, max_T2, weight),
