@@ -931,7 +931,7 @@ class FixIBI(_Tool):
         idx_ibi = idx_ibi_nobad.astype(int)
         ibi = ibi_nobad
         return _UnevenlySignal(ibi, signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time(),
-                               x_values=idx_ibi, x_type='indices')
+                               x_values=idx_ibi, x_type='indices', duration=signal.get_duration())
 
 
 class BeatOptimizer(_Tool):
@@ -1007,7 +1007,7 @@ class BeatOptimizer(_Tool):
         ibi_reverse = _np.diff(idx_reverse)
         ibi_reverse = _np.r_[ibi_reverse[0], ibi_reverse]
 
-        ibi_reverse = _UnevenlySignal(ibi_reverse/fsamp, x_values=idx_reverse, x_type='indices')
+        ibi_reverse = _UnevenlySignal(ibi_reverse/fsamp, x_values=idx_reverse, x_type='indices', duration=signal.get_duration())
 
         id_bad_ibi_b = BeatOutliers(ibi_median=ibi_median, cache=cache, sensitivity=sensitivity)(ibi_reverse)
         
@@ -1054,7 +1054,7 @@ class BeatOptimizer(_Tool):
             # keep the 'outliers removed' version
             idx_1 = idx_1 + idx_st
             return _UnevenlySignal(ibi_1 / fsamp, sampling_freq=fsamp, signal_nature="IBI",
-                                   start_time=signal.get_start_time(), x_values=idx_1, x_type='indices')
+                                   start_time=signal.get_start_time(), x_values=idx_1, x_type='indices', duration=signal.get_duration())
 
         if len(stops) == 0:
             stops = _np.array([starts[-1] + 1])
@@ -1124,7 +1124,7 @@ class BeatOptimizer(_Tool):
         ibi_out = _np.r_[signal.get_values()[0], ibi_out / fsamp]
 
         return _UnevenlySignal(ibi_out, sampling_freq=signal.get_sampling_freq(), signal_nature="IBI",
-                               start_time=signal.get_start_time(), x_values=idx_out, x_type='indices')
+                               start_time=signal.get_start_time(), x_values=idx_out, x_type='indices', duration=signal.get_duration())
 
 
 # EDA Tools
@@ -1584,7 +1584,7 @@ class OptimizeBateman(_Tool):
                 idx_grid = _np.r_[idx_grid, len(driver) - 1]
 
             driver_grid = _UnevenlySignal(driver[idx_grid], fsamp, "dEDA", driver.get_start_time(), x_values=idx_grid,
-                                          x_type='indices')
+                                          x_type='indices', duration=signal.get_duration())
             if len(idx_grid) >= 4:
                 tonic = driver_grid.to_evenly(kind='cubic')
             else:
