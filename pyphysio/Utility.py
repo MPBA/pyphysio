@@ -116,11 +116,11 @@ class PhUI(object):
 
     @staticmethod
     def o(mex):
-        PhUI.p(mex, '', 31)
+        PhUI.p(mex, '', 37)
 
     @staticmethod
     def i(mex):
-        PhUI.p(mex, '', 32)
+        PhUI.p(mex, '', 94)
 
     @staticmethod
     def w(mex):

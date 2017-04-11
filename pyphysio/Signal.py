@@ -12,6 +12,22 @@ __author__ = 'AleB'
 
 # TODO: Consider collapsing classes
 
+def from_pickleable(pickle):
+    d, ph = pickle
+    assert isinstance(d, Signal)
+    assert isinstance(ph, dict)
+    d._pyphysio = ph
+    return d
+
+
+def load_pickle(path):
+    from gzip import open
+    from pickle import load
+    f = open(path, 'rb')
+    p = load(f)
+    f.close()
+    return from_pickleable(p)
+
 
 class Signal(_np.ndarray):
     _MT_NATURE = "signal_nature"
@@ -26,7 +42,7 @@ class Signal(_np.ndarray):
         obj = _np.asarray(values).view(cls)
         assert obj.ndim == 1, "Dimension not 1"
         if len(obj) == 0:
-            _PhUI.i("Creating empty signal")
+            _PhUI.i("Creating empty " + cls.__name__)
         obj._pyphysio = {
             cls._MT_NATURE: signal_nature,
             cls._MT_START_TIME: start_time if start_time is not None else 0,
@@ -82,7 +98,7 @@ class Signal(_np.ndarray):
         pass
 
     def get_idx(self, time):
-        return int((time - self.get_start_time()) * self.get_sampling_freq()) if time < self.get_end_time() else None
+        return int((time - self.get_start_time()) * self.get_sampling_freq())
 
     @_abstract
     def get_iidx(self, time):
@@ -121,17 +137,16 @@ class Signal(_np.ndarray):
         else:
             return _plot(self.get_times(), self.get_values(), style)
 
-    @classmethod
-    def unp(cls, pickle):
-        d, ph = pickle
-        assert isinstance(d, Signal)
-        assert isinstance(ph, dict)
-        d._pyphysio = ph
-        return d
-
     @property
-    def p(self):
+    def pickleable(self):
         return self, self.ph
+
+    def save_pickle(self, path):
+        from gzip import open
+        from pickle import dump
+        f = open(path, mode="wb")
+        dump(self.pickleable, f)
+        f.close()
 
     def __repr__(self):
         return "<signal: " + self.get_signal_nature() + ", start_time: " + str(self.get_start_time()) + ">"
@@ -179,7 +194,7 @@ class EvenlySignal(Signal):
         assert nearest_idx < len(self), "Required instant is after the end of the signal" # return self[-1]
         assert nearest_idx >= 0, "Required instant is before the start of the signal" # return self[0]
         
-        return(values[nearest_idx])
+        return values[nearest_idx]
     
     def resample(self, fout, kind='linear'):
         """
