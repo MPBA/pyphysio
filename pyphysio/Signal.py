@@ -342,7 +342,8 @@ class UnevenlySignal(Signal):
             # (e.g. np.floor(0.29 * 100) == 28)
             x_values = _np.round((x_values - start_time) * sampling_freq, 10).astype(int)
 
-        # adding 1/f cause end_time is exclusive
+        # adding 1/f cause end_time is exclusive 
+        # Doesn't work when I put the last sample of a signal (we should add 1/fsamp to Signal.get_duration() too)
         min_duration = (x_values[-1] + 1.) / sampling_freq if len(x_values) > 0 else 0
         assert duration is None or duration >= min_duration, \
             "The specified duration is less than the one of the x_values"

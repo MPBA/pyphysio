@@ -457,9 +457,9 @@ class Energy(_Estimator):
         energy[0] = energy[1]
         energy[-1] = energy[-2]
 
-        idx_interp = _np.r_[0, windows + round(idx_len / 2), len(signal)]
+        idx_interp = _np.r_[0, windows + round(idx_len / 2), len(signal)-1]
         energy_out = _UnevenlySignal(energy, signal.get_sampling_freq(), x_values=idx_interp,
-                                     x_type='indices').to_evenly('linear', duration=signal.get_duration())
+                                     x_type='indices', duration=signal.get_duration()).to_evenly('linear')
 
         if smooth:
             energy_out = _ConvolutionalFilter(irftype='gauss', win_len=2, normalize=True)(energy_out)
