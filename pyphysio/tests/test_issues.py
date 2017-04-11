@@ -77,7 +77,7 @@ class GeneralTest(unittest.TestCase):
 
         pickled = s.pickleable
 
-        s2 = ph.UnevenlySignal.from_pickleable(pickled)
+        s2 = ph.Signal.from_pickleable(pickled)
 
         self.assertEqual(s.get_sampling_freq(), s2.get_sampling_freq())
         self.assertEqual(s.get_start_time(), s2.get_start_time())
@@ -92,7 +92,7 @@ class GeneralTest(unittest.TestCase):
 
         pickled = s.pickleable
 
-        s2 = ph.EvenlySignal.from_pickleable(pickled)
+        s2 = ph.Signal.from_pickleable(pickled)
 
         self.assertEqual(s.get_sampling_freq(), s2.get_sampling_freq())
         self.assertEqual(s.get_start_time(), s2.get_start_time())

@@ -34,34 +34,34 @@ class _SegmentsWithLabelSignal(SegmentsGenerator):
     def next_times(self):
         pass
 
-    def check_drop_and_range(self, b, e):
+    def check_drop_and_range(self, s, b, e):
         drop = True, None, None
 
         # signal segment bounds
-        first_idx = self._signal.get_idx(b) if b is not None else None
-        last_idx = self._signal.get_idx(e) if e is not None else None
 
         # full under-range (empty) or full over-range (empty)
-        if (last_idx is not None and last_idx < 0) or first_idx is None:
+        if e < s.get_start_time() or b >= s.get_end_time():
             return drop
 
-        # part out of range: mixed and shorter (as partially before the first label's begin)
-        if first_idx < 0:
+        # part before start: mixed and shorter (as partially before the first label's begin)
+        if b < s.get_start_time():
             if self._params['drop_mixed'] or self._params['drop_cut']:
-                # goto next segment
+                # goto next segment (drop)
                 return drop
             else:
                 # cut to start
-                b = self._signal.get_start_time()
+                b = s.get_start_time()
 
-        # part out of range: shorter but not mixed (as half after the last label's end)
-        if last_idx is None:
+        # part after end: shorter but not mixed (as half after the last label's end)
+        if e > s.get_end_time():
             if self._params['drop_cut']:
+                # goto next segment (drop)
                 return drop
             else:
-                # cut to end
-                e = self._signal.get_end_time()
+                # cut to start
+                e = s.get_end_time()
 
+        # Don't drop, inclusive begin time, exclusive end time
         return False, b, e
 
     def next_segment_mix_labels(self):
@@ -72,7 +72,7 @@ class _SegmentsWithLabelSignal(SegmentsGenerator):
 
             b, e = self.next_times()
 
-            drop, b, e = self.check_drop_and_range(b, e)
+            drop, b, e = self.check_drop_and_range(self._signal, b, e)
 
             if drop:
                 continue
@@ -80,30 +80,33 @@ class _SegmentsWithLabelSignal(SegmentsGenerator):
             if not isinstance(self._labsig, _Signal):
                 label = None
             else:
-                # labels segment bounds, can't be None
+
+                drop, _, _ = self.check_drop_and_range(self._labsig, b, e)
+
+                if drop:
+                    # partially or completely out of labsig range and have to drop it
+                    label = None
+                    continue
+
+                # labels segment bounds, may be < 0 (None < 0)
                 first = self._labsig.get_iidx(b)
                 last = self._labsig.get_iidx(e)
 
-                # First label
+                # first label
                 label = self._labsig[first]
 
                 # Check if classically mixed
                 # compare with first each label in [b+1, e)
-                for i in range(first + 1, last):
+                for i in range(last - 1, first, -1):
                     if label != self._labsig[i]:
-                        # This is a mixed segment
-                        first = None
+                        # this is a mixed segment
+                        if self._params['drop_mixed']:
+                            # goto next segment
+                            continue
+                        else:
+                            # keep with label == None
+                            label = None
                         break  # for
-
-                if first is None:
-                    # mixed window
-                    if self._params['drop_mixed']:
-                        # goto next segment
-                        continue
-                    else:
-                        # keep with first label (i<0) == None
-                        label = None
-
             # keep
             break
 

@@ -42,7 +42,7 @@ class Signal(_np.ndarray):
         obj = _np.asarray(values).view(cls)
         assert obj.ndim == 1, "Dimension not 1"
         if len(obj) == 0:
-            _PhUI.i("Creating empty signal")
+            _PhUI.i("Creating empty " + cls.__name__)
         obj._pyphysio = {
             cls._MT_NATURE: signal_nature,
             cls._MT_START_TIME: start_time if start_time is not None else 0,
@@ -98,7 +98,7 @@ class Signal(_np.ndarray):
         pass
 
     def get_idx(self, time):
-        return int((time - self.get_start_time()) * self.get_sampling_freq()) if time < self.get_end_time() else None
+        return int((time - self.get_start_time()) * self.get_sampling_freq())
 
     @_abstract
     def get_iidx(self, time):
@@ -194,7 +194,7 @@ class EvenlySignal(Signal):
         assert nearest_idx < len(self), "Required instant is after the end of the signal" # return self[-1]
         assert nearest_idx >= 0, "Required instant is before the start of the signal" # return self[0]
         
-        return(values[nearest_idx])
+        return values[nearest_idx]
     
     def resample(self, fout, kind='linear'):
         """
