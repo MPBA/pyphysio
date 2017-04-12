@@ -193,3 +193,25 @@ class GeneralTest(unittest.TestCase):
         indicators, col_names = ph.fmap(custom_based, hrv_indicators, ibi)
 
         print(indicators[:, 0:3])
+
+    def test_issue40_10(self):
+        ecg_data = ph.TestData.ecg()
+        fsamp = 2048
+        ecg = ph.EvenlySignal(values=ecg_data, sampling_freq=fsamp, signal_nature='ecg')
+
+        # resampling : increase the sampling frequency by cubic interpolation
+        ecg = ecg.resample(fout=4096, kind='cubic')
+
+        ibi = ph.BeatFromECG()(ecg)
+
+        # create fake label
+        label = np.zeros(1200)
+        label[300:600] = 1
+        label[900:1200] = 2
+
+        label = ph.EvenlySignal(label, sampling_freq=10)
+
+        # label based windowing
+        label_based = ph.LabelSegments(labels=label)
+
+        assert len([x for x in label_based(ibi)]) == 4

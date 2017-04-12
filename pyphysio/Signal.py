@@ -179,8 +179,7 @@ class EvenlySignal(Signal):
         return self.get_time(len(self) - 1) + 1. / self.get_sampling_freq()
 
     def get_time(self, idx):
-        return idx / self.get_sampling_freq() + self.get_start_time() \
-            if idx is not None and idx < len(self) else None
+        return idx / self.get_sampling_freq() + self.get_start_time() if idx is not None else None
 
     def get_iidx(self, time):
         return self.get_idx(time)
@@ -396,7 +395,7 @@ class UnevenlySignal(Signal):
         elif int(iidx) < len(self):
             return self.get_indices()[int(iidx)] / self.get_sampling_freq() + self.get_start_time()
         else:
-            return None
+            return self.get_time_from_iidx(-1)
 
     def get_iidx(self, time):
         return self.get_iidx_from_idx((time - self.get_start_time()) * self.get_sampling_freq())

@@ -197,12 +197,12 @@ class LabelSegments(_SegmentsWithLabelSignal):
         self._labsig = self._params['labels']
 
     def next_times(self):
-        i = self._i
-        b = self._labsig.get_time_from_iidx(self._i)
-        if b is None:
+        if self._i >= len(self._labsig):
             raise StopIteration()
-        while i < len(self._labsig) and self._labsig[self._i] == self._labsig[i]:
-            i += 1
-        self._i = i
-        e = self._labsig.get_time_from_iidx(self._i)
+        end = self._i
+        while end < len(self._labsig) and self._labsig[self._i] == self._labsig[end]:
+            end += 1
+        b = self._labsig.get_time_from_iidx(self._i)
+        e = self._labsig.get_time_from_iidx(end)
+        self._i = end
         return b, e
