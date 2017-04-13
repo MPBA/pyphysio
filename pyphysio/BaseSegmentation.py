@@ -84,7 +84,7 @@ class SegmentsGenerator(_Algorithm):
     # Algorithm Override, no cache
     def __call__(self, data=None):
         assert data is not None or self._signal is not None, "No signal specified for " + self.__class__.__name__
-        return self.get(data if data is not None else self._signal, self._params, use_cache=False)
+        return self.run(data if data is not None else self._signal, self._params, use_cache=False)
 
     def __iter__(self):
         return SegmentationIterator(self)

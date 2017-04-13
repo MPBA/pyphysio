@@ -1,7 +1,7 @@
 # coding=utf-8
 from __future__ import division
 
-from numpy import nan as _nan, array as _array
+from numpy import array as _array
 
 import pyphysio.filters.Filters
 import pyphysio.segmentation.SegmentsGenerators
@@ -10,7 +10,7 @@ import pyphysio.indicators.NonLinearDomain
 import pyphysio.indicators.PeaksDescription
 import pyphysio.indicators.TimeDomain
 from pyphysio.BaseSegmentation import Segment
-from pyphysio.Signal import EvenlySignal, UnevenlySignal
+from pyphysio.Signal import EvenlySignal, UnevenlySignal, load_pickle, from_pickleable
 from pyphysio.estimators.Estimators import *
 from pyphysio.filters.Filters import *
 from pyphysio.indicators.FrequencyDomain import *
@@ -101,7 +101,7 @@ def fmap(segments, algorithms, alt_signal=None):
     :param segments: An iterable of segments (e.g. an initialized SegmentGenerator)
     :param algorithms: A list of algorithms
     :param alt_signal: The signal that will be used instead of the one referenced in the segments
-    
+
     :return: values, col_names A tuple: matrix (segment x algorithms) containing a value for each
      algorithm, the list of the algorithm names.
     """

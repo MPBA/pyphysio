@@ -1,6 +1,6 @@
 # coding=utf-8
-from pyphysio.Signal import Signal
 from abc import abstractmethod as _abstract, ABCMeta as _ABCMeta
+from pyphysio.Signal import Signal
 from pyphysio.Utility import PhUI as _PhUI
 
 __author__ = 'AleB'
@@ -37,7 +37,7 @@ class Algorithm(object):
         @return: The result.
         """
         if self._parameter_error is None:
-            return self.get(data, self._params)
+            return self.run(data, self._params)
         else:
             raise self._parameter_error
 
@@ -58,8 +58,15 @@ class Algorithm(object):
                 if not r:
                     self._parameter_error = ValueError("Error in parameters")
 
+    def get(self):
+        """
+        Placeholder for the subclasses
+        @return
+        """
+        return self._params
+
     @classmethod
-    def get(cls, data, params=None, use_cache=True, **kwargs):
+    def run(cls, data, params=None, use_cache=True, **kwargs):
         """
         Gets the data from the cache or calculates, caches and returns it.
         @param data: Source data
@@ -78,16 +85,9 @@ class Algorithm(object):
         if use_cache is True:
             Cache.cache_check(data)
             # noinspection PyTypeChecker
-            return Cache.cache_get_data(data, cls, kwargs)
+            return Cache.run_cached(data, cls, kwargs)
         else:
             return cls.algorithm(data, kwargs)
-
-    def get_params(self):
-        """
-        Placeholder for the subclasses
-        @return
-        """
-        return self._params
 
     @classmethod
     def get_params_descriptors(cls):
@@ -119,21 +119,16 @@ class Algorithm(object):
         pass
 
     @classmethod
-    def cache_hash(cls, params):
+    def cache_key(cls, params):
         """
         This method computes an hash to use as a part of the key in the cache starting from the parameters used by the
-        feature. Uses the method _utility_hash([par1,...parN])
-        This class is abstract.
+        feature.
         @return: The hash of the parameters used by the feature.
         :param params:
         """
         p = params.copy()
         p.update({'': str(cls)})
-        return cls._utility_hash(p)
-
-    @staticmethod
-    def _utility_hash(x):
-        return str(x).replace('\'', '')
+        return str(p).replace('\'', '')
 
     @classmethod
     def log(cls, message):
@@ -172,8 +167,9 @@ class Algorithm(object):
         map(lambda (f, m): f(m), log)
 
 
+# noinspection PyProtectedMember
 class Cache(object):
-    """ Class that gives a cache support."""
+    """ Class that gives cache support."""
 
     def __init__(self):
         pass
@@ -181,55 +177,54 @@ class Cache(object):
     # Field-checked methods
 
     @staticmethod
-    def cache_clear(self):
+    def cache_clear(obj):
         """
         Clears the cache and frees memory (GC?)
-        :param self:
+        :param obj:
         """
-        self._cache = {}
-        # setattr(self, "_cache", {})
+        obj._cache = {}
+        obj._mutated = False
 
     @staticmethod
-    def cache_check(self):
+    def cache_check(obj):
         """
         Checks the presence of the cache structure.
-        :param self:
+        :param obj:
         """
-        if not hasattr(self, "_cache"):
-            Cache.cache_clear(self)
+        if not hasattr(obj, "_cache") or hasattr(obj, "_mutated") and obj._mutated:
+            Cache.cache_clear(obj)
 
     # Field-unchecked methods
 
     @staticmethod
-    def cache_invalidate(self, algorithm, params):
+    def invalidate(obj, algorithm, params):
         """
         Invalidates the specified calculator's cached data if any.
         :type algorithm: Algorithm
-        :param self:
+        :param obj:
         :param params:
         """
-        hh = algorithm.cache_hash(params)
-        if hh in self._cache:
-            del self._cache[hh]
+        key = algorithm.cache_key(params)
+        if key in obj._cache:
+            del obj._cache[key]
 
     @staticmethod
-    def cache_get_data(self, calculator, params):
+    def run_cached(obj, algorithm, params):
         """
         Gets data from the cache if valid
         :param params:
-        :param self:
-        :type calculator: Algorithm
+        :param obj:
+        :type algorithm: Algorithm
         :return: The data or None
         """
-        hh = calculator.cache_hash(params)
+        key = algorithm.cache_key(params)
 
-        if hh not in self._cache:
-            calculator.set_logger()
-            val = calculator.algorithm(self, params)
-            log = calculator.unset_logger()
-            self._cache[hh] = (val, log)
+        if key not in obj._cache:
+            algorithm.set_logger()
+            val = algorithm.algorithm(obj, params)
+            log = algorithm.unset_logger()
+            obj._cache[key] = (val, log)
         else:
-            val, log = self._cache[hh]
-            calculator.emulate_log(log)
+            val, log = obj._cache[key]
+            algorithm.emulate_log(log)
         return val
-

@@ -1,12 +1,9 @@
 # coding=utf-8
-from ..Utility import PhUI as _PhUI
+from ..Utility import PhUI as _PhUI, abstractmethod as _abstract
 from ..BaseSegmentation import SegmentsGenerator, Segment
 from ..Signal import Signal as _Signal
-from pyphysio.Utility import abstractmethod as _abstract
 
 __author__ = 'AleB'
-
-# WAS: class LengthSegments(SegmentsGenerator):
 
 
 class _SegmentsWithLabelSignal(SegmentsGenerator):
@@ -174,9 +171,6 @@ class CustomSegments(_SegmentsWithLabelSignal):
             return self._b[self._i], self._e[self._i]
         else:
             raise StopIteration()
-
-
-# WAS: class ExistingSegments(SegmentsGenerator):
 
 
 class LabelSegments(_SegmentsWithLabelSignal):

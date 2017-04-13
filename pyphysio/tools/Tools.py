@@ -1,16 +1,13 @@
 # coding=utf-8
 from __future__ import division
 import numpy as _np
-import sys as _sys
 from scipy.signal import welch as _welch
 import scipy.optimize as _opt
 from spectrum import aryule as _aryule, arma2psd as _arma2psd, AIC as _AIC
 import itertools as _itertools
 from ..BaseTool import Tool as _Tool
-
 from ..Signal import UnevenlySignal as _UnevenlySignal, EvenlySignal as _EvenlySignal
 from ..filters.Filters import Diff as _Diff, ConvolutionalFilter as _ConvFlt
-from ..Utility import PhUI as _PhUI
 from ..Parameters import Parameter as _Par
 
 
