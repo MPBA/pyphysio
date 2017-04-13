@@ -24,100 +24,72 @@ from pyphysio.tools.Tools import *
 __author__ = "AleB"
 
 
-def compute_hrv(ibi):
-    labels = ['VLF', 'LF', 'HF', 'rmssd', 'sdsd', 'RRmean', 'RRstd', 'RRmedian', 'pnn10', 'pnn25',
-              'pnn50', 'mn', 'mx', 'sd1', 'sd2', 'sd12', 'sdell', 'DFA1', 'DFA2']
+def preset_hrv(prefix="IBI_"):
+    VLF = PowerInBand(interp_freq=4, freq_max=0.04, freq_min=0.00001, method='ar', name="VLF_Pow")
+    LF = PowerInBand(interp_freq=4, freq_max=0.15, freq_min=0.04, method='ar', name="LF_Pow")
+    HF = PowerInBand(interp_freq=4, freq_max=0.4, freq_min=0.15, method='ar', name="HF_Pow")
+    Total = PowerInBand(interp_freq=4, freq_max=2, freq_min=0.00001, method='ar', name="Total_Pow")
+    rmssd = RMSSD(name="RMSSD")
+    sdsd = SDSD(name="SDSD")
+    RRmean = Mean(name="Mean")
+    RRstd = StDev(name="RRstd")
+    RRmedian = Median(name="Median")
+    pnn10 = PNNx(threshold=10, name="pnn10")
+    pnn25 = PNNx(threshold=25, name="pnn25")
+    pnn50 = PNNx(threshold=50, name="pnn50")
+    mn = Min(name="Min")
+    mx = Max(name="Max")
+    sd1 = PoincareSD1(name="sd1")
+    sd2 = PoincareSD2(name="sd2")
+    sd12 = PoincareSD1SD2(name="sd12")
+    sdell = PoinEll(name="sdell")
+    DFA1 = DFAShortTerm(name="DFA1")
+    DFA2 = DFALongTerm(name="DFA2")
 
-    hrv = []
+    t = [VLF, LF, HF, Total, rmssd, sdsd, RRmean, RRstd, RRmedian, pnn10, pnn25, pnn50, mn, mx, sd1, sd2, sd12,
+         sdell, DFA1, DFA2]
 
-    if len(ibi) >= 10:  # require at least 10 beats
-        # initialize Frequency domain indicators
-        VLF = PowerInBand(interp_freq=4, freq_max=0.04, freq_min=0.00001, method='ar')
-        LF = PowerInBand(interp_freq=4, freq_max=0.15, freq_min=0.04, method='ar')
-        HF = PowerInBand(interp_freq=4, freq_max=0.4, freq_min=0.15, method='ar')
-        Total = PowerInBand(interp_freq=4, freq_max=2, freq_min=0.00001, method='ar')
+    if prefix is not None:
+        for i in t:
+            i.set(name=prefix + i.get_params()["name"])
 
-        FD_indexes = [VLF, LF, HF, Total]
-
-        # compute Frequency domain indicators and normalize
-        tmp = []
-        for x in FD_indexes:
-            curr_idx = x(ibi)
-            tmp.append(curr_idx)
-        for i in range(3):
-            hrv.append(tmp[i] / tmp[3])
-    else:
-        for i in range(4):
-            hrv.append(_nan)
-
-    # initialize Time domain + non-linear indicators
-    rmssd = RMSSD()
-    sdsd = SDSD()
-    RRmean = Mean()
-    RRstd = StDev()
-    RRmedian = Median()
-
-    pnn10 = PNNx(threshold=10)
-    pnn25 = PNNx(threshold=25)
-    pnn50 = PNNx(threshold=50)
-
-    mn = Min()
-    mx = Max()
-
-    sd1 = PoincareSD1()
-    sd2 = PoincareSD2()
-    sd12 = PoincareSD1SD2()
-    sdell = PoinEll()
-
-    DFA1 = DFAShortTerm()
-    DFA2 = DFALongTerm()
-
-    #        triang = Triang()
-    #        TINN = TINN()
-
-    TD_indexes = [rmssd, sdsd, RRmean, RRstd, RRmedian, pnn10, pnn25, pnn50, mn, mx, sd1, sd2, sd12, sdell, DFA1, DFA2]
-    # compute Time domain + non-linear indicators
-    for x in TD_indexes:
-        curr_idx = x(ibi)
-        hrv.append(curr_idx)
-    return hrv, labels
+    return t
 
 
-def compute_pha_ton_indicators(phasic, driver, delta):
+def preset_phasic(delta, prefix="pha_"):
     mean = Mean()
     std = StDev()
     rng = Range()
-
     pks_max = PeaksMax(delta=delta)
     pks_min = PeaksMin(delta=delta)
     pks_mean = PeaksMean(delta=delta)
     n_peaks = PeaksNum(delta=delta)
-
     dur_mean = DurationMean(delta=0.1, pre_max=2, post_max=2)
-
     slopes_mean = SlopeMean(delta=0.1, pre_max=2, post_max=2)
-
     auc = AUC()
 
-    phasic_indexes = [mean, std, rng, pks_max, pks_min, pks_mean, n_peaks, dur_mean, slopes_mean, auc]
-    tonic_indexes = [mean, std, rng, auc]
+    t = [mean, std, rng, pks_max, pks_min, pks_mean, n_peaks, dur_mean, slopes_mean, auc]
 
-    labels = ['pha_mean', 'pha_std', 'pha_rng', 'pks_max', 'pks_min', 'pks_mean', 'n_peaks', 'dur_mean', 'slopes_mean',
-              'pha_auc', 'ton_mean', 'ton_std', 'ton_rng', 'ton_auc']
+    if prefix is not None:
+        for i in t:
+            i.set(name=prefix + i.__class__.__name__)
 
-    indicators = []
+    return t
 
-    for x in phasic_indexes:
-        curr_ind = x(phasic)
-        indicators.append(curr_ind)
 
-    tonic = driver - phasic
+def preset_tonic(prefix="ton_"):
+    mean = Mean()
+    std = StDev()
+    rng = Range()
+    auc = AUC()
 
-    for x in tonic_indexes:
-        curr_ind = x(tonic)
-        indicators.append(curr_ind)
+    t = [mean, std, rng, auc]
 
-    return indicators, labels
+    if prefix is not None:
+        for i in t:
+            i.set(name=prefix + i.__class__.__name__)
+
+    return t
 
 
 def fmap(segments, algorithms, alt_signal=None):
