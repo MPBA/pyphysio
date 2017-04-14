@@ -24,11 +24,21 @@ from pyphysio.tools.Tools import *
 __author__ = "AleB"
 
 
-def preset_hrv(prefix="IBI_"):
+def preset_fd_hrv(prefix="IBI_"):
     VLF = PowerInBand(interp_freq=4, freq_max=0.04, freq_min=0.00001, method='ar', name="VLF_Pow")
     LF = PowerInBand(interp_freq=4, freq_max=0.15, freq_min=0.04, method='ar', name="LF_Pow")
     HF = PowerInBand(interp_freq=4, freq_max=0.4, freq_min=0.15, method='ar', name="HF_Pow")
     Total = PowerInBand(interp_freq=4, freq_max=2, freq_min=0.00001, method='ar', name="Total_Pow")
+    
+    t = [VLF, LF, HF, Total]
+
+    if prefix is not None:
+        for i in t:
+            i.set(name=prefix + i.get_params()["name"])
+
+    return t
+
+def preset_td_hrv(prefix="IBI_"):
     rmssd = RMSSD(name="RMSSD")
     sdsd = SDSD(name="SDSD")
     RRmean = Mean(name="Mean")
@@ -46,7 +56,7 @@ def preset_hrv(prefix="IBI_"):
     DFA1 = DFAShortTerm(name="DFA1")
     DFA2 = DFALongTerm(name="DFA2")
 
-    t = [VLF, LF, HF, Total, rmssd, sdsd, RRmean, RRstd, RRmedian, pnn10, pnn25, pnn50, mn, mx, sd1, sd2, sd12,
+    t = [rmssd, sdsd, RRmean, RRstd, RRmedian, pnn10, pnn25, pnn50, mn, mx, sd1, sd2, sd12,
          sdell, DFA1, DFA2]
 
     if prefix is not None:
@@ -54,7 +64,6 @@ def preset_hrv(prefix="IBI_"):
             i.set(name=prefix + i.get_params()["name"])
 
     return t
-
 
 def preset_phasic(delta, prefix="pha_"):
     mean = Mean()
