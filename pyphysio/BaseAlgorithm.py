@@ -59,7 +59,7 @@ class Algorithm(object):
                     self._parameter_error = ValueError("Error in parameters")
 
     @classmethod
-    def get(cls, data, params=None, use_cache=True, **kwargs):
+    def get(cls, data, params=None, use_cache=False, **kwargs):
         """
         Gets the data from the cache or calculates, caches and returns it.
         @param data: Source data
