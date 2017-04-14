@@ -89,6 +89,13 @@ class Algorithm(object):
         else:
             return cls.algorithm(data, kwargs)
 
+    def get_params(self):
+        """
+        Placeholder for the subclasses
+        @return
+        """
+        return self._params
+    
     @classmethod
     def get_params_descriptors(cls):
         """
