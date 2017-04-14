@@ -387,16 +387,10 @@ class PSD(_Tool):
         elif method == 'ar':
             min_order = params['min_order']
             max_order = params['max_order']
-
-            if len(signal) >= max_order:
+            
+            if len(signal) <= max_order:
                 cls.warn("Input signal too short: try another 'method' or a longer signal")
                 return [], []
-
-            # FIXME: min_order is None by default and not 18 as requested            
-            # WORKAROUND for min_order = None by default
-            if min_order is None:
-                min_order = 18
-            # END WORKAROUND
 
             orders = range(min_order, max_order + 1)
             aics = []
