@@ -47,7 +47,7 @@ class Signal(_np.ndarray):
             cls._MT_START_TIME: start_time if start_time is not None else 0,
             cls._MT_SAMPLING_FREQ: sampling_freq,
         }
-        obj._mutated = False
+        setattr(obj, "_mutated", False)
         return obj
 
     def __array_finalize__(self, obj):
@@ -79,21 +79,21 @@ class Signal(_np.ndarray):
         return self.ph[self._MT_NATURE]
 
     def set_signal_nature(self, value):
-        self._mutated = True
+        setattr(self, "_mutated", True)
         self.ph[self._MT_NATURE] = value
 
     def get_sampling_freq(self):
         return self.ph[self._MT_SAMPLING_FREQ]
 
     def set_sampling_freq(self, value):
-        self._mutated = True
+        setattr(self, "_mutated", True)
         self.ph[self._MT_SAMPLING_FREQ] = value
 
     def get_start_time(self):
         return self.ph[self._MT_START_TIME]
 
     def set_start_time(self, value):
-        self._mutated = True
+        setattr(self, "_mutated", True)
         self.ph[self._MT_START_TIME] = value
 
     @_abstract
