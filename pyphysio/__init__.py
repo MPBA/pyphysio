@@ -24,7 +24,7 @@ from pyphysio.tools.Tools import *
 __author__ = "AleB"
 
 
-def preset_fd_hrv(prefix="IBI_"):
+def preset_hrv_fd(prefix="IBI_"):
     VLF = PowerInBand(interp_freq=4, freq_max=0.04, freq_min=0.00001, method='ar', name="VLF_Pow")
     LF = PowerInBand(interp_freq=4, freq_max=0.15, freq_min=0.04, method='ar', name="LF_Pow")
     HF = PowerInBand(interp_freq=4, freq_max=0.4, freq_min=0.15, method='ar', name="HF_Pow")
@@ -38,7 +38,8 @@ def preset_fd_hrv(prefix="IBI_"):
 
     return t
 
-def preset_td_hrv(prefix="IBI_"):
+
+def preset_hrv_td(prefix="IBI_"):
     rmssd = RMSSD(name="RMSSD")
     sdsd = SDSD(name="SDSD")
     RRmean = Mean(name="Mean")
@@ -64,6 +65,7 @@ def preset_td_hrv(prefix="IBI_"):
             i.set(name=prefix + i.get_params()["name"])
 
     return t
+
 
 def preset_phasic(delta, prefix="pha_"):
     mean = Mean()
