@@ -443,6 +443,7 @@ class UnevenlySignal(Signal):
         else:
             tck = _interp.interp1d(data_x, data_y, kind=kind)
 
+        # Exclusive end, same x_value
         x_out = _np.arange(data_x[0], data_x[-1] + 1)
         sig_out = tck(x_out)
 
@@ -450,7 +451,7 @@ class UnevenlySignal(Signal):
         sig_out = EvenlySignal(values=sig_out,
                                sampling_freq=self.get_sampling_freq(),
                                signal_nature=self.get_signal_nature(),
-                               start_time=self.get_start_time())
+                               start_time=self.get_time_from_iidx(0))
 
         return sig_out
 

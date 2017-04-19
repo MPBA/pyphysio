@@ -57,9 +57,16 @@ class GeneralTest(unittest.TestCase):
                                             x_type='instants')
 
         one = signal_unevenly.get_times()[0]  # = 1 <=OK
-
         signal_evenly = signal_unevenly.to_evenly()
+        zero = signal_evenly.get_times()[0]  # = 0 <= KO
 
+        self.assertEqual(one, 1)
+        self.assertEqual(zero, 1)
+
+        signal_unevenly.set_start_time(0)
+
+        one = signal_unevenly.get_times()[0]  # = 1 <=OK
+        signal_evenly = signal_unevenly.to_evenly()
         zero = signal_evenly.get_times()[0]  # = 0 <= KO
 
         self.assertEqual(one, 1)
@@ -99,7 +106,8 @@ class GeneralTest(unittest.TestCase):
         self.assertEqual(s.get_end_time(), s2.get_end_time())
         self.assertEqual(str(s), str(s2))
 
-    def test_issue39(self):
+    @staticmethod
+    def test_issue39():
         ecg = ph.EvenlySignal(ph.TestData.ecg(), sampling_freq=1024)
         algos = [
             ph.PNNx(name="PNN50", threshold=50),
@@ -140,7 +148,8 @@ class GeneralTest(unittest.TestCase):
 
         result, col_names = ph.fmap(label_based(ibi), algos)
 
-    def test_issue40(self):
+    @staticmethod
+    def test_issue40():
         # import data and creating a signal
 
         ecg_data = ph.TestData.ecg()
@@ -194,7 +203,8 @@ class GeneralTest(unittest.TestCase):
 
         print(indicators[:, 0:3])
 
-    def test_issue40_10(self):
+    @staticmethod
+    def test_issue40_10():
         ecg_data = ph.TestData.ecg()
         fsamp = 2048
         ecg = ph.EvenlySignal(values=ecg_data, sampling_freq=fsamp, signal_nature='ecg')
