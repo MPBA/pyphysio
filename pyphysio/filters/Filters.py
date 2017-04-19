@@ -11,10 +11,6 @@ from ..Utility import abstractmethod as _abstract
 
 __author__ = 'AleB'
 
-"""
-Filters are processing steps that take as input a SIGNAL and gives as output another SIGNAL of the SAME NATURE.
-"""
-
 
 class Normalize(_Filter):
     """
@@ -30,9 +26,9 @@ class Normalize(_Filter):
     * 'maxmin' - maxmin normalization [ BIAS = min(signal); RANGE = ( max(signal) - min(signal ) ]
     * 'custom' - custom, bias and range are manually defined [ BIAS = bias, RANGE = range ]
     
-    bias : float, default = 0
+    norm_bias : float, default = 0
         Bias for custom normalization
-    range : float, !=0, default = 1
+    norm_range : float, !=0, default = 1
         Range for custom normalization
 
     Returns
@@ -43,8 +39,10 @@ class Normalize(_Filter):
     """
 
     def __init__(self, norm_method='standard', norm_bias=0, norm_range=1):
-        assert norm_range != 0, "Normalization range should be different from 0"
-
+        assert norm_method in ['mean', 'standard', 'min', 'maxmin', 'custom'],\
+            "norm_method must be one of 'mean', 'standard', 'min', 'maxmin', 'custom'"
+        if norm_method == "custom":
+            assert norm_range != 0, "norm_range must not be zero"
         _Filter.__init__(self, norm_method=norm_method, norm_bias=norm_bias, norm_range=norm_range)
 
     _params_descriptors = {
@@ -56,27 +54,20 @@ class Normalize(_Filter):
                            activation=lambda x, p: p['norm_method'] == 'custom')
     }
 
-    class Types(object):
-        Mean = 'mean'
-        MeanSd = 'standard'
-        Min = 'min'
-        MaxMin = 'maxmin'
-        Custom = 'custom'
-
     @classmethod
     def algorithm(cls, signal, params):
         from ..indicators.TimeDomain import Mean as _Mean, StDev as _StDev
 
         method = params['norm_method']
-        if method == Normalize.Types.Mean:
+        if method == "mean":
             return signal - _Mean()(signal)
-        elif method == Normalize.Types.MeanSd:
+        elif method == "standard":
             return (signal - _Mean()(signal)) / _StDev()(signal)
-        elif method == Normalize.Types.Min:
+        elif method == "min":
             return signal - _np.min(signal)
-        elif method == Normalize.Types.MaxMin:
+        elif method == "maxmin":
             return (signal - _np.min(signal)) / (_np.max(signal) - _np.min(signal))
-        elif method == Normalize.Types.Custom:
+        elif method == "custom":
             return (signal - params['norm_bias']) / params['norm_range']
 
 

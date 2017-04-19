@@ -39,7 +39,10 @@ class InBand(_Indicator):
     psd : float
         Power Spectrum Density in the frequency band
     """
-    
+
+    def __init__(self, freq_min, freq_max, method, freq=None, psd=None, **kwargs):
+        _Indicator.__init__(self, freq_min=freq_min, freq_max=freq_max, method=method, freq=freq, psd=psd, **kwargs)
+
     @classmethod
     def algorithm(cls, data, params):
         freq, spec = PSD(**params)(data)
@@ -82,7 +85,10 @@ class PowerInBand(_Indicator):
     power : float
         Power in the frequency band
     """
-    
+
+    def __init__(self, freq_min, freq_max, method, interp_freq=None, **kwargs):
+        _Indicator.__init__(self, freq_min=freq_min, freq_max=freq_max, method=method, interp_freq=interp_freq, **kwargs)
+
     @classmethod
     def algorithm(cls, data, params):
         freq, powers = InBand(**params)(data)
@@ -111,14 +117,15 @@ class PeakInBand(_Indicator):
         
     interp_freq : float, >0
         Frequency used to (re-)interpolate the signal
-    method : 'ar', 'welch' or 'fft'
-        Method to estimate the PSD
 
     Returns
     -------
     peak : float
         Peak frequency
     """
+
+    def __init__(self, freq_min, freq_max, method, interp_freq=None, **kwargs):
+        _Indicator.__init__(self, freq_min=freq_min, freq_max=freq_max, method=method, interp_freq=interp_freq, **kwargs)
     
     @classmethod
     def algorithm(cls, data, params):

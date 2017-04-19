@@ -7,14 +7,13 @@ from ..filters.Filters import IIRFilter as _IIRFilter, Diff as _Diff, DeConvolut
     ConvolutionalFilter as _ConvolutionalFilter
 from ..tools.Tools import SignalRange as _SignalRange, PeakDetection as _PeakDetection, Minima as _Minima, \
     PeakSelection as _PeakSelection
-from ..Parameters import Parameter as _Par
 
 __author__ = 'AleB'
 
 
 # IBI ESTIMATION
 class BeatFromBP(_Estimator):
-    # TODO: insert reference
+    # TODO (Andrea): insert reference
     """
     Identify the beats in a Blood Pulse (BP) signal and compute the IBIs.
     Optimized to identify the percussion peak.
@@ -52,16 +51,6 @@ class BeatFromBP(_Estimator):
         assert 0 < win_pre <= 1, "Window pre peak value should be between (0 and 1]"
         assert 0 < win_post <= 1, "Window post peak value should be between (0 and 1]"
         _Estimator.__init__(self, bpm_max=bpm_max, win_pre=win_pre, win_post=win_post)
-
-    _params_descriptors = {
-        'bpm_max': _Par(0, int, 'Maximal expected heart rate (in beats per minute)', 120, lambda x: 1 < x <= 400),
-        'win_pre': _Par(0, float, 'Portion to consider before the candidate beat position', 0.25, lambda x: 0 < x <= 1),
-        'win_post': _Par(0, float, 'Portion to consider after the candidate beat position', 0.05, lambda x: 0 < x <= 1)
-    }
-
-    @classmethod
-    def get_signal_type(cls):
-        return ['BVP', 'BP']
 
     @classmethod
     def algorithm(cls, signal, params):
@@ -155,18 +144,8 @@ class BeatFromECG(_Estimator):
     def __init__(self, bpm_max=120, delta=0, k=0.7):
         assert 1 < bpm_max <= 400, "Maximum BPM value non valid"
         assert delta >= 0, "Delta value should be positive (or equal to 0 if automatically computed"
-        assert k>0 and k < 1, "K coefficient must be in the range (0,1)"
+        assert 0 < k < 1, "K coefficient must be in the range (0,1)"
         _Estimator.__init__(self, bpm_max=bpm_max, delta=delta, k=k)
-
-    _params_descriptors = {
-        'bpm_max': _Par(0, int, 'Maximal expected heart rate (in beats per minute)', 120, lambda x: 1 < x <= 400),
-        'delta': _Par(0, float, 'Threshold for the peak detection', 0, lambda x: x >= 0),
-        'k': _Par(0, float, 'Coefficient for the range-based delta', 0, lambda x: x > 0 and x < 1),
-    }
-
-    @classmethod
-    def get_signal_type(cls):
-        return ['ECG']
 
     @classmethod
     def algorithm(cls, signal, params):
@@ -229,15 +208,6 @@ class DriverEstim(_Estimator):
         assert t1 > 0, "t1 value shoud be positive"
         assert t2 > 0, "t2 value shoud be positive"
         _Estimator.__init__(self, t1=t1, t2=t2)
-
-    _params_descriptors = {
-        't1': _Par(0, float, 't1 parameter for the Bateman function', 0.75, lambda x: x > 0),
-        't2': _Par(0, float, 't2 parameter for the Bateman function', 2, lambda x: x > 0)
-    }
-
-    @classmethod
-    def get_signal_type(cls):
-        return ['EDA']
 
     @classmethod
     def algorithm(cls, signal, params):
@@ -348,21 +318,6 @@ class PhasicEstim(_Estimator):
         assert win_post > 0, "Window post peak value should be positive"
         _Estimator.__init__(self, delta=delta, grid_size=grid_size, win_pre=win_pre, win_post=win_post)
 
-    _params_descriptors = {
-        'delta': _Par(2, float, 'Minimum amplitude of the peaks in the driver', constraint=lambda x: x > 0),
-        'grid_size': _Par(0, int, 'Sampling size of the interpolation grid in seconds', 1, lambda x: x > 0),
-        'win_pre': _Par(0, float, 'Duration (in seconds) of interval before the peak that is considered to find the'
-                                  ' start of the peak',
-                        2, lambda x: x > 0),
-        'win_post': _Par(0, float, 'Duration (in seconds) of interval after the peak that is considered to find the'
-                                   ' start of the peak',
-                         2, lambda x: x > 0)
-    }
-
-    @classmethod
-    def get_signal_type(cls):
-        return ['dEDA']
-
     @classmethod
     def algorithm(cls, signal, params):
         delta = params["delta"]
@@ -430,12 +385,6 @@ class Energy(_Estimator):
         assert win_len > 0, "Window length should be positive"
         assert win_step > 0, "Window step should be positive"
         _Estimator.__init__(self, win_len=win_len, win_step=win_step, smooth=smooth)
-
-    _params_descriptors = {
-        'win_len': _Par(2, float, 'The length of the window (seconds)', constraint=lambda x: x > 0),
-        'win_step': _Par(2, float, 'The increment to start the next window (seconds)', constraint=lambda x: x > 0),
-        'smooth': _Par(0, bool, 'Whether to convolve the result with a gaussian window', True)
-    }
 
     @classmethod
     def algorithm(cls, signal, params):  # TESTME

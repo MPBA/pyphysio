@@ -5,8 +5,8 @@ from ..BaseIndicator import Indicator as _Indicator
 from ..filters.Filters import Diff as _Diff
 from ..indicators.TimeDomain import Mean as _Mean, StDev as _StDev
 from scipy.spatial.distance import cdist as _cd
-import numpy as _np
 from ..Parameters import Parameter as _Par
+import numpy as _np
 
 __author__ = 'AleB'
 
@@ -22,7 +22,10 @@ class PoincareSD1(_Indicator):
         SD1 of Poincare' plot
     
     """
-    
+
+    def __init__(self, **kwargs):
+        _Indicator.__init__(self, **kwargs)
+
     @classmethod
     def algorithm(cls, data, params):
         """
@@ -45,6 +48,9 @@ class PoincareSD2(_Indicator):
         SD2 of Poincare' plot
     
     """
+
+    def __init__(self, **kwargs):
+        _Indicator.__init__(self, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -69,6 +75,9 @@ class PoincareSD1SD2(_Indicator):
     
     """
 
+    def __init__(self, **kwargs):
+        _Indicator.__init__(self, **kwargs)
+
     @classmethod
     def algorithm(cls, data, params):
         """
@@ -92,6 +101,8 @@ class PoinEll(_Indicator):
     
     """
 
+    def __init__(self, **kwargs):
+        _Indicator.__init__(self, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -112,9 +123,12 @@ class PNNx(_Indicator):
         
     Returns
     -------
-    pnnx : float
+    PNNx : float
         Relative frequency
     """
+
+    def __init__(self, threshold, **kwargs):
+        _Indicator.__init__(self, threshold=threshold, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -136,6 +150,9 @@ class NNx(_Indicator):
         Threshold on the values of the differences
     """
 
+    def __init__(self, threshold, **kwargs):
+        _Indicator.__init__(self, threshold=threshold, **kwargs)
+
     @classmethod
     def algorithm(cls, signal, params):
         th = params['threshold']
@@ -148,6 +165,9 @@ class NNx(_Indicator):
 
 
 class _Embed(_Indicator):
+    def __init__(self, dimension, **kwargs):
+        _Indicator.__init__(self, dimension=dimension, **kwargs)
+
     @classmethod
     def algorithm(cls, signal, params):
         """
@@ -167,9 +187,9 @@ class _Embed(_Indicator):
         else:
             return []
 
+    # TODO (Andrea): remove if not used
     @staticmethod
-    def build_takens_vector(data, m, tau):
-
+    def build_tokens_vector(data, m, tau):
         N = len(data)
         jump = tau
         maxjump = (m - 1) * jump
@@ -191,9 +211,9 @@ class ApproxEntropy(_Indicator):
     """
     Calculates Approximate Entropy
         
-    Parameters
+    Optional Parameters
     ----------
-    radius : float, >0
+    radius : float, >0, default=0.5
         Radius to threshold the distance between the embedded vectors
         
     Returns
@@ -201,6 +221,9 @@ class ApproxEntropy(_Indicator):
     apen : float
         Approximate Entropy
     """
+
+    def __init__(self, radius=.5, **kwargs):
+        _Indicator.__init__(self, radius=radius, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -243,9 +266,9 @@ class SampleEntropy(_Indicator):
     """
     Calculates Sample Entropy
         
-    Parameters
+    Optional Parameters
     ----------
-    radius : float, >0
+    radius : float, >0, default=0.5
         Radius to threshold the distance between the embedded vectors
         
     Returns
@@ -253,6 +276,9 @@ class SampleEntropy(_Indicator):
     sampen : float
         Sample Entropy
     """
+
+    def __init__(self, radius=.5, **kwargs):
+        _Indicator.__init__(self, radius=radius, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -303,6 +329,9 @@ class DFAShortTerm(_Indicator):
         Short term component index of the De-trended Fluctuation Analysis
     """
 
+    def __init__(self, **kwargs):
+        _Indicator.__init__(self, **kwargs)
+
     @classmethod
     def algorithm(cls, data, params):
 
@@ -339,6 +368,9 @@ class DFALongTerm(_Indicator):
     alpha2 : float
         Long term component index of the De-trended Fluctuation Analysis
     """
+
+    def __init__(self, **kwargs):
+        _Indicator.__init__(self, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):

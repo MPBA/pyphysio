@@ -12,6 +12,7 @@ from ..tools.Tools import Histogram
 __author__ = 'AleB'
 
 
+# TODO (Andrea): remove if not necessary
 # class HistogramMax(_Indicator):
 #     @classmethod
 #     def algorithm(cls, signal, params):

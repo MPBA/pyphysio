@@ -79,6 +79,8 @@ class PeaksMin(_Peaks):
     
     """
 
+    def __init__(self, delta, **kwargs):
+        _Peaks.__init__(self, delta=delta, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -109,6 +111,9 @@ class PeaksMean(_Peaks):
     
     """
 
+    def __init__(self, delta, **kwargs):
+        _Peaks.__init__(self, delta=delta, **kwargs)
+
     @classmethod
     def algorithm(cls, data, params):
         delta = params['delta']
@@ -137,6 +142,9 @@ class PeaksNum(_Peaks):
         Number of detected peaks
     
     """
+
+    def __init__(self, delta, **kwargs):
+        _Peaks.__init__(self, delta=delta, **kwargs)
 
     @classmethod
     def algorithm(cls, signal, params):
@@ -198,6 +206,9 @@ class DurationMin(_PeaksInterval):
     
     """
 
+    def __init__(self, delta, win_pre, win_post, **kwargs):
+        _PeaksInterval.__init__(self, delta=delta, win_pre=win_pre, win_post=win_post, **kwargs)
+
     @classmethod
     def algorithm(cls, signal, params):
         delta = params['delta']
@@ -238,6 +249,9 @@ class DurationMax(_PeaksInterval):
         Maximum duration of detected peaks
     
     """
+
+    def __init__(self, delta, win_pre, win_post, **kwargs):
+        _PeaksInterval.__init__(self, delta=delta, win_pre=win_pre, win_post=win_post, **kwargs)
 
     @classmethod
     def algorithm(cls, signal, params):
@@ -281,6 +295,9 @@ class DurationMean(_PeaksInterval):
     
     """
 
+    def __init__(self, delta, win_pre, win_post, **kwargs):
+        _PeaksInterval.__init__(self, delta=delta, win_pre=win_pre, win_post=win_post, **kwargs)
+
     @classmethod
     def algorithm(cls, signal, params):
         delta = params['delta']
@@ -323,6 +340,9 @@ class SlopeMin(_PeaksInterval):
     
     """
 
+    def __init__(self, delta, win_pre, win_post, **kwargs):
+        _PeaksInterval.__init__(self, delta=delta, win_pre=win_pre, win_post=win_post, **kwargs)
+
     @classmethod
     def algorithm(cls, signal, params):
         delta = params['delta']
@@ -364,6 +384,9 @@ class SlopeMax(_PeaksInterval):
     
     """
 
+    def __init__(self, delta, win_pre, win_post, **kwargs):
+        _PeaksInterval.__init__(self, delta=delta, win_pre=win_pre, win_post=win_post, **kwargs)
+
     @classmethod
     def algorithm(cls, signal, params):
         delta = params['delta']
@@ -404,6 +427,9 @@ class SlopeMean(_PeaksInterval):
         Maximum slope of detected peaks
     
     """
+
+    def __init__(self, delta, win_pre, win_post, **kwargs):
+        _PeaksInterval.__init__(self, delta=delta, win_pre=win_pre, win_post=win_post, **kwargs)
 
     @classmethod
     def algorithm(cls, signal, params):
