@@ -34,7 +34,7 @@ def preset_hrv_fd(prefix="IBI_"):
 
     if prefix is not None:
         for i in t:
-            i.set(name=prefix + i.get_params()["name"])
+            i.set(name=prefix + i.get()["name"])
 
     return t
 
@@ -62,7 +62,7 @@ def preset_hrv_td(prefix="IBI_"):
 
     if prefix is not None:
         for i in t:
-            i.set(name=prefix + i.get_params()["name"])
+            i.set(name=prefix + i.get()["name"])
 
     return t
 
@@ -75,8 +75,8 @@ def preset_phasic(delta, prefix="pha_"):
     pks_min = PeaksMin(delta=delta)
     pks_mean = PeaksMean(delta=delta)
     n_peaks = PeaksNum(delta=delta)
-    dur_mean = DurationMean(delta=0.1, pre_max=2, post_max=2)
-    slopes_mean = SlopeMean(delta=0.1, pre_max=2, post_max=2)
+    dur_mean = DurationMean(delta=delta, win_pre=2, win_post=2)
+    slopes_mean = SlopeMean(delta=delta, win_pre=2, win_post=2)
     auc = AUC()
 
     t = [mean, std, rng, pks_max, pks_min, pks_mean, n_peaks, dur_mean, slopes_mean, auc]
