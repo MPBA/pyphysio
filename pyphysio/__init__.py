@@ -34,7 +34,7 @@ def preset_hrv_fd(prefix="IBI_"):
 
     if prefix is not None:
         for i in t:
-            i.set(name=prefix + i.get()["name"])
+            i.set(name=prefix + i.get("name"))
 
     return t
 
@@ -62,7 +62,7 @@ def preset_hrv_td(prefix="IBI_"):
 
     if prefix is not None:
         for i in t:
-            i.set(name=prefix + i.get()["name"])
+            i.set(name=prefix + i.get("name"))
 
     return t
 

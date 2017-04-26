@@ -58,12 +58,15 @@ class Algorithm(object):
                 if not r:
                     self._parameter_error = ValueError("Error in parameters")
 
-    def get(self):
+    def get(self, param=None):
         """
         Placeholder for the subclasses
         @return
         """
-        return self._params
+        if param is None:
+            return self._params
+        else:
+            return self._params[param]
 
     @classmethod
     def run(cls, data, params=None, use_cache=True, **kwargs):
