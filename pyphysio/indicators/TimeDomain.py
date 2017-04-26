@@ -12,20 +12,6 @@ from ..tools.Tools import Histogram
 __author__ = 'AleB'
 
 
-# TODO (Andrea): remove if not necessary
-# class HistogramMax(_Indicator):
-#     @classmethod
-#     def algorithm(cls, signal, params):
-#         """
-#         Computes the size of the biggest Histogram bin
-#         @return: (values, bins)
-#         @rtype: (array, array)
-#         """
-#
-#         h, b = Histogram(params)(signal)
-#         return _np.max(h)
-
-
 class Mean(_Indicator):
     """
     Compute the arithmetic mean of the signal

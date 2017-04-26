@@ -120,7 +120,6 @@ class PeakDetection(_Tool):
 
 
 class PeakSelection(_Tool):
-    # TODO (Andrea): change docu or change params
     """
     Identify the start and the end indexes of each peak in the signal, using derivatives.
 
@@ -128,9 +127,9 @@ class PeakSelection(_Tool):
     ----------
     maxs : array
         Array containing indexes (first column) and values (second column) of the maxima
-    pre_max : float
+    win_pre : float
         Duration (in seconds) of interval before the peak that is considered to find the start of the peak
-    post_max : float
+    win_post : float
         Duration (in seconds) of interval after the peak that is considered to find the end of the peak
     
     Returns
@@ -338,8 +337,7 @@ class PSD(_Tool):
         # 'interp_freq': _Par(0, float, 'Frequency to interpolate the input signal, if of type UnevenlySignal',default=None, constraint=lambda x: x > 0)
     }
 
-    # TODO (Andrea): Your issue below, actual or old mug?
-    # Issue #15: consider point below:
+    # TODO (Feature - Issue #15): consider point below:
     # A density spectrum considers the amplitudes per unit frequency.
     # Density spectra are used to compare spectra with different frequency resolution as the
     # magnitudes are not influenced by the resolution because it is per Hertz. The amplitude
@@ -1169,7 +1167,7 @@ class OptimizeBateman(_Tool):
                        par_ranges=par_ranges, maxiter=maxiter, n_step_1=n_step_1, n_step_2=n_step_2, weight=weight,
                        **kwargs)
 
-    # TODO: fix **kwargs parameters for internal optimization (Andrea) issue?
+    # TODO (Feature): add **kwargs parameters for internal minimization
     _params_descriptors = {
         'delta': _Par(2, float, 'Minimum amplitude of the peaks in the driver',
                       constraint=lambda x: x > 0),

@@ -187,20 +187,6 @@ class _Embed(_Indicator):
         else:
             return []
 
-    # TODO (Andrea): remove if not used
-    @staticmethod
-    def build_tokens_vector(data, m, tau):
-        N = len(data)
-        jump = tau
-        maxjump = (m - 1) * jump
-        jumpsvect = range(0, maxjump + 1, jump)
-        numjumps = len(jumpsvect)
-        numelem = N - maxjump
-        DataExp = _np.zeros(shape=(numelem, numjumps))
-        for i in range(numelem):
-            for j in range(numjumps):
-                DataExp[i, j] = data[jumpsvect[j] + i]
-
     _params_descriptors = {
         'dimension': _Par(2, int, 'Embed dimension', 1, lambda x: x > 0),
         # 'delay': _Par(2, int, 'Embed delay', 1, lambda x: x > 0)
