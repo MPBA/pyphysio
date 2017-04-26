@@ -6,7 +6,7 @@ __author__ = 'AleB'
 
 class Tool(Algorithm):
     """
-    Algorithms which take as input a signal and return one or more np.array
+    Algorithms that take as input a signal and return one or more np.array
     """
 
     @classmethod

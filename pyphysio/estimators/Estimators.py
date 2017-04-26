@@ -47,21 +47,20 @@ class BeatFromBP(_Estimator):
     """
 
     def __init__(self, bpm_max=120, win_pre=.25, win_post=.05):
-        assert 1 < bpm_max <= 400, "Maximum BPM value non valid"
-        assert 0 < win_pre <= 1, "Window pre peak value should be between (0 and 1]"
-        assert 0 < win_post <= 1, "Window post peak value should be between (0 and 1]"
+        if not 10 < bpm_max < 400:
+            self.warn("Parameter bpm_max out of reasonable range (10, 400)")
+        assert 0 < win_pre <= 1, "Window pre peak value should be in (0 and 1]"
+        assert 0 < win_post <= 1, "Window post peak value should be in (0 and 1]"
         _Estimator.__init__(self, bpm_max=bpm_max, win_pre=win_pre, win_post=win_post)
 
     @classmethod
     def algorithm(cls, signal, params):
         fsamp = signal.get_sampling_freq()
-
         bpm_max = params["bpm_max"]
         win_pre = params["win_pre"] * fsamp
         win_post = params["win_post"] * fsamp
 
         fmax = bpm_max / 60
-
         refractory = 1 / fmax
 
         # STAGE 1 - EXTRACT BEAT POSITION SIGNAL
@@ -70,8 +69,7 @@ class BeatFromBP(_Estimator):
         # find range for the adaptive peak detection
         deltas = 0.5 * _SignalRange(win_len=1.5 / fmax, win_step=1 / fmax)(signal_f)
         # detection of candidate peaks
-        maxp, minp, ignored, ignored = _PeakDetection(delta=deltas, refractory=refractory, start_max=True)(
-            signal_f)  # Tools
+        maxp, minp, ignored, ignored = _PeakDetection(delta=deltas, refractory=refractory, start_max=True)(signal_f)
 
         if maxp[0] == 0:
             maxp = maxp[1:]
@@ -111,8 +109,13 @@ class BeatFromBP(_Estimator):
         ibi_values = _np.r_[ibi_values[0], ibi_values]
         idx_ibi = _np.array(true_peaks)
 
-        ibi = _UnevenlySignal(values=ibi_values, sampling_freq=fsamp, signal_nature='IBI',
-                              start_time=signal.get_start_time(), x_values=idx_ibi, x_type='indices', duration=signal.get_duration())
+        ibi = _UnevenlySignal(values=ibi_values,
+                              sampling_freq=fsamp,
+                              signal_nature='IBI',
+                              start_time=signal.get_start_time(),
+                              x_values=idx_ibi,
+                              x_type='indices',
+                              duration=signal.get_duration())
         return ibi
 
 
@@ -142,23 +145,19 @@ class BeatFromECG(_Estimator):
     """
 
     def __init__(self, bpm_max=120, delta=0, k=0.7):
-        assert 1 < bpm_max <= 400, "Maximum BPM value non valid"
-        assert delta >= 0, "Delta value should be positive (or equal to 0 if automatically computed"
+        if not 10 < bpm_max < 400:
+            self.warn("Parameter bpm_max out of reasonable range (10, 400)")
+        assert delta >= 0, "Delta value should be positive (or equal to 0 if automatically computed)"
         assert 0 < k < 1, "K coefficient must be in the range (0,1)"
         _Estimator.__init__(self, bpm_max=bpm_max, delta=delta, k=k)
 
     @classmethod
     def algorithm(cls, signal, params):
         bpm_max, delta, k = params["bpm_max"], params["delta"], params["k"]
-
         fmax = bpm_max / 60
 
         if delta == 0:
             delta = k * _SignalRange(win_len=2 / fmax, win_step=0.5 / fmax, smooth=False)(signal)
-        else:
-            delta = _np.repeat(delta, len(signal))
-
-        fsamp = signal.get_sampling_freq()
 
         refractory = 1 / fmax
 
@@ -166,6 +165,8 @@ class BeatFromECG(_Estimator):
 
         if maxp[0] == 0:
             maxp = maxp[1:]
+
+        fsamp = signal.get_sampling_freq()
 
         ibi_values = _np.diff(maxp) / fsamp
         ibi_values = _np.r_[ibi_values[0], ibi_values]
@@ -205,8 +206,8 @@ class DriverEstim(_Estimator):
     """
 
     def __init__(self, t1=.75, t2=2):
-        assert t1 > 0, "t1 value shoud be positive"
-        assert t2 > 0, "t2 value shoud be positive"
+        assert t1 > 0, "t1 value has to be positive"
+        assert t2 > 0, "t2 value has to be positive"
         _Estimator.__init__(self, t1=t1, t2=t2)
 
     @classmethod
@@ -214,12 +215,8 @@ class DriverEstim(_Estimator):
         t1 = params['t1']
         t2 = params['t2']
 
-        par_bat = [t1, t2]
-
         fsamp = signal.get_sampling_freq()
-
-        bateman = DriverEstim._gen_bateman(fsamp, par_bat)
-
+        bateman = DriverEstim._gen_bateman(fsamp, [t1, t2])
         idx_max_bat = _np.argmax(bateman)
 
         # Prepare the input signal to avoid starting/ending peaks in the driver
@@ -312,10 +309,10 @@ class PhasicEstim(_Estimator):
     """
 
     def __init__(self, delta, grid_size=1, win_pre=2, win_post=2):
-        assert delta > 0, "Delta value should be positive"
-        assert grid_size > 0, "Step of the interpolation grid should be positive"
-        assert win_pre > 0, "Window pre peak value should be positive"
-        assert win_post > 0, "Window post peak value should be positive"
+        assert delta > 0, "Delta value has to be positive"
+        assert grid_size > 0, "Step of the interpolation grid has to be positive"
+        assert win_pre > 0,  "Window pre peak value has to be positive"
+        assert win_post > 0, "Window post peak value has to be positive"
         _Estimator.__init__(self, delta=delta, grid_size=grid_size, win_pre=win_pre, win_post=win_post)
 
     @classmethod
@@ -331,7 +328,7 @@ class PhasicEstim(_Estimator):
         idx_max, idx_min, val_max, val_min = _PeakDetection(delta=delta, refractory=1, start_max=True)(signal)
 
         # identify start and stop of the peak
-        idx_pre, idx_post = _PeakSelection(idx_max=idx_max, win_pre=win_pre, win_post=win_post)(signal)
+        idx_pre, idx_post = _PeakSelection(indices=idx_max, win_pre=win_pre, win_post=win_post)(signal)
 
         # Linear interpolation to substitute the peaks
         driver_no_peak = _np.copy(signal)
@@ -382,12 +379,12 @@ class Energy(_Estimator):
     """
 
     def __init__(self, win_len, win_step, smooth=True):
-        assert win_len > 0, "Window length should be positive"
-        assert win_step > 0, "Window step should be positive"
+        assert win_len > 0, "Window length has to be positive"
+        assert win_step > 0, "Window step has to be positive"
         _Estimator.__init__(self, win_len=win_len, win_step=win_step, smooth=smooth)
 
     @classmethod
-    def algorithm(cls, signal, params):  # TESTME
+    def algorithm(cls, signal, params):
         win_len = params['win_len']
         win_step = params['win_step']
         smooth = params['smooth']

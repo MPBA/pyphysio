@@ -5,8 +5,7 @@ from scipy.signal import gaussian as _gaussian, filtfilt as _filtfilt, filter_de
     deconvolve as _deconvolve
 from matplotlib.pyplot import plot as _plot
 from ..BaseFilter import Filter as _Filter
-from ..Signal import EvenlySignal as _EvenlySignal, UnevenlySignal as _UnevenlySignal, Signal as _Signal
-from ..Parameters import Parameter as _Par
+from ..Signal import EvenlySignal as _EvenlySignal, UnevenlySignal as _UnevenlySignal
 from ..Utility import abstractmethod as _abstract
 
 __author__ = 'AleB'
@@ -45,15 +44,6 @@ class Normalize(_Filter):
             assert norm_range != 0, "norm_range must not be zero"
         _Filter.__init__(self, norm_method=norm_method, norm_bias=norm_bias, norm_range=norm_range)
 
-    _params_descriptors = {
-        'norm_method': _Par(0, str, 'Method for the normalization.', 'standard',
-                            lambda x: x in ['mean', 'standard', 'min', 'maxmin', 'custom']),
-        'norm_bias': _Par(2, float, 'Bias for custom normalization',
-                          activation=lambda x, p: p['norm_method'] == 'custom'),
-        'norm_range': _Par(2, float, 'Range for custom normalization', lambda x: x != 0,
-                           activation=lambda x, p: p['norm_method'] == 'custom')
-    }
-
     @classmethod
     def algorithm(cls, signal, params):
         from ..indicators.TimeDomain import Mean as _Mean, StDev as _StDev
@@ -91,10 +81,6 @@ class Diff(_Filter):
         assert degree > 0, "The degree value should be positive"
         _Filter.__init__(self, degree=degree)
 
-    _params_descriptors = {
-        'degree': _Par(0, int, 'Degree of the differences', 1, lambda x: x > 0)
-    }
-
     @classmethod
     def algorithm(cls, signal, params):
         """
@@ -119,9 +105,9 @@ class IIRFilter(_Filter):
 
     Parameters
     ----------
-    fp : list
+    fp : list or float
         The pass frequencies
-    fs : list
+    fs : list or float
         The stop frequencies
     
     Optional parameters
@@ -148,25 +134,18 @@ class IIRFilter(_Filter):
         assert loss > 0, "Loss value should be positive"
         assert att > 0, "Attenuation value should be positive"
         assert att > loss, "Attenuation value should be greater than loss value"
-        assert ftype in ['butter', 'cheby1', 'cheby2', 'ellip', 'bessel'], "Filter type not valid"
+        assert ftype in ['butter', 'cheby1', 'cheby2', 'ellip', 'bessel'],\
+            "Filter type must be in ['butter', 'cheby1', 'cheby2', 'ellip', 'bessel']"
         _Filter.__init__(self, fp=fp, fs=fs, loss=loss, att=att, ftype=ftype)
-
-    _params_descriptors = {
-        'fp': _Par(2, list, 'The pass frequencies'),
-        'fs': _Par(2, list, 'The stop frequencies'),
-        'loss': _Par(0, float, 'Loss tolerance in the pass band', 0.1, lambda x: x > 0),
-        'att': _Par(0, float, 'Minimum attenuation required in the stop band.', 40, lambda x: x > 0),
-        'ftype': _Par(0, str, 'Type of filter', 'butter',
-                      lambda x: x in ['butter', 'cheby1', 'cheby2', 'ellip', 'bessel'])
-    }
 
     @classmethod
     def algorithm(cls, signal, params):
         fsamp = signal.get_sampling_freq()
         fp, fs, loss, att, ftype = params["fp"], params["fs"], params["loss"], params["att"], params["ftype"]
 
-        if isinstance(signal, _Signal) and not isinstance(signal, _EvenlySignal):
+        if isinstance(signal, _UnevenlySignal):
             cls.warn('Filtering Unevenly signal is undefined. Returning original signal.')
+            return signal
 
         nyq = 0.5 * fsamp
         fp = _np.array(fp)
@@ -179,6 +158,7 @@ class IIRFilter(_Filter):
 
         sig_filtered = _EvenlySignal(_filtfilt(b, a, signal.get_values()), sampling_freq=signal.get_sampling_freq(),
                                      signal_nature=signal.get_signal_nature(), start_time=signal.get_start_time())
+
         if _np.isnan(sig_filtered[0]):
             cls.warn('Filter parameters allow no solution. Returning original signal.')
             return signal
@@ -217,14 +197,8 @@ class DenoiseEDA(_Filter):
         assert win_len > 0, "Window length value should be positive"
         _Filter.__init__(self, threshold=threshold, win_len=win_len)
 
-    _params_descriptors = {
-        'threshold': _Par(2, float, 'Threshold to detect the noise', constraint=lambda x: x > 0),
-        'win_len': _Par(0, float, 'Length of the window', 2, lambda x: x > 0)
-    }
-
     @classmethod
     def algorithm(cls, signal, params):
-
         threshold = params['threshold']
         win_len = params['win_len']
 
@@ -241,7 +215,8 @@ class DenoiseEDA(_Filter):
         if idx_ok[-1] != len(signal) - 1:
             idx_ok = _np.r_[idx_ok, len(signal) - 1].astype(int)
 
-        denoised = _UnevenlySignal(signal[idx_ok], signal.get_sampling_freq(), x_values=idx_ok, x_type='indices', duration=signal.get_duration())
+        denoised = _UnevenlySignal(signal[idx_ok], signal.get_sampling_freq(), x_values=idx_ok, x_type='indices',
+                                   duration=signal.get_duration())
 
         # interpolation
         signal_out = denoised.to_evenly('linear')
@@ -256,13 +231,13 @@ class ConvolutionalFilter(_Filter):
     ----------
     irftype : str
         Type of IRF to be generated. 'gauss', 'rect', 'triang', 'dgauss', 'custom'.
-    win_len : float, >0 (> 8/fsamp for 'gaussian")
-        Durarion of the generated IRF in seconds (if irftype is not 'custom')
-    irf : numpy.array
-        IRF to be used if irftype is 'custom'
+    win_len : float, >0 (> 8/fsamp for 'gaussian')
+        Duration of the generated IRF in seconds (if irftype is not 'custom')
     
     Optional parameters
     -------------------
+    irf : numpy.array
+        IRF to be used if irftype is 'custom'
     normalize : boolean, default = True
         Whether to normalizes the IRF to have unitary area
     
@@ -274,18 +249,10 @@ class ConvolutionalFilter(_Filter):
     """
 
     def __init__(self, irftype, win_len=0, irf=None, normalize=True):
-        assert irftype in ['gauss', 'rect', 'triang', 'dgauss', 'custom'], "IRF type not valid"
-        assert (irftype == 'custom') or (win_len > 0), "Window length value should be positive"
+        assert irftype in ['gauss', 'rect', 'triang', 'dgauss', 'custom'],\
+            "IRF type must be in ['gauss', 'rect', 'triang', 'dgauss', 'custom']"
+        assert irftype == 'custom' or win_len > 0, "Window length value should be positive"
         _Filter.__init__(self, irftype=irftype, win_len=win_len, irf=irf, normalize=normalize)
-
-    _params_descriptors = {
-        'irftype': _Par(2, str, 'Type of IRF to be generated.',
-                        constraint=lambda x: x in ['gauss', 'rect', 'triang', 'dgauss', 'custom']),
-        'win_len': _Par(2, float, "Durarion of the generated IRF in seconds (if irftype is not 'custom')",
-                        constraint=lambda x: x > 0, activation=lambda x, p: p['irftype'] != 'custom'),
-        'irf': _Par(2, list, "IRF to be used if irftype is 'custom'", activation=lambda x, p: p['irftype'] == 'custom'),
-        'normalize': _Par(1, bool, 'Whether to normalizes the IRF to have unitary area', True)
-    }
 
     # TODO: TEST normalization and results
     @classmethod
@@ -374,14 +341,9 @@ class DeConvolutionalFilter(_Filter):
     """
 
     def __init__(self, irf, normalize=True, deconv_method='sps'):
+        # TODO Andrea: "check that irf[0]>0 to avoid scipy BUG" I tried but some of your tests fail
         assert deconv_method in ['fft', 'sps'], "Deconvolution method not valid"
         _Filter.__init__(self, irf=irf, normalize=normalize, deconv_method=deconv_method)
-
-    _params_descriptors = {
-        'irf': _Par(2, list, 'IRF used to deconvolve the signal'),  # TODO Andrea: "check that irf[0]>0 to avoid scipy BUG" I tried but some of your tests fail
-        'normalize': _Par(0, bool, 'Whether to normalize the IRF to have unitary area', True),
-        'deconv_method': _Par(0, str, 'Deconvolution method.', 'fft', lambda x: x in ['fft', 'sps'])
-    }
 
     @classmethod
     def algorithm(cls, signal, params):

@@ -14,8 +14,10 @@ __author__ = 'AleB'
 
 class Mean(_Indicator):
     """
-    Compute the arithmetic mean of the signal
+    Compute the arithmetic mean of the signal, ignoring any NaNs.
     """
+    def __init__(self, **kwargs):
+        _Indicator.__init__(self, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -26,6 +28,8 @@ class Min(_Indicator):
     """
     Return minimum of the signal, ignoring any NaNs.
     """
+    def __init__(self, **kwargs):
+        _Indicator.__init__(self, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -36,6 +40,8 @@ class Max(_Indicator):
     """
     Return maximum of the signal, ignoring any NaNs.
     """
+    def __init__(self, **kwargs):
+        _Indicator.__init__(self, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -46,6 +52,8 @@ class Range(_Indicator):
     """
     Compute the range of the signal, ignoring any NaNs.
     """
+    def __init__(self, **kwargs):
+        _Indicator.__init__(self, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -54,8 +62,10 @@ class Range(_Indicator):
 
 class Median(_Indicator):
     """
-    Compute the median of the signal.
+    Compute the median of the signal, ignoring any NaNs.
     """
+    def __init__(self, **kwargs):
+        _Indicator.__init__(self, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -66,6 +76,8 @@ class StDev(_Indicator):
     """
     Computes the standard deviation of the signal, ignoring any NaNs.
     """
+    def __init__(self, **kwargs):
+        _Indicator.__init__(self, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -76,6 +88,8 @@ class Sum(_Indicator):
     """
     Computes the sum of the values in the signal, treating Not a Numbers (NaNs) as zero.
     """
+    def __init__(self, **kwargs):
+        _Indicator.__init__(self, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -86,6 +100,8 @@ class AUC(_Indicator):
     """
     Computes the Area Under the Curve of the signal, treating Not a Numbers (NaNs) as zero.
     """
+    def __init__(self, **kwargs):
+        _Indicator.__init__(self, **kwargs)
 
     @classmethod
     def algorithm(cls, signal, params):
@@ -95,11 +111,12 @@ class AUC(_Indicator):
         return (1. / fsamp) * Sum()(signal)
 
 
-# HRV
 class RMSSD(_Indicator):
     """
     Compute the square root of the mean of the squared 1st order discrete differences.
     """
+    def __init__(self, **kwargs):
+        _Indicator.__init__(self, **kwargs)
 
     @classmethod
     def algorithm(cls, signal, params):
@@ -111,6 +128,8 @@ class SDSD(_Indicator):
     """
     Calculate the standard deviation of the 1st order discrete differences.
     """
+    def __init__(self, **kwargs):
+        _Indicator.__init__(self, **kwargs)
 
     @classmethod
     def algorithm(cls, signal, params):
@@ -122,6 +141,8 @@ class Triang(_Indicator):
     """
     Computes the HRV triangular index.
     """
+    def __init__(self, **kwargs):
+        _Indicator.__init__(self, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -141,6 +162,8 @@ class TINN(_Indicator):
     """
     Computes the triangular interpolation of NN interval histogram.
     """
+    def __init__(self, **kwargs):
+        _Indicator.__init__(self, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):

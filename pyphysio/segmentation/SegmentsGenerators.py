@@ -112,14 +112,37 @@ class _SegmentsWithLabelSignal(SegmentsGenerator):
 
 class FixedSegments(_SegmentsWithLabelSignal):
     """
-    Constant length (time) segments specifying segment step and segment width in seconds. A label signal from which to
+    Fixed length segments iterator, specifying step and width in seconds.
+
+    A label signal from which to
     take labels can be specified.
-    __init__(self, step, width=0, start=0, labels=None, drop_mixed=True)
+
+    Parameters
+    ----------
+    step : float, >0
+        time distance between subsequent segments.
+
+    Optional parameters
+    -------------------
+    width : float, >0, default=step
+        time distance between subsequent segments.
+    start : float
+        start time of the first segment
+    labels : array
+        Signal of the labels
+    drop_mixed : bool, default=True
+        In case labels is specified, weather to drop segments with more than one label, if False the label of such
+         segments is set to None.
+    drop_cut : bool, default=True
+        Weather to drop segments that are shorter due to the crossing of the signal end.
     """
 
     def __init__(self, step, width=None, start=None, labels=None, drop_mixed=True, drop_cut=True, **kwargs):
         super(FixedSegments, self).__init__(step=step, width=width, start=start, labels=labels, drop_cut=drop_cut,
                                             drop_mixed=drop_mixed, **kwargs)
+        assert step > 0
+        assert width is None or width > 0
+        assert start is None or start > 0
         assert labels is None or isinstance(labels, _Signal),\
             "The parameter 'labels' should be a Signal."
         self._step = None
@@ -146,8 +169,24 @@ class FixedSegments(_SegmentsWithLabelSignal):
 
 class CustomSegments(_SegmentsWithLabelSignal):
     """
-    Custom begin-end time-segments.
-    __init__(self, begins, ends, labels=None, drop_mixed=True)
+    Custom segments iterator, specifying an array of begin times and an array of end times.
+
+    Parameters
+    ----------
+    begins : array
+        Array of the begin times of the segments to return.
+    ends : array
+        Array of the end times of the segments to return, of the same length of 'begins'.
+
+    Optional parameters
+    -------------------
+    labels : array
+        Signal of the labels
+    drop_mixed : bool, default=True
+        In case labels is specified, weather to drop segments with more than one label, if False the label of such
+         segments is set to None.
+    drop_cut : bool, default=True
+        Weather to drop segments that are shorter due to the crossing of the signal end.
     """
 
     def __init__(self, begins, ends, labels=None, drop_mixed=True, drop_cut=True, **kwargs):
@@ -175,8 +214,20 @@ class CustomSegments(_SegmentsWithLabelSignal):
 
 class LabelSegments(_SegmentsWithLabelSignal):
     """
-    Generates a list of segments from a label signal, allowing to collapse subsequent equal labels.
-    __init__(labels)
+    Generates a list of segments from a label signal, allowing to collapse subsequent equal samples.
+
+    Parameters
+    ----------
+    labels : array
+        Signal of the labels
+
+    Optional parameters
+    -------------------
+    drop_mixed : bool, default=True
+        In case labels is specified, weather to drop segments with more than one label, if False the label of such
+         segments is set to None.
+    drop_cut : bool, default=True
+        Weather to drop segments that are shorter due to the crossing of the signal end.
     """
 
     def __init__(self, labels, drop_mixed=True, drop_cut=True, **kwargs):

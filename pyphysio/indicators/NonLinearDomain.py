@@ -5,13 +5,11 @@ from ..BaseIndicator import Indicator as _Indicator
 from ..filters.Filters import Diff as _Diff
 from ..indicators.TimeDomain import Mean as _Mean, StDev as _StDev
 from scipy.spatial.distance import cdist as _cd
-from ..Parameters import Parameter as _Par
 import numpy as _np
 
 __author__ = 'AleB'
 
 
-# HRV
 class PoincareSD1(_Indicator):
     """
     Return the SD1 value of the Poincare' plot of input Inter Beat Intervals
@@ -113,13 +111,13 @@ class PoinEll(_Indicator):
 
 class PNNx(_Indicator):
     """
-    Calculates the relative frequency (0.0-1.0) of pairs of consecutive IBIs in the data series
-    with the differences between the two values greater than 'threshold' in milliseconds.
+    Computes the relative frequency of pairs of consecutive samples s1, s2 such that s1-s2 >= 'threshold' in
+    milliseconds.
     
     Parameters
     ----------
     threshold : int, >0
-        Threshold on the values of the differences
+        Threshold in milliseconds.
         
     Returns
     -------
@@ -134,23 +132,19 @@ class PNNx(_Indicator):
     def algorithm(cls, data, params):
         return NNx.algorithm(data, params) / float(len(data))
 
-    _params_descriptors = {
-        'threshold': _Par(2, float, 'Threshold to select the subsequent differences', 10, lambda x: x > 0),
-    }
-
 
 class NNx(_Indicator):
     """
-    Calculates number of pairs of consecutive IBIs in the data series
-    with the differences between the two values greater than 'threshold' in milliseconds.
+    Counts the pairs of consecutive samples s1, s2 such that s1-s2 >= 'threshold' in milliseconds.
     
     Parameters
     ----------
     threshold : int, >0
-        Threshold on the values of the differences
+        Threshold in milliseconds.
     """
 
     def __init__(self, threshold, **kwargs):
+        assert threshold > 0, "Not implemented for threshold not > 0"
         _Indicator.__init__(self, threshold=threshold, **kwargs)
 
     @classmethod
@@ -158,10 +152,6 @@ class NNx(_Indicator):
         th = params['threshold']
         diff = _Diff()(signal)
         return sum(1.0 for x in diff * 1000 if x > th)
-
-    _params_descriptors = {
-        'threshold': _Par(2, float, 'Threshold to select the subsequent differences', 10, lambda x: x > 0),
-    }
 
 
 class _Embed(_Indicator):
@@ -187,11 +177,6 @@ class _Embed(_Indicator):
         else:
             return []
 
-    _params_descriptors = {
-        'dimension': _Par(2, int, 'Embed dimension', 1, lambda x: x > 0),
-        # 'delay': _Par(2, int, 'Embed delay', 1, lambda x: x > 0)
-    }
-
 
 class ApproxEntropy(_Indicator):
     """
@@ -209,6 +194,7 @@ class ApproxEntropy(_Indicator):
     """
 
     def __init__(self, radius=.5, **kwargs):
+        assert radius > 0, "Parameter radius should be > 0"
         _Indicator.__init__(self, radius=radius, **kwargs)
 
     @classmethod
@@ -243,10 +229,6 @@ class ApproxEntropy(_Indicator):
 
             return phi_m - phi_m1
 
-    _params_descriptors = {
-        'radius': _Par(0, float, 'Radius', 0.5, lambda x: x > 0),
-    }
-
 
 class SampleEntropy(_Indicator):
     """
@@ -264,6 +246,7 @@ class SampleEntropy(_Indicator):
     """
 
     def __init__(self, radius=.5, **kwargs):
+        assert radius > 0, "Parameter radius should be > 0"
         _Indicator.__init__(self, radius=radius, **kwargs)
 
     @classmethod
@@ -299,10 +282,6 @@ class SampleEntropy(_Indicator):
             cm1 = _np.sum(cmr_m1_sa_mp_en) / num_elem_m1
 
             return _np.log(cm / cm1)
-
-    _params_descriptors = {
-        'radius': _Par(0, float, 'Radius', 0.5, lambda x: x > 0),
-    }
 
 
 class DFAShortTerm(_Indicator):

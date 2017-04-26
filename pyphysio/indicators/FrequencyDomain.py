@@ -4,7 +4,6 @@ from __future__ import division
 from ..BaseIndicator import Indicator as _Indicator
 from ..tools.Tools import PSD as PSD
 import numpy as _np
-from ..Parameters import Parameter as _Par
 
 __author__ = 'AleB'
 
@@ -29,8 +28,6 @@ class InBand(_Indicator):
         
     interp_freq : float, >0
         Frequency used to (re-)interpolate the signal
-    method : 'ar', 'welch' or 'fft'
-        Method to estimate the PSD
 
     Returns
     -------
@@ -41,22 +38,19 @@ class InBand(_Indicator):
     """
 
     def __init__(self, freq_min, freq_max, method, **kwargs):
-        _Indicator.__init__(self, freq_min=freq_min, freq_max=freq_max, method=method, **kwargs)
+        assert freq_min > 0, "Lower frequency of the band should be > 0"
+        assert freq_max > 0, "Higher frequency of the band should be > 0"
+        _Indicator.__init__(self, freq_min=freq_min, freq_max=freq_max, psd=PSD(method=method, **kwargs), **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
-        freq, spec = PSD(**params)(data)
+        freq, spec = params['psd'](data)
         
         # freq is sorted so
         i_min = _np.searchsorted(freq, params["freq_min"])
         i_max = _np.searchsorted(freq, params["freq_max"])
 
         return freq[i_min:i_max], spec[i_min:i_max]
-
-    _params_descriptors = {
-        'freq_min': _Par(2, float, 'Lower frequency of the band', 0, lambda x: x > 0),
-        'freq_max': _Par(2, float, 'Higher frequency of the band', 0, lambda x: x > 0)
-    }
 
 
 class PowerInBand(_Indicator):
@@ -78,7 +72,6 @@ class PowerInBand(_Indicator):
         
     interp_freq : float, >0
         Frequency used to (re-)interpolate the signal
-    
 
     Returns
     -------
@@ -86,17 +79,15 @@ class PowerInBand(_Indicator):
         Power in the frequency band
     """
 
+    # TODO (feature): add normalize option (total, length)
     def __init__(self, freq_min, freq_max, method, **kwargs):
-        _Indicator.__init__(self, freq_min=freq_min, freq_max=freq_max, method=method, **kwargs)
+        _Indicator.__init__(self, freq_min=freq_min, freq_max=freq_max, inBand=PSD(method=method, **kwargs), **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
-        freq, powers = InBand(**params)(data)
+        freq, powers = params['inBand'](data)
         return _np.sum(powers)
 
-    _params_descriptors = InBand.get_params_descriptors()
-    # TODO (feature): add normalize option (total, length)
-    
 
 class PeakInBand(_Indicator):
     """
@@ -125,11 +116,10 @@ class PeakInBand(_Indicator):
     """
 
     def __init__(self, freq_min, freq_max, method, **kwargs):
-        _Indicator.__init__(self, freq_min=freq_min, freq_max=freq_max, method=method, interp_freq=interp_freq, **kwargs)
+        _Indicator.__init__(self, freq_min=freq_min, freq_max=freq_max, method=method,
+                            inBand=PSD(method=method, **kwargs), **kwargs)
     
     @classmethod
     def algorithm(cls, data, params):
-        freq, power = InBand(**params)(data)
-        return freq[_np.argmax(power)]
-
-    _params_descriptors = InBand.get_params_descriptors()
+        freq, powers = params['inBand'](data)
+        return freq[_np.argmax(powers)]

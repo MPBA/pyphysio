@@ -32,7 +32,7 @@ def test_indicators_eda():
     assert (pks_max == mx)
 
     idx_mx, idx_mn, mx, mn = ph.PeakDetection(delta=0.1)(phasic)
-    st, sp = ph.PeakSelection(idx_max=idx_mx, win_pre=2, win_post=2)(phasic)
+    st, sp = ph.PeakSelection(indices=idx_mx, win_pre=2, win_post=2)(phasic)
 
     n_peaks = ph.PeaksNum(delta=0.1, win_pre=2, win_post=2)(phasic)
 

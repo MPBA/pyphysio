@@ -7,7 +7,6 @@ import numpy as _np
 from ..BaseIndicator import Indicator as _Indicator
 from ..tools.Tools import PeakDetection as _PeakDetection, PeakSelection as _PeakSelection, Durations as _Durations, \
     Slopes as _Slopes
-from ..Parameters import Parameter as _Par
 
 __author__ = 'AleB'
 
@@ -19,16 +18,13 @@ class _Peaks(_Indicator):
     __metaclass__ = _ABCMeta
 
     def __init__(self, delta, **kwargs):
+        assert delta > 0, 'Parameter delta, i.e. amplitude of the minimum peak, has to be > 0'
         _Indicator.__init__(self, delta=delta, **kwargs)
 
     @classmethod
     @_abstract
     def algorithm(cls, data, params):
         pass
-
-    _params_descriptors = {
-        'delta': _Par(2, float, 'Amplitude of the minimum peak (>0)', 0, lambda x: x > 0)
-    }
 
 
 class PeaksMax(_Peaks):
@@ -46,6 +42,8 @@ class PeaksMax(_Peaks):
         Maximum amplitude of detected peaks
     
     """
+    def __init__(self, delta, **kwargs):
+        _Indicator.__init__(self, delta=delta, **kwargs)
 
     @classmethod
     def algorithm(cls, signal, params):
@@ -75,6 +73,8 @@ class PeaksMin(_Peaks):
         Minimum amplitude of detected peaks
     
     """
+    def __init__(self, delta, **kwargs):
+        _Indicator.__init__(self, delta=delta, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -83,7 +83,7 @@ class PeaksMin(_Peaks):
         idx_maxs, idx_mins, val_maxs, val_mins = _PeakDetection(delta=delta)(data)
 
         if len(idx_maxs) == 0:
-            cls.warn("No peak found")
+            cls.warn("No peak found, returning numpy.nan")
             return _np.nan
         else:
             return _np.nanmin(val_maxs)
@@ -104,6 +104,8 @@ class PeaksMean(_Peaks):
         Average amplitude of detected peaks
     
     """
+    def __init__(self, delta, **kwargs):
+        _Indicator.__init__(self, delta=delta, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -133,6 +135,8 @@ class PeaksNum(_Peaks):
         Number of detected peaks
     
     """
+    def __init__(self, delta, **kwargs):
+        _Indicator.__init__(self, delta=delta, **kwargs)
 
     @classmethod
     def algorithm(cls, signal, params):
@@ -147,31 +151,21 @@ class PeaksNum(_Peaks):
             return len(idx_maxs)
 
 
-class _PeaksInterval(_Indicator):
+class _PeaksInterval(_Peaks):
     """
     Peaks base class
     """
     __metaclass__ = _ABCMeta
 
     def __init__(self, delta, win_pre=1, win_post=1, **kwargs):
+        assert win_pre > 0, 'win_pre must be > 0'
+        assert win_post > 0, 'win_post must be > 0'
         _Indicator.__init__(self, delta=delta, win_pre=win_pre, win_post=win_post, **kwargs)
 
     @classmethod
     @_abstract
     def algorithm(cls, data, params):
         pass
-
-    _params_descriptors = {
-        'delta': _Par(2, float, 'Amplitude of the minimum peak', 0, lambda x: x > 0),
-        'win_pre': _Par(0, float,
-                        'Duration (in seconds) of interval before the peak that is considered to find the start of the '
-                        'peak (>0)',
-                        1, lambda x: x > 0),
-        'win_post': _Par(0, float,
-                         'Duration (in seconds) of interval after the peak that is considered to find the start of the '
-                         'peak (>0)',
-                         1, lambda x: x > 0)
-    }
 
 
 class DurationMin(_PeaksInterval):
@@ -182,9 +176,9 @@ class DurationMin(_PeaksInterval):
     ----------
     delta : float, >0
         Minimum amplitude of peaks to be selected
-    win_pre : float, >0, defaul=1
+    win_pre : float, >0, default=1
         Interval before a detected peak where to search the start of the peak
-    win_post : float, >0, defaul=1
+    win_post : float, >0, default=1
         Interval after a detected peak where to search the end of the peak
         
     Returns
@@ -193,6 +187,8 @@ class DurationMin(_PeaksInterval):
         Minimum duration of detected peaks
     
     """
+    def __init__(self, delta, win_pre=1, win_post=1, **kwargs):
+        _Indicator.__init__(self, delta=delta, win_pre=win_pre, win_post=win_post, **kwargs)
 
     @classmethod
     def algorithm(cls, signal, params):
@@ -205,7 +201,7 @@ class DurationMin(_PeaksInterval):
             cls.warn("No peaks found")
             return _np.nan
 
-        idxs_start, idxs_stop = _PeakSelection(idx_max=idx_maxs, win_pre=win_pre, win_post=win_post)(signal)
+        idxs_start, idxs_stop = _PeakSelection(indices=idx_maxs, win_pre=win_pre, win_post=win_post)(signal)
 
         if len(idxs_start) == 0:
             cls.warn("Unable to detect the start of the peaks")
@@ -223,9 +219,9 @@ class DurationMax(_PeaksInterval):
     ----------
     delta : float, >0
         Minimum amplitude of peaks to be selected
-    win_pre : float, >0, defaul=1
+    win_pre : float, >0, default=1
         Interval before a detected peak where to search the start of the peak
-    win_post : float, >0, defaul=1
+    win_post : float, >0, default=1
         Interval after a detected peak where to search the end of the peak
         
     Returns
@@ -234,6 +230,8 @@ class DurationMax(_PeaksInterval):
         Maximum duration of detected peaks
     
     """
+    def __init__(self, delta, win_pre=1, win_post=1, **kwargs):
+        _Indicator.__init__(self, delta=delta, win_pre=win_pre, win_post=win_post, **kwargs)
 
     @classmethod
     def algorithm(cls, signal, params):
@@ -247,7 +245,7 @@ class DurationMax(_PeaksInterval):
             cls.warn("No peaks found")
             return _np.nan
 
-        idxs_start, idxs_stop = _PeakSelection(idx_max=idx_maxs, win_pre=win_pre, win_post=win_post)(signal)
+        idxs_start, idxs_stop = _PeakSelection(indices=idx_maxs, win_pre=win_pre, win_post=win_post)(signal)
 
         if len(idxs_start) == 0:
             cls.warn("Unable to detect the start of the peaks")
@@ -265,9 +263,9 @@ class DurationMean(_PeaksInterval):
     ----------
     delta : float, >0
         Minimum amplitude of peaks to be selected
-    win_pre : float, >0, defaul=1
+    win_pre : float, >0, default=1
         Interval before a detected peak where to search the start of the peak
-    win_post : float, >0, defaul=1
+    win_post : float, >0, default=1
         Interval after a detected peak where to search the end of the peak
         
     Returns
@@ -276,6 +274,8 @@ class DurationMean(_PeaksInterval):
         Average duration of detected peaks
     
     """
+    def __init__(self, delta, win_pre=1, win_post=1, **kwargs):
+        _Indicator.__init__(self, delta=delta, win_pre=win_pre, win_post=win_post, **kwargs)
 
     @classmethod
     def algorithm(cls, signal, params):
@@ -283,13 +283,12 @@ class DurationMean(_PeaksInterval):
         win_pre = params['win_pre']
         win_post = params['win_post']
 
-
         idx_maxs, idx_mins, val_maxs, val_mins = _PeakDetection(delta=delta)(signal)
         if len(idx_maxs) == 0:
             cls.warn("No peaks found")
             return _np.nan
 
-        idxs_start, idxs_stop = _PeakSelection(idx_max=idx_maxs, win_pre=win_pre, win_post=win_post)(signal)
+        idxs_start, idxs_stop = _PeakSelection(indices=idx_maxs, win_pre=win_pre, win_post=win_post)(signal)
 
         if len(idxs_start) == 0:
             cls.warn("Unable to detect the start of the peaks")
@@ -307,9 +306,9 @@ class SlopeMin(_PeaksInterval):
     ----------
     delta : float, >0
         Minimum amplitude of peaks to be selected
-    win_pre : float, >0, defaul=1
+    win_pre : float, >0, default=1
         Interval before a detected peak where to search the start of the peak
-    win_post : float, >0, defaul=1
+    win_post : float, >0, default=1
         Interval after a detected peak where to search the end of the peak
         
     Returns
@@ -318,6 +317,8 @@ class SlopeMin(_PeaksInterval):
         Minimum slope of detected peaks
     
     """
+    def __init__(self, delta, win_pre=1, win_post=1, **kwargs):
+        _Indicator.__init__(self, delta=delta, win_pre=win_pre, win_post=win_post, **kwargs)
 
     @classmethod
     def algorithm(cls, signal, params):
@@ -330,7 +331,7 @@ class SlopeMin(_PeaksInterval):
             cls.warn("No peaks found")
             return _np.nan
 
-        idxs_start, idxs_stop = _PeakSelection(idx_max=idx_maxs, win_pre=win_pre, win_post=win_post)(signal)
+        idxs_start, idxs_stop = _PeakSelection(indices=idx_maxs, win_pre=win_pre, win_post=win_post)(signal)
         
         if len(idxs_start) == 0:
             cls.warn("Unable to detect the start of the peaks")
@@ -348,9 +349,9 @@ class SlopeMax(_PeaksInterval):
     ----------
     delta : float, >0
         Minimum amplitude of peaks to be selected
-    win_pre : float, >0, defaul=1
+    win_pre : float, >0, default=1
         Interval before a detected peak where to search the start of the peak
-    win_post : float, >0, defaul=1
+    win_post : float, >0, default=1
         Interval after a detected peak where to search the end of the peak
         
     Returns
@@ -359,6 +360,8 @@ class SlopeMax(_PeaksInterval):
         Maximum slope of detected peaks
     
     """
+    def __init__(self, delta, win_pre=1, win_post=1, **kwargs):
+        _Indicator.__init__(self, delta=delta, win_pre=win_pre, win_post=win_post, **kwargs)
 
     @classmethod
     def algorithm(cls, signal, params):
@@ -371,7 +374,7 @@ class SlopeMax(_PeaksInterval):
             cls.warn("No peaks found")
             return _np.nan
 
-        idxs_start, idxs_stop = _PeakSelection(idx_max=idx_maxs, win_pre=win_pre, win_post=win_post)(signal)
+        idxs_start, idxs_stop = _PeakSelection(indices=idx_maxs, win_pre=win_pre, win_post=win_post)(signal)
         
         if len(idxs_start) == 0:
             cls.warn("Unable to detect the start of the peaks")
@@ -389,9 +392,9 @@ class SlopeMean(_PeaksInterval):
     ----------
     delta : float, >0
         Minimum amplitude of peaks to be selected
-    win_pre : float, >0, defaul=1
+    win_pre : float, >0, default=1
         Interval before a detected peak where to search the start of the peak
-    win_post : float, >0, defaul=1
+    win_post : float, >0, default=1
         Interval after a detected peak where to search the end of the peak
         
     Returns
@@ -400,6 +403,8 @@ class SlopeMean(_PeaksInterval):
         Maximum slope of detected peaks
     
     """
+    def __init__(self, delta, win_pre=1, win_post=1, **kwargs):
+        _Indicator.__init__(self, delta=delta, win_pre=win_pre, win_post=win_post, **kwargs)
 
     @classmethod
     def algorithm(cls, signal, params):
@@ -412,7 +417,7 @@ class SlopeMean(_PeaksInterval):
             cls.warn("No peaks found")
             return _np.nan
 
-        idxs_start, idxs_stop = _PeakSelection(idx_max=idx_maxs, win_pre=win_pre, win_post=win_post)(signal)
+        idxs_start, idxs_stop = _PeakSelection(indices=idx_maxs, win_pre=win_pre, win_post=win_post)(signal)
         if len(idxs_start) == 0:
             cls.warn("Unable to detect the start of the peaks")
             return _np.nan

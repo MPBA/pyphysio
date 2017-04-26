@@ -138,6 +138,9 @@ class GeneralTest(unittest.TestCase):
         fixed_length = ph.FixedSegments(step=5, width=20, labels=label)
         result, col_names = ph.fmap(fixed_length, algos, ecg)
 
+        assert result is not None
+        assert col_names is not None
+
         # %%
 
         # (optional) IIR filtering : remove high frequency noise
@@ -152,6 +155,9 @@ class GeneralTest(unittest.TestCase):
         ibi = ph.BeatFromECG()(ecg)
 
         result, col_names = ph.fmap(label_based(ibi), algos)
+
+        assert result is not None
+        assert col_names is not None
 
     @staticmethod
     def test_issue40():

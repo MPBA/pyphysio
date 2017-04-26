@@ -137,6 +137,9 @@ def algo(function, **kwargs):
     from BaseAlgorithm import Algorithm
 
     class Custom(Algorithm):
+        def __init__(self, **kwargs):
+            Algorithm.__init__(self, **kwargs)
+
         @classmethod
         def algorithm(cls, data, params):
             return function(data, params)

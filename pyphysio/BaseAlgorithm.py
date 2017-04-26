@@ -12,8 +12,6 @@ class Algorithm(object):
     """
     __metaclass__ = _ABCMeta
 
-    _params_descriptors = {}
-    _parameter_error = None
     _log = None
 
     def __init__(self, **kwargs):
@@ -36,10 +34,7 @@ class Algorithm(object):
         @type data: TimeSeries
         @return: The result.
         """
-        if self._parameter_error is None:
-            return self.run(data, self._params)
-        else:
-            raise self._parameter_error
+        return self.run(data, self._params)
 
     def __repr__(self):
         return self.__class__.__name__ + str(self._params) if 'name' not in self._params else self._params['name']
@@ -85,14 +80,6 @@ class Algorithm(object):
             return Cache.run_cached(data, cls, kwargs)
         else:
             return cls.algorithm(data, kwargs)
-    
-    @classmethod
-    def get_params_descriptors(cls):
-        """
-        Returns the used parameters
-        :rtype: dict[str, Parameter]
-        """
-        return cls._params_descriptors
 
     @classmethod
     @_abstract

@@ -193,8 +193,8 @@ class EvenlySignal(Signal):
     def get_value_t(self, instant):
         values = self.get_values()
         nearest_idx = int(_np.round(self.get_sampling_freq() * (instant - self.get_start_time())))
-        assert nearest_idx < len(self), "Required instant is after the end of the signal" # return self[-1]
-        assert nearest_idx >= 0, "Required instant is before the start of the signal" # return self[0]
+        assert nearest_idx < len(self), "Required instant is after the end of the signal"  # return self[-1]
+        assert nearest_idx >= 0, "Required instant is before the start of the signal"  # return self[0]
         
         return values[nearest_idx]
     
