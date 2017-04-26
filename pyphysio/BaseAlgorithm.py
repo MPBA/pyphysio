@@ -27,7 +27,7 @@ class Algorithm(object):
         @type kwargs: dict
         """
         self._params = {}
-        self.set(**kwargs)
+        self.set_unchecked(**kwargs)  # already checked by __init__
 
     def __call__(self, data):
         """
@@ -44,19 +44,13 @@ class Algorithm(object):
     def __repr__(self):
         return self.__class__.__name__ + str(self._params) if 'name' not in self._params else self._params['name']
 
-    def set(self, **kwargs):
+    def set_unchecked(self, **kwargs):
         self._params.update(kwargs)
-        # Parameters check
-        p = self.get_params_descriptors()
-        for n in p:
-            if n in self._params:
-                r, e = p[n](self._params, n)
-                if not r:
-                    self._parameter_error = ValueError("Error in parameters: " + e)
-            else:
-                r, self._params[n] = p[n].not_present(self._params, n, self)
-                if not r:
-                    self._parameter_error = ValueError("Error in parameters")
+
+    def set(self, **kwargs):
+        kk = self.get()
+        kk.update(kwargs)
+        self.__init__(**kk)
 
     def get(self, param=None):
         """

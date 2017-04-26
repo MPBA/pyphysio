@@ -203,7 +203,7 @@ class _Embed(_Indicator):
 
     _params_descriptors = {
         'dimension': _Par(2, int, 'Embed dimension', 1, lambda x: x > 0),
-        'delay': _Par(2, int, 'Embed delay', 1, lambda x: x > 0)
+        # 'delay': _Par(2, int, 'Embed delay', 1, lambda x: x > 0)
     }
 
 

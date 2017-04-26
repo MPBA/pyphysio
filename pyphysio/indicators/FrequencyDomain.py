@@ -40,8 +40,8 @@ class InBand(_Indicator):
         Power Spectrum Density in the frequency band
     """
 
-    def __init__(self, freq_min, freq_max, method, freq=None, psd=None, **kwargs):
-        _Indicator.__init__(self, freq_min=freq_min, freq_max=freq_max, method=method, freq=freq, psd=psd, **kwargs)
+    def __init__(self, freq_min, freq_max, method, **kwargs):
+        _Indicator.__init__(self, freq_min=freq_min, freq_max=freq_max, method=method, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -86,8 +86,8 @@ class PowerInBand(_Indicator):
         Power in the frequency band
     """
 
-    def __init__(self, freq_min, freq_max, method, interp_freq=None, **kwargs):
-        _Indicator.__init__(self, freq_min=freq_min, freq_max=freq_max, method=method, interp_freq=interp_freq, **kwargs)
+    def __init__(self, freq_min, freq_max, method, **kwargs):
+        _Indicator.__init__(self, freq_min=freq_min, freq_max=freq_max, method=method, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
@@ -124,12 +124,12 @@ class PeakInBand(_Indicator):
         Peak frequency
     """
 
-    def __init__(self, freq_min, freq_max, method, interp_freq=None, **kwargs):
+    def __init__(self, freq_min, freq_max, method, **kwargs):
         _Indicator.__init__(self, freq_min=freq_min, freq_max=freq_max, method=method, interp_freq=interp_freq, **kwargs)
     
     @classmethod
     def algorithm(cls, data, params):
-        _freq_band, _pow_band = InBand(**params)(data)
-        return _freq_band[_np.argmax(_pow_band)]
+        freq, power = InBand(**params)(data)
+        return freq[_np.argmax(power)]
 
     _params_descriptors = InBand.get_params_descriptors()

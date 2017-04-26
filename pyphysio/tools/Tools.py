@@ -40,13 +40,14 @@ class PeakDetection(_Tool):
     """
 
     def __init__(self, delta, refractory=0, start_max=True):
-        # FIXME (Andrea): delta is a float and a list and an ndarray
-        # assert delta > 0, "Delta value should be positive"
+        delta = _np.array(delta)
+        assert delta.ndim <= 1, "Delta value should be 1 or 0-dimensional"
+        assert delta.all() > 0, "Delta value/s should be positive"
         assert refractory >= 0, "Refractory value should be non negative"
         _Tool.__init__(self, delta=delta, refractory=refractory, start_max=start_max)
 
     _params_descriptors = {
-        # 'delta': _Par(2, list, "Threshold for the detection of the peaks", constraint=lambda x: x > 0),
+        'delta': _Par(2, list, "Threshold for the detection of the peaks", constraint=lambda x: x > 0),
         'refractory': _Par(0, float, "Seconds to skip after detection of a peak", 0, lambda x: x >= 0),
         'start_max': _Par(0, bool, "Whether to start looking for a max.", True)
     }
@@ -61,21 +62,20 @@ class PeakDetection(_Tool):
         look_for_max = params['start_max']
         delta = params['delta']
 
-        if isinstance(delta, float) or isinstance(delta, int):
-            deltas = _np.repeat(delta, len(signal))
-        else:
-            deltas = delta
-
         minp = []
         maxp = []
 
         minv = []
         maxv = []
 
+        scalar = delta.ndim == 0
+        if scalar:
+            d = delta
+
         if len(signal) < 1:
-            cls.warn("signal is too short (len < 1), returning empty.")
-        elif len(deltas) != len(signal):
-            cls.error("deltas vector's length differs from signal's one, returning empty.")
+            cls.warn("Empty signal (len < 1), returning empty.")
+        elif not scalar and len(delta) != len(signal):
+            cls.error("delta vector's length differs from signal's one, returning empty.")
         else:
             mn_pos_candidate = mx_pos_candidate = 0
             mn_candidate = mx_candidate = signal[0]
@@ -85,7 +85,8 @@ class PeakDetection(_Tool):
 
             for i in range(1, len(signal)):
                 sample = signal[i]
-                d = deltas[i]
+                if not scalar:
+                    d = delta[i]
 
                 if sample > mx_candidate:
                     mx_candidate = sample
@@ -449,7 +450,7 @@ class Maxima(_Tool):
         Array containing values of the maxima
     """
 
-    def __init__(self, method='complete', refractory=0, win_len=None, win_step=None, smooth=True):
+    def __init__(self, win_len, win_step, method='complete', refractory=0):
         assert method in ['complete', 'windowing'], "Method not valid"
         assert refractory >= 0, "Refractory time value should be positive (or 0 to deactivate)"
         if method == 'windowing':
@@ -458,7 +459,7 @@ class Maxima(_Tool):
         _Tool.__init__(self, method=method, refractory=refractory, win_len=win_len, win_step=win_step)
 
     _params_descriptors = {
-        'method': _Par(2, str, 'Method to detect the maxima', 'complete', lambda x: x in ['complete', 'windowing']),
+        'method': _Par(0, str, 'Method to detect the maxima', 'complete', lambda x: x in ['complete', 'windowing']),
         'refractory': _Par(0, float, 'Seconds to skip after detection of a maximum (method = "complete")', 0,
                            lambda x: x > 0, lambda x, p: p['method'] == 'complete'),
         'win_len': _Par(2, float, "Length of window in seconds (method = 'windowing')", constraint=lambda x: x > 0,
@@ -556,7 +557,7 @@ class Minima(_Tool):
         Array containing values of the minima
     """
 
-    def __init__(self, method='complete', refractory=0, win_len=None, win_step=None, smooth=True):
+    def __init__(self, win_len, win_step, method='complete', refractory=0):
         assert method in ['complete', 'windowing'], "Method not valid"
         assert refractory >= 0, "Refractory time value should be positive (or 0 to deactivate)"
         if method == 'windowing':
@@ -565,7 +566,7 @@ class Minima(_Tool):
         _Tool.__init__(self, method=method, refractory=refractory, win_len=win_len, win_step=win_step)
 
     _params_descriptors = {
-        'method': _Par(2, str, 'Method to detect the minima', constraint=lambda x: x in ['complete', 'windowing']),
+        'method': _Par(0, str, 'Method to detect the minima', constraint=lambda x: x in ['complete', 'windowing']),
         'refractory': _Par(0, float, 'Seconds to skip after detection of a minimum (method = "complete")', 0,
                            lambda x: x >= 0, lambda x, p: p['method'] == 'complete'),
         'win_len': _Par(2, float, 'Size of window in seconds (method = "windowing")', constraint=lambda x: x > 0,
@@ -603,7 +604,7 @@ class CreateTemplate(_Tool):
         The template
     """
 
-    def __init__(self, ref_indexes, smp_pre, smp_post, idx_start=0, idx_stop=0):
+    def __init__(self, ref_indexes, smp_pre, smp_post, idx_start=0, idx_stop=None):
         assert smp_pre > 0, "Number of samples before the reference should be positive"
         assert smp_post > 0, "Number of samples after the reference should be positive"
         assert idx_start >= 0, "Start index should be non negative"
@@ -619,10 +620,10 @@ class CreateTemplate(_Tool):
                         constraint=lambda x: x > 0),
         'smp_post': _Par(2, int, 'Number of samples after the reference point to be used to generate the template',
                          constraint=lambda x: x > 0),
-        'idx_start': _Par(2, int,
+        'idx_start': _Par(0, int,
                           'Index of the signal to start the segmentation of the portion used to generate the template',
                           constraint=lambda x: x >= 0),
-        'idx_stop': _Par(2, int,
+        'idx_stop': _Par(0, int,
                          'Index of the signal to end the segmentation of the portion used to generate the template',
                          constraint=lambda x: x >= 0)
     }
@@ -632,6 +633,8 @@ class CreateTemplate(_Tool):
         ref_indexes = params['ref_indexes']
         idx_start = params['idx_start']
         idx_end = params['idx_stop']
+        if idx_end is None:
+            idx_end = len(signal)
         smp_pre = params['smp_pre']
         smp_post = params['smp_post']
 
@@ -679,15 +682,15 @@ class BootstrapEstimation(_Tool):
     
     """
 
-    def __init__(self, func, N=100, k=0.5):
-        assert N > 0, "N should be positive"
+    def __init__(self, func, n=100, k=0.5):
+        assert n > 0, "n should be positive"
         assert 0 < k <= 1, "k should be between (0 and 1]"
-        _Tool.__init__(self, func=func, N=N, k=k)
+        _Tool.__init__(self, func=func, N=n, k=k)
 
     from types import FunctionType as Func
     _params_descriptors = {
         'func': _Par(2, Func, 'Function (accepts as input a vector and returns a scalar).'),
-        'N': _Par(0, int, 'Number of iterations', 100, lambda x: x > 0),
+        'n': _Par(0, int, 'Number of iterations', 100, lambda x: x > 0),
         'k': _Par(0, float, 'Portion of data to be used at each iteration', 0.5, lambda x: 0 < x < 1)
     }
 
@@ -696,7 +699,7 @@ class BootstrapEstimation(_Tool):
         signal = _np.asarray(signal)
         l = len(signal)
         func = params['func']
-        niter = int(params['N'])
+        niter = int(params['n'])
         k = params['k']
 
         estim = []
@@ -950,20 +953,20 @@ class BeatOptimizer(_Tool):
         to improve heart beat detection for wearable devices for info about the algorithm*
     """
 
-    def __init__(self, B=0.25, ibi_median=0, cache=3, sensitivity=0.25):
-        assert B > 0, "Ball radius should be positive"
+    def __init__(self, b=0.25, ibi_median=0, cache=3, sensitivity=0.25):
+        assert b > 0, "Ball radius should be positive"
         assert ibi_median >= 0, "IBI median value should be positive (or equal to 0 for automatic computation"
         assert cache >= 1, "Cache size should be greater than 1"
         assert sensitivity > 0, "Sensitivity value shlud be positive"
 
-        _Tool.__init__(self, B=B, ibi_median=ibi_median, cache=cache, sensitivity=sensitivity)
+        _Tool.__init__(self, B=b, ibi_median=ibi_median, cache=cache, sensitivity=sensitivity)
 
     _params_descriptors = {
-        'B': _Par(0, float, 'Ball radius in seconds to allow pairing between forward and backward beats', 0.25,
+        'b': _Par(0, float, 'Ball radius in seconds to allow pairing between forward and backward beats', 0.25,
                   lambda x: x > 0),
         'cache': _Par(0, int, 'Nuber of IBI to be stored in the cache for adaptive computation of the interval of'
                               ' accepted values',
-                      5, lambda x: x > 0),
+                      3, lambda x: x > 0),
         'sensitivity': _Par(0, float, 'Relative variation from the current median that is accepted', 0.25,
                             lambda x: x > 0),
         'ibi_median': _Par(0, int, 'Ibi value used to initialize the cache. If 0 (default) the ibi_median is computed'
@@ -1166,16 +1169,16 @@ class OptimizeBateman(_Tool):
                        par_ranges=par_ranges, maxiter=maxiter, n_step_1=n_step_1, n_step_2=n_step_2, weight=weight,
                        **kwargs)
 
-    # TODO: fix **kwargs parameters for internal optimization
+    # TODO: fix **kwargs parameters for internal optimization (Andrea) issue?
     _params_descriptors = {
-        'delta': _Par(2, float, 'Minimum amplitude of the peaks in the driver', default=None,
+        'delta': _Par(2, float, 'Minimum amplitude of the peaks in the driver',
                       constraint=lambda x: x > 0),
         'loss_func': _Par(0, str, 'Loss function to be used', default='all',
                           constraint=lambda x: x in ['biz', 'ben', 'all']),
         'opt_method': _Par(0, str, 'Method to perform the search of optimal parameters.', default='bsh',
                            constraint=lambda x: x in ['grid', 'bsh']),
         'complete': _Par(0, bool, 'Whether to perform a minimization after detecting the optimal parameters',
-                         default=True),
+                         default=False),
         'par_ranges': _Par(0, list, '[min_T1, max_T1, min_T2, max_T2] boundaries for the Bateman parameters',
                            default=[0.1, 0.99, 1.5, 5], constraint=lambda x: len(x) == 4),
         'maxiter': _Par(0, int, 'Maximum number of iterations ("asa" method).', default=99999,
@@ -1246,8 +1249,8 @@ class OptimizeBateman(_Tool):
         if complete:
             x0_min, loss_min, niter, nfuncalls, warnflag = _opt.fmin(loss_function, x0,
                                                                      args=(
-                                                                     signal, delta, min_T1, max_T1, min_T2, max_T2,
-                                                                     weight),
+                                                                         signal, delta, min_T1, max_T1, min_T2, max_T2,
+                                                                         weight),
                                                                      full_output=True)
 
             return x0, x0_min, loss, loss_min, exit_code, warnflag
@@ -1255,7 +1258,7 @@ class OptimizeBateman(_Tool):
             return x0, loss, exit_code
 
     @staticmethod
-    def _loss_function(par_bat, signal, delta, min_T1, max_T1, min_T2, max_T2, weight):
+    def _loss_function(par_bat, signal, delta, weight):
         """
         Computes the loss for optimization of Bateman parameters.
 
@@ -1326,9 +1329,9 @@ class OptimizeBateman(_Tool):
                     idx_sel_diff_y = _np.where((diff_y > th_25) & (diff_y < th_75))[0]
                     diff_y_sel = diff_y[idx_sel_diff_y]
 
-                    mean_s = BootstrapEstimation(func=_np.mean, N=10, k=0.5)(diff_y_sel)
+                    mean_s = BootstrapEstimation(func=_np.mean, n=10, k=0.5)(diff_y_sel)
 
-                    mean_y = BootstrapEstimation(func=_np.median, N=10, k=0.5)(y)
+                    mean_y = BootstrapEstimation(func=_np.median, n=10, k=0.5)(y)
 
                     b_mean_s = mean_y - mean_s * (half + (len(driver_portion) - half) / 2)
 
@@ -1368,7 +1371,7 @@ class OptimizeBateman(_Tool):
             return energy
 
     @staticmethod
-    def _loss_function_all(par_bat, signal, delta, min_T1, max_T1, min_T2, max_T2, weight):
+    def _loss_function_all(par_bat, signal, delta):
         """
         Computes the loss for optimization of Bateman parameters.
 
@@ -1448,9 +1451,9 @@ class OptimizeBateman(_Tool):
                     idx_sel_diff_y = _np.where((diff_y > th_25) & (diff_y < th_75))[0]
                     diff_y_sel = diff_y[idx_sel_diff_y]
 
-                    mean_s = BootstrapEstimation(func=_np.mean, N=10, k=0.5)(diff_y_sel)
+                    mean_s = BootstrapEstimation(func=_np.mean, n=10, k=0.5)(diff_y_sel)
 
-                    mean_y = BootstrapEstimation(func=_np.median, N=10, k=0.5)(y)
+                    mean_y = BootstrapEstimation(func=_np.median, n=10, k=0.5)(y)
 
                     b_mean_s = mean_y - mean_s * len(driver_portion) / 2
 
@@ -1479,7 +1482,7 @@ class OptimizeBateman(_Tool):
             return energy
 
     @staticmethod
-    def _loss_benedek(par_bat, signal, delta, min_T1, max_T1, min_T2, max_T2, weight):
+    def _loss_benedek(par_bat, signal, delta):
         """
         Computes the loss for optimization of Bateman parameters according to Benedek2010 (REF).
         #TODO: insert reference
@@ -1649,8 +1652,8 @@ class Histogram(_Tool):
 
     _params_descriptors = {
         'histogram_bins': _Par(1, list,
-                               'Number of bins (int) or bin edges, including the rightmost edge (list-like).', 100,
-                               lambda x: type(x) is not int or x > 0)
+                               'Number of bins.', 100,
+                               lambda x: type(x) is int and x > 0)
     }
 
     @classmethod
