@@ -9,3 +9,4 @@ include-recursive pyphysio/tests/data *
 
 include Makefile
 include LICENSE
+include README.md
