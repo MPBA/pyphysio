@@ -38,13 +38,11 @@ class InBand(_Indicator):
     """
 
     def __init__(self, freq_min, freq_max, method, **kwargs):
-        assert freq_min > 0, "Lower frequency of the band should be > 0"
-        assert freq_max > 0, "Higher frequency of the band should be > 0"
-        _Indicator.__init__(self, freq_min=freq_min, freq_max=freq_max, psd=PSD(method=method, **kwargs), **kwargs)
+        _Indicator.__init__(self, freq_min=freq_min, freq_max=freq_max, method=method, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
-        freq, spec = params['psd'](data)
+        freq, spec = PSD(**params)(data)
         
         # freq is sorted so
         i_min = _np.searchsorted(freq, params["freq_min"])
@@ -79,13 +77,12 @@ class PowerInBand(_Indicator):
         Power in the frequency band
     """
 
-    # TODO (feature): add normalize option (total, length)
     def __init__(self, freq_min, freq_max, method, **kwargs):
-        _Indicator.__init__(self, freq_min=freq_min, freq_max=freq_max, inBand=PSD(method=method, **kwargs), **kwargs)
+        _Indicator.__init__(self, freq_min=freq_min, freq_max=freq_max, method=method, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
-        freq, powers = params['inBand'](data)
+        freq, powers = InBand(**params)(data)
         return _np.sum(powers)
 
 
@@ -116,10 +113,10 @@ class PeakInBand(_Indicator):
     """
 
     def __init__(self, freq_min, freq_max, method, **kwargs):
-        _Indicator.__init__(self, freq_min=freq_min, freq_max=freq_max, method=method,
-                            inBand=PSD(method=method, **kwargs), **kwargs)
+        _Indicator.__init__(self, freq_min=freq_min, freq_max=freq_max, method=method, **kwargs)
     
     @classmethod
     def algorithm(cls, data, params):
-        freq, powers = params['inBand'](data)
-        return freq[_np.argmax(powers)]
+        freq, power = InBand(**params)(data)
+        return freq[_np.argmax(power)]
+
