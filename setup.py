@@ -10,6 +10,7 @@ setup(
               'pyphysio.segmentation',
               'pyphysio.tools',
               'pyphysio.tests',
+              'pyphysio.utilities',
               ],
     package_data={'pyphysio.tests': ['data/*']},
     version='0.9',
