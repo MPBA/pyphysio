@@ -141,7 +141,7 @@ class Signal(_np.ndarray):
     def pickleable(self):
         return self, self.ph
 
-    def save_pickle(self, path):
+    def to_pickle(self, path):
         from gzip import open
         from pickle import dump
         f = open(path, mode="wb")
