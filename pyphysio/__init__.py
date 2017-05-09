@@ -10,7 +10,7 @@ import pyphysio.indicators.NonLinearDomain
 import pyphysio.indicators.PeaksDescription
 import pyphysio.indicators.TimeDomain
 from pyphysio.BaseSegmentation import Segment
-from pyphysio.Signal import EvenlySignal, UnevenlySignal, load_pickle, from_pickleable
+from pyphysio.Signal import EvenlySignal, UnevenlySignal, from_pickle, from_pickleable
 from pyphysio.estimators.Estimators import *
 from pyphysio.filters.Filters import *
 from pyphysio.indicators.FrequencyDomain import *
