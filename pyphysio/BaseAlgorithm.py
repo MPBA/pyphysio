@@ -148,7 +148,7 @@ class Algorithm(object):
 
     @classmethod
     def emulate_log(cls, log):
-        map(lambda (f, m): f(m), log)
+        map(lambda f_m: f_m[0](f_m[1]), log)
 
 
 # noinspection PyProtectedMember

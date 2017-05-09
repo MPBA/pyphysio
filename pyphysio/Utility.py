@@ -24,7 +24,10 @@ def abstractmethod(funcobj):
         #
         #
 
-    funcobj._func_code = abstract_error.func_code
+    if hasattr(abstract_error, "func_code"):
+        funcobj._func_code = abstract_error.func_code
+    else:
+        funcobj.__code__ = abstract_error.__code__
     return abstract_error
 
 
