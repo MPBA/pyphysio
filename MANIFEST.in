@@ -7,6 +7,8 @@ recursive-exclude pyphysio/metrics *.py
 
 include-recursive pyphysio/tests/data *
 
+include interactive.py
+
 include Makefile
 include LICENSE
 include README.md
