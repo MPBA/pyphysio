@@ -1,77 +1,193 @@
+# coding=utf-8
+from __future__ import print_function
 from __future__ import division
 
 import matplotlib.pyplot as plt
-import numpy as _np
+import pyphysio as ph
+import numpy as np
 
-from pyphysio import UnevenlySignal
+
+class _MouseSelectionFilter(object):
+    def __init__(self, onselect):
+        self._select = onselect
+        self._last_press = None
+
+    def on_move(self, event):
+        self._last_press = None
+
+    def on_press(self, event):
+        x, y = event.xdata, event.ydata
+        self._last_press = x, y, event.button
+
+    def on_release(self, event):
+        x, y = event.xdata, event.ydata
+        if self._last_press is not None:
+            xx, yy, b = self._last_press
+            if x == xx and y == yy and event.button == b:
+                self._select(event)
 
 
-def annotate_ecg(ecg, ibi):
-    """
-    Allow annotation of ECG files through minimal UI
+class _ItemManager(object):
+    def __init__(self, snap_func, select, unselect, add, delete):
+        self._snap_func = snap_func
+        self._select = select
+        self._unselect = unselect
+        self._delete = delete
+        self._add = add
+        self.selection = -1
 
-    mouse click : update position
-    w : search peak around position
-    q : delete peak around position
-    """
+    def unselect(self):
+        self._unselect(self.selection)
+        self.selection = None
 
-    ibi_times = ibi.get_times()
-    curr_x = 0
+    def on_select(self, ev):
+        if ev.xdata is not None and ev.ydata is not None:
+            x, y, item, new = self._snap_func(ev.xdata, ev.ydata)
+            print("on_select: %d, %d: %d" % (x, y, item))
+            if self.selection is not None:
+                self.unselect()
+            if ev.button == 1:
+                if new:
+                    self._add(x, y, item)
+                else:
+                    self.selection = item
+                    self._select(item)
 
-    def onclick(event):
-        global curr_x
-        print('button = %d x = %f' % (event.button, event.xdata))
-        curr_x = event.xdata
-        return curr_x
 
-    def onkey(event):
-        global curr_x
-        global ecg
-        key = event.key
-        if key == 'w':
-            ecg_portion = ecg.segment_time(curr_x - 0.02, curr_x + 0.02)
-            add_peak(ecg_portion)
-        elif key == 'q':
-            remove_peak(curr_x)
+class Annotate(object):
+    def __call__(self, signal, anno):
+        self.fig = plt.figure()
+        self.p_sig = self.fig.add_subplot(2, 1, 1)
+        self.p_res = self.fig.add_subplot(2, 1, 2, sharex=self.p_sig)
 
-    def add_peak(ecg_portion):
-        global ibi_times
-        mx = _np.argmax(ecg_portion)
-        t_cand = ecg_portion.get_times()[mx]
-        print('will add: ' + str(t_cand))
-        plt.vlines(t_cand, _np.min(ecg), _np.max(ecg), 'g')
-        ibi_times = _np.append(ibi_times, t_cand)
-        return ibi_times
+        self.max = ph.Max()(signal)
+        self.min = ph.Min()(signal)
 
-    def remove_peak(instant):
-        global ibi_times
-        global ecg
-        idx_nearest = _np.argmin(abs(ibi_times - instant))
-        t_nearest = ibi_times[idx_nearest]
-        print('will remove: ' + str(t_nearest))
-        plt.vlines(t_nearest, _np.min(ecg), _np.max(ecg), 'r')
-        ibi_times = _np.delete(ibi_times, idx_nearest)
-        return ibi_times
+        self.margin = ph.Range()(signal) * .1
+        self.max += self.margin
+        self.min -= self.margin
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.plot(ecg.get_times(), ecg.get_values())
-    ax.vlines(ibi.get_times(), _np.min(ecg), _np.max(ecg))
+        self.peaks_t = anno.get_times()
+        self.peaks_v = anno.get_values()
 
-    fig2 = plt.figure()
-    plt.subplot(111, sharex=ax)
-    ibi.plot()
+        self.p_sig.plot(signal.get_times(), signal.get_values(), 'b')
 
-    cid = fig.canvas.mpl_connect('button_press_event', onclick)
-    cid2 = fig.canvas.mpl_connect('key_press_event', onkey)
+        self.p_res.plot(self.peaks_t, self.peaks_v, 'b'),
+        self.p_res.plot(self.peaks_t, self.peaks_v, 'go')
 
-    ##########
-    ##########
+        self.plots = None
+        self.replot()
 
-    ibi_times_sorted = _np.sort(ibi_times)
+        class Cursor(object):
+            left = None
+            right = None
+            radius = .3
+            radiusi = radius * signal.get_sampling_freq()
 
-    ibi_values = _np.diff(ibi_times_sorted)
-    ibi_values = _np.r_[ibi_values[0], ibi_values]
-    ibi_ok = UnevenlySignal(ibi_values, ibi.get_sampling_freq(), 'IBI', x_values=ibi_times_sorted, x_type='instants')
+            @staticmethod
+            def on_move(event):
+                Cursor.draw(event)
 
-    return ibi_ok
+            @staticmethod
+            def on_scroll(event):
+                if event.button == "up":
+                    Cursor.radiusi += 3
+                elif event.button == "down":
+                    Cursor.radiusi -= 7
+                Cursor.radius = Cursor.radiusi / signal.get_sampling_freq()
+                Cursor.draw(event)
+
+            @staticmethod
+            def draw(event):
+                if Cursor.left is not None:
+                    Cursor.left.remove()
+                    Cursor.right.remove()
+                    Cursor.left = None
+                    Cursor.right = None
+                if event.xdata is not None:
+                    Cursor.left = self.p_sig.vlines(event.xdata - Cursor.radius, self.min - self.margin * 2,
+                                                    self.max + self.margin * 2, 'k')
+                    Cursor.right = self.p_sig.vlines(event.xdata + Cursor.radius, self.min - self.margin * 2,
+                                                     self.max + self.margin * 2, 'k')
+                self.fig.canvas.draw()
+
+        def find_peak(s):
+            return np.argmax(s)
+
+        def snap(xdata, ydata):
+            idx = (xdata - signal.get_start_time()) * signal.get_sampling_freq()
+
+            nearest_after = self.peaks_t.searchsorted(xdata)
+            nearest_prev = nearest_after - 1
+
+            dist_after = self.peaks_t[nearest_after] - xdata if 0 <= nearest_after < len(self.peaks_t) else None
+            dist_prev = xdata - self.peaks_t[nearest_prev] if 0 <= nearest_prev < len(self.peaks_t) else None
+
+            if dist_after is None or dist_prev < dist_after:
+                if dist_prev is not None and dist_prev < Cursor.radius:
+                    return self.peaks_t[nearest_prev], ydata, nearest_prev, False
+            elif dist_prev is None or dist_after < dist_prev:
+                if dist_after is not None and dist_after < Cursor.radius:
+                    return self.peaks_t[nearest_after], ydata, nearest_after, False
+
+            s = signal.get_values()[idx - Cursor.radiusi + 1: idx + Cursor.radiusi]
+            m = find_peak(s)
+            return (m + idx - Cursor.radiusi + 1) / signal.get_sampling_freq(), ydata, nearest_after, True
+
+        class Selector(object):
+            selector = None
+
+            @staticmethod
+            def select(item):
+                print("select: %d" % item)
+                Selector.selector = self.p_sig.vlines(self.peaks_t[item], self.min - self.margin, self.max + self.margin, 'g')
+
+            @staticmethod
+            def unselect(item):
+                if Selector.selector is not None:
+                    print("unselect: %d" % item)
+                    Selector.selector.remove()
+
+        def add(time, y, pos):
+            self.peaks_t = np.insert(self.peaks_t, pos, time)
+            value = self.peaks_t[pos]
+            if pos > 0:
+                value -= self.peaks_t[pos - 1]
+            self.peaks_v = np.insert(self.peaks_v, pos, value)
+            self.replot()
+
+        def delete(item):
+            self.peaks_t = np.delete(self.peaks_t, item)
+            self.peaks_v = np.delete(self.peaks_v, item)
+            self.replot()
+
+        im = _ItemManager(snap, Selector.select, Selector.unselect, add, delete)
+        mf = _MouseSelectionFilter(im.on_select)
+
+        def press(ev):
+            print(ev.key)
+            if ev.key == "q" and im.selection is not None:
+                    delete(im.selection)
+                    im.unselect()
+
+        clim = self.fig.canvas.mpl_connect('motion_notify_event', lambda e: (mf.on_move(e), Cursor.on_move(e)))
+        clip = self.fig.canvas.mpl_connect('button_press_event', mf.on_press)
+        clir = self.fig.canvas.mpl_connect('button_release_event', mf.on_release)
+        clis = self.fig.canvas.mpl_connect('scroll_event', Cursor.on_scroll)
+        clik = self.fig.canvas.mpl_connect('key_press_event', press)
+
+        plt.show()
+
+        return ph.UnevenlySignal(values=self.peaks_v,
+                                 sampling_freq=anno.get_sampling_freq(),
+                                 signal_nature=anno.get_signal_nature(),
+                                 start_time=anno.get_start_time(),
+                                 x_values=self.peaks_t,
+                                 x_type='instants',
+                                 duration=anno.get_duration())
+
+    def replot(self):
+        if self.plots is not None:
+            self.plots.remove()
+        self.plots = self.p_sig.vlines(self.peaks_t, self.min, self.max, 'y')
+        self.fig.canvas.draw()

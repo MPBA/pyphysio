@@ -20,7 +20,7 @@ from pyphysio.indicators.TimeDomain import *
 from pyphysio.tests import TestData
 from pyphysio.segmentation.SegmentsGenerators import *
 from pyphysio.tools.Tools import *
-from interactive import annotate_ecg
+from interactive import Annotate
 
 __author__ = "AleB"
 
