@@ -115,7 +115,7 @@ class Annotate(object):
             return np.argmax(s)
 
         def snap(xdata, ydata):
-            idx = (xdata - signal.get_start_time()) * signal.get_sampling_freq()
+            idx = int((xdata - signal.get_start_time()) * signal.get_sampling_freq())
 
             nearest_after = self.peaks_t.searchsorted(xdata)
             nearest_prev = nearest_after - 1
