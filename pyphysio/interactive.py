@@ -55,22 +55,26 @@ class _ItemManager(object):
 
 
 class Annotate(object):
-    def __call__(self, signal, anno):
+    def __init__(self, ecg, ibi):
+        self.ecg = ecg
+        self.ibi = ibi
+        
+    def __call__(self):
         self.fig = plt.figure()
         self.p_sig = self.fig.add_subplot(2, 1, 1)
         self.p_res = self.fig.add_subplot(2, 1, 2, sharex=self.p_sig)
 
-        self.max = ph.Max()(signal)
-        self.min = ph.Min()(signal)
+        self.max = ph.Max()(self.ecg)
+        self.min = ph.Min()(self.ecg)
 
-        self.margin = ph.Range()(signal) * .1
+        self.margin = ph.Range()(self.ecg) * .1
         self.max += self.margin
         self.min -= self.margin
 
-        self.peaks_t = anno.get_times()
-        self.peaks_v = anno.get_values()
+        self.peaks_t = self.ibi.get_times()
+        self.peaks_v = self.ibi.get_values()
 
-        self.p_sig.plot(signal.get_times(), signal.get_values(), 'b')
+        self.p_sig.plot(self.ecg.get_times(), self.ecg.get_values(), 'b')
 
         self.p_res.plot(self.peaks_t, self.peaks_v, 'b'),
         self.p_res.plot(self.peaks_t, self.peaks_v, 'go')
@@ -82,7 +86,7 @@ class Annotate(object):
             left = None
             right = None
             radius = .3
-            radiusi = radius * signal.get_sampling_freq()
+            radiusi = int(radius * self.ecg.get_sampling_freq())
 
             @staticmethod
             def on_move(event):
@@ -94,7 +98,7 @@ class Annotate(object):
                     Cursor.radiusi += 3
                 elif event.button == "down":
                     Cursor.radiusi -= 7
-                Cursor.radius = Cursor.radiusi / signal.get_sampling_freq()
+                Cursor.radius = Cursor.radiusi / self.ecg.get_sampling_freq()
                 Cursor.draw(event)
 
             @staticmethod
@@ -115,8 +119,7 @@ class Annotate(object):
             return np.argmax(s)
 
         def snap(xdata, ydata):
-            idx = (xdata - signal.get_start_time()) * signal.get_sampling_freq()
-
+            
             nearest_after = self.peaks_t.searchsorted(xdata)
             nearest_prev = nearest_after - 1
 
@@ -129,10 +132,11 @@ class Annotate(object):
             elif dist_prev is None or dist_after < dist_prev:
                 if dist_after is not None and dist_after < Cursor.radius:
                     return self.peaks_t[nearest_after], ydata, nearest_after, False
-
-            s = signal.get_values()[idx - Cursor.radiusi + 1: idx + Cursor.radiusi]
+            
+            s = self.ecg.segment_time(xdata - Cursor.radius, xdata + Cursor.radius)
+            s = np.array(s)
             m = find_peak(s)
-            return (m + idx - Cursor.radiusi + 1) / signal.get_sampling_freq(), ydata, nearest_after, True
+            return xdata - Cursor.radius + m / self.ecg.get_sampling_freq(), ydata, nearest_after, True
 
         class Selector(object):
             selector = None
@@ -167,8 +171,8 @@ class Annotate(object):
         def press(ev):
             print(ev.key)
             if ev.key == "q" and im.selection is not None:
-                    delete(im.selection)
-                    im.unselect()
+                delete(im.selection)
+                im.unselect()
 
         clim = self.fig.canvas.mpl_connect('motion_notify_event', lambda e: (mf.on_move(e), Cursor.on_move(e)))
         clip = self.fig.canvas.mpl_connect('button_press_event', mf.on_press)
@@ -177,17 +181,18 @@ class Annotate(object):
         clik = self.fig.canvas.mpl_connect('key_press_event', press)
 
         plt.show()
-
-        return ph.UnevenlySignal(values=self.peaks_v,
-                                 sampling_freq=anno.get_sampling_freq(),
-                                 signal_nature=anno.get_signal_nature(),
-                                 start_time=anno.get_start_time(),
-                                 x_values=self.peaks_t,
-                                 x_type='instants',
-                                 duration=anno.get_duration())
-
+    
     def replot(self):
         if self.plots is not None:
             self.plots.remove()
         self.plots = self.p_sig.vlines(self.peaks_t, self.min, self.max, 'y')
         self.fig.canvas.draw()
+
+    def corrected_ibi(self):
+        return ph.UnevenlySignal(values=self.peaks_v,
+                                 sampling_freq=self.ibi.get_sampling_freq(),
+                                 signal_nature=self.ibi.get_signal_nature(),
+                                 start_time=self.ibi.get_start_time(),
+                                 x_values=self.peaks_t,
+                                 x_type='instants',
+                                 duration=self.ibi.get_duration())
