@@ -55,12 +55,13 @@ class _ItemManager(object):
 
 
 class Annotate(object):
-    def __init__(self, ecg, ibi):
+    def __init__(self):
+        self.plots = None
+        self.peaks_t = None
+
+    def __call__(self, ecg, ibi):
         self.ecg = ecg
         self.ibi = ibi
-        self.plots = None
-        
-    def __call__(self):
         self.fig = plt.figure()
         self.p_sig = self.fig.add_subplot(2, 1, 1)
         self.p_res = self.fig.add_subplot(2, 1, 2, sharex=self.p_sig)
@@ -72,8 +73,12 @@ class Annotate(object):
         self.max += self.margin
         self.min -= self.margin
 
-        self.peaks_t = self.ibi.get_times()
-        self.peaks_v = self.ibi.get_values()
+        if isinstance(ibi, ph.UnevenlySignal):
+            self.peaks_t = self.ibi.get_times()
+            self.peaks_v = self.ibi.get_values()
+        else:
+            self.peaks_t = np.empty(0)
+            self.peaks_v = np.empty(0)
 
         self.p_sig.plot(self.ecg.get_times(), self.ecg.get_values(), 'b')
 
@@ -131,7 +136,7 @@ class Annotate(object):
             elif dist_prev is None or dist_after < dist_prev:
                 if dist_after is not None and dist_after < Cursor.radius:
                     return self.peaks_t[nearest_after], ydata, nearest_after, False
-            
+
             s = self.ecg.segment_time(xdata - Cursor.radius, xdata + Cursor.radius)
             s = np.array(s)
             m = find_peak(s)
@@ -181,16 +186,26 @@ class Annotate(object):
 
         plt.show(block=True)
 
-        return ph.UnevenlySignal(values=self.peaks_v,
-                                 sampling_freq=self.ibi.get_sampling_freq(),
-                                 signal_nature=self.ibi.get_signal_nature(),
-                                 start_time=self.ibi.get_start_time(),
-                                 x_values=self.peaks_t,
-                                 x_type='instants',
-                                 duration=self.ibi.get_duration())
+        if isinstance(ibi, ph.UnevenlySignal):
+            return ph.UnevenlySignal(values=self.peaks_v,
+                                     sampling_freq=self.ibi.get_sampling_freq(),
+                                     signal_nature=self.ibi.get_signal_nature(),
+                                     start_time=self.ibi.get_start_time(),
+                                     x_values=self.peaks_t,
+                                     x_type='instants',
+                                     duration=self.ibi.get_duration())
+        else:
+            return ph.UnevenlySignal(values=self.peaks_v,
+                                     sampling_freq=self.ecg.get_sampling_freq(),
+                                     signal_nature=self.ecg.get_signal_nature(),
+                                     start_time=self.ecg.get_start_time(),
+                                     x_values=self.peaks_t,
+                                     x_type='instants',
+                                     duration=self.ecg.get_duration())
     
     def replot(self):
         if self.plots is not None:
             self.plots.remove()
-        self.plots = self.p_sig.vlines(self.peaks_t, self.min, self.max, 'y')
-        self.fig.canvas.draw()
+        if self.peaks_t is not None:
+            self.plots = self.p_sig.vlines(self.peaks_t, self.min, self.max, 'y')
+            self.fig.canvas.draw()

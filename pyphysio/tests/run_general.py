@@ -11,7 +11,7 @@ def test_annotate_ecg():
     ecg = ph.EvenlySignal(ph.TestData.ecg(), 2048)
     ibi = ph.BeatFromECG()(ecg)
 
-    print(ph.Annotate()(ecg, ibi))
+    print(ph.Annotate()(ecg.segment_time(0, 20), []))
 
 
 if __name__ == '__main__':
