@@ -186,6 +186,9 @@ class Annotate(object):
 
         plt.show(block=True)
 
+        self.peaks_v = np.diff(self.peaks_t)
+        self.peaks_v = np.r_[self.peaks_v[0], self.peaks_v]
+        
         if isinstance(ibi, ph.UnevenlySignal):
             return ph.UnevenlySignal(values=self.peaks_v,
                                      sampling_freq=self.ibi.get_sampling_freq(),
