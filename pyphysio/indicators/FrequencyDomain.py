@@ -82,6 +82,8 @@ class PowerInBand(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
+        if len(data)<3:
+            return _np.nan
         freq, powers = InBand(**params)(data)
         return _np.sum(powers)
 
@@ -117,6 +119,9 @@ class PeakInBand(_Indicator):
     
     @classmethod
     def algorithm(cls, data, params):
+        if len(data)<3:
+            return _np.nan
+        
         freq, power = InBand(**params)(data)
         return freq[_np.argmax(power)]
 

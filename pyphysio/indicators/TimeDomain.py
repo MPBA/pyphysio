@@ -57,6 +57,8 @@ class Range(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
+        if len(data)<2:
+            return _np.nan
         return Max()(data) - Min()(data)
 
 
@@ -81,6 +83,8 @@ class StDev(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
+        if len(data)<2:
+            return _np.nan
         return _np.nanstd(data.get_values())
 
 
@@ -107,6 +111,8 @@ class AUC(_Indicator):
     def algorithm(cls, signal, params):
         if isinstance(signal, _Signal) and not isinstance(signal, _EvenlySignal):
             cls.warn('Calculating Area Under the Curve of an Unevenly signal!')
+        if len(signal)<2:
+            return _np.nan
         fsamp = signal.get_sampling_freq()
         return (1. / fsamp) * Sum()(signal)
 
@@ -120,6 +126,8 @@ class RMSSD(_Indicator):
 
     @classmethod
     def algorithm(cls, signal, params):
+        if len(signal)<2:
+            return _np.nan
         diff = _Diff()(signal)
         return _np.sqrt(_np.mean(_np.power(diff.get_values(), 2)))
 
@@ -133,6 +141,8 @@ class SDSD(_Indicator):
 
     @classmethod
     def algorithm(cls, signal, params):
+        if len(signal)<2:
+            return _np.nan
         diff = _Diff()(signal)
         return StDev()(diff)
 

@@ -31,6 +31,8 @@ class PoincareSD1(_Indicator):
         @return: (SD1, SD2)
         @rtype: (array, array)
         """
+        if len(data)<3:
+            return _np.nan
         xd, yd = _np.array(list(data[:-1])), _np.array(list(data[1:]))
         sd1 = _np.std((xd - yd) / _np.sqrt(2.0))
         return sd1
@@ -57,6 +59,8 @@ class PoincareSD2(_Indicator):
         @return: (SD1, SD2)
         @rtype: (array, array)
         """
+        if len(data)<3:
+            return _np.nan
         xd, yd = _np.array(list(data[:-1])), _np.array(list(data[1:]))
         sd2 = _np.std((xd + yd) / _np.sqrt(2.0))
         return sd2
@@ -83,6 +87,8 @@ class PoincareSD1SD2(_Indicator):
         @return: (SD1, SD2)
         @rtype: (array, array)
         """
+        if len(data)<3:
+            return _np.nan
         sd1 = PoincareSD1()(data)
         sd2 = PoincareSD2()(data)
         return sd1 / sd2
@@ -104,6 +110,8 @@ class PoinEll(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
+        if len(data)<3:
+            return _np.nan
         sd1 = PoincareSD1()(data)
         sd2 = PoincareSD2()(data)
         return sd1 * sd2 * _np.pi
@@ -130,6 +138,8 @@ class PNNx(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
+        if len(data)<3:
+            return _np.nan
         return NNx.algorithm(data, params) / float(len(data))
 
 
@@ -149,6 +159,8 @@ class NNx(_Indicator):
 
     @classmethod
     def algorithm(cls, signal, params):
+        if len(signal)<3:
+            return _np.nan
         th = params['threshold']
         diff = _Diff()(signal)
         return sum(1.0 for x in diff * 1000 if x > th)
