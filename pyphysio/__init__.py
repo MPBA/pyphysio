@@ -25,11 +25,11 @@ from interactive import Annotate
 __author__ = "AleB"
 
 
-def preset_hrv_fd(prefix="IBI_"):
-    VLF = PowerInBand(interp_freq=4, freq_max=0.04, freq_min=0.00001, method='ar', name="VLF_Pow")
-    LF = PowerInBand(interp_freq=4, freq_max=0.15, freq_min=0.04, method='ar', name="LF_Pow")
-    HF = PowerInBand(interp_freq=4, freq_max=0.4, freq_min=0.15, method='ar', name="HF_Pow")
-    Total = PowerInBand(interp_freq=4, freq_max=2, freq_min=0.00001, method='ar', name="Total_Pow")
+def preset_hrv_fd(prefix="IBI_", method='ar'):
+    VLF = PowerInBand(interp_freq=4, freq_max=0.04, freq_min=0.00001, method=method, name="VLF_Pow")
+    LF = PowerInBand(interp_freq=4, freq_max=0.15, freq_min=0.04, method=method, name="LF_Pow")
+    HF = PowerInBand(interp_freq=4, freq_max=0.4, freq_min=0.15, method=method, name="HF_Pow")
+    Total = PowerInBand(interp_freq=4, freq_max=2, freq_min=0.00001, method=method, name="Total_Pow")
     
     t = [VLF, LF, HF, Total]
 
