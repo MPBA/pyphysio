@@ -12,7 +12,7 @@ setup(
               'pyphysio.tests',
               ],
     package_data={'pyphysio.tests': ['data/*']},
-    version='0.11dev',
+    version='0.11',
     description='Python library for physiological signals analysis (IBI & HRV, ECG, BVP, EDA, RESP...)',
     author='MPBA FBK',
     author_email='bizzego@fbk.eu',
