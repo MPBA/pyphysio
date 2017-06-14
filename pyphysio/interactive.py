@@ -66,8 +66,6 @@ class Annotate(object):
         self.p_sig = self.fig.add_subplot(2, 1, 1)
         self.p_res = self.fig.add_subplot(2, 1, 2, sharex=self.p_sig)
 
-        
-        
         self.max = ph.Max()(self.ecg)
         self.min = ph.Min()(self.ecg)
 
@@ -83,10 +81,9 @@ class Annotate(object):
             self.peaks_v = np.empty(0)
 
         self.p_sig.plot(self.ecg.get_times(), self.ecg.get_values(), 'b')
-        
 
-#        self.p_res.plot(self.peaks_t, self.peaks_v, 'b'),
-        self.p_res.plot(self.peaks_t, self.peaks_v, '.-b')
+        self.p_res.plot(self.peaks_t, self.peaks_v, 'b'),
+        self.p_res.plot(self.peaks_t, self.peaks_v, 'go')
 
         self.replot()
 
@@ -189,9 +186,6 @@ class Annotate(object):
 
         plt.show(block=True)
 
-        self.peaks_v = np.diff(self.peaks_t)
-        self.peaks_v = np.r_[self.peaks_v[0], self.peaks_v]
-        
         if isinstance(ibi, ph.UnevenlySignal):
             return ph.UnevenlySignal(values=self.peaks_v,
                                      sampling_freq=self.ibi.get_sampling_freq(),
@@ -210,11 +204,8 @@ class Annotate(object):
                                      duration=self.ecg.get_duration())
     
     def replot(self):
-#        id_bad_ibi = ph.BeatOutliers()(self.ibi)
         if self.plots is not None:
             self.plots.remove()
         if self.peaks_t is not None:
             self.plots = self.p_sig.vlines(self.peaks_t, self.min, self.max, 'y')
-            
-#            self.plots = self.p_sig.vlines(self.ibi.get_times()[id_bad_ibi], self.min, self.max, 'r')
             self.fig.canvas.draw()

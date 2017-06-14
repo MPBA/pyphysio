@@ -3,33 +3,34 @@ from __future__ import division
 
 from numpy import array as _array
 
-import pyphysio.filters.Filters
-import pyphysio.segmentation.SegmentsGenerators
-import pyphysio.indicators.FrequencyDomain
-import pyphysio.indicators.NonLinearDomain
-import pyphysio.indicators.PeaksDescription
-import pyphysio.indicators.TimeDomain
-from pyphysio.BaseSegmentation import Segment
-from pyphysio.Signal import EvenlySignal, UnevenlySignal, from_pickle, from_pickleable
-from pyphysio.estimators.Estimators import *
-from pyphysio.filters.Filters import *
-from pyphysio.indicators.FrequencyDomain import *
-from pyphysio.indicators.NonLinearDomain import *
-from pyphysio.indicators.PeaksDescription import *
-from pyphysio.indicators.TimeDomain import *
-from pyphysio.tests import TestData
-from pyphysio.segmentation.SegmentsGenerators import *
-from pyphysio.tools.Tools import *
-from interactive import Annotate
+from .filters import Filters
+from .segmentation import SegmentsGenerators
+from .indicators import FrequencyDomain
+from .indicators import NonLinearDomain
+from .indicators import PeaksDescription
+from .indicators import TimeDomain
+from .BaseSegmentation import Segment
+from .Signal import EvenlySignal, UnevenlySignal, from_pickle, from_pickleable
+from .interactive import Annotate
+# BE CAREFUL with NAMES!!!
+from .estimators.Estimators import *
+from .filters.Filters import *
+from .indicators.FrequencyDomain import *
+from .indicators.NonLinearDomain import *
+from .indicators.PeaksDescription import *
+from .indicators.TimeDomain import *
+from .tests import TestData
+from .segmentation.SegmentsGenerators import *
+from .tools.Tools import *
 
 __author__ = "AleB"
 
 
-def preset_hrv_fd(prefix="IBI_", method='ar'):
-    VLF = PowerInBand(interp_freq=4, freq_max=0.04, freq_min=0.00001, method=method, name="VLF_Pow")
-    LF = PowerInBand(interp_freq=4, freq_max=0.15, freq_min=0.04, method=method, name="LF_Pow")
-    HF = PowerInBand(interp_freq=4, freq_max=0.4, freq_min=0.15, method=method, name="HF_Pow")
-    Total = PowerInBand(interp_freq=4, freq_max=2, freq_min=0.00001, method=method, name="Total_Pow")
+def preset_hrv_fd(prefix="IBI_"):
+    VLF = PowerInBand(interp_freq=4, freq_max=0.04, freq_min=0.00001, method='ar', name="VLF_Pow")
+    LF = PowerInBand(interp_freq=4, freq_max=0.15, freq_min=0.04, method='ar', name="LF_Pow")
+    HF = PowerInBand(interp_freq=4, freq_max=0.4, freq_min=0.15, method='ar', name="HF_Pow")
+    Total = PowerInBand(interp_freq=4, freq_max=2, freq_min=0.00001, method='ar', name="Total_Pow")
     
     t = [VLF, LF, HF, Total]
 
@@ -135,7 +136,7 @@ def algo(function, **kwargs):
     :return: An algorithm class if params is None else a parametrized algorithm instance.
     """
 
-    from BaseAlgorithm import Algorithm
+    from .BaseAlgorithm import Algorithm
 
     class Custom(Algorithm):
         def __init__(self, **kwargs):
