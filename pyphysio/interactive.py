@@ -60,7 +60,6 @@ class Annotate(object):
         self.peaks_t = None
 
     def __call__(self, ecg, ibi):
-        plt.ioff()
         self.ecg = ecg
         self.ibi = ibi
         self.fig = plt.figure()
