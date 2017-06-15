@@ -113,7 +113,7 @@ class Annotate(object):
                     Cursor.right.remove()
                     Cursor.left = None
                     Cursor.right = None
-                if event.xdata is not None:
+                if event.xdata is not None: # TODO: not do this if speed (dxdata/dt) is high
                     Cursor.left = self.p_sig.vlines(event.xdata - Cursor.radius, self.min - self.margin * 2,
                                                     self.max + self.margin * 2, 'k')
                     Cursor.right = self.p_sig.vlines(event.xdata + Cursor.radius, self.min - self.margin * 2,
@@ -174,19 +174,21 @@ class Annotate(object):
                 delete(im.selection)
                 im.unselect()
 
+            
         clim = self.fig.canvas.mpl_connect('motion_notify_event', lambda e: (mf.on_move(e), Cursor.on_move(e)))
         clip = self.fig.canvas.mpl_connect('button_press_event', mf.on_press)
         clir = self.fig.canvas.mpl_connect('button_release_event', mf.on_release)
         clis = self.fig.canvas.mpl_connect('scroll_event', Cursor.on_scroll)
         clik = self.fig.canvas.mpl_connect('key_press_event', press)
-
+        
         plt.show(block=True)
-
+        
+        
         # it is correct that the computation of the values is done at the end!
         # do not change!
         self.peaks_v = np.diff(self.peaks_t)
         self.peaks_v = np.r_[self.peaks_v[0], self.peaks_v]
-        
+                    
         if isinstance(ibi, ph.UnevenlySignal):
             return ph.UnevenlySignal(values=self.peaks_v,
                                      sampling_freq=self.ibi.get_sampling_freq(),
@@ -203,6 +205,7 @@ class Annotate(object):
                                      x_values=self.peaks_t,
                                      x_type='instants',
                                      duration=self.ecg.get_duration())
+        
     
     def replot(self):
         if self.plots is not None:
