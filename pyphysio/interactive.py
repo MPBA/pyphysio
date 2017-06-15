@@ -60,6 +60,7 @@ class Annotate(object):
         self.peaks_t = None
 
     def __call__(self, ecg, ibi):
+        plt.ioff()
         self.ecg = ecg
         self.ibi = ibi
         self.fig = plt.figure()
@@ -156,17 +157,13 @@ class Annotate(object):
                     print("unselect: %d" % item)
                     Selector.selector.remove()
 
+        # it is correct that the computation of the values is done at the end (line 186)
         def add(time, y, pos):
             self.peaks_t = np.insert(self.peaks_t, pos, time)
-            value = self.peaks_t[pos]
-            if pos > 0:
-                value -= self.peaks_t[pos - 1]
-            self.peaks_v = np.insert(self.peaks_v, pos, value)
             self.replot()
 
         def delete(item):
             self.peaks_t = np.delete(self.peaks_t, item)
-            self.peaks_v = np.delete(self.peaks_v, item)
             self.replot()
 
         im = _ItemManager(snap, Selector.select, Selector.unselect, add, delete)
@@ -186,6 +183,11 @@ class Annotate(object):
 
         plt.show(block=True)
 
+        # it is correct that the computation of the values is done at the end!
+        # do not change!
+        self.peaks_v = np.diff(self.peaks_t)
+        self.peaks_v = np.r_[self.peaks_v[0], self.peaks_v]
+        
         if isinstance(ibi, ph.UnevenlySignal):
             return ph.UnevenlySignal(values=self.peaks_v,
                                      sampling_freq=self.ibi.get_sampling_freq(),
