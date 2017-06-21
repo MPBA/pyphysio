@@ -60,6 +60,7 @@ class Annotate(object):
         self.peaks_t = None
 
     def __call__(self, ecg, ibi):
+        self.done = False
         self.ecg = ecg
         self.ibi = ibi
         self.fig = plt.figure()
@@ -173,6 +174,11 @@ class Annotate(object):
             if ev.key == "q" and im.selection is not None:
                 delete(im.selection)
                 im.unselect()
+                
+        def handle_close(ev):
+            self.done = True
+            return
+                
 
             
         clim = self.fig.canvas.mpl_connect('motion_notify_event', lambda e: (mf.on_move(e), Cursor.on_move(e)))
@@ -180,10 +186,13 @@ class Annotate(object):
         clir = self.fig.canvas.mpl_connect('button_release_event', mf.on_release)
         clis = self.fig.canvas.mpl_connect('scroll_event', Cursor.on_scroll)
         clik = self.fig.canvas.mpl_connect('key_press_event', press)
+        ccls = self.fig.canvas.mpl_connect('close_event', handle_close)
         
-        plt.show(block=True)
+        while not self.done :
+            print('waiting')
+            plt.pause(1)
         
-        
+        plt.close(self.fig)
         # it is correct that the computation of the values is done at the end!
         # do not change!
         self.peaks_v = np.diff(self.peaks_t)
