@@ -55,11 +55,9 @@ class _ItemManager(object):
 
 
 class Annotate(object):
-    def __init__(self):
+    def __init__(self, ecg, ibi):
         self.plots = None
         self.peaks_t = None
-
-    def __call__(self, ecg, ibi):
         self.done = False
         self.ecg = ecg
         self.ibi = ibi
@@ -199,7 +197,7 @@ class Annotate(object):
         self.peaks_v = np.r_[self.peaks_v[0], self.peaks_v]
                     
         if isinstance(ibi, ph.UnevenlySignal):
-            return ph.UnevenlySignal(values=self.peaks_v,
+            self.ibi_ok =  ph.UnevenlySignal(values=self.peaks_v,
                                      sampling_freq=self.ibi.get_sampling_freq(),
                                      signal_nature=self.ibi.get_signal_nature(),
                                      start_time=self.ibi.get_start_time(),
@@ -207,7 +205,7 @@ class Annotate(object):
                                      x_type='instants',
                                      duration=self.ibi.get_duration())
         else:
-            return ph.UnevenlySignal(values=self.peaks_v,
+            self.ibi_ok = ph.UnevenlySignal(values=self.peaks_v,
                                      sampling_freq=self.ecg.get_sampling_freq(),
                                      signal_nature=self.ecg.get_signal_nature(),
                                      start_time=self.ecg.get_start_time(),
@@ -215,6 +213,8 @@ class Annotate(object):
                                      x_type='instants',
                                      duration=self.ecg.get_duration())
         
+    def __call__(self):
+        return self.ibi_ok
     
     def replot(self):
         if self.plots is not None:
