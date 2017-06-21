@@ -43,7 +43,7 @@ class _ItemManager(object):
     def on_select(self, ev):
         if ev.xdata is not None and ev.ydata is not None:
             x, y, item, new = self._snap_func(ev.xdata, ev.ydata)
-            print("on_select: %d, %d: %d" % (x, y, item))
+#            print("on_select: %d, %d: %d" % (x, y, item))
             if self.selection is not None:
                 self.unselect()
             if ev.button == 1:
@@ -148,13 +148,13 @@ class Annotate(object):
 
             @staticmethod
             def select(item):
-                print("select: %d" % item)
+#                print("select: %d" % item)
                 Selector.selector = self.p_sig.vlines(self.peaks_t[item], self.min - self.margin, self.max + self.margin, 'g')
 
             @staticmethod
             def unselect(item):
                 if Selector.selector is not None:
-                    print("unselect: %d" % item)
+#                    print("unselect: %d" % item)
                     Selector.selector.remove()
 
         # it is correct that the computation of the values is done at the end (line 186)
@@ -170,7 +170,7 @@ class Annotate(object):
         mf = _MouseSelectionFilter(im.on_select)
 
         def press(ev):
-            print(ev.key)
+#            print(ev.key)
             if ev.key == "q" and im.selection is not None:
                 delete(im.selection)
                 im.unselect()
@@ -189,7 +189,7 @@ class Annotate(object):
         ccls = self.fig.canvas.mpl_connect('close_event', handle_close)
         
         while not self.done :
-            print('waiting')
+#            print('waiting')
             plt.pause(1)
         
         plt.close(self.fig)
