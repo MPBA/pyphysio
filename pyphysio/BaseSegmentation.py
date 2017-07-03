@@ -120,7 +120,7 @@ class SegmentationIterator(object):
         self._win = _cpy(win)
         self._win.init_segmentation()
 
-    def next(self):
+    def __next__(self):
         return self._win.next_segment()
 
 

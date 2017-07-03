@@ -123,7 +123,7 @@ def fmap(segments, algorithms, alt_signal=None):
                        [alg(seg(alt_signal)) for alg in algorithms] for seg in (
         segments(alt_signal) if isinstance(segments, SegmentsGenerator) else segments
     )])
-    col_names = ["begin", "end", "label"] + map(lambda x: x.__repr__(), algorithms)
+    col_names = ["begin", "end", "label"] + [x.__repr__() for x in algorithms]
     return values, _array(col_names)
 
 

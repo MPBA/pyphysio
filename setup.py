@@ -12,12 +12,11 @@ setup(
               'pyphysio.tests',
               ],
     package_data={'pyphysio.tests': ['data/*']},
-    version='0.13dev',
+    version='0.14dev',
     description='Python library for physiological signals analysis (IBI & HRV, ECG, BVP, EDA, RESP...)',
     author='MPBA FBK',
     author_email='bizzego@fbk.eu',
     url='https://sites.google.com/site/pyhrvlib/pyhrv',
-    download_url='https://github.com/peterldowns/mypackage/archive/0.1.tar.gz',
     keywords=['eda', 'gsr', 'ecg', 'bvp', 'signal', 'analysis', 'physiological', 'pyhrv', 'hrv'],
     classifiers=[
         'Development Status :: 5 - Production/Stable',

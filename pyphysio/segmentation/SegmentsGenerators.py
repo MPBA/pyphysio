@@ -88,10 +88,21 @@ class _SegmentsWithLabelSignal(SegmentsGenerator):
                 # labels segment bounds, may be < 0 (None < 0)
                 first = self._labsig.get_iidx(b)
                 last = self._labsig.get_iidx(e)
-
-                # first label
+                
+                lab_seg = self._labsig.segment_idx(first,last)
+                lab_first = lab_seg[0]
+                
+                if (lab_seg == lab_first).all():
+                    label = lab_first
+                else:
+                    if self._params['drop_mixed']:
+                        continue
+                    else:
+                        label = None
+                '''# first label
                 label = self._labsig[first]
 
+                
                 # Check if classically mixed
                 # compare with first each label in [b+1, e)
                 for i in range(last - 1, first, -1):
@@ -103,7 +114,9 @@ class _SegmentsWithLabelSignal(SegmentsGenerator):
                         else:
                             # keep with label == None
                             label = None
-                        break  # for
+                            break  # for
+                # here: all labels are similar
+                '''
             # keep
             break
 
@@ -121,7 +134,7 @@ class FixedSegments(_SegmentsWithLabelSignal):
     ----------
     step : float, >0
         time distance between subsequent segments.
-
+ 
     Optional parameters
     -------------------
     width : float, >0, default=step
@@ -131,10 +144,10 @@ class FixedSegments(_SegmentsWithLabelSignal):
     labels : array
         Signal of the labels
     drop_mixed : bool, default=True
-        In case labels is specified, weather to drop segments with more than one label, if False the label of such
+        In case labels is specified, whether to drop segments with more than one label, if False the label of such
          segments is set to None.
     drop_cut : bool, default=True
-        Weather to drop segments that are shorter due to the crossing of the signal end.
+        Whether to drop segments that are shorter due to the crossing of the signal end.
     """
 
     def __init__(self, step, width=None, start=None, labels=None, drop_mixed=True, drop_cut=True, **kwargs):
@@ -203,6 +216,7 @@ class CustomSegments(_SegmentsWithLabelSignal):
         self._i = -1
         self._b = self._params['begins']
         self._e = self._params['ends']
+        self._labsig = self._params["labels"]
 
     def next_times(self):
         self._i += 1
