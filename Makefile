@@ -4,4 +4,7 @@ init:
 test:
 	pytest
 
+tests:
+	pytest
+
 .PHONY: init test

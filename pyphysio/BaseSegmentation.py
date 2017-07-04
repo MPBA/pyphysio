@@ -123,6 +123,10 @@ class SegmentationIterator(object):
     def __next__(self):
         return self._win.next_segment()
 
+    # Python 2 & users compatibility
+    def next(self):
+        return self.__next__()
+
 
 class SegmentationError(Exception):
     """

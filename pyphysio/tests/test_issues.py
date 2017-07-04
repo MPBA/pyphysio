@@ -236,3 +236,32 @@ class GeneralTest(unittest.TestCase):
         label_based = ph.LabelSegments(labels=label)
 
         assert len([x for x in label_based(ibi)]) == 4
+
+    @staticmethod
+    def test_issue48():
+        ecg = ph.EvenlySignal(values=ph.TestData.ecg(), sampling_freq=2048, signal_nature='ecg')
+        ibi = ph.BeatFromECG()(ecg)
+
+        # create fake label
+        label = np.zeros(1200)
+        label[300:600] = 1
+        label[900:1200] = 2
+        label = ph.EvenlySignal(label, sampling_freq=10, signal_nature='label')
+
+        t_start = [0.5, 15, 88.7]
+        t_stop = [5, 21, 110.4]
+        custom_segments = ph.CustomSegments(begins=t_start, ends=t_stop, labels=label)
+
+        indicators, col_names = ph.fmap(custom_segments, [ph.Mean()], ibi)
+
+        assert indicators[0][0] == t_start[0]
+        assert indicators[1][0] == t_start[1]
+        assert indicators[2][0] == t_start[2]
+
+        assert indicators[0][1] == t_stop[0]
+        assert indicators[1][1] == t_stop[1]
+        assert indicators[2][1] == t_stop[2]
+
+        assert indicators[0][2] == 0
+        assert indicators[1][2] == 0
+        assert indicators[2][2] == 0

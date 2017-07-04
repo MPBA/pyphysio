@@ -9,7 +9,7 @@ except ImportError:
 import numpy as np
 # noinspection PyUnresolvedReferences
 
-# from pytest import approx as approx
+from pytest import approx as approx
 
 __author__ = 'aleb'
 

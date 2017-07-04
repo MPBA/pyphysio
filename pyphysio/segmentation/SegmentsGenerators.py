@@ -88,21 +88,10 @@ class _SegmentsWithLabelSignal(SegmentsGenerator):
                 # labels segment bounds, may be < 0 (None < 0)
                 first = self._labsig.get_iidx(b)
                 last = self._labsig.get_iidx(e)
-                
-                lab_seg = self._labsig.segment_idx(first,last)
-                lab_first = lab_seg[0]
-                
-                if (lab_seg == lab_first).all():
-                    label = lab_first
-                else:
-                    if self._params['drop_mixed']:
-                        continue
-                    else:
-                        label = None
-                '''# first label
+
+                # first label
                 label = self._labsig[first]
 
-                
                 # Check if classically mixed
                 # compare with first each label in [b+1, e)
                 for i in range(last - 1, first, -1):
@@ -114,10 +103,8 @@ class _SegmentsWithLabelSignal(SegmentsGenerator):
                         else:
                             # keep with label == None
                             label = None
-                            break  # for
-                # here: all labels are similar
-                '''
-            # keep
+                        break  # for
+                        # keep
             break
 
         return b, e, label
@@ -134,7 +121,7 @@ class FixedSegments(_SegmentsWithLabelSignal):
     ----------
     step : float, >0
         time distance between subsequent segments.
- 
+
     Optional parameters
     -------------------
     width : float, >0, default=step
