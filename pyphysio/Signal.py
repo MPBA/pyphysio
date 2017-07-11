@@ -169,10 +169,10 @@ class EvenlySignal(Signal):
         Values of the signal
     sampling_freq : float, >0
         Sampling frequency
-    signal_nature : str, default = ''
-        Type of signal (e.g. 'ECG', 'EDA')
     start_time: float,
         Instant of signal start
+    signal_nature : str, default = ''
+        Type of signal (e.g. 'ECG', 'EDA')
     """
 
     def get_times(self):
@@ -318,10 +318,11 @@ class UnevenlySignal(Signal):
         Values of the signal
     sampling_freq : float, >0
         Sampling frequency
-    signal_nature : str, default = ''
-        Type of signal (e.g. 'ECG', 'EDA')
     start_time: float,
         Instant of signal start
+    signal_nature : str, default = ''
+        Type of signal (e.g. 'ECG', 'EDA')
+    
     
     x_values : numpy.array of int
         Instants, or indices when the values are measured.
