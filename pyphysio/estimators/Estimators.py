@@ -67,9 +67,15 @@ class BeatFromBP(_Estimator):
         # filtering
         signal_f = _IIRFilter(fp=1.2 * fmax, fs=3 * fmax, ftype='ellip')(signal)
         # find range for the adaptive peak detection
-        deltas = 0.5 * _SignalRange(win_len=1.5 / fmax, win_step=1 / fmax)(signal_f)
+        delta = 0.5 * _SignalRange(win_len=1.5 / fmax, win_step=1 / fmax)(signal_f)
+        
+        #adjust for delta values equal to 0
+        idx_delta_zeros = _np.where(delta==0)[0]
+        idx_delta_nozeros = _np.where(delta>0)[0]
+        delta[idx_delta_zeros] = _np.min(delta[idx_delta_nozeros])
+        
         # detection of candidate peaks
-        maxp, minp, ignored, ignored = _PeakDetection(delta=deltas, refractory=refractory, start_max=True)(signal_f)
+        maxp, minp, ignored, ignored = _PeakDetection(delta=delta, refractory=refractory, start_max=True)(signal_f)
 
         if maxp[0] == 0:
             maxp = maxp[1:]
@@ -159,6 +165,11 @@ class BeatFromECG(_Estimator):
         if delta == 0:
             delta = k * _SignalRange(win_len=2 / fmax, win_step=0.5 / fmax, smooth=False)(signal)
 
+        #adjust for delta values equal to 0
+        idx_delta_zeros = _np.where(delta==0)[0]
+        idx_delta_nozeros = _np.where(delta>0)[0]
+        delta[idx_delta_zeros] = _np.min(delta[idx_delta_nozeros])
+        
         refractory = 1 / fmax
 
         maxp, minp, maxv, minv = _PeakDetection(delta=delta, refractory=refractory, start_max=True)(signal)
