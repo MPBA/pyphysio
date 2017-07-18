@@ -138,14 +138,17 @@ class GeneralTest(unittest.TestCase):
                             signal_nature=nature,
                             start_time=start,
                             )
-        # TODO: assert properties of original s
-        # ...
+
+        assert s.get_sampling_freq() == freq
+        assert s.get_signal_nature() == nature
+        assert s.get_start_time() == start
 
         # ineffective
         s.resample(freq_down)
 
         # FIXME: this is part of test_evenly_signal_resample (?)
         # assert properties of resampled s
+
         # length Y
         self.assertEqual(len(s), samples)
         self.assertEqual(len(s.get_values()), samples)

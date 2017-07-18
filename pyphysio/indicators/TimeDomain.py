@@ -6,7 +6,6 @@ import numpy as _np
 from ..BaseIndicator import Indicator as _Indicator
 from ..filters.Filters import Diff as _Diff
 from ..Signal import EvenlySignal as _EvenlySignal, Signal as _Signal
-from ..tools.Tools import Histogram
 
 
 __author__ = 'AleB'

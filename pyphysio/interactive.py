@@ -112,7 +112,7 @@ class Annotate(object):
                     Cursor.right.remove()
                     Cursor.left = None
                     Cursor.right = None
-                if event.xdata is not None: # TODO: not do this if speed (dxdata/dt) is high
+                if event.xdata is not None:  # TODO (Andrea): not do this if speed (dxdata/dt) is high
                     Cursor.left = self.p_sig.vlines(event.xdata - Cursor.radius, self.min - self.margin * 2,
                                                     self.max + self.margin * 2, 'k')
                     Cursor.right = self.p_sig.vlines(event.xdata + Cursor.radius, self.min - self.margin * 2,

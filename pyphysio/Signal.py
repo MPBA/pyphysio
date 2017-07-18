@@ -45,7 +45,6 @@ class Signal(_np.ndarray):
     _MT_INFO_ATTR = "_pyphysio"
 
     def __new__(cls, values, sampling_freq, start_time=None, signal_nature=""):
-        # TODO (feature) multichannel signals
         assert sampling_freq > 0, "The sampling frequency cannot be zero or negative"
         assert start_time is None or isinstance(start_time, _Number), "Start time is not numeric"
         obj = _np.asarray(values).view(cls)
@@ -496,8 +495,6 @@ class UnevenlySignal(Signal):
         portion : UnvenlySignal
             The selected portion
         """
-
-        # TODO Collapse everything to segment iidx and then set the precise start time: the x_values?
 
         return self.segment_idx(self.get_idx(t_start) if t_start is not None else None,
                                 self.get_idx(t_stop) if t_stop is not None else None)

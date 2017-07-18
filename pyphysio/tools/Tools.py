@@ -453,8 +453,8 @@ class Maxima(_Tool):
             winlen = int(params['win_len'] * fsamp)
             winstep = int(params['win_step'] * fsamp)
 
-            # TODO: check that winlen > 2
-            # TODO: check that winstep >= 1
+            # TODO (Andrea): check that winlen > 2
+            # TODO (Andrea): check that winstep >= 1
 
             idx_maxs = [_np.nan]
             maxs = [_np.nan]
@@ -1084,7 +1084,7 @@ class OptimizeBateman(_Tool):
 
         weight = params['weight']
 
-        # TODO: add **kwargs
+        # TODO (Andrea):explain "add **kwargs"
 
         if params['loss_func'] == 'ben':
             loss_function = OptimizeBateman._loss_benedek
@@ -1485,27 +1485,3 @@ class OptimizeBateman(_Tool):
             '\r\r BENEDEK. Current parameters: ' + str(par_bat[0]) + ' - ' + str(par_bat[1]) + ' Loss: ' + str(
                 LOSS) + '\r')
         return LOSS
-
-
-# TODO: remove Histogram class
-class Histogram(_Tool):
-    """
-    Compute the histogram of a set of data.
-    
-    Optional parameters
-    -------------------
-    
-    histogram_bins : 
-        Number of bins (int) or bin edges, including the rightmost edge (list-like).
-    
-    Returns:
-    histogram
-    """
-
-    def __init__(self, histogram_bins=100):
-        assert histogram_bins > 0, "Number of bins should be positive and integer"
-        _Tool.__init__(self, histogram_bins=histogram_bins)
-
-    @classmethod
-    def algorithm(cls, signal, params):
-        return _np.histogram(signal, params['histogram_bins'])

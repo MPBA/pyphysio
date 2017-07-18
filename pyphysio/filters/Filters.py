@@ -254,7 +254,7 @@ class ConvolutionalFilter(_Filter):
         assert irftype == 'custom' or win_len > 0, "Window length value should be positive"
         _Filter.__init__(self, irftype=irftype, win_len=win_len, irf=irf, normalize=normalize)
 
-    # TODO: TEST normalization and results
+    # TODO (Andrea): TEST normalization and results
     @classmethod
     def algorithm(cls, signal, params):
         irftype = params["irftype"]
@@ -279,7 +279,7 @@ class ConvolutionalFilter(_Filter):
 
                 if irftype == 'gauss':
                     if n < 8:
-                        # TODO: test, sometimes it returns nan
+                        # TODO (Andrea): test, sometimes it returns nan
                         cls.error(
                             "'win_len' too short to generate a gaussian IRF, expected > " + str(_np.ceil(8 / fsamp)))
                     std = _np.floor(n / 8)
@@ -341,7 +341,7 @@ class DeConvolutionalFilter(_Filter):
     """
 
     def __init__(self, irf, normalize=True, deconv_method='sps'):
-        # TODO Andrea: "check that irf[0]>0 to avoid scipy BUG" I tried but some of your tests fail
+        # TODO (Andrea): "check that irf[0]>0 to avoid scipy BUG" is it normal? Need to put a check?
         assert deconv_method in ['fft', 'sps'], "Deconvolution method not valid"
         _Filter.__init__(self, irf=irf, normalize=normalize, deconv_method=deconv_method)
 
