@@ -285,7 +285,9 @@ class PSD(_Tool):
     """
 
     def __init__(self, method, nfft=2048, window='hamming', min_order=18, max_order=25, normalize=True,
-                 remove_mean=True, interp_freq=None, **kwargs):
+                 remove_mean=True, interp_freq=None, interp_params=None, **kwargs):
+        if interp_params is None:
+            interp_params = {}
         _method_list = ['welch', 'fft', 'ar']
         _window_list = ['hamming', 'blackman', 'hanning', 'bartlett', 'none']
 
@@ -300,7 +302,7 @@ class PSD(_Tool):
 
         _Tool.__init__(self, method=method, nfft=nfft, window=window, min_order=min_order,
                        max_order=max_order, normalize=normalize, remove_mean=remove_mean, interp_freq=interp_freq,
-                       **kwargs)
+                       interp_params=interp_params, **kwargs)
 
     # TODO (Feature - Issue #15): consider point below:
     # A density spectrum considers the amplitudes per unit frequency.
@@ -315,6 +317,7 @@ class PSD(_Tool):
         window = params['window']
         normalize = params['normalize']
         remove_mean = params['remove_mean']
+        interp_params = params['interp_params']
 
         if not isinstance(signal, _EvenlySignal):
 
@@ -346,7 +349,7 @@ class PSD(_Tool):
 
         signal = signal * win
         if method == 'fft':
-            spec_tmp = _np.abs(_np.fft.fft(signal, n=nfft)) ** 2  # FFT
+            spec_tmp = _np.abs(_np.fft.fft(signal, n=nfft, **interp_params)) ** 2  # FFT
             psd = spec_tmp[0:int(_np.ceil(len(spec_tmp) / 2))]
 
         elif method == 'ar':
@@ -367,15 +370,15 @@ class PSD(_Tool):
                     break
             best_order = orders[_np.argmin(aics)]
 
-            ar, p, k = _aryule(signal, best_order)
+            ar, p, k = _aryule(signal, best_order, **interp_params)
             psd = _arma2psd(ar, NFFT=nfft)
             psd = psd[0: int(_np.ceil(len(psd) / 2))]
 
         elif method == 'welch':
-            bands_w, psd = _welch(signal, fsamp, nfft=nfft)
+            bands_w, psd = _welch(signal, fsamp, nfft=nfft, **interp_params)
         else:
             cls.warn('Method not understood, using welch.')
-            bands_w, psd = _welch(signal, fsamp, nfft=nfft)
+            bands_w, psd = _welch(signal, fsamp, nfft=nfft, **interp_params)
 
         freqs = _np.linspace(start=0, stop=fsamp / 2, num=len(psd))
 
