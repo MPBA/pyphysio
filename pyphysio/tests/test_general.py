@@ -79,8 +79,8 @@ class GeneralTest(unittest.TestCase):
             start_time=8,
             x_type='instants'))(s)
         w3i = [x for x in w3]
-        w4 = ph.CustomSegments(begins=map(lambda x: x.get_begin_time(), w3i),
-                               ends=map(lambda x: x.get_end_time(), w3i))(s)
+        w4 = ph.CustomSegments(begins=[x.get_begin_time() for x in w3i],
+                               ends=[x.get_end_time() for x in w3i])(s)
         w4i = [x for x in w4]
 
         self.assertEqual(len(w4i), len(w3i))
@@ -372,13 +372,13 @@ class GeneralTest(unittest.TestCase):
                             start_time=start,
                             )
 
-        s1 = s[0:x4]
-        s2 = s[x1:x3]
-        s3 = s[x2:-1]
-        s4 = s[x3:samples]
-        s5 = s[0:]
-        s6 = s[:x2]
-        s7 = s[:]
+        s1 = s.segment_idx(0, x4)
+        s2 = s.segment_idx(x1, x3)
+        s3 = s.segment_idx(x2, -1)
+        s4 = s.segment_idx(x3, samples)
+        s5 = s.segment_idx(0, None)
+        s6 = s.segment_idx(None, x2)
+        s7 = s.segment_idx(None, None)
 
         self.assertEqual(len(s1), x4 - 0)
         self.assertEqual(len(s2), x3 - x1)

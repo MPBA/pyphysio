@@ -89,33 +89,19 @@ class _SegmentsWithLabelSignal(SegmentsGenerator):
                 first = self._labsig.get_iidx(b)
                 last = self._labsig.get_iidx(e)
 
-                lab_seg = self._labsig.segment_idx(first,last)
+                if first == last:
+                    last += 1
+
+                lab_seg = self._labsig.segment_iidx(first, last)
                 lab_first = lab_seg[0]
-                
-                if (lab_seg == lab_first).all():
+
+                if len(lab_seg) == 1 or all(lab_seg[1:] == lab_first):
                     label = lab_first
                 else:
                     if self._params['drop_mixed']:
                         continue
                     else:
                         label = None
-                        
-#                # first label
-#                label = self._labsig[first]
-#
-#                # Check if classically mixed
-#                # compare with first each label in [b+1, e)
-#                for i in range(last - 1, first, -1):
-#                    if label != self._labsig[i]:
-#                        # this is a mixed segment
-#                        if self._params['drop_mixed']:
-#                            # goto next segment
-#                            continue
-#                        else:
-#                            # keep with label == None
-#                            label = None
-#                        break  # for
-#                        # keep
             break
 
         return b, e, label
@@ -184,14 +170,14 @@ class CustomSegments(_SegmentsWithLabelSignal):
 
     Parameters
     ----------
-    begins : array
+    begins : array or list
         Array of the begin times of the segments to return.
-    ends : array
+    ends : array or list
         Array of the end times of the segments to return, of the same length of 'begins'.
 
     Optional parameters
     -------------------
-    labels : array
+    labels : array or list
         Signal of the labels
     drop_mixed : bool, default=True
         In case labels is specified, weather to drop segments with more than one label, if False the label of such
@@ -230,7 +216,7 @@ class LabelSegments(_SegmentsWithLabelSignal):
 
     Parameters
     ----------
-    labels : array
+    labels : array or list
         Signal of the labels
 
     Optional parameters

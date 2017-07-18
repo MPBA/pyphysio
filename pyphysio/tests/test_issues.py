@@ -254,14 +254,13 @@ class GeneralTest(unittest.TestCase):
 
         indicators, col_names = ph.fmap(custom_segments, [ph.Mean()], ibi)
 
+        assert len(indicators) == 2
+
         assert indicators[0][0] == t_start[0]
         assert indicators[1][0] == t_start[1]
-        assert indicators[2][0] == t_start[2]
 
         assert indicators[0][1] == t_stop[0]
         assert indicators[1][1] == t_stop[1]
-        assert indicators[2][1] == t_stop[2]
 
         assert indicators[0][2] == 0
         assert indicators[1][2] == 0
-        assert indicators[2][2] == 0

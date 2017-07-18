@@ -12,6 +12,11 @@ __author__ = 'AleB'
 # TODO: Consider collapsing classes
 
 def from_pickleable(pickle):
+    """
+    Builds a Signal using the pickleable tuple version of it.
+    :param pickle: Tuple of the form (Signal, ph dict).
+    :return: Signal
+    """
     d, ph = pickle
     assert isinstance(d, Signal)
     assert isinstance(ph, dict)
@@ -20,9 +25,14 @@ def from_pickleable(pickle):
 
 
 def from_pickle(path):
+    """
+    Loads a Signal from a pickle file given the path.
+    :param path: File system path to the pickle file.
+    :return: A Signal.
+    """
     from gzip import open
     from pickle import load
-    f = open(path, 'rb')
+    f = open(path)
     p = load(f)
     f.close()
     return from_pickleable(p)
@@ -59,7 +69,10 @@ class Signal(_np.ndarray):
     def __array_wrap__(self, out_arr, context=None):
         # Just call the parent's
         # noinspection PyArgumentList
-        return _np.ndarray.__array_wrap__(self, out_arr, context)
+        if isinstance(out_arr, Signal):
+            return _np.ndarray.__array_wrap__(self, out_arr, context)
+        else:
+            return out_arr
 
     @property
     def ph(self):
@@ -142,12 +155,20 @@ class Signal(_np.ndarray):
 
     @property
     def pickleable(self):
+        """
+        Returns a pickleable tuple of this Signal.
+        :return: Tuple (Signal, ph dict).
+        """
         return self, self.ph
 
     def to_pickle(self, path):
+        """
+        Saves this Signal into a pickle file.
+        :param path: File system path to the file to write (create/overwrite).
+        """
         from gzip import open
         from pickle import dump
-        f = open(path, mode="wb")
+        f = open(path, "wb")
         dump(self.pickleable, f, protocol=2)
         f.close()
 
@@ -263,9 +284,9 @@ class EvenlySignal(Signal):
 
         Parameters
         ----------
-        idx_start : int
+        idx_start : int or None
             The index of the start of the interval
-        idx_stop : float
+        idx_stop : int or None
             The index of the end of the interval. By default is the length of the signal
 
         Returns
@@ -505,8 +526,11 @@ class UnevenlySignal(Signal):
         iib = self.get_iidx_from_idx(idx_start)
         iie = self.get_iidx_from_idx(idx_stop)
 
-        iidx_start = int(iib) if iib is not None else 0
-        iidx_stop = int(iie) if iie is not None else -1
+        if iib is None and iie is None:
+            iidx_start = iidx_stop = idx_start = idx_stop = 0
+        else:
+            iidx_start = int(iib) if iib is not None else 0
+            iidx_stop = int(iie) if iie is not None else -1
 
         return UnevenlySignal(values=self.get_values()[iidx_start:iidx_stop],
                               x_values=self.get_indices()[iidx_start:iidx_stop] - idx_start,
