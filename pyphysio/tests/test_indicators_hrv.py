@@ -61,18 +61,18 @@ def test_indicators():
 
     ibi[-1] = 10.011
 
-    assert ph.Mean()(ibi) == 10
-    assert ph.StDev()(ibi) == 0
+    assert ph.Mean()(ibi) != 10
+    assert ph.StDev()(ibi) != 0
 
     assert int(ph.Median()(ibi)) == 10
 
-    assert ph.Range()(ibi) == 0
+    assert ph.Range()(ibi) != 0
 
-    assert ph.RMSSD()(ibi) == 0
-    assert ph.SDSD()(ibi) == 0
+    assert ph.RMSSD()(ibi) != 0
+    assert ph.SDSD()(ibi) != 0
 
-    assert ph.PNNx(threshold=10)(ibi) == 0
+    assert ph.PNNx(threshold=10)(ibi) != 0
     assert ph.PNNx(threshold=25)(ibi) == 0
     assert ph.PNNx(threshold=50)(ibi) == 0
 
-    # assert ph.PoincareSD1SD2()(ibi) == np.nan
+    assert ph.PoincareSD1SD2()(ibi) != 1

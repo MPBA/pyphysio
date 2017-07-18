@@ -95,7 +95,7 @@ class _SegmentsWithLabelSignal(SegmentsGenerator):
                 lab_seg = self._labsig.segment_iidx(first, last)
                 lab_first = lab_seg[0]
 
-                if len(lab_seg) == 1 or all(lab_seg[1:] == lab_first):
+                if len(lab_seg) == 1 or all(lab_seg[:1:-1] == lab_first):
                     label = lab_first
                 else:
                     if self._params['drop_mixed']:

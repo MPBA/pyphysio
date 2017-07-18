@@ -58,7 +58,7 @@ class Algorithm(object):
             return self._params[param]
 
     @classmethod
-    def run(cls, data, params=None, use_cache=True, **kwargs):
+    def run(cls, data, params=None, use_cache=False, **kwargs):
         """
         Gets the data from the cache or calculates, caches and returns it.
         @param data: Source data

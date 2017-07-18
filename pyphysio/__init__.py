@@ -26,7 +26,7 @@ from .tools.Tools import *
 __author__ = "AleB"
 
 
-def preset_hrv_fd(prefix="IBI_", method = 'ar'):
+def preset_hrv_fd(prefix="IBI_", method='ar'):
     VLF = PowerInBand(interp_freq=4, freq_max=0.04, freq_min=0.00001, method=method, name="VLF_Pow")
     LF = PowerInBand(interp_freq=4, freq_max=0.15, freq_min=0.04, method=method, name="LF_Pow")
     HF = PowerInBand(interp_freq=4, freq_max=0.4, freq_min=0.15, method=method, name="HF_Pow")
