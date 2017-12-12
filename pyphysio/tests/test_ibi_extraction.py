@@ -35,17 +35,14 @@ def test_ibi_extraction():
         v_ibi_bad = np.r_[v_ibi_bad[:id_ibi + 1], v_ibi_add, v_ibi_bad[id_ibi + 1:]]
 
         return (ph.UnevenlySignal(v_ibi_bad, sampling_freq=ibi_good.get_sampling_freq(),
+                                  start_time=ibi_good.get_start_time(),
                                   signal_nature=ibi_good.get_signal_nature(),
-                                  # FIXME Andrea start_time=ibi_good.get_start_time(),
                                   x_values=t_ibi_bad, x_type='instants'))
 
     ibi_bad = insert_ibi(20, ibi.copy())
     id_bad_ibi = ph.BeatOutliers(cache=3, sensitivity=0.25)(ibi_bad)
 
     assert (id_bad_ibi[0] == 21 and id_bad_ibi[1] == 22)
-
-    ibi_opt = ph.BeatOptimizer()(ibi_bad)
-    # FIXME Andrea: assert (np.sum(ibi_opt.get_indices() - ibi.get_indices()) == 0)
 
     # %%
     # TEST IBI EXTRACTION FROM BVP
