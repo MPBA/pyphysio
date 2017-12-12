@@ -13,16 +13,9 @@ __author__ = 'AleB'
 
 # IBI ESTIMATION
 class BeatFromBP(_Estimator):
-    # TODO (Andrea): insert reference
     """
     Identify the beats in a Blood Pulse (BP) signal and compute the IBIs.
     Optimized to identify the percussion peak.
-
-    Warning: works only on 'BP' type signal.
-
-    Based on two stages:
-    1) Identification of candidate beats
-    2) Identification of the peak for each beat, using the derivative of the signal
 
     Optional parameters
     -------------------
@@ -42,8 +35,8 @@ class BeatFromBP(_Estimator):
 
     Notes
     -----
-        Bizzego et al., *DBD-RCO: Derivative Based Detection and Reverse Combinatorial Optimization 
-        to improve heart beat detection for wearable devices for info about the algorithm*
+    Please cite:
+        Bizzego, Andrea, and Cesare Furlanello. "DBD-RCO: Derivative Based Detection And Reverse Combinatorial Optimization To Improve Heart Beat Detection For Wearable Devices." bioRxiv (2017): 118943.
     """
 
     def __init__(self, bpm_max=120, win_pre=.25, win_post=.05):
@@ -218,9 +211,10 @@ class DriverEstim(_Estimator):
 
     Notes
     -----
-    Bizzego et al. *A novel method to optimize the estimation of phasic component 
-    of Electrodermal Activity signals*
+    Please cite:
+        
     """
+    #TODO: add citation
 
     def __init__(self, t1=.75, t2=2):
         assert t1 > 0, "t1 value has to be positive"
@@ -320,10 +314,10 @@ class PhasicEstim(_Estimator):
     
     Notes
     -----
-    Bizzego et al. *A novel method to optimize the estimation of phasic component 
-    of Electrodermal Activity signals*
-    
+    Please cite:
+        
     """
+    #TODO: add citation
 
     def __init__(self, delta, grid_size=1, win_pre=2, win_post=2):
         assert delta > 0, "Delta value has to be positive"
