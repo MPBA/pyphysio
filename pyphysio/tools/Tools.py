@@ -826,8 +826,12 @@ class FixIBI(_Tool):
         ibi_nobad = _np.delete(ibi, id_bad)
         idx_ibi = idx_ibi_nobad.astype(int)
         ibi = ibi_nobad
-        return _UnevenlySignal(ibi, signal.get_sampling_freq(), signal.get_signal_nature(), signal.get_start_time(),
-                               x_values=idx_ibi, x_type='indices', duration=signal.get_duration())
+        return _UnevenlySignal(values = ibi, 
+                               sampling_freq = signal.get_sampling_freq(), 
+                               start_time = signal.get_start_time(),
+                               signal_nature = signal.get_signal_nature(), 
+                               x_values=idx_ibi, x_type='indices', 
+                               duration=signal.get_duration())
 
 
 class BeatOptimizer(_Tool):

@@ -358,7 +358,7 @@ class UnevenlySignal(Signal):
     _MT_X_INDICES = "x_values"
     _MT_DURATION = "duration"
 
-    def __new__(cls, values, sampling_freq=1000, signal_nature="", start_time=None, x_values=None, x_type='instants',
+    def __new__(cls, values, sampling_freq=1000, start_time=None, signal_nature="", x_values=None, x_type='instants',
                 duration=None):
         assert x_values is not None, "x_values are missing"
         assert x_type in ['indices', 'instants'], "x_type not in ['indices', 'instants']"

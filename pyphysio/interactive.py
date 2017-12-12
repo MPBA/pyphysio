@@ -169,7 +169,7 @@ class Annotate(object):
 
         def press(ev):
 #            print(ev.key)
-            if ev.key == "q" and im.selection is not None:
+            if ev.key == "d" and im.selection is not None:
                 delete(im.selection)
                 im.unselect()
                 
