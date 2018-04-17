@@ -113,7 +113,10 @@ class Signal(_np.ndarray):
         pass
 
     def get_idx(self, time):
-        return int((time - self.get_start_time()) * self.get_sampling_freq())
+        idx = int((time - self.get_start_time()) * self.get_sampling_freq())
+        if idx < 0:
+            idx=0
+        return(idx)
 
     @_abstract
     def get_iidx(self, time):

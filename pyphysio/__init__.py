@@ -19,12 +19,25 @@ from .indicators.FrequencyDomain import *
 from .indicators.NonLinearDomain import *
 from .indicators.PeaksDescription import *
 from .indicators.TimeDomain import *
+from .sqi.SignalQuality import *
 from .tests import TestData
 from .segmentation.SegmentsGenerators import *
 from .tools.Tools import *
 
 __author__ = "AleB"
 
+def preset_sqi_ecg(prefix="SQI_", method='ar'):
+    K = Kurtosis(name='kurtosis')
+    SPR = SpectralPowerRatio(method, name='SPR')
+    DE = DerivativeEnergy(name='DE')
+    
+    t = [K, SPR, DE]
+
+    if prefix is not None:
+        for i in t:
+            i.set(name=prefix + i.get("name"))
+
+    return t
 
 def preset_hrv_fd(prefix="IBI_", method='ar'):
     VLF = PowerInBand(interp_freq=4, freq_max=0.04, freq_min=0.00001, method=method, name="VLF_Pow")
