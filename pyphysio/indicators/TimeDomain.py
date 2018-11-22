@@ -135,7 +135,7 @@ class SDSD(_Indicator):
         diff = _Diff()(signal)
         return StDev()(diff)
 
-
+# TODO: FIX Histogram missing
 class Triang(_Indicator):
     """
     Computes the HRV triangular index.

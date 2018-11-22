@@ -211,6 +211,7 @@ class SpearmanDistance(object):
         
         return(r, p)        
 
+#TODO: FIX TDS (Time Delay Stability)
 def compute_TDS(x, y, winlen=None, winstep=None, nsamp=0):
     if winlen is None:
         winlen = len(x)

@@ -38,7 +38,7 @@ class BeatFromBP(_Estimator):
     Please cite:
         Bizzego, Andrea, and Cesare Furlanello. "DBD-RCO: Derivative Based Detection And Reverse Combinatorial Optimization To Improve Heart Beat Detection For Wearable Devices." bioRxiv (2017): 118943.
     """
-
+    
     def __init__(self, bpm_max=120, win_pre=.25, win_post=.05):
         if not 10 < bpm_max < 400:
             self.warn("Parameter bpm_max out of reasonable range (10, 400)")
@@ -190,7 +190,7 @@ class BeatFromECG(_Estimator):
 # PHASIC ESTIMATION
 class DriverEstim(_Estimator):
     """
-    Estimates the driver of an EDA signal according to REF
+    Estimates the driver of an EDA signal according to (see Notes)
 
     The estimation uses a deconvolution using a Bateman function as Impulsive Response Function.
     The version of the Bateman function here adopted is:
