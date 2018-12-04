@@ -1,7 +1,7 @@
 import numpy as _np
 from scipy.stats import pearsonr, spearmanr
 from scipy.signal import correlate        
-EXT_LIB_DIR = '/home/andrea/Trento/CODICE/libraries'
+EXT_LIB_DIR = '/home/bizzego/UniTn/software'
 
 #TODO: ADD SEED
 

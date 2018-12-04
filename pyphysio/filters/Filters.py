@@ -2,12 +2,13 @@
 from __future__ import division
 import numpy as _np
 from scipy.signal import gaussian as _gaussian, filtfilt as _filtfilt, filter_design as _filter_design, \
-    deconvolve as _deconvolve
+    deconvolve as _deconvolve, firwin as _firwin, convolve as _convolve
 from matplotlib.pyplot import plot as _plot
 from ..BaseFilter import Filter as _Filter
 from ..Signal import EvenlySignal as _EvenlySignal, UnevenlySignal as _UnevenlySignal
 from ..Utility import abstractmethod as _abstract
 
+from collections import Sequence
 __author__ = 'AleB'
 
 
@@ -169,6 +170,95 @@ class IIRFilter(_Filter):
     def plot(self):
         pass
 
+class FIRFilter(_Filter):
+    """
+    Filter the input signal using a Finite Impulse Response filter.
+
+    Parameters
+    ----------
+    fp : list or float
+        The pass frequencies
+    fs : list or float
+        The stop frequencies
+    
+    Optional parameters
+    -------------------
+    loss : float, >0, default = 0.1
+        Loss tolerance in the pass band
+    att : float, >0, default = 40
+        Minimum attenuation required in the stop band.
+    wtype : str, default = 'hamming'
+        Type of filter. Available types: 'hamming'
+
+    Returns
+    -------
+    signal : EvenlySignal
+        Filtered signal
+
+    Notes
+    -----
+    This is a wrapper of *scipy.signal.firwin*. Refer to `scipy.signal.firwin`
+    for additional information
+    """
+
+    def __init__(self, fp, fs, loss=0.1, att=40, wtype='hamming'):
+        assert loss > 0, "Loss value should be positive"
+        assert att > 0, "Attenuation value should be positive"
+        assert att > loss, "Attenuation value should be greater than loss value"
+        assert wtype in ['hamming'],\
+            "Window type must be in ['hamming']"
+        _Filter.__init__(self, fp=fp, fs=fs, loss=loss, att=att, wtype=wtype)
+
+    @classmethod
+    def algorithm(cls, signal, params):
+        fsamp = signal.get_sampling_freq()
+        fp, fs, loss, att, wtype = params["fp"], params["fs"], params["loss"], params["att"], params["wtype"]
+
+        if isinstance(signal, _UnevenlySignal):
+            cls.warn('Filtering Unevenly signal is undefined. Returning original signal.')
+            return signal
+
+        fp = _np.array(fp)
+        fs = _np.array(fs)
+        
+        if att>0:
+            att = -att
+        d1 = 10**(loss/10)
+        d2 = 10**(att/10)
+        Dsamp = _np.min(abs(fs-fp))/fsamp
+        
+
+        # from https://dsp.stackexchange.com/questions/31066/how-many-taps-does-an-fir-filter-need
+        N = int(2/3*_np.log10(1/(10*d1*d2))*fsamp/Dsamp)
+                
+        pass_zero=True
+                  
+        if isinstance(fp, Sequence):
+            if fp[0]>fs[0]:
+                pass_zero=False
+        else:    
+            if fp>fs:
+                pass_zero=False
+        
+            
+        
+        nyq = 0.5 * fsamp
+        fp = _np.array(fp)
+        wp = fp / nyq
+        print(N)
+        b = _firwin(N, wp, width=Dsamp, window=wtype, pass_zero=pass_zero)
+        sig_filtered = _EvenlySignal(_convolve(signal.get_values(), b, mode='same'), sampling_freq=signal.get_sampling_freq(),
+                                     signal_nature=signal.get_signal_nature(), start_time=signal.get_start_time())
+
+        if _np.isnan(sig_filtered[0]):
+            cls.warn('Filter parameters allow no solution. Returning original signal.')
+            return signal
+        else:
+            return sig_filtered
+
+    @_abstract
+    def plot(self):
+        pass
 
 class DenoiseEDA(_Filter):
     """
