@@ -79,6 +79,7 @@ class Algorithm(object):
             # noinspection PyTypeChecker
             return Cache.run_cached(data, cls, kwargs)
         else:
+            
             return cls.algorithm(data, kwargs)
 
     @classmethod

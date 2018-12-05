@@ -221,6 +221,10 @@ class EvenlySignal(Signal):
         
         return values[nearest_idx]
     
+    def clone(self):
+        x_clone = EvenlySignal(self.get_values().copy(), self.get_sampling_freq(), self.get_start_time(), self.get_signal_nature())
+        return(x_clone)
+        
     def resample(self, fout, kind='linear'):
         """
         Resample a signal
