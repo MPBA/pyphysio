@@ -48,7 +48,8 @@ class Signal(_np.ndarray):
         assert sampling_freq > 0, "The sampling frequency cannot be zero or negative"
         assert start_time is None or isinstance(start_time, _Number), "Start time is not numeric"
         obj = _np.asarray(values).view(cls)
-        assert obj.ndim == 1, "Dimension not 1"
+        if obj.ndim > 1:
+            cls.signal_type = 'multi'
         if len(obj) == 0:
             _PhUI.i("Creating empty " + cls.__name__)
         obj._pyphysio = {

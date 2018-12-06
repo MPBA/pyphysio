@@ -2,7 +2,7 @@
 from abc import abstractmethod as _abstract, ABCMeta as _ABCMeta
 from pyphysio.Signal import Signal
 from pyphysio.Utility import PhUI as _PhUI
-
+import numpy as _np
 __author__ = 'AleB'
 
 
@@ -71,7 +71,7 @@ class Algorithm(object):
         """
         if type(params) is dict:
             kwargs.update(params)
-        if not isinstance(data, Signal):
+        if not isinstance(data.get_values(), _np.ndarray):
             _PhUI.w("The data must be a Signal (see class EvenlySignal and UnevenlySignal).")
             use_cache = False
         if use_cache is True:
