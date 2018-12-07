@@ -1,6 +1,6 @@
 # coding=utf-8
 from abc import abstractmethod as _abstract, ABCMeta as _ABCMeta
-from pyphysio.Signal import Signal
+from pyphysio.Signal import Signal, EvenlySignal
 from pyphysio.Utility import PhUI as _PhUI
 import numpy as _np
 __author__ = 'AleB'
@@ -79,7 +79,23 @@ class Algorithm(object):
             # noinspection PyTypeChecker
             return Cache.run_cached(data, cls, kwargs)
         else:            
-            return cls.algorithm(data, kwargs)
+            if not data.is_multi():
+                return cls.algorithm(data, kwargs)
+            else:
+                data_values = data.get_values()
+                values_out = []
+                for i_ch in range(data.get_nchannels()):
+                    channel_ph = EvenlySignal(data_values[:,i_ch], data.get_sampling_freq(), data.get_start_time())
+                    output_ph = cls.algorithm(channel_ph, kwargs)
+                    values_out.append(output_ph)
+        
+                # if output are signals, compose a multimodal instance
+                if isinstance(values_out[0], EvenlySignal):
+                    values_out_np = _np.stack([x.get_values() for x in values_out], axis=1)
+                    output = data.clone_properties(values_out_np)
+                    return(output)
+                else:
+                    return(values_out)
 
     @classmethod
     @_abstract

@@ -10,7 +10,7 @@ from .indicators import NonLinearDomain
 from .indicators import PeaksDescription
 from .indicators import TimeDomain
 from .BaseSegmentation import Segment
-from .Signal import EvenlySignal, UnevenlySignal, from_pickle, from_pickleable
+from .Signal import EvenlySignal, UnevenlySignal, NIRS, from_pickle, from_pickleable
 from .interactive import Annotate
 # BE CAREFUL with NAMES!!!
 from .estimators.Estimators import *

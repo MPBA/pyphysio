@@ -5,6 +5,7 @@ from scipy import interpolate as _interp
 from matplotlib.pyplot import plot as _plot, vlines as _vlines, xlabel as _xlabel, ylabel as _ylabel, grid as _grid
 from numbers import Number as _Number
 from pyphysio.Utility import abstractmethod as _abstract, PhUI as _PhUI
+import copy
 
 __author__ = 'AleB'
 
@@ -39,23 +40,27 @@ def from_pickle(path):
 
 
 class Signal(_np.ndarray):
-    _MT_NATURE = "signal_nature"
+    _MT_NATURE = "signal_type"
     _MT_START_TIME = "start_time"
     _MT_SAMPLING_FREQ = "sampling_freq"
     _MT_INFO_ATTR = "_pyphysio"
 
-    def __new__(cls, values, sampling_freq, start_time=None, signal_nature=""):
+    def __new__(cls, values, sampling_freq, start_time=None, signal_type=""):
         assert sampling_freq > 0, "The sampling frequency cannot be zero or negative"
         assert start_time is None or isinstance(start_time, _Number), "Start time is not numeric"
         obj = _np.asarray(values).view(cls)
         if obj.ndim > 1:
-            cls.signal_type = 'multi'
+            cls.multi = True
+        else:
+            cls.multi = False
+            
         if len(obj) == 0:
             _PhUI.i("Creating empty " + cls.__name__)
+            
         obj._pyphysio = {
-            cls._MT_NATURE: signal_nature,
-            cls._MT_START_TIME: start_time if start_time is not None else 0,
             cls._MT_SAMPLING_FREQ: sampling_freq,
+            cls._MT_START_TIME: start_time if start_time is not None else 0,
+            cls._MT_NATURE: signal_type
         }
         setattr(obj, "_mutated", False)
         return obj
@@ -78,37 +83,48 @@ class Signal(_np.ndarray):
     def ph(self):
         return self._pyphysio
 
-    def get_duration(self):
-        return self.get_end_time() - self.get_start_time()
-
-    @_abstract
-    def get_times(self):
-        pass
-
+    def clone(self):
+        obj = self.copy()
+        obj._pyphysio = copy.deepcopy(self.ph)
+        return(obj)
+    
+    def is_multi(self):
+        return(self.multi)
+    
     def get_values(self):
         return _np.asarray(self)
     
-    def get_signal_nature(self):
-        return self.ph[self._MT_NATURE]
-
-    def set_signal_nature(self, value):
-        setattr(self, "_mutated", True)
-        self.ph[self._MT_NATURE] = value
-
+    @_abstract
+    def get_times(self):
+        pass
+    
+    def get_nchannels(self):
+        return(self.shape[1])
+        
     def get_sampling_freq(self):
         return self.ph[self._MT_SAMPLING_FREQ]
 
     def set_sampling_freq(self, value):
         setattr(self, "_mutated", True)
         self.ph[self._MT_SAMPLING_FREQ] = value
-
+    
     def get_start_time(self):
         return self.ph[self._MT_START_TIME]
 
     def set_start_time(self, value):
         setattr(self, "_mutated", True)
-        self.ph[self._MT_START_TIME] = value
+        self.ph[self._MT_START_TIME] = value    
+    
+    def get_signal_type(self):
+        return self.ph[self._MT_NATURE]
 
+    def set_signal_type(self, value):
+        setattr(self, "_mutated", True)
+        self.ph[self._MT_NATURE] = value
+
+    def get_duration(self):
+        return self.get_end_time() - self.get_start_time()
+    
     @_abstract
     def get_end_time(self):
         pass
@@ -149,7 +165,7 @@ class Signal(_np.ndarray):
 
     def plot(self, style="", vlines_height=1000):
         _xlabel("time")
-        _ylabel(self.get_signal_nature())
+        _ylabel(self.get_signal_type())
         _grid()
         if len(style) > 0 and style[0] == "|":
             return _vlines(self.get_times(), -vlines_height / 2, vlines_height / 2, style[1:])
@@ -176,7 +192,7 @@ class Signal(_np.ndarray):
         f.close()
 
     def __repr__(self):
-        return "<signal: " + self.get_signal_nature() + ", start_time: " + str(self.get_start_time()) + ">"
+        return "<signal: " + self.get_signal_type() + ", start_time: " + str(self.get_start_time()) + ">"
 
     def __getslice__(self, i, j):
         return self.segment_iidx(i, j)
@@ -195,9 +211,16 @@ class EvenlySignal(Signal):
         Sampling frequency
     start_time: float,
         Instant of signal start
-    signal_nature : str, default = ''
+    signal_type : str, default = ''
         Type of signal (e.g. 'ECG', 'EDA')
     """
+
+    def clone_properties(self, new_values):
+        x_new = EvenlySignal(new_values,
+                             self.get_sampling_freq(),
+                             self.get_start_time(),
+                             self.get_signal_type())
+        return(x_new)
 
     def get_times(self):
         return _np.arange(len(self)) / self.get_sampling_freq() + self.get_start_time()
@@ -222,10 +245,6 @@ class EvenlySignal(Signal):
         
         return values[nearest_idx]
     
-    def clone(self):
-        x_clone = EvenlySignal(self.get_values().copy(), self.get_sampling_freq(), self.get_start_time(), self.get_signal_nature())
-        return(x_clone)
-        
     def resample(self, fout, kind='linear'):
         """
         Resample a signal
@@ -261,7 +280,7 @@ class EvenlySignal(Signal):
 
         return EvenlySignal(values=signal_out,
                             sampling_freq=fout,
-                            signal_nature=self.get_signal_nature(),
+                            signal_type=self.get_signal_type(),
                             start_time=self.get_start_time())
 
     # TRYME
@@ -317,7 +336,7 @@ class EvenlySignal(Signal):
 
         out_signal = EvenlySignal(values=values,
                                   sampling_freq=self.get_sampling_freq(),
-                                  signal_nature=self.get_signal_nature(),
+                                  signal_type=self.get_signal_type(),
                                   start_time=self.get_time(iidx_start))
 
         return out_signal
@@ -325,7 +344,7 @@ class EvenlySignal(Signal):
     def to_csv(self, filename, comment=''):
         values = self.get_values()
         times = self.get_times()
-        header = self.get_signal_nature() + ' \n' + 'Fsamp: ' + str(
+        header = self.get_signal_type() + ' \n' + 'Fsamp: ' + str(
             self.get_sampling_freq()) + '\n' + comment + '\nidx,time,value'
 
         _np.savetxt(filename, _np.c_[times, values], delimiter=',', header=header, comments='')
@@ -348,7 +367,7 @@ class UnevenlySignal(Signal):
         Sampling frequency
     start_time: float,
         Instant of signal start
-    signal_nature : str, default = ''
+    signal_type : str, default = ''
         Type of signal (e.g. 'ECG', 'EDA')
     
     
@@ -366,7 +385,7 @@ class UnevenlySignal(Signal):
     _MT_X_INDICES = "x_values"
     _MT_DURATION = "duration"
 
-    def __new__(cls, values, sampling_freq=1000, start_time=None, signal_nature="", x_values=None, x_type='instants',
+    def __new__(cls, values, sampling_freq=1000, start_time=None, signal_type="", x_values=None, x_type='instants',
                 duration=None):
         assert x_values is not None, "x_values are missing"
         assert x_type in ['indices', 'instants'], "x_type not in ['indices', 'instants']"
@@ -397,7 +416,7 @@ class UnevenlySignal(Signal):
         obj = Signal.__new__(cls, values=values,
                              sampling_freq=sampling_freq,
                              start_time=start_time,
-                             signal_nature=signal_nature)
+                             signal_type=signal_type)
 
         if duration is None:
             duration = min_duration
@@ -405,6 +424,15 @@ class UnevenlySignal(Signal):
         obj.ph[cls._MT_X_INDICES] = x_values
         obj.ph[cls._MT_DURATION] = duration
         return obj
+
+    def clone_properties(self, new_values):
+        x_new = UnevenlySignal(new_values,
+                               self.get_sampling_freq(),
+                               self.get_start_time(),
+                               self.get_signal_type(),
+                               self.get_indices(),
+                               'indices')
+        return(x_new)
 
     def get_duration(self):
         return self.ph[UnevenlySignal._MT_DURATION]
@@ -442,7 +470,7 @@ class UnevenlySignal(Signal):
         values = self.get_values()
         times = self.get_times()
         idxs = self.get_indices()
-        header = self.get_signal_nature() + ' \n' + 'Fsamp: ' + str(
+        header = self.get_signal_type() + ' \n' + 'Fsamp: ' + str(
             self.get_sampling_freq()) + '\n' + comment + '\nidx,time,value'
 
         _np.savetxt(filename, _np.c_[idxs, times, values], delimiter=',', header=header, comments='')
@@ -479,7 +507,7 @@ class UnevenlySignal(Signal):
         # Init new signal
         sig_out = EvenlySignal(values=sig_out,
                                sampling_freq=self.get_sampling_freq(),
-                               signal_nature=self.get_signal_nature(),
+                               signal_type=self.get_signal_type(),
                                start_time=self.get_time_from_iidx(0))
 
         return sig_out
@@ -540,7 +568,7 @@ class UnevenlySignal(Signal):
         return UnevenlySignal(values=self.get_values()[iidx_start:iidx_stop],
                               x_values=self.get_indices()[iidx_start:iidx_stop] - idx_start,
                               sampling_freq=self.get_sampling_freq(),
-                              signal_nature=self.get_signal_nature(),
+                              signal_type=self.get_signal_type(),
                               start_time=self.get_time(idx_start),
                               x_type='indices',
                               duration=(idx_stop - idx_start) / self.get_sampling_freq())
@@ -575,7 +603,7 @@ class UnevenlySignal(Signal):
                               x_values=self.get_indices()[int(iidx_start):int(iidx_stop)]
                               - self.get_indices()[int(iidx_start)],
                               sampling_freq=self.get_sampling_freq(),
-                              signal_nature=self.get_signal_nature(),
+                              signal_type=self.get_signal_type(),
                               start_time=self.get_time_from_iidx(iidx_start),
                               x_type='indices',
                               duration=(idx_stop - idx_start) / self.get_sampling_freq())
@@ -583,3 +611,144 @@ class UnevenlySignal(Signal):
     def __repr__(self):
         return Signal.__repr__(self)[:-1] + " time resolution:" + str(1 / self.get_sampling_freq()) + "s>\n" + \
                self.get_values().__repr__() + " Times\n:" + self.get_times().__repr__()
+
+class NIRS(Signal):
+    def __new__(cls, values, sampling_freq, SD, stim, start_time=None, signal_type='raw'):
+        assert sampling_freq > 0, "The sampling frequency cannot be zero or negative"
+        assert start_time is None or isinstance(start_time, _Number), "Start time is not numeric"
+        obj = _np.asarray(values).view(cls)
+        if obj.ndim > 1:
+            cls.multi = True
+        else:
+            cls.multi = False
+                    
+        obj._pyphysio = {
+                'sampling_freq': sampling_freq,
+                'SD': SD,
+                'stim': stim,
+                'start_time': start_time,
+                'signal_type': signal_type
+        }
+        return obj
+
+    def clone_properties(self, new_values):
+        x_new = NIRS(new_values, 
+                     self.get_sampling_freq(),
+                     self.get_SD(),
+                     self.get_stim(),
+                     self.get_start_time(),
+                     self.get_data_type())
+        return(x_new)
+        
+    def get_times(self):
+        return _np.arange(len(self)) / self.get_sampling_freq() + self.get_start_time()
+    
+    def get_SD(self):
+        return(self.ph['SD'])
+    
+    def set_SD(self, SD):
+        self.ph['SD'] = SD
+    
+    def get_stim(self):
+        return(self.ph['stim'])
+    
+    def set_stim(self, stim):
+        self.ph['stim'] = stim
+    
+    def get_time(self, idx):
+        return idx / self.get_sampling_freq() + self.get_start_time() if idx is not None else None
+
+    
+    # TRYME
+    def segment_time(self, t_start, t_stop=None):
+        """
+        Segment the signal given a time interval
+
+        Parameters
+        ----------
+        t_start : float
+            The instant of the start of the interval
+        t_stop : float 
+            The instant of the end of the interval. By default is the end of the signal
+
+        Returns
+        -------
+        portion : EvenlySignal
+            The selected portion
+        """
+        return self.segment_idx(self.get_idx(t_start), self.get_idx(t_stop))
+
+    # TRYME
+    def segment_idx(self, idx_start, idx_stop=None):
+        """
+        Segment the signal given the indexes
+
+        Parameters
+        ----------
+        idx_start : int or None
+            The index of the start of the interval
+        idx_stop : int or None
+            The index of the end of the interval. By default is the length of the signal
+
+        Returns
+        -------
+        portion : EvenlySignal
+            The selected portion
+        """
+        return self.segment_iidx(idx_start, idx_stop)
+
+    # TRYME
+    def segment_iidx(self, iidx_start, iidx_stop=None):
+
+        signal_values = self.get_values()
+
+        if iidx_start is None:
+            iidx_start = 0
+        if iidx_stop is None:
+            iidx_stop = len(self)
+
+        values = signal_values[int(iidx_start):int(iidx_stop)]
+
+        out_signal = self.clone_properties(values)
+        out_signal.set_start_time(self.get_time(iidx_start))
+        return out_signal
+    
+    def plot(self, style="", vlines_height=1000):
+        _xlabel("time")
+        _grid()
+        if len(style) > 0 and style[0] == "|":
+            return _vlines(self.get_times(), -vlines_height / 2, vlines_height / 2, style[1:])
+        else:
+            return _plot(self.get_times(), self.get_values(), style)
+
+    @property
+    def pickleable(self):
+        """
+        Returns a pickleable tuple of this Signal.
+        :return: Tuple (Signal, ph dict).
+        """
+        return self, self.ph
+
+    def to_pickle(self, path):
+        """
+        Saves this Signal into a pickle file.
+        :param path: File system path to the file to write (create/overwrite).
+        """
+        from gzip import open
+        from pickle import dump
+        f = open(path, "wb")
+        dump(self.pickleable, f, protocol=2)
+        f.close()
+
+    def to_csv(self, filename, comment=''): #TODO: finish this function
+        values = self.get_values()
+        times = self.get_times()
+        header = self.get_signal_type() + ' \n' + 'Fsamp: ' + str(self.get_sampling_freq()) + '\n' + comment + '\nidx,time,value'
+
+        _np.savetxt(filename, _np.c_[times, values], delimiter=',', header=header, comments='')
+
+    def __repr__(self):
+        return f"<start_time: {self.get_start_time()}> freq:  {self.get_sampling_freq()} Hz> {self.view(_np.ndarray).__repr__()}"
+
+    def __getslice__(self, i, j):
+        return self.segment_idx(i, j)
