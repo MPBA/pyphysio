@@ -2,6 +2,7 @@
 from __future__ import division
 
 from numpy import array as _array
+from .tools.Tools import *
 
 from .filters import Filters
 from .segmentation import SegmentsGenerators
@@ -22,7 +23,7 @@ from .indicators.TimeDomain import *
 from .sqi.SignalQuality import *
 from .tests import TestData
 from .segmentation.SegmentsGenerators import *
-from .tools.Tools import *
+
 
 __author__ = "AleB"
 

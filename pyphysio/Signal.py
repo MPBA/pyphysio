@@ -49,11 +49,7 @@ class Signal(_np.ndarray):
         assert sampling_freq > 0, "The sampling frequency cannot be zero or negative"
         assert start_time is None or isinstance(start_time, _Number), "Start time is not numeric"
         obj = _np.asarray(values).view(cls)
-        if obj.ndim > 1:
-            cls.multi = True
-        else:
-            cls.multi = False
-            
+                    
         if len(obj) == 0:
             _PhUI.i("Creating empty " + cls.__name__)
             
@@ -89,17 +85,16 @@ class Signal(_np.ndarray):
         return(obj)
     
     def is_multi(self):
-        return(self.multi)
+        return(self.get_nchannels()>1)
     
     def get_values(self):
         return _np.asarray(self)
     
-    @_abstract
-    def get_times(self):
-        pass
-    
     def get_nchannels(self):
-        return(self.shape[1])
+        if self.ndim>1:
+            return(self.shape[1])
+        else:
+            return(1)
         
     def get_sampling_freq(self):
         return self.ph[self._MT_SAMPLING_FREQ]
@@ -121,19 +116,27 @@ class Signal(_np.ndarray):
     def set_signal_type(self, value):
         setattr(self, "_mutated", True)
         self.ph[self._MT_NATURE] = value
-
+    
     def get_duration(self):
         return self.get_end_time() - self.get_start_time()
     
-    @_abstract
-    def get_end_time(self):
-        pass
-
     def get_idx(self, time):
         idx = int((time - self.get_start_time()) * self.get_sampling_freq())
         if idx < 0:
             idx=0
         return(idx)
+        
+    @_abstract
+    def clone_properties(self):
+        pass
+    
+    @_abstract
+    def get_times(self):
+        pass
+    
+    @_abstract
+    def get_end_time(self):
+        pass
 
     @_abstract
     def get_iidx(self, time):
@@ -228,11 +231,11 @@ class EvenlySignal(Signal):
     def get_end_time(self):
         return self.get_time(len(self) - 1) + 1. / self.get_sampling_freq()
 
-    def get_time(self, idx):
-        return idx / self.get_sampling_freq() + self.get_start_time() if idx is not None else None
-
     def get_iidx(self, time):
         return self.get_idx(time)
+
+    def get_time(self, idx):
+        return idx / self.get_sampling_freq() + self.get_start_time() if idx is not None else None
 
     def get_time_from_iidx(self, iidx):
         return self.get_time(iidx)
@@ -284,26 +287,6 @@ class EvenlySignal(Signal):
                             start_time=self.get_start_time())
 
     # TRYME
-    def segment_time(self, t_start, t_stop=None):
-        """
-        Segment the signal given a time interval
-
-        Parameters
-        ----------
-        t_start : float
-            The instant of the start of the interval
-        t_stop : float 
-            The instant of the end of the interval. By default is the end of the signal
-
-        Returns
-        -------
-        portion : EvenlySignal
-            The selected portion
-        """
-
-        return self.segment_idx(self.get_idx(t_start), self.get_idx(t_stop))
-
-    # TRYME
     def segment_idx(self, idx_start, idx_stop=None):
         """
         Segment the signal given the indexes
@@ -334,12 +317,29 @@ class EvenlySignal(Signal):
 
         values = signal_values[int(iidx_start):int(iidx_stop)]
 
-        out_signal = EvenlySignal(values=values,
-                                  sampling_freq=self.get_sampling_freq(),
-                                  signal_type=self.get_signal_type(),
-                                  start_time=self.get_time(iidx_start))
-
+        out_signal = self.clone_properties(values)
+        out_signal.set_start_time(self.get_time(iidx_start))
         return out_signal
+
+    # TRYME
+    def segment_time(self, t_start, t_stop=None):
+        """
+        Segment the signal given a time interval
+
+        Parameters
+        ----------
+        t_start : float
+            The instant of the start of the interval
+        t_stop : float 
+            The instant of the end of the interval. By default is the end of the signal
+
+        Returns
+        -------
+        portion : EvenlySignal
+            The selected portion
+        """
+
+        return self.segment_idx(self.get_idx(t_start), self.get_idx(t_stop))
 
     def to_csv(self, filename, comment=''):
         values = self.get_values()
@@ -425,13 +425,14 @@ class UnevenlySignal(Signal):
         obj.ph[cls._MT_DURATION] = duration
         return obj
 
-    def clone_properties(self, new_values):
+    def clone_properties(self, new_values, new_x, new_x_type):
         x_new = UnevenlySignal(new_values,
                                self.get_sampling_freq(),
                                self.get_start_time(),
                                self.get_signal_type(),
-                               self.get_indices(),
-                               'indices')
+                               new_x,
+                               new_x_type)
+        # TODO: test clone properties
         return(x_new)
 
     def get_duration(self):
@@ -612,7 +613,7 @@ class UnevenlySignal(Signal):
         return Signal.__repr__(self)[:-1] + " time resolution:" + str(1 / self.get_sampling_freq()) + "s>\n" + \
                self.get_values().__repr__() + " Times\n:" + self.get_times().__repr__()
 
-class NIRS(Signal):
+class NIRS(EvenlySignal):
     def __new__(cls, values, sampling_freq, SD, stim, start_time=None, signal_type='raw'):
         assert sampling_freq > 0, "The sampling frequency cannot be zero or negative"
         assert start_time is None or isinstance(start_time, _Number), "Start time is not numeric"
@@ -637,12 +638,9 @@ class NIRS(Signal):
                      self.get_SD(),
                      self.get_stim(),
                      self.get_start_time(),
-                     self.get_data_type())
+                     self.get_signal_type())
         return(x_new)
         
-    def get_times(self):
-        return _np.arange(len(self)) / self.get_sampling_freq() + self.get_start_time()
-    
     def get_SD(self):
         return(self.ph['SD'])
     
@@ -655,47 +653,41 @@ class NIRS(Signal):
     def set_stim(self, stim):
         self.ph['stim'] = stim
     
-    def get_time(self, idx):
-        return idx / self.get_sampling_freq() + self.get_start_time() if idx is not None else None
+    def resample(self, fout, kind='linear'):
+        """
+        Resample a signal
 
+        Parameters
+        ----------
+        fout : float
+            The sampling frequency for resampling
+        kind : str
+            Method for interpolation: 'linear', 'nearest', 'zero', 'slinear', 'quadratic, 'cubic'
+
+        Returns
+        -------
+        resampled_signal : EvenlySignal
+            The resampled signal
+        """
+
+        ratio = self.get_sampling_freq() / fout
+
+        if fout < self.get_sampling_freq() and ratio.is_integer():  # fast interpolation
+            signal_out = self.get_values()[::int(ratio),:]
+        else:
+            indexes = _np.arange(len(self) + 1)
+            indexes_out = _np.arange(len(self) * fout / self.get_sampling_freq()) * ratio
+            
+            values = self.get_values()
+            values = _np.vstack([values, values[-1,:]])
+            tck = _interp.interp1d(indexes, values, kind=kind, axis=0)
+            
+            values_out = tck(indexes_out)
     
-    # TRYME
-    def segment_time(self, t_start, t_stop=None):
-        """
-        Segment the signal given a time interval
-
-        Parameters
-        ----------
-        t_start : float
-            The instant of the start of the interval
-        t_stop : float 
-            The instant of the end of the interval. By default is the end of the signal
-
-        Returns
-        -------
-        portion : EvenlySignal
-            The selected portion
-        """
-        return self.segment_idx(self.get_idx(t_start), self.get_idx(t_stop))
-
-    # TRYME
-    def segment_idx(self, idx_start, idx_stop=None):
-        """
-        Segment the signal given the indexes
-
-        Parameters
-        ----------
-        idx_start : int or None
-            The index of the start of the interval
-        idx_stop : int or None
-            The index of the end of the interval. By default is the length of the signal
-
-        Returns
-        -------
-        portion : EvenlySignal
-            The selected portion
-        """
-        return self.segment_iidx(idx_start, idx_stop)
+        signal_out = self.clone_properties(values_out)
+        signal_out.set_sampling_freq(fout)
+        return(signal_out)
+        
 
     # TRYME
     def segment_iidx(self, iidx_start, iidx_stop=None):
@@ -707,7 +699,7 @@ class NIRS(Signal):
         if iidx_stop is None:
             iidx_stop = len(self)
 
-        values = signal_values[int(iidx_start):int(iidx_stop)]
+        values = signal_values[int(iidx_start):int(iidx_stop),:]
 
         out_signal = self.clone_properties(values)
         out_signal.set_start_time(self.get_time(iidx_start))
@@ -721,34 +713,35 @@ class NIRS(Signal):
         else:
             return _plot(self.get_times(), self.get_values(), style)
 
-    @property
-    def pickleable(self):
-        """
-        Returns a pickleable tuple of this Signal.
-        :return: Tuple (Signal, ph dict).
-        """
-        return self, self.ph
-
-    def to_pickle(self, path):
-        """
-        Saves this Signal into a pickle file.
-        :param path: File system path to the file to write (create/overwrite).
-        """
-        from gzip import open
-        from pickle import dump
-        f = open(path, "wb")
-        dump(self.pickleable, f, protocol=2)
-        f.close()
-
-    def to_csv(self, filename, comment=''): #TODO: finish this function
+    '''
+        @property
+        def pickleable(self):
+            """
+            Returns a pickleable tuple of this Signal.
+            :return: Tuple (Signal, ph dict).
+            """
+            return self, self.ph
+    
+        def to_pickle(self, path):
+            """
+            Saves this Signal into a pickle file.
+            :param path: File system path to the file to write (create/overwrite).
+            """
+            from gzip import open
+            from pickle import dump
+            f = open(path, "wb")
+            dump(self.pickleable, f, protocol=2)
+            f.close()
+    '''
+    
+    def to_csv(self, filename, comment=''): 
         values = self.get_values()
         times = self.get_times()
-        header = self.get_signal_type() + ' \n' + 'Fsamp: ' + str(self.get_sampling_freq()) + '\n' + comment + '\nidx,time,value'
-
+        header = self.get_signal_type() + ' \n' + 'Fsamp: ' + str(self.get_sampling_freq()) + '\n' + comment + '\nidx,time'+''.join([f',ch{x}' for x in range(self.get_nchannels())])
         _np.savetxt(filename, _np.c_[times, values], delimiter=',', header=header, comments='')
 
     def __repr__(self):
         return f"<start_time: {self.get_start_time()}> freq:  {self.get_sampling_freq()} Hz> {self.view(_np.ndarray).__repr__()}"
 
     def __getslice__(self, i, j):
-        return self.segment_idx(i, j)
+        return self.segment_iidx(i, j)

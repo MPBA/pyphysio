@@ -7,7 +7,7 @@ from matplotlib.pyplot import plot as _plot
 from ..BaseFilter import Filter as _Filter
 from ..Signal import EvenlySignal as _EvenlySignal, UnevenlySignal as _UnevenlySignal
 from ..Utility import abstractmethod as _abstract
-
+from ..tools.Tools import SignalRange
 from collections import Sequence
 __author__ = 'AleB'
 
@@ -61,43 +61,6 @@ class Normalize(_Filter):
         elif method == "custom":
             return (signal - params['norm_bias']) / params['norm_range']
 
-
-class Diff(_Filter):
-    """
-    Computes the differences between adjacent samples.
-
-    Optional parameters
-    -------------------
-    degree : int, >0, default = 1
-        Sample interval to compute the differences
-    
-    Returns
-    -------
-    signal : 
-        Differences signal. 
-
-    """
-
-    def __init__(self, degree=1):
-        assert degree > 0, "The degree value should be positive"
-        _Filter.__init__(self, degree=degree)
-
-    @classmethod
-    def algorithm(cls, signal, params):
-        """
-        Calculates the differences between consecutive values
-        """
-        degree = params['degree']
-
-        sig_1 = signal[:-degree]
-        sig_2 = signal[degree:]
-
-        out = _EvenlySignal(values=sig_2 - sig_1,
-                            sampling_freq=signal.get_sampling_freq(),
-                            signal_nature=signal.get_signal_nature(),
-                            start_time=signal.get_start_time() + degree / signal.get_sampling_freq())
-
-        return out
 
 
 class IIRFilter(_Filter):
@@ -157,8 +120,7 @@ class IIRFilter(_Filter):
         # noinspection PyTupleAssignmentBalance
         b, a = _filter_design.iirdesign(wp, ws, loss, att, ftype=ftype, output="ba")
 
-        sig_filtered = _EvenlySignal(_filtfilt(b, a, signal.get_values()), sampling_freq=signal.get_sampling_freq(),
-                                     signal_nature=signal.get_signal_nature(), start_time=signal.get_start_time())
+        sig_filtered = signal.clone_properties(_filtfilt(b, a, signal.get_values()))
 
         if _np.isnan(sig_filtered[0]):
             cls.warn('Filter parameters allow no solution. Returning original signal.')
@@ -247,8 +209,7 @@ class FIRFilter(_Filter):
         wp = fp / nyq
         print(N)
         b = _firwin(N, wp, width=Dsamp, window=wtype, pass_zero=pass_zero)
-        sig_filtered = _EvenlySignal(_convolve(signal.get_values(), b, mode='same'), sampling_freq=signal.get_sampling_freq(),
-                                     signal_nature=signal.get_signal_nature(), start_time=signal.get_start_time())
+        sig_filtered = signal.clone_properties(_convolve(signal.get_values(), b, mode='same'))
 
         if _np.isnan(sig_filtered[0]):
             cls.warn('Filter parameters allow no solution. Returning original signal.')
@@ -259,6 +220,73 @@ class FIRFilter(_Filter):
     @_abstract
     def plot(self):
         pass
+
+class KalmanFilter(_Filter):
+    def __init__(self, R, Q=None, win_len=1, win_step=0.5):
+        assert R > 0, "R should be positive"
+        if Q is not None:
+            assert Q > 0, "Q should be positive"
+        assert win_len > 0, "Window length value should be positive"
+        assert win_step > 0, "Window step value should be positive"
+        
+        _Filter.__init__(self, R=R, Q=Q, win_len=win_len, win_step=win_step)
+        
+    @classmethod
+    def algorithm(cls, signal, params):
+        R = params['R']
+        Q = params['Q']
+        win_len = params['win_len']
+        win_step = params['win_step']
+        
+        sz = len(signal)
+        if Q is None:
+            rr = SignalRange(win_len, win_step)(signal)
+            Q = _np.median(rr)/6
+            
+        P = 1
+        
+        x_out = signal.get_values().copy()
+        for k in range(1,sz):
+            x_ = x_out[k-1]
+            P_ = P + Q
+        
+            # measurement update
+            K = P_ / (P_ + R)
+            x_out[k] = x_ + K * (x_out[k] - x_)
+            P = (1 - K ) * P_
+        
+        x_out = signal.clone_properties(x_out)
+        return(x_out)
+
+
+class RemoveShifts(_Filter):
+    def __init__(self, K=2, N=1, win_len=1, win_step=0.5):
+        assert K > 0, "K should be positive"
+        assert isinstance(N, int) and N>0, "N value not valid"
+        assert win_len > 0, "Window length value should be positive"
+        assert win_step > 0, "Window step value should be positive"
+        
+        _Filter.__init__(self, K=K, N=N, win_len=win_len, win_step=win_step)
+    
+    @classmethod
+    def algorithm(cls, signal, params):
+        K = params['K']
+        N = params['N']
+        win_len = params['win_len']
+        win_step = params['win_step']
+        
+        rr = _np.median(SignalRange(win_len,win_step)(signal))
+        allowed_drop = K*rr
+        sig_diff = signal[N:] - signal[:-N]
+        
+        x_out = signal.get_values().copy()
+        idx_drop = _np.where(abs(sig_diff)>allowed_drop)[0]
+        for IDX in idx_drop:
+            delta = x_out[IDX+1] - x_out[IDX] + _np.random.normal(0, rr/6)
+            x_out[IDX+1:] = x_out[IDX+1:] - delta
+        
+        x_out = signal.clone_properties(x_out)
+        return(x_out)
 
 class DenoiseEDA(_Filter):
     """
@@ -396,8 +424,7 @@ class ConvolutionalFilter(_Filter):
 
         signal_f = _np.convolve(signal_, irf, mode='same')
 
-        signal_out = _EvenlySignal(signal_f[n:-n], sampling_freq=signal.get_sampling_freq(),
-                                   signal_nature=signal.get_signal_nature(), start_time=signal.get_start_time())
+        signal_out = signal.clone_properties(signal_f[n:-n])
         return signal_out
 
     @classmethod
@@ -455,8 +482,7 @@ class DeConvolutionalFilter(_Filter):
             cls.error('Deconvolution method not implemented. Returning original signal.')
             out = signal.get_values()
 
-        out_signal = _EvenlySignal(abs(out), sampling_freq=signal.get_sampling_freq(),
-                                   signal_nature=signal.get_signal_nature(), start_time=signal.get_start_time())
+        out_signal = signal.clone_properties(abs(out))
 
         return out_signal
 

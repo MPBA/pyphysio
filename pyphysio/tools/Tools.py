@@ -7,9 +7,44 @@ from spectrum import aryule as _aryule, arma2psd as _arma2psd, AIC as _AIC
 import itertools as _itertools
 from ..BaseTool import Tool as _Tool
 from ..Signal import UnevenlySignal as _UnevenlySignal, EvenlySignal as _EvenlySignal
-from ..filters.Filters import Diff as _Diff, ConvolutionalFilter as _ConvFlt
 
 
+class Diff(_Tool):
+    """
+    Computes the differences between adjacent samples.
+
+    Optional parameters
+    -------------------
+    degree : int, >0, default = 1
+        Sample interval to compute the differences
+    
+    Returns
+    -------
+    signal : 
+        Differences signal. 
+
+    """
+
+    def __init__(self, degree=1):
+        assert degree > 0, "The degree value should be positive"
+        _Tool.__init__(self, degree=degree)
+
+    @classmethod
+    def algorithm(cls, signal, params):
+        """
+        Calculates the differences between consecutive values
+        """
+        degree = params['degree']
+
+        sig_1 = signal[:-degree]
+        sig_2 = signal[degree:]
+
+        out = _EvenlySignal(values=sig_2 - sig_1,
+                            sampling_freq=signal.get_sampling_freq(),
+                            signal_nature=signal.get_signal_nature(),
+                            start_time=signal.get_start_time() + degree / signal.get_sampling_freq())
+
+        return out
 class PeakDetection(_Tool):
     """
     Estimate the maxima and the minima in the signal (in particular for periodic signals).
@@ -152,7 +187,7 @@ class PeakSelection(_Tool):
         i_start = _np.empty(len(i_peaks), int)
         i_stop = _np.empty(len(i_peaks), int)
 
-        signal_dt = _Diff()(signal)
+        signal_dt = Diff()(signal)
         for i in range(len(i_peaks)):
             i_pk = int(i_peaks[i])
 
@@ -243,12 +278,11 @@ class SignalRange(_Tool):
 
             deltas[windows[-1] + idx_len:] = curr_delta
 
-            deltas = _EvenlySignal(deltas, signal.get_sampling_freq())
-
             if smooth:
-                deltas = _ConvFlt(irftype='gauss', win_len=win_len * 2, normalize=True)(deltas)
+                win_len = int(win_len*2*fsamp)
+                deltas = _np.convolve(deltas, _np.ones(win_len)/win_len, mode='same')
 
-            return deltas.get_values()
+            return deltas
 
 
 class PSD(_Tool):

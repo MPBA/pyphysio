@@ -2,7 +2,7 @@
 from __future__ import division
 
 from ..BaseIndicator import Indicator as _Indicator
-from ..filters.Filters import Diff as _Diff
+from ..tools.Tools import Diff as _Diff
 from ..indicators.TimeDomain import Mean as _Mean, StDev as _StDev
 from scipy.spatial.distance import cdist as _cd
 import numpy as _np

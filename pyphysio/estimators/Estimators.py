@@ -3,10 +3,10 @@ from __future__ import division
 import numpy as _np
 from ..BaseEstimator import Estimator as _Estimator
 from ..Signal import UnevenlySignal as _UnevenlySignal, EvenlySignal as _EvenlySignal
-from ..filters.Filters import IIRFilter as _IIRFilter, Diff as _Diff, DeConvolutionalFilter as _DeConvolutionalFilter, \
+from ..filters.Filters import IIRFilter as _IIRFilter, DeConvolutionalFilter as _DeConvolutionalFilter, \
     ConvolutionalFilter as _ConvolutionalFilter
 from ..tools.Tools import SignalRange as _SignalRange, PeakDetection as _PeakDetection, Minima as _Minima, \
-    PeakSelection as _PeakSelection
+    PeakSelection as _PeakSelection, Diff as _Diff
 
 __author__ = 'AleB'
 
@@ -249,7 +249,7 @@ class DriverEstim(_Estimator):
         # gaussian smoothing
         driver = _ConvolutionalFilter(irftype='gauss', win_len=_np.max([0.2, 1 / fsamp]) * 8, normalize=True)(driver)
 
-        driver = _EvenlySignal(driver, sampling_freq=fsamp, signal_nature="dEDA", start_time=signal.get_start_time())
+        driver = _EvenlySignal(driver, sampling_freq=fsamp, start_time=signal.get_start_time(),signal_type="dEDA")
         return driver
 
     @staticmethod

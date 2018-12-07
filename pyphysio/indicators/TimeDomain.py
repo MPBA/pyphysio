@@ -4,7 +4,7 @@ from __future__ import division
 import numpy as _np
 
 from ..BaseIndicator import Indicator as _Indicator
-from ..filters.Filters import Diff as _Diff
+from ..tools.Tools import Diff as _Diff
 from ..Signal import EvenlySignal as _EvenlySignal, Signal as _Signal
 
 
