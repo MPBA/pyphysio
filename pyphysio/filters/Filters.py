@@ -1,6 +1,7 @@
 # coding=utf-8
 from __future__ import division
 import numpy as _np
+import scipy.stats as _stats
 from scipy.signal import gaussian as _gaussian, filtfilt as _filtfilt, filter_design as _filter_design, \
     deconvolve as _deconvolve, firwin as _firwin, convolve as _convolve
 from matplotlib.pyplot import plot as _plot
@@ -222,41 +223,116 @@ class FIRFilter(_Filter):
         pass
 
 class KalmanFilter(_Filter):
-    def __init__(self, R, Q=None, win_len=1, win_step=0.5):
+    def __init__(self, R, ratio=None, win_len=1, win_step=0.5):
         assert R > 0, "R should be positive"
-        if Q is not None:
-            assert Q > 0, "Q should be positive"
+        if ratio is not None:
+            assert ratio > 1, "ratio should be >1"
         assert win_len > 0, "Window length value should be positive"
         assert win_step > 0, "Window step value should be positive"
         
-        _Filter.__init__(self, R=R, Q=Q, win_len=win_len, win_step=win_step)
+        _Filter.__init__(self, R=R, ratio=ratio, win_len=win_len, win_step=win_step)
         
     @classmethod
     def algorithm(cls, signal, params):
         R = params['R']
-        Q = params['Q']
+        ratio = params['ratio']
         win_len = params['win_len']
         win_step = params['win_step']
         
         sz = len(signal)
-        if Q is None:
-            rr = SignalRange(win_len, win_step)(signal)
-            Q = _np.median(rr)/6
+        
+        rr = SignalRange(win_len, win_step)(signal)
+        Q = _np.nanmedian(rr)/ratio
             
         P = 1
         
         x_out = signal.get_values().copy()
         for k in range(1,sz):
-            x_ = x_out[k-1]
-            P_ = P + Q
-        
-            # measurement update
-            K = P_ / (P_ + R)
-            x_out[k] = x_ + K * (x_out[k] - x_)
-            P = (1 - K ) * P_
-        
+                x_ = x_out[k-1]
+                P_ = P + Q
+            
+                # measurement update
+                K = P_ / (P_ + R)
+                x_out[k] = x_ + K * (x_out[k] - x_)
+                P = (1 - K ) * P_
+
         x_out = signal.clone_properties(x_out)
         return(x_out)
+
+############
+class ImputeNAN(_Filter):
+    def __init__(self, win_len=5, allnan='nan'):
+        assert win_len>0, "win_len should be >0"
+        assert allnan in ['zeros', 'nan']
+        _Filter.__init__(self, win_len = win_len, allnan=allnan)
+        
+    @classmethod
+    def algorithm(cls, signal, params):
+        def group_consecutives(vals, step=1):
+            """Return list of consecutive lists of numbers from vals (number list)."""
+            run = []
+            result = [run]
+            expect = None
+            for v in vals:
+                if (v == expect) or (expect is None):
+                    run.append(v)
+                else:
+                    run = [v]
+                    result.append(run)
+                expect = v + step
+            return result
+
+        #%%
+        win_len = params['win_len']*signal.get_sampling_freq()
+        allnan = params['allnan']
+        
+        s = signal.get_values().copy()
+        if _np.isnan(s).all():
+            if allnan == 'nan':
+                return(signal)
+            else:
+                s = _np.zeros_like(s)
+                s_out = signal.clone_properties(s)
+                return(s_out)
+        
+        idx_nan = _np.where(_np.isnan(s))[0]
+        segments = group_consecutives(idx_nan)
+
+        #%%
+        if len(segments[0])>=1:
+            for i_seg, SEG in enumerate(segments):
+                idx_st = SEG[0]
+                idx_sp = SEG[-1]
+                idx_win_pre = _np.arange(-int(win_len/2), 0, 1)+idx_st
+                idx_win_pre = idx_win_pre[_np.where(idx_win_pre>0)[0]] #not before signal start
+
+                STD = []
+                if len(idx_win_pre)>=3:
+                    STD.append(_np.nanstd(s[idx_win_pre]))
+                
+                idx_win_post = _np.arange(0, int(win_len/2))+idx_sp+1
+                idx_win_post = idx_win_post[_np.where(idx_win_post<len(s))[0]]
+                
+                if len(idx_win_post)>=3:
+                    STD.append(_np.nanstd(s[idx_win_post]))
+                
+                if len(STD)>0 and not (_np.isnan(STD).all()):
+                    STD = _np.nanmin(STD)
+                else:
+                    STD = 0
+                    
+                idx_win = _np.hstack([idx_win_pre, idx_win_post]).astype(int)
+                idx_win = idx_win[_np.where(~_np.isnan(s[idx_win]))[0]] # remove nans
+                
+                if len(idx_win)>3:
+                    R = _stats.linregress(idx_win, s[idx_win])
+                    s_nan = _np.array(SEG)*R[0]+R[1] + _np.random.normal(scale=STD, size = len(SEG))
+                else:
+                    s_nan = _np.nanmean(s)*_np.ones(len(SEG))
+                s[SEG] = s_nan
+        
+        signal_out = signal.clone_properties(s)
+        return(signal_out)
 
 
 class RemoveShifts(_Filter):

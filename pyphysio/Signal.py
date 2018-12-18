@@ -614,22 +614,17 @@ class UnevenlySignal(Signal):
                self.get_values().__repr__() + " Times\n:" + self.get_times().__repr__()
 
 class NIRS(EvenlySignal):
+    _MT_SD = "SD"
+    _MT_STIM = "stim"
+    
     def __new__(cls, values, sampling_freq, SD, stim, start_time=None, signal_type='raw'):
         assert sampling_freq > 0, "The sampling frequency cannot be zero or negative"
         assert start_time is None or isinstance(start_time, _Number), "Start time is not numeric"
-        obj = _np.asarray(values).view(cls)
-        if obj.ndim > 1:
-            cls.multi = True
-        else:
-            cls.multi = False
-                    
-        obj._pyphysio = {
-                'sampling_freq': sampling_freq,
-                'SD': SD,
-                'stim': stim,
-                'start_time': start_time,
-                'signal_type': signal_type
-        }
+        obj = Signal.__new__(cls, values=values, sampling_freq=sampling_freq, start_time=start_time, signal_type=signal_type)
+        
+        obj.ph[cls._MT_SD] = SD
+        obj.ph[cls._MT_STIM] = [stim, stim.ph]
+        
         return obj
 
     def clone_properties(self, new_values):
@@ -648,7 +643,8 @@ class NIRS(EvenlySignal):
         self.ph['SD'] = SD
     
     def get_stim(self):
-        return(self.ph['stim'])
+        s, s._pyphysio = self.ph[self._MT_STIM]
+        return(s)
     
     def set_stim(self, stim):
         self.ph['stim'] = stim
