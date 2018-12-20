@@ -2,8 +2,8 @@
 import numpy as _np
 
 from ..BaseIndicator import Indicator as _Indicator
-from ..indicators.FrequencyDomain import PowerInBand
-import scipy.stats as sps
+from ..indicators.FrequencyDomain import PowerInBand as _PowerInBand
+import scipy.stats as _sps
 
 __author__ = 'AleB'
 
@@ -17,8 +17,19 @@ class Kurtosis(_Indicator):
 
     @classmethod
     def algorithm(cls, data, params):
-        k = sps.kurtosis(data.get_values())
+        k = _sps.kurtosis(data.get_values())
         return(k)
+
+class Entropy(_Indicator):
+    def __init__(self, nbins=25):
+        _Indicator.__init__(self, nbins=nbins)
+    
+    @classmethod
+    def algorithm(cls, data, params):
+        nbins=params['nbins']
+        p_data = _np.histogram(data.get_values(), bins=nbins)[0]/len(data) # calculates the probabilities
+        entropy = _sps.entropy(p_data)  # input probabilities to get the entropy 
+        return entropy
 
 class DerivativeEnergy(_Indicator):
     """
@@ -39,12 +50,14 @@ class SpectralPowerRatio(_Indicator):
     Compute the Spectral Power Ratio
 
     """
-    def __init__(self, method='ar', **kwargs):
-        _Indicator.__init__(self, method=method, **kwargs)
+    def __init__(self, method='ar', bandN=[5,14], bandD=[5,50],**kwargs):
+        _Indicator.__init__(self, method=method, bandN=bandN, bandD=bandD, **kwargs)
 
     @classmethod
     def algorithm(cls, data, params):
+        bandN = params['bandN']
+        bandD = params['bandD']
         # TODO: check sampling frequency of the signal (e.g. <=128)
-        p_5_14 = PowerInBand(5,14, params['method'])(data)
-        p_5_50 = PowerInBand(5,50, params['method'])(data)
-        return(p_5_14/p_5_50)
+        p_N = _PowerInBand(bandN[0], bandN[1], params['method'])(data)
+        p_D = _PowerInBand(bandD[0],bandD[1], params['method'])(data)
+        return(p_N/p_D)
