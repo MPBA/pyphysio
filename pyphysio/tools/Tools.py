@@ -1,9 +1,10 @@
 # coding=utf-8
 from __future__ import division
 import numpy as _np
-from scipy.signal import welch as _welch
+from scipy.signal import welch as _welch, periodogram as _periodogram, freqz as _freqz
 import scipy.optimize as _opt
-from spectrum import aryule as _aryule, arma2psd as _arma2psd, AIC as _AIC
+from scipy import linalg as _linalg
+
 import itertools as _itertools
 from ..BaseTool import Tool as _Tool
 from ..Signal import UnevenlySignal as _UnevenlySignal, EvenlySignal as _EvenlySignal
@@ -318,7 +319,7 @@ class PSD(_Tool):
         Power Spectrum Density
     """
 
-    def __init__(self, method, nfft=2048, window='hamming', min_order=18, max_order=25, normalize=True,
+    def __init__(self, method, nfft=2048, window='hamming', min_order=10, max_order=30, normalize=False,
                  remove_mean=True, interp_freq=None, interp_params=None, **kwargs):
         if interp_params is None:
             interp_params = {}
@@ -364,61 +365,94 @@ class PSD(_Tool):
                 signal = signal.resample(interp_freq)
 
         fsamp = signal.get_sampling_freq()
-        l = len(signal)
+
         if remove_mean:
             signal = signal - _np.mean(signal)
 
-        if window == 'hamming':
-            win = _np.hamming(l)
-        elif window == 'blackman':
-            win = _np.blackman(l)
-        elif window == 'bartlett':
-            win = _np.bartlett(l)
-        elif window == 'hanning':
-            win = _np.hanning(l)
-        else:
-            win = _np.ones(l)
-            if window != 'none':
-                cls.warn('Window type not understood, using none.')
-
-        signal = signal * win
         if method == 'fft':
-            spec_tmp = _np.abs(_np.fft.fft(signal, n=nfft, **interp_params)) ** 2  # FFT
-            psd = spec_tmp[0:int(_np.ceil(len(spec_tmp) / 2))]
+            freqs, psd = _periodogram(signal, fs=fsamp, window = window, nfft=nfft, return_onesided=True)
+
+        elif method == 'welch':
+            freqs, psd = _welch(signal, fsamp, window=window, return_onesided=True, nfft=nfft)
 
         elif method == 'ar':
+            def autocorr(x, lag=30):
+                c = _np.correlate(x, x, 'full')
+                mid = len(c)//2
+                acov = c[mid:mid+lag]
+                acor = acov/acov[0]
+                return(acor)
+                
+            def aryw(x, order=30):
+                x = x - _np.mean(x)
+                ac = autocorr(x, order+1)
+                R = _linalg.toeplitz(ac[:order])
+                r = ac[1:order+1]
+                params = _np.linalg.inv(R).dot(r)
+                return(params)
+                
+            def AIC_yule(signal, order):
+                N = len(signal)
+                assert N>=order
+                
+                C = _np.correlate(signal, signal, mode='full')/len(signal)
+                r = C[N-1:]
+                
+                T0  = r[0]
+                T = r[1:]
+                
+                A = _np.zeros(order, dtype=float)
+                P = T0
+                
+                for k in range(0, order):
+                    save = T[k]
+                    if k == 0:
+                        temp = -save / P
+                    else:
+                        for j in range(0, k):
+                            save = save + A[j] * T[k-j-1]
+                        temp = -save / P
+                    
+                    P = P * (1. - temp**2.)
+                    A[k] = temp
+                
+                    khalf = (k+1)//2
+                    for j in range(0, khalf):
+                        kj = k-j-1
+                        save = A[j]
+                        A[j] = save + temp * A[kj]
+                        if j != kj:
+                            A[kj] += temp*save
+                
+                res = N * _np.log(P) + 2*(order + 1)
+                return(res)
+            
             min_order = params['min_order']
             max_order = params['max_order']
 
             if len(signal) <= max_order:
-                cls.warn("Input signal too short: try another 'method' or a longer signal")
+                cls.warn("Input signal too short: try another 'method', a lower 'max_order', or a longer signal")
                 return [], []
 
-            orders = range(min_order, max_order + 1)
-            aics = []
-            for order in orders:
-                try:
-                    ar, p, k = _aryule(signal, order=order)
-                    aics.append(_AIC(l, p, order))
-                except AssertionError:
-                    break
+            orders = _np.arange(min_order, max_order + 1)
+            aics = [AIC_yule(signal, x) for x in orders]
             best_order = orders[_np.argmin(aics)]
 
-            ar, p, k = _aryule(signal, best_order, **interp_params)
-            psd = _arma2psd(ar, NFFT=nfft)
-            psd = psd[0: int(_np.ceil(len(psd) / 2))]
+            params = aryw(signal, best_order)
+            a = _np.concatenate([_np.ones(1), -params])
+            w, P = _freqz(1, a, whole = True, worN = nfft)
 
-        elif method == 'welch':
-            bands_w, psd = _welch(signal, fsamp, nfft=nfft, **interp_params)
+            psd = 2*_np.abs(P[:nfft//2])/nfft
+            
         else:
             cls.warn('Method not understood, using welch.')
-            bands_w, psd = _welch(signal, fsamp, nfft=nfft, **interp_params)
+            bands_w, psd = _welch(signal, fsamp, nfft=nfft, scaling = 'spectrum')
 
         freqs = _np.linspace(start=0, stop=fsamp / 2, num=len(psd))
 
         # NORMALIZE
         if normalize:
-            psd /= 0.5 * fsamp * _np.sum(psd) / len(psd)
+            psd /= _np.sum(psd)
         return freqs, psd
 
 

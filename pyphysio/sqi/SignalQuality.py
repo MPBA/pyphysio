@@ -26,6 +26,8 @@ class Entropy(_Indicator):
     
     @classmethod
     def algorithm(cls, data, params):
+        if _np.isnan(data).all():
+            return(_np.nan)
         nbins=params['nbins']
         p_data = _np.histogram(data.get_values(), bins=nbins)[0]/len(data) # calculates the probabilities
         entropy = _sps.entropy(p_data)  # input probabilities to get the entropy 
