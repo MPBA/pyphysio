@@ -2,7 +2,8 @@
 from __future__ import division
 import numpy as _np
 from scipy import interpolate as _interp
-from matplotlib.pyplot import plot as _plot, vlines as _vlines, xlabel as _xlabel, ylabel as _ylabel, grid as _grid
+from matplotlib.pyplot import plot as _plot, vlines as _vlines, xlabel as _xlabel, ylabel as _ylabel, grid as _grid 
+from matplotlib.pyplot import subplot as _subplot, tight_layout as _tight_layout, subplots_adjust as _subplots_adjust, xlim as _xlim
 from numbers import Number as _Number
 from pyphysio.Utility import abstractmethod as _abstract, PhUI as _PhUI
 import copy
@@ -616,14 +617,16 @@ class UnevenlySignal(Signal):
 class NIRS(EvenlySignal):
     _MT_SD = "SD"
     _MT_STIM = "stim"
+    _MT_INFO = "info"
     
-    def __new__(cls, values, sampling_freq, SD, stim, start_time=None, signal_type='raw'):
+    def __new__(cls, values, sampling_freq, SD, stim, start_time=None, signal_type='raw', info = {}):
         assert sampling_freq > 0, "The sampling frequency cannot be zero or negative"
         assert start_time is None or isinstance(start_time, _Number), "Start time is not numeric"
         obj = Signal.__new__(cls, values=values, sampling_freq=sampling_freq, start_time=start_time, signal_type=signal_type)
         
         obj.ph[cls._MT_SD] = SD
         obj.ph[cls._MT_STIM] = [stim, stim.ph]
+        obj.ph[cls._MT_INFO] = info
         
         return obj
 
@@ -633,22 +636,49 @@ class NIRS(EvenlySignal):
                      self.get_SD(),
                      self.get_stim(),
                      self.get_start_time(),
-                     self.get_signal_type())
+                     self.get_signal_type(),
+                     self.info)
         return(x_new)
+    
+    @property
+    def info(self):
+        return(self.ph[self._MT_INFO])
+    
+    def get_good_channels(self):
+        if 'good_channels' in self.info.keys():
+            return(self.info['good_channels'])
+        else:
+            return(_np.arange(self.get_nchannels()))
+    
+    def set_start_time(self, value):
+        setattr(self, "_mutated", True)
+        self.ph[self._MT_START_TIME] = value  
+        stim = self.get_stim()
+        stim.set_start_time(value)
         
     def get_SD(self):
-        return(self.ph['SD'])
+        return(self.ph[self._MT_SD])
     
     def set_SD(self, SD):
-        self.ph['SD'] = SD
+        self.ph[self._MT_SD] = SD
     
     def get_stim(self):
         s, s._pyphysio = self.ph[self._MT_STIM]
         return(s)
     
     def set_stim(self, stim):
-        self.ph['stim'] = stim
+        self.ph[self._MT_STIM] = [stim, stim.ph]
     
+    def get_info(self):
+        return(self.ph[self._MT_INFO])
+    
+    def set_info(self, info):
+        self.ph[self._MT_INFO] = info
+        
+    def get_channel(self, i_ch):
+        ch_values = self.get_values()[:,i_ch]
+        return(EvenlySignal(ch_values, self.get_sampling_freq(), self.get_start_time(), self.get_signal_type()))
+        
     def resample(self, fout, kind='linear'):
         """
         Resample a signal
@@ -698,16 +728,37 @@ class NIRS(EvenlySignal):
         values = signal_values[int(iidx_start):int(iidx_stop),:]
 
         out_signal = self.clone_properties(values)
+        out_stim = self.get_stim().clone()
+        out_stim = out_stim.segment_iidx(iidx_start, iidx_stop)
+        out_signal.set_stim(out_stim)
+        
         out_signal.set_start_time(self.get_time(iidx_start))
         return out_signal
     
-    def plot(self, style="", vlines_height=1000):
-        _xlabel("time")
+    def plot(self, style=""):
         _grid()
-        if len(style) > 0 and style[0] == "|":
-            return _vlines(self.get_times(), -vlines_height / 2, vlines_height / 2, style[1:])
-        else:
-            return _plot(self.get_times(), self.get_values(), style)
+        
+        n_ch = self.get_nchannels()
+        stim = self.get_stim()
+        if 'good_channels' in self.info.keys():
+            good_ch = self.info['good_channels']
+        else: 
+            good_ch = _np.arange(self.get_nchannels())
+            
+        t_start = stim.get_times()[_np.where(stim>0)[0]]
+        
+        n_rows = int(_np.ceil(n_ch/4))
+        ax1 = _subplot(n_rows, 4, 1)
+        for i_ch in range(n_ch):
+            curr_style = 'r' if i_ch not in good_ch else style
+            _subplot(n_rows, 4, i_ch+1, sharex=ax1)
+            _plot(self.get_times(), self[:,i_ch], curr_style)
+            _ylabel(i_ch)
+            _vlines(t_start, self[:,i_ch].min(), self[:,i_ch].max(), 'k')
+            _grid()
+        _xlim(self.get_start_time(), self.get_end_time())
+        _tight_layout()
+        _subplots_adjust(top=0.9, bottom=0.01, left=0.05, right=0.95, hspace=0.3, wspace=0.25)
 
     '''
         @property

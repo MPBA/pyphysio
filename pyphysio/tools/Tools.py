@@ -320,24 +320,20 @@ class PSD(_Tool):
     """
 
     def __init__(self, method, nfft=2048, window='hamming', min_order=10, max_order=30, normalize=False,
-                 remove_mean=True, interp_freq=None, interp_params=None, **kwargs):
-        if interp_params is None:
-            interp_params = {}
+                 remove_mean=True, **kwargs):
+        
         _method_list = ['welch', 'fft', 'ar']
         _window_list = ['hamming', 'blackman', 'hanning', 'bartlett', 'none']
 
-        assert method in _method_list, "PArameter method should be in " + _method_list.__repr__()
+        assert method in _method_list, "Parameter method should be in " + _method_list.__repr__()
         assert nfft > 0, "nfft value should be positive"
         assert window in _window_list, "Parameter window type should be in " + _window_list.__repr__()
         if method == "ar":
             assert min_order > 0, "Minimum order for the AR method should be positive"
             assert max_order > 0, "Maximum order for the AR method should be positive"
-        if interp_freq is not None:
-            assert interp_freq > 0, "Interpolation frequency value should be positive"
-
+        
         _Tool.__init__(self, method=method, nfft=nfft, window=window, min_order=min_order,
-                       max_order=max_order, normalize=normalize, remove_mean=remove_mean, interp_freq=interp_freq,
-                       interp_params=interp_params, **kwargs)
+                       max_order=max_order, normalize=normalize, remove_mean=remove_mean, **kwargs)
 
     # TODO (Feature - Issue #15): consider point below:
     # A density spectrum considers the amplitudes per unit frequency.
@@ -352,17 +348,8 @@ class PSD(_Tool):
         window = params['window']
         normalize = params['normalize']
         remove_mean = params['remove_mean']
-        interp_params = params['interp_params']
 
-        if not isinstance(signal, _EvenlySignal):
-
-            if len(signal) < 2:  # zero or one sample: interpolation not allowed
-                return _np.repeat(_np.nan, 2), _np.repeat(_np.nan, 2)
-
-            signal = signal.to_evenly(kind='cubic')
-            interp_freq = params['interp_freq']
-            if interp_freq is not None:
-                signal = signal.resample(interp_freq)
+        assert isinstance(signal, _EvenlySignal), "The PSD can be computed on EvenlySignals only. Consider interpolating the signal: signal.resample(fsamp)"
 
         fsamp = signal.get_sampling_freq()
 
@@ -376,6 +363,8 @@ class PSD(_Tool):
             freqs, psd = _welch(signal, fsamp, window=window, return_onesided=True, nfft=nfft)
 
         elif method == 'ar':
+            cls.warn("Using AR method: results might not be comparable with other methods")
+            #methods derived from: https://github.com/mpastell/pyageng
             def autocorr(x, lag=30):
                 c = _np.correlate(x, x, 'full')
                 mid = len(c)//2
@@ -392,10 +381,11 @@ class PSD(_Tool):
                 return(params)
                 
             def AIC_yule(signal, order):
+                #this is from library spectrum: https://github.com/cokelaer/spectrum
                 N = len(signal)
-                assert N>=order
+                assert N>=order, "The number of samples in the signal should be >= to the model order"
                 
-                C = _np.correlate(signal, signal, mode='full')/len(signal)
+                C = _np.correlate(signal, signal, mode='full')/N
                 r = C[N-1:]
                 
                 T0  = r[0]
@@ -440,9 +430,9 @@ class PSD(_Tool):
 
             params = aryw(signal, best_order)
             a = _np.concatenate([_np.ones(1), -params])
-            w, P = _freqz(1, a, whole = True, worN = nfft)
-
-            psd = 2*_np.abs(P[:nfft//2])/nfft
+            w, P = _freqz(1, a, whole = False, worN = nfft)
+            
+            psd = 2*_np.abs(P)/fsamp
             
         else:
             cls.warn('Method not understood, using welch.')
