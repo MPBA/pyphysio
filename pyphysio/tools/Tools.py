@@ -42,7 +42,7 @@ class Diff(_Tool):
 
         out = _EvenlySignal(values=sig_2 - sig_1,
                             sampling_freq=signal.get_sampling_freq(),
-                            signal_nature=signal.get_signal_nature(),
+                            signal_type=signal.get_signal_type(),
                             start_time=signal.get_start_time() + degree / signal.get_sampling_freq())
 
         return out
@@ -895,7 +895,7 @@ class FixIBI(_Tool):
         return _UnevenlySignal(values = ibi, 
                                sampling_freq = signal.get_sampling_freq(), 
                                start_time = signal.get_start_time(),
-                               signal_nature = signal.get_signal_nature(), 
+                               signal_type = signal.get_signal_type(), 
                                x_values=idx_ibi, x_type='indices', 
                                duration=signal.get_duration())
 
@@ -1006,7 +1006,7 @@ class BeatOptimizer(_Tool):
         if len(starts) == 0:  # no differences
             # keep the 'outliers removed' version
             idx_1 = idx_1 + idx_st
-            return _UnevenlySignal(ibi_1 / fsamp, sampling_freq=fsamp, signal_nature="IBI",
+            return _UnevenlySignal(ibi_1 / fsamp, sampling_freq=fsamp, signal_type="IBI",
                                    start_time=signal.get_start_time(), x_values=idx_1, x_type='indices',
                                    duration=signal.get_duration())
 
@@ -1077,7 +1077,7 @@ class BeatOptimizer(_Tool):
         ibi_out = _np.diff(idx_out)
         ibi_out = _np.r_[signal.get_values()[0], ibi_out / fsamp]
 
-        return _UnevenlySignal(ibi_out, sampling_freq=signal.get_sampling_freq(), signal_nature="IBI",
+        return _UnevenlySignal(ibi_out, sampling_freq=signal.get_sampling_freq(), signal_type="IBI",
                                start_time=signal.get_start_time(), x_values=idx_out, x_type='indices',
                                duration=signal.get_duration())
 

@@ -111,7 +111,7 @@ class BeatFromBP(_Estimator):
         ibi = _UnevenlySignal(values=ibi_values,
                               sampling_freq=fsamp,
                               start_time=signal.get_start_time(),
-                              signal_nature='IBI',
+                              signal_type='IBI',
                               x_values=idx_ibi,
                               x_type='indices',
                               duration=signal.get_duration())
@@ -179,7 +179,7 @@ class BeatFromECG(_Estimator):
         ibi = _UnevenlySignal(values=ibi_values,
                               sampling_freq=fsamp,
                               start_time=signal.get_start_time(),
-                              signal_nature='IBI',
+                              signal_type='IBI',
                               x_values=idx_ibi,
                               x_type='indices',
                               duration=signal.get_duration())
@@ -357,7 +357,7 @@ class PhasicEstim(_Estimator):
         idx_grid = _np.arange(0, len(driver_no_peak) - 1, grid_size * fsamp)
         idx_grid = _np.r_[idx_grid, len(driver_no_peak) - 1]
 
-        driver_grid = _UnevenlySignal(driver_no_peak[idx_grid], sampling_freq = fsamp, start_time= signal.get_start_time(), signal_nature="dEDA",
+        driver_grid = _UnevenlySignal(driver_no_peak[idx_grid], sampling_freq = fsamp, start_time= signal.get_start_time(), signal_type="dEDA",
                                       x_values=idx_grid, x_type='indices', duration=signal.get_duration())
         tonic = driver_grid.to_evenly(kind='cubic')
 

@@ -199,7 +199,7 @@ class Annotate(object):
         if isinstance(ibi, ph.UnevenlySignal):
             self.ibi_ok =  ph.UnevenlySignal(values=self.peaks_v,
                                      sampling_freq=self.ibi.get_sampling_freq(),
-                                     signal_nature=self.ibi.get_signal_nature(),
+                                     signal_type=self.ibi.get_signal_type(),
                                      start_time=self.ibi.get_start_time(),
                                      x_values=self.peaks_t,
                                      x_type='instants',
@@ -207,7 +207,7 @@ class Annotate(object):
         else:
             self.ibi_ok = ph.UnevenlySignal(values=self.peaks_v,
                                      sampling_freq=self.ecg.get_sampling_freq(),
-                                     signal_nature=self.ecg.get_signal_nature(),
+                                     signal_type=self.ecg.get_signal_type(),
                                      start_time=self.ecg.get_start_time(),
                                      x_values=self.peaks_t,
                                      x_type='instants',

@@ -760,27 +760,7 @@ class NIRS(EvenlySignal):
         _tight_layout()
         _subplots_adjust(top=0.9, bottom=0.01, left=0.05, right=0.95, hspace=0.3, wspace=0.25)
 
-    '''
-        @property
-        def pickleable(self):
-            """
-            Returns a pickleable tuple of this Signal.
-            :return: Tuple (Signal, ph dict).
-            """
-            return self, self.ph
-    
-        def to_pickle(self, path):
-            """
-            Saves this Signal into a pickle file.
-            :param path: File system path to the file to write (create/overwrite).
-            """
-            from gzip import open
-            from pickle import dump
-            f = open(path, "wb")
-            dump(self.pickleable, f, protocol=2)
-            f.close()
-    '''
-    
+  
     def to_csv(self, filename, comment=''): 
         values = self.get_values()
         times = self.get_times()
