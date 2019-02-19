@@ -737,7 +737,6 @@ class NIRS(EvenlySignal):
     
     def plot(self, style=""):
         _grid()
-        
         n_ch = self.get_nchannels()
         stim = self.get_stim()
         if 'good_channels' in self.info.keys():
@@ -752,9 +751,9 @@ class NIRS(EvenlySignal):
         for i_ch in range(n_ch):
             curr_style = 'r' if i_ch not in good_ch else style
             _subplot(n_rows, 4, i_ch+1, sharex=ax1)
-            _plot(self.get_times(), self[:,i_ch], curr_style)
+            self.get_channel(i_ch).plot(curr_style)
             _ylabel(i_ch)
-            _vlines(t_start, self[:,i_ch].min(), self[:,i_ch].max(), 'k')
+            _vlines(t_start, _np.nanmin(self.get_channel(i_ch)), _np.nanmax(self.get_channel(i_ch)), 'k')
             _grid()
         _xlim(self.get_start_time(), self.get_end_time())
         _tight_layout()
