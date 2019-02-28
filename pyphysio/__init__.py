@@ -21,7 +21,7 @@ from .indicators.NonLinearDomain import *
 from .indicators.PeaksDescription import *
 from .indicators.TimeDomain import *
 from .sqi.SignalQuality import *
-from .tests import TestData
+#from .tests import TestData
 from .segmentation.SegmentsGenerators import *
 
 
