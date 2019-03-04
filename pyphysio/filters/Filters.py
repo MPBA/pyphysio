@@ -223,7 +223,7 @@ class FIRFilter(_Filter):
         pass
 
 class KalmanFilter(_Filter):
-    def __init__(self, R, ratio=None, win_len=1, win_step=0.5):
+    def __init__(self, R, ratio=1, win_len=1, win_step=0.5):
         assert R > 0, "R should be positive"
         if ratio is not None:
             assert ratio > 1, "ratio should be >1"
@@ -282,7 +282,7 @@ class ImputeNAN(_Filter):
                 expect = v + step
             return result
 
-        #%%
+        #%
         win_len = params['win_len']*signal.get_sampling_freq()
         allnan = params['allnan']
         
@@ -298,7 +298,7 @@ class ImputeNAN(_Filter):
         idx_nan = _np.where(_np.isnan(s))[0]
         segments = group_consecutives(idx_nan)
 
-        #%%
+        #%
         if len(segments[0])>=1:
             for i_seg, SEG in enumerate(segments):
                 idx_st = SEG[0]
@@ -335,32 +335,57 @@ class ImputeNAN(_Filter):
         return(signal_out)
 
 
-class RemoveShifts(_Filter):
-    def __init__(self, K=2, N=1, win_len=1, win_step=0.5):
+class RemoveSpikes(_Filter):
+    def __init__(self, K=2, N=1, dilate=0, D=0.95, method='step'):
         assert K > 0, "K should be positive"
         assert isinstance(N, int) and N>0, "N value not valid"
-        assert win_len > 0, "Window length value should be positive"
-        assert win_step > 0, "Window step value should be positive"
-        
-        _Filter.__init__(self, K=K, N=N, win_len=win_len, win_step=win_step)
+        assert dilate>=0, "dilate should be >= 0.0"
+        assert D>=0, "D should be >= 0.0"
+        assert method in ['linear', 'step']
+        _Filter.__init__(self, K=K, N=N, dilate=dilate, D=D, method=method)
     
     @classmethod
     def algorithm(cls, signal, params):
         K = params['K']
         N = params['N']
-        win_len = params['win_len']
-        win_step = params['win_step']
+        dilate = params['dilate']
+        D = params['D']
+        method = params['method']
+        fs = signal.get_sampling_freq()
         
-        rr = _np.median(SignalRange(win_len,win_step)(signal))
-        allowed_drop = K*rr
-        sig_diff = signal[N:] - signal[:-N]
+        sig_diff = abs(signal[N:] - signal[:-N])
+        ds_mean = _np.nanmean(sig_diff)
+        
+        idx_spikes = _np.where(sig_diff>K*ds_mean)[0]+N//2
+        spikes = _np.zeros(len(signal))
+        spikes[idx_spikes] = 1
+        win = _np.ones(1+int(2*dilate*fs))
+        spikes = _np.convolve(spikes, win, 'same')
+        idx_spikes = _np.where(spikes>0)[0]
         
         x_out = signal.get_values().copy()
-        idx_drop = _np.where(abs(sig_diff)>allowed_drop)[0]
-        for IDX in idx_drop:
-            delta = x_out[IDX+1] - x_out[IDX] + _np.random.normal(0, rr/6)
-            x_out[IDX+1:] = x_out[IDX+1:] - delta
         
+        #TODO add linear connector method
+        if method == 'linear':
+            diff_idx_spikes = _np.diff(idx_spikes)
+            new_spike = _np.where(diff_idx_spikes > 1)[0] + 1
+            new_spike = _np.r_[0, new_spike, -1]
+            for I in range(len(new_spike)-1):
+                IDX_START = idx_spikes[new_spike[I]] -1
+                IDX_STOP = idx_spikes[new_spike[I+1]-1] +1
+                
+                L = IDX_STOP - IDX_START + 1
+                x_start = x_out[IDX_START]
+                x_stop = x_out[IDX_STOP]
+                coefficient = (x_stop - x_start)/ L
+                
+                x_out[IDX_START:IDX_STOP+1] = coefficient*_np.arange(L) + x_start
+        else:
+                
+            for IDX in idx_spikes:
+                delta = x_out[IDX] - x_out[IDX-1]
+                x_out[IDX:] = x_out[IDX:] - D*delta
+            
         x_out = signal.clone_properties(x_out)
         return(x_out)
 

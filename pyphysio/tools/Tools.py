@@ -1248,7 +1248,7 @@ class OptimizeBateman(_Tool):
                 # find angular coefficient (average derivative)
                 
 
-                diff_y = _Diff()(driver_portion)
+                diff_y = Diff()(driver_portion)
                 th_66 = _np.percentile(diff_y, 66)
                 th_33 = _np.percentile(diff_y, 33)
 
