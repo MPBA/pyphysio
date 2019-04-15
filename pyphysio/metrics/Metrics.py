@@ -3,8 +3,6 @@ from scipy.stats import pearsonr, spearmanr
 from scipy.signal import correlate        
 EXT_LIB_DIR = '/home/bizzego/UniTn/software'
 
-#TODO: ADD SEED
-
 def compute_AAFT_surrogates(data, angle):
     # create Gaussian data
     gaussian = _np.random.randn(data.shape[0])
@@ -56,25 +54,23 @@ def compute_IAAFT_surrogates(data, n_iters=10):
 
     return(R)
 
-
-
-def compute_distance(x,y, dist, normalize=False):
+def compute_distance(x,y, dist, standardize=True):
     def _standard_scale(x):
         return( (x-_np.mean(x))/_np.std(x))
 
     if x is None or y is None: #return none if any signal is none
         return(_np.nan)
     maxlen = _np.min([len(x), len(y)])
-    x = _standard_scale(x[:maxlen]) if normalize else x[:maxlen]
-    y = _standard_scale(y[:maxlen]) if normalize else y[:maxlen]
+    x = _standard_scale(x[:maxlen]) if standardize else x[:maxlen]
+    y = _standard_scale(y[:maxlen]) if standardize else y[:maxlen]
     d = dist.compute(x, y)
     return(d)
 
 
-def compute_distances_golland(group_1, group_2, distance='cc', lag=0, normalize=False):
+def compute_distances_golland(group_1, group_2, distance='cc', lag=0, standardize = True, normalize=True):
     assert distance in ['cc', 'mi', 'spearman']
     if distance == 'cc':
-        dist = CrossCorrDistance(lag)
+        dist = CrossCorrDistance(lag, normalize)
     elif distance == 'mi':
         dist = MIDistance()
     elif distance == 'spearman':
@@ -89,18 +85,18 @@ def compute_distances_golland(group_1, group_2, distance='cc', lag=0, normalize=
         signal_1_I, signal_1_I_s = group_1[I][0], group_1[I][1] 
         signal_2_I, signal_2_I_s = group_2[I][0], group_2[I][1]
         
-        copresence.append(compute_distance(signal_1_I, signal_2_I, dist, normalize)) #true dyad, true signals
-        surrogate.append(compute_distance(signal_1_I_s, signal_2_I_s, dist, normalize)) #true dyad, surrogate signals
+        copresence.append(compute_distance(signal_1_I, signal_2_I, dist, standardize)) #true dyad, true signals
+        surrogate.append(compute_distance(signal_1_I_s, signal_2_I_s, dist, standardize)) #true dyad, surrogate signals
         
         for J in range(I+1, len(group_1)):
-            signal_1_J, signal_1_J_s = group_1[J][0], group_1[J][1]
+            signal_1_J, _ = group_1[J][0], group_1[J][1]
             signal_2_J, signal_2_J_s = group_2[J][0], group_2[J][1]
             
-            stimulus.append(compute_distance(signal_1_I, signal_2_J, dist, normalize)) #surrogate dyads, true signals
-            stimulus_1.append(compute_distance(signal_1_I, signal_1_J, dist, normalize)) #inter group_1, true signals
-            stimulus_2.append(compute_distance(signal_2_I, signal_2_J, dist, normalize)) #inter group_2, true signals
+            stimulus.append(compute_distance(signal_1_I, signal_2_J, dist, standardize)) #surrogate dyads, true signals
+            stimulus_1.append(compute_distance(signal_1_I, signal_1_J, dist, standardize)) #inter group_1, true signals
+            stimulus_2.append(compute_distance(signal_2_I, signal_2_J, dist, standardize)) #inter group_2, true signals
                 
-            surrogate.append(compute_distance(signal_1_I_s, signal_2_J_s, dist, normalize)) #surrogate dyad, surrogate signals
+            surrogate.append(compute_distance(signal_1_I_s, signal_2_J_s, dist, standardize)) #surrogate dyad, surrogate signals
             
     copresence = _np.array(copresence)
     stimulus = _np.array(stimulus)
@@ -154,7 +150,7 @@ class DTWDistance(object):
 
 class CrossCorrDistance(object):
     def __init__(self, lag = 10, normalize = True):
-        self.lag = 10
+        self.lag = lag
         self.normalize = normalize
     
     def compute(self, x, y, N=0):
@@ -266,7 +262,7 @@ class SpearmanDistance(object):
             return(r, p, p_value)
         
         return(r, p)        
-
+'''
 #TODO: FIX TDS (Time Delay Stability)
 def compute_TDS(x, y, winlen=None, winstep=None, nsamp=0):
     if winlen is None:
@@ -312,7 +308,7 @@ def compute_TDS(x, y, winlen=None, winstep=None, nsamp=0):
         stability[idx_start] = energy
     return stability, delays
 
-'''
+
 def code_generator(size=6, chars=string.ascii_letters + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
     

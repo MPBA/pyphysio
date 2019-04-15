@@ -27,6 +27,14 @@ from .segmentation.SegmentsGenerators import *
 
 __author__ = "AleB"
 
+def nature2type(data):
+    data.ph['signal_type'] = data.ph['signal_nature']
+    if isinstance(data, NIRS):
+        stim = data.get_stim()
+        stim.ph['signal_type'] = stim.ph['signal_nature']
+        data.set_stim(stim)
+    return(data)
+    
 def preset_sqi_ecg(prefix="SQI_", method='ar'):
     K = Kurtosis(name='kurtosis')
     SPR = SpectralPowerRatio(method, name='SPR')

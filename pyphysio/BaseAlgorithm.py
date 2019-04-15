@@ -65,7 +65,7 @@ class Algorithm(object):
         @type data: TimeSeries
         @param params: Parameters for the calculator
         @type params: dict
-        @param use_cache: Weather to use the cache memory or not
+        @param use_cache: Whether to use the cache memory or not
         @type use_cache: bool
         @return: The value of the feature.
         """
