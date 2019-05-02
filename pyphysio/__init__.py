@@ -126,7 +126,70 @@ def preset_tonic(prefix="ton_"):
 
     return t
 
+def preset_eeg(prefix="eeg_", method='welch'):
+    delta = PowerInBand(freq_min=0, freq_max=3, method=method, name="delta")
+    theta = PowerInBand(freq_min=3.5, freq_max=7.5, method=method, name="theta")
+    alpha = PowerInBand(freq_min=7.5, freq_max=13, method=method, name="alpha")
+    beta = PowerInBand(freq_min=14, freq_max=30, method=method, name="beta")
+    total = PowerInBand(freq_min=0, freq_max=100, method=method, name="total")
+    
+    t = [delta, theta, alpha, beta, total]
 
+    if prefix is not None:
+        for i in t:
+            i.set(name=prefix + i.get("name"))
+
+    return t
+
+
+def preset_emg(prefix='emg_', method = 'welch'):
+    mx = Max(name='maximum')
+    mn = Min(name='minimum')
+    mean = Mean(name='mean')
+    rng = Range(name='range')
+    sd = StDev(name='sd')
+    auc = AUC(name='auc')
+    en4_40 = PowerInBand(freq_min=4, freq_max=40, method=method, name="en_4_40")
+    
+    t = [mx, mn, mean, rng, sd, auc, en4_40]
+
+    if prefix is not None:
+        for i in t:
+            i.set(name=prefix + i.get("name"))
+
+    return t
+
+
+def preset_resp(prefix='resp', method='welch'):
+    e_low = PowerInBand(freq_min=0, freq_max=0.25, method=method, name="energy_low")
+    e_high = PowerInBand(freq_min=0.25, freq_max=5, method=method, name="energy_high")
+    resp_rate = PeakInBand(freq_min=0.25, freq_max=5, method=method, name="resp_rate")
+    
+    t = [e_low, e_high, resp_rate]
+    
+    if prefix is not None:
+        for i in t:
+            i.set(name=prefix + i.get("name"))
+
+    return t
+
+def preset_activity(prefix='activity', method='welch'):
+    mx = Max(name='maximum')
+    mn = Min(name='minimum')
+    mean = Mean(name='mean')
+    rng = Range(name='range')
+    sd = StDev(name='sd')
+    auc = AUC(name='auc')
+    en_25 = PowerInBand(freq_min=0, freq_max=25, method=method, name="en_25")
+    
+    t = [mx, mn, mean, rng, sd, auc, en_25]
+
+    if prefix is not None:
+        for i in t:
+            i.set(name=prefix + i.get("name"))
+
+    return t
+    
 def fmap(segments, algorithms, alt_signal=None):
     # TODO : rename extract_indicators
     """

@@ -4,6 +4,7 @@ import numpy as _np
 from ..BaseIndicator import Indicator as _Indicator
 from ..indicators.FrequencyDomain import PowerInBand as _PowerInBand
 import scipy.stats as _sps
+from ..filters.Filters import ImputeNAN as _ImputeNAN
 
 __author__ = 'AleB'
 
@@ -90,4 +91,5 @@ class PercentageNAN(_Indicator):
     @classmethod
     def algorithm(cls, data, params):
         n_nan = _np.sum(_np.isnan(data))
+        data = _ImputeNAN()(data)
         return(100*n_nan/len(data))

@@ -5,9 +5,9 @@ from scipy import interpolate as _interp
 from matplotlib.pyplot import plot as _plot, vlines as _vlines, xlabel as _xlabel, ylabel as _ylabel, grid as _grid 
 from matplotlib.pyplot import subplot as _subplot, tight_layout as _tight_layout, subplots_adjust as _subplots_adjust, xlim as _xlim
 from numbers import Number as _Number
-from pyphysio.Utility import abstractmethod as _abstract, PhUI as _PhUI
+from pyphysio.Utility import abstractmethod as _abstract, PhUI as _PhUIs
 import copy
-
+#from pyphysio.filters.Filters import ImputeNAN as _ImputeNAN
 __author__ = 'AleB'
 
 
@@ -195,6 +195,9 @@ class Signal(_np.ndarray):
         dump(self.pickleable, f, protocol=2)
         f.close()
 
+#    def impute_nans(self):
+#        self = ImputeNAN()(self)
+        
     def __repr__(self):
         return "<signal: " + self.get_signal_type() + ", start_time: " + str(self.get_start_time()) + ">"
 
