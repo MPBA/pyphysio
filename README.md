@@ -17,41 +17,14 @@ Every algorithm is available under the main module name e.g.
 
 however they are divided into the following groups:
 
-- **estimators**: from a signal produce a signal of a different nature
-- **filters**: from a signal produce a filtered signal of the same nature
+- **estimators**: from a signal produce a signal of a different type
+- **filters**: from a signal produce a filtered signal of the same type
 - **indicators**: from a signal produce a value
 - **segmentation**: from a signal produce a series of segments
 - **tools**: from a signal produce arbitrary data
 
-### Example
-    import pyphysio as ph
-    from tests.context import Assets
-     
-    sig = ph.EvenlySignal(Assets.bvp(), 1024)
-     
-    # I have to resample it
-    sig = ph.resample(sig, 250, "spline")
-     
-    # Need to remove what I don't need
-    # Let's setup a filter
-    fil_bp = ph.Filters.frequency(low=50, hi=80, attenuation=40)
-    # Oh! Not 40, 50!
-    fil_bp.set(attenuatino=50)
-    # > Warning: the parameter 'attenuatino' is not used by the algorithm!
-     
-    # Ops, typo!
-    fil_bp.set(attenuation=50)
-     
-    # Let's filter
-    filtered = fil_bp(sig)
-     
-    # Let's have a look at what I've done
-    sig.plot('b')
-    filtered.plot('r')
-     
-    # Ok I like it
-    ibi_est = ph.Estimator.ibi(delta=0.5, fmax=180)
-     
-    ibis = ibi_est(filtered)
-    ibis.plot("|")
+### Examples
+Examples on how to use pyphysio can be found at:
+
+<https://github.com/MPBA/pyphysio/tree/master/tutorials>
      
