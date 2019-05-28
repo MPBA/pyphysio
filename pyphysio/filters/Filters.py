@@ -385,7 +385,6 @@ class RemoveSpikes(_Filter):
             for IDX in idx_spikes:
                 delta = x_out[IDX] - x_out[IDX-1]
                 x_out[IDX:] = x_out[IDX:] - D*delta
-            
         x_out = signal.clone_properties(x_out)
         return(x_out)
 

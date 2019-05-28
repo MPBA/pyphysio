@@ -640,7 +640,7 @@ class NIRS(EvenlySignal):
                      self.get_stim(),
                      self.get_start_time(),
                      self.get_signal_type(),
-                     self.info)
+                     self.info.copy())
         return(x_new)
     
     @property
