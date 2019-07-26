@@ -24,6 +24,8 @@ from .sqi.SignalQuality import *
 #from .tests import TestData
 from .segmentation.SegmentsGenerators import *
 
+print("Please cite:")
+print("Bizzego et al. (2019) 'pyphysio: A physiological signal processing library for data science approaches in physiology', SoftwareX")
 
 __author__ = "AleB"
 
