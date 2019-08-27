@@ -1,4 +1,5 @@
 # coding=utf-8
+import numpy as _np
 from ..Utility import PhUI as _PhUI, abstractmethod as _abstract
 from ..BaseSegmentation import SegmentsGenerator, Segment
 from ..Signal import Signal as _Signal
@@ -107,6 +108,69 @@ class _SegmentsWithLabelSignal(SegmentsGenerator):
         return b, e, label
 
 
+class RandomFixedSegments(_SegmentsWithLabelSignal):
+    """
+    Fixed length segments iterator, at random start timestamps, specifying step and width in seconds.
+
+    A label signal from which to
+    take labels can be specified.
+
+    Parameters
+    ----------
+    width : float, >0
+        time distance between subsequent segments.
+    N : int, >0
+        number of segments to be extracted.
+
+    Optional parameters
+    -------------------
+    labels : array
+        Signal of the labels
+    drop_mixed : bool, default=True
+        In case labels is specified, whether to drop segments with more than one label, if False the label of such
+         segments is set to None.
+    drop_cut : bool, default=True
+        Whether to drop segments that are shorter due to the crossing of the signal end.
+    """
+
+    def __init__(self, N, width, start=None, stop = None, labels=None, drop_mixed=True, drop_cut=True, **kwargs):
+        super(RandomFixedSegments, self).__init__(N=N, width=width, start=start, stop=stop, labels=labels, drop_cut=drop_cut,
+                                            drop_mixed=drop_mixed, **kwargs)
+        assert N > 0
+        assert width is None or width > 0
+        assert start is None or isinstance(start, float)
+        assert stop is None or isinstance(stop, float)
+        assert labels is None or isinstance(labels, _Signal),\
+            "The parameter 'labels' should be a Signal."
+        self._width = None
+        self._tst = None
+        self._tsp = None
+        self._i = None
+
+    def init_segmentation(self):
+        self._N = self._params["N"]
+        w = self._params["width"]
+        self._width = w if w is not None else self._step
+        self._labsig = self._params["labels"]
+        self._tst = self._params["start"]
+        self._tsp = self._params["stop"]
+        
+        #generate random start instants
+        tst = self._signal.get_start_time() if self._tst is None else self._tst
+        tsp = self._signal.get_end_time() if self._tsp is None else self._tsp
+        tsp = tsp - w
+        self._tst_randoms = _np.random.uniform(tst, tsp, self._N)
+        
+    def next_times(self):
+        if self._i is None:
+            self._i = 0
+        b = self._tst_randoms[self._i]
+        self._i += 1
+        e = b + self._width
+        if self._i > len(self._tst_randoms):
+            raise StopIteration()
+        return b, e
+
 class FixedSegments(_SegmentsWithLabelSignal):
     """
     Fixed length segments iterator, specifying step and width in seconds.
@@ -162,7 +226,6 @@ class FixedSegments(_SegmentsWithLabelSignal):
         if b >= self._signal.get_end_time():
             raise StopIteration()
         return b, e
-
 
 class CustomSegments(_SegmentsWithLabelSignal):
     """

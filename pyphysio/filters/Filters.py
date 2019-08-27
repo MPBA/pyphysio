@@ -208,7 +208,9 @@ class FIRFilter(_Filter):
         nyq = 0.5 * fsamp
         fp = _np.array(fp)
         wp = fp / nyq
-        print(N)
+        
+        if N%2 ==0:
+            N+=1
         b = _firwin(N, wp, width=Dsamp, window=wtype, pass_zero=pass_zero)
         sig_filtered = signal.clone_properties(_convolve(signal.get_values(), b, mode='same'))
 
