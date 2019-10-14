@@ -200,7 +200,7 @@ class FIRFilter(_Filter):
             if fp[0]>fs[0]:
                 pass_zero=False
         else:    
-            if fp>fs:
+            if fp[0]>fs[0]:
                 pass_zero=False
         
             

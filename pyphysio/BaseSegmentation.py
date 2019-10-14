@@ -1,8 +1,10 @@
 # coding=utf-8
 from abc import abstractmethod as _abstract, ABCMeta as _ABCMeta
 from copy import copy as _cpy
-from pyphysio.BaseAlgorithm import Algorithm as _Algorithm
-from pyphysio.Signal import EvenlySignal as _EvenlySignal
+import numpy as _np
+from .Utility import PhUI as _PhUI
+from .BaseAlgorithm import Algorithm as _Algorithm, Cache
+from .Signal import EvenlySignal as _EvenlySignal
 
 __author__ = 'AleB'
 
@@ -109,7 +111,34 @@ class SegmentsGenerator(_Algorithm):
         else:
             return super(SegmentsGenerator, self).__repr__()
 
-
+    #REWRITE the run method for compatibility with MultiEvenly signals
+    #Segments should not work on each channel
+    #But output a sehments with multiple channels
+    #to be processed by the algorithms
+    
+    def run(cls, data, params=None, use_cache=False, **kwargs):
+        """
+        Gets the data from the cache or calculates, caches and returns it.
+        @param data: Source data
+        @type data: TimeSeries
+        @param params: Parameters for the calculator
+        @type params: dict
+        @param use_cache: Whether to use the cache memory or not
+        @type use_cache: bool
+        @return: The value of the feature.
+        """
+        if type(params) is dict:
+            kwargs.update(params)
+        if not isinstance(data.get_values(), _np.ndarray):
+            _PhUI.w("The data must be a Signal (see class EvenlySignal and UnevenlySignal).")
+            use_cache = False
+        if use_cache is True:
+            Cache.cache_check(data)
+            # noinspection PyTypeChecker
+            return Cache.run_cached(data, cls, kwargs)
+        else:            
+            return cls.algorithm(data, kwargs)            
+                    
 class SegmentationIterator(object):
     """
     A generic iterator that is called from each WindowGenerator from the __iter__ method.

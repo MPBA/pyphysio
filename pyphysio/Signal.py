@@ -665,7 +665,7 @@ class MultiEvenly(EvenlySignal):
         ratio = self.get_sampling_freq() / fout
 
         if fout < self.get_sampling_freq() and ratio.is_integer():  # fast interpolation
-            signal_out = self.get_values()[::int(ratio),:]
+            values_out = self.get_values()[::int(ratio),:]
         else:
             indexes = _np.arange(len(self) + 1)
             indexes_out = _np.arange(len(self) * fout / self.get_sampling_freq()) * ratio

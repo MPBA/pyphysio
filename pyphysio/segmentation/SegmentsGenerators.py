@@ -96,7 +96,7 @@ class _SegmentsWithLabelSignal(SegmentsGenerator):
                 lab_seg = self._labsig.segment_iidx(first, last)
                 lab_first = lab_seg[0]
 
-                if len(lab_seg) == 1 or all(lab_seg[:1:-1] == lab_first):
+                if len(lab_seg) == 1 or (lab_seg[:1:-1] == lab_first).all(): ###[AB]
                     label = lab_first
                 else:
                     if self._params['drop_mixed']:
@@ -137,7 +137,7 @@ class RandomFixedSegments(_SegmentsWithLabelSignal):
         super(RandomFixedSegments, self).__init__(N=N, width=width, start=start, stop=stop, labels=labels, drop_cut=drop_cut,
                                             drop_mixed=drop_mixed, **kwargs)
         assert N > 0
-        assert width is None or width > 0
+        assert width > 0
         assert start is None or isinstance(start, float)
         assert stop is None or isinstance(stop, float)
         assert labels is None or isinstance(labels, _Signal),\
@@ -150,7 +150,7 @@ class RandomFixedSegments(_SegmentsWithLabelSignal):
     def init_segmentation(self):
         self._N = self._params["N"]
         w = self._params["width"]
-        self._width = w if w is not None else self._step
+        self._width = w 
         self._labsig = self._params["labels"]
         self._tst = self._params["start"]
         self._tsp = self._params["stop"]
@@ -164,12 +164,15 @@ class RandomFixedSegments(_SegmentsWithLabelSignal):
     def next_times(self):
         if self._i is None:
             self._i = 0
-        b = self._tst_randoms[self._i]
-        self._i += 1
-        e = b + self._width
-        if self._i > len(self._tst_randoms):
+        
+        if self._i < len(self._tst_randoms):
+            b = self._tst_randoms[self._i]
+            e = b + self._width
+            self._i += 1
+            return b, e
+        else:
             raise StopIteration()
-        return b, e
+            
 
 class FixedSegments(_SegmentsWithLabelSignal):
     """

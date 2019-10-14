@@ -3,7 +3,7 @@ from __future__ import division
 
 from numpy import array as _array
 from .tools.Tools import *
-
+import numpy as _np
 from .filters import Filters
 from .segmentation import SegmentsGenerators
 from .indicators import FrequencyDomain
@@ -23,6 +23,8 @@ from .indicators.TimeDomain import *
 from .sqi.SignalQuality import *
 #from .tests import TestData
 from .segmentation.SegmentsGenerators import *
+
+#TODO: all signals as N_SAMPLES x N_CH, with N_CH =1 for non MultiEvenly
 
 print("Please cite:")
 print("Bizzego et al. (2019) 'pyphysio: A physiological signal processing library for data science approaches in physiology', SoftwareX")
@@ -191,7 +193,7 @@ def preset_activity(prefix='activity', method='welch'):
             i.set(name=prefix + i.get("name"))
 
     return t
-    
+ 
 def fmap(segments, algorithms, alt_signal=None):
     # TODO : rename extract_indicators
     """
@@ -206,11 +208,32 @@ def fmap(segments, algorithms, alt_signal=None):
      algorithm, the list of the algorithm names.
     """
     from numpy import asarray as _asarray
-    values = _asarray([[seg.get_begin_time(), seg.get_end_time(), seg.get_label()] +
-                       [alg(seg(alt_signal)) for alg in algorithms] for seg in (
-        segments(alt_signal) if isinstance(segments, SegmentsGenerator) else segments
-    )])
+    
+    seg_for = segments(alt_signal) if isinstance(segments, SegmentsGenerator) else segments
+    
+    values = []
+    for seg in seg_for:
+        segment_data = _np.array([seg.get_begin_time(), seg.get_end_time(), seg.get_label()]).reshape(3,1)
+        vals_segment = []
+        for alg in algorithms:
+            vals_alg = _np.array(alg(seg(alt_signal)))
+            if not alt_signal.is_multi():
+                vals_alg = _np.expand_dims(vals_alg, 1)
+            vals_segment.append(vals_alg)
+            
+        vals_segment = _np.array(vals_segment)
+        seg_data_array = _np.repeat(segment_data, alt_signal.get_nchannels(), axis = 1)
+        vals_segment = _np.concatenate([seg_data_array, vals_segment], axis = 0)
+        values.append(vals_segment)
+    
+    values = _np.array(values)
+    
+    #for compatibility
+    if not alt_signal.is_multi():
+        values = values[:,:,0]
+        
     col_names = ["begin", "end", "label"] + [x.__repr__() for x in algorithms]
+    
     return values, _array(col_names)
 
 
