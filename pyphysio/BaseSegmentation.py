@@ -4,7 +4,7 @@ from copy import copy as _cpy
 import numpy as _np
 from .Utility import PhUI as _PhUI
 from .BaseAlgorithm import Algorithm as _Algorithm, Cache
-from .Signal import EvenlySignal as _EvenlySignal
+from .Signal import EvenlySignal as _EvenlySignal, UnevenlySignal as _UnevenlySignal
 
 __author__ = 'AleB'
 
@@ -136,7 +136,7 @@ class SegmentsGenerator(_Algorithm):
             Cache.cache_check(data)
             # noinspection PyTypeChecker
             return Cache.run_cached(data, cls, kwargs)
-        else:            
+        else:        
             return cls.algorithm(data, kwargs)            
                     
 class SegmentationIterator(object):

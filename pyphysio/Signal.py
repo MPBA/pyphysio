@@ -397,16 +397,19 @@ class UnevenlySignal(Signal):
         assert len(x_values) == len(values), "Length mismatch (y:%d vs. x:%d)" % (len(values), len(x_values))
         assert len(_np.where(_np.diff(x_values) <= 0)[0]) == 0, 'Given x_values are not strictly monotonic'
 
+        
         if x_type == 'indices':
             # Keep indices, set start_time
             if start_time is None:
                 start_time = 0
         else:
+            
             # Get indices removing start_time
             if start_time is None:
                 start_time = x_values[0]
             else:
                 assert start_time <= x_values[0], "More than one sample at or before start_time"
+            
             # WARN: limitation to 10 decimals due to workaround to prevent wrong cast flooring
             # (e.g. np.floor(0.29 * 100) == 28)
             x_values = _np.round((x_values - start_time) * sampling_freq, 10).astype(int)

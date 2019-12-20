@@ -70,6 +70,7 @@ class _SegmentsWithLabelSignal(SegmentsGenerator):
 
             b, e = self.next_times()
 
+
             drop, b, e = self.check_drop_and_range(self._signal, b, e)
 
             if drop:
@@ -295,7 +296,7 @@ class LabelSegments(_SegmentsWithLabelSignal):
     """
 
     def __init__(self, labels, drop_mixed=True, drop_cut=True, **kwargs):
-        super(LabelSegments, self).__init__(labels=labels, drop_cut=drop_cut, drop_mixed=drop_mixed, **kwargs)
+        super(LabelSegments, self).__init__(labels=labels, drop_mixed=drop_mixed, drop_cut=drop_cut, **kwargs)
         assert labels is None or isinstance(labels, _Signal),\
             "The parameter 'labels' should be an Signal."
         self._i = None
@@ -311,6 +312,7 @@ class LabelSegments(_SegmentsWithLabelSignal):
         end = self._i
         while end < len(self._labsig) and self._labsig[self._i] == self._labsig[end]:
             end += 1
+        
         b = self._labsig.get_time_from_iidx(self._i)
         e = self._labsig.get_time_from_iidx(end)
         self._i = end
