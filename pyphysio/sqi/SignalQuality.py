@@ -68,6 +68,8 @@ class SpectralPowerRatio(_Indicator):
 class CVSignal(_Indicator):
     """
     Compute the Coefficient of variation of the signal
+    
+    See: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3859838/
 
     """
     def __init__(self, **kwargs):

@@ -521,7 +521,7 @@ class ConvolutionalFilter(_Filter):
         # NORMALIZE
         if normalize:
             irf = irf / _np.sum(irf)
-
+            
         signal_ = _np.r_[_np.ones(n) * signal[0], signal, _np.ones(n) * signal[-1]]  # TESTME
 
         signal_f = _np.convolve(signal_, irf, mode='same')

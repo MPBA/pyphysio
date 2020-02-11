@@ -217,8 +217,10 @@ def fmap(segments, algorithms, alt_signal=None):
         vals_segment = []
         for alg in algorithms:
             vals_alg = _np.array(alg(seg(alt_signal)))
+
             if not alt_signal.is_multi():
-                vals_alg = _np.expand_dims(vals_alg, 1)
+#                vals_alg = _np.expand_dims([vals_alg], 1)
+                vals_alg = _np.array([vals_alg])
             vals_segment.append(vals_alg)
             
         vals_segment = _np.array(vals_segment)
