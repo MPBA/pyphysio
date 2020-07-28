@@ -90,7 +90,7 @@ class _SegmentsWithLabelSignal(SegmentsGenerator):
                 # labels segment bounds, may be < 0 (None < 0)
                 first = self._labsig.get_iidx(b)
                 last = self._labsig.get_iidx(e)
-
+                
                 if first == last:
                     last += 1
 

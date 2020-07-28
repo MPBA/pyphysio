@@ -3,6 +3,7 @@ from __future__ import division
 import numpy as _np
 from scipy.signal import welch as _welch, periodogram as _periodogram, freqz as _freqz
 import scipy.optimize as _opt
+import pycwt.wavelet as wave
 from scipy import linalg as _linalg
 
 import itertools as _itertools
@@ -445,6 +446,35 @@ class PSD(_Tool):
             psd /= _np.sum(psd)
         return freqs, psd
 
+
+class Wavelet(_Tool):
+    """
+    TODO
+    """
+    def __init__(self, detrend=True, mother = None, **kwargs):
+        mother = wave.Morlet(6) if mother is None else mother
+        _Tool.__init__(self, detrend = detrend, mother = mother, **kwargs)
+        
+
+    @classmethod
+    def algorithm(self, signal, params):
+        t = signal.get_times()
+        t0 = signal.get_start_time()
+        dt = 1/signal.get_sampling_freq()
+        
+        detrend = params['detrend']
+        if detrend:
+            #% detrend
+            p = _np.polyfit(t - t0, signal, 1)
+            signal = signal - _np.polyval(p, t - t0)
+            
+        #% wavelet
+        mother = params['mother']
+        w, scales, freqs, coi, fft, fftfreqs = wave.cwt(signal, dt, wavelet=mother)
+        
+        power = (_np.abs(w)) ** 2
+        power /= scales[:, None]
+        return freqs, power
 
 class Maxima(_Tool):
     """

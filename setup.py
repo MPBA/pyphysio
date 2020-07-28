@@ -34,7 +34,8 @@ setup(
     install_requires=[
         'numpy',
         'scipy',
-        'matplotlib'
+        'matplotlib',
+        'pycwt'
     ],
     requires=[
         'pytest',
