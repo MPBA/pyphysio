@@ -23,7 +23,7 @@ from .indicators.TimeDomain import *
 from .sqi.SignalQuality import *
 #from .tests import TestData
 from .segmentation.SegmentsGenerators import *
-from .Signal import NIRS
+from .Signal import Signal
 
 #TODO: all signals as N_SAMPLES x N_CH, with N_CH =1 for non MultiEvenly
 
@@ -34,7 +34,7 @@ __author__ = "AleB"
 
 def nature2type(data):
     data.ph['signal_type'] = data.ph['signal_nature']
-    if isinstance(data, NIRS):
+    if isinstance(data, Signal):
         stim = data.get_stim()
         stim.ph['signal_type'] = stim.ph['signal_nature']
         data.set_stim(stim)
