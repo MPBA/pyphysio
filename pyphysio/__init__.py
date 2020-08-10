@@ -23,6 +23,7 @@ from .indicators.TimeDomain import *
 from .sqi.SignalQuality import *
 #from .tests import TestData
 from .segmentation.SegmentsGenerators import *
+from .Signal import NIRS
 
 #TODO: all signals as N_SAMPLES x N_CH, with N_CH =1 for non MultiEvenly
 
