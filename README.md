@@ -1,8 +1,16 @@
+#The latest version of the library can be found at <https://gitlab.com/a.bizzego/pyphysio>
+##With many new features, such as: support for multi-channel/multi-component data with parallelization (e.g. EEG, fNIRS), novel signal processing algorithms, signal quality indicators, etc.
+
+**Please note that this repository is not actively maintained anymore.**
+
+
+---
+
 # pyphysio
 
 pyphysio is a library of state of art algorithms for the analysis of physiological signals.
-It contains the implementations of the most important algorithms for the analysis of physiological data like ECG, BVP, EDA and inertial.
-The algorithms are implemented on top of a framework that provides caching to optimize feature extraction pipelines.
+It contains the implementations of the most important algorithms for the analysis of physiological data like ECG, BVP, EDA, inertial, and fNIRS.
+
 
 ### Signals
 To allow optimization, two wrapper classes for signals are provided:
