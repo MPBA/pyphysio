@@ -1,5 +1,6 @@
-#The latest version of the library can be found at <https://gitlab.com/a.bizzego/pyphysio>
-##With many new features, such as: support for multi-channel/multi-component data with parallelization (e.g. EEG, fNIRS), novel signal processing algorithms, signal quality indicators, etc.
+# The latest version of the library can be found at <https://gitlab.com/a.bizzego/pyphysio>
+
+## With many new features, such as: support for multi-channel/multi-component data with parallelization (e.g. EEG, fNIRS), novel signal processing algorithms, signal quality indicators, etc.
 
 **Please note that this repository is not actively maintained anymore.**
 
